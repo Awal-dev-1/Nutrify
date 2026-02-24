@@ -1,3 +1,112 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A vibrant flat lay of healthy Ghanaian food ingredients.",
+      "imageUrl": "https://images.unsplash.com/photo-1689187015184-a9bc081f3de6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxnaGFuYWlhbiUyMGZvb2R8ZW58MHx8fHwxNzcxOTM0MDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ghanaian food"
+    },
+    {
+      "id": "food-search",
+      "description": "Icon for searching or scanning food.",
+      "imageUrl": "https://images.unsplash.com/photo-1559384960-1a620795202e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYWduaWZ5aW5nJTIwZ2xhc3N8ZW58MHx8fHwxNzcxOTMxMTQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "magnifying glass"
+    },
+    {
+      "id": "nutrient-breakdown",
+      "description": "Icon for viewing nutrient breakdown.",
+      "imageUrl": "https://images.unsplash.com/photo-1543286386-713bdd548da4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaGFydCUyMHBpZXxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "chart pie"
+    },
+    {
+      "id": "track-health",
+      "description": "Icon for tracking and improving health.",
+      "imageUrl": "https://images.unsplash.com/photo-1762939079730-23708c0dd337?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxoZWFydGJlYXQlMjBsaW5lfGVufDB8fHx8MTc3MTkzNDAxM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "heartbeat line"
+    },
+    {
+      "id": "feature-ai-recognition",
+      "description": "Image for AI Food Recognition feature card.",
+      "imageUrl": "https://images.unsplash.com/photo-1630459933853-b2edeef3a838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxyb2JvdCUyMGNhbWVyYXxlbnwwfHx8fDE3NzE5MzQwMTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "robot camera"
+    },
+    {
+      "id": "feature-ghana-db",
+      "description": "Image for Local Ghanaian Food Database feature card.",
+      "imageUrl": "https://images.unsplash.com/photo-1740824814728-76a85834814f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxnaGFuYSUyMGZsYWd8ZW58MHx8fHwxNzcxOTM0MDEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ghana flag"
+    },
+    {
+      "id": "feature-tracking",
+      "description": "Image for Smart Nutrient Tracking feature card.",
+      "imageUrl": "https://images.unsplash.com/photo-1734503937317-3b88a42ac50c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxub3RlYm9vayUyMGNoYXJ0fGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "notebook chart"
+    },
+    {
+      "id": "feature-recommendations",
+      "description": "Image for Personalized Recommendations feature card.",
+      "imageUrl": "https://images.unsplash.com/photo-1661529667854-f80158f30f22?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxsaWdodGJ1bGIlMjBpZGVhfGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lightbulb idea"
+    },
+    {
+      "id": "feature-analytics",
+      "description": "Image for Analytics & Trends feature card.",
+      "imageUrl": "https://images.unsplash.com/photo-1703532718168-e5943c3837fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhbmFseXRpY3MlMjBncmFwaHxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "analytics graph"
+    },
+    {
+      "id": "feature-meal-planning",
+      "description": "Image for Meal Planning feature card.",
+      "imageUrl": "https://images.unsplash.com/photo-1642489216436-4c5075b34d53?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYWxlbmRhciUyMG1lYWx8ZW58MHx8fHwxNzcxOTM0MDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "calendar meal"
+    },
+    {
+      "id": "auth-background",
+      "description": "Abstract background for authentication pages.",
+      "imageUrl": "https://images.unsplash.com/photo-1687804446688-d455c357385d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3JlZW4lMjBhYnN0cmFjdHxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "green abstract"
+    },
+    {
+      "id": "food-image-1",
+      "description": "A plate of Jollof Rice.",
+      "imageUrl": "https://images.unsplash.com/photo-1540100716001-4b432820e37f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxqb2xsb2YlMjByaWNlfGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "jollof rice"
+    },
+    {
+      "id": "food-image-2",
+      "description": "A bowl of Fufu with soup.",
+      "imageUrl": "https://images.unsplash.com/photo-1701773169812-750e47f0ab19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZnVmdSUyMHNvdXB8ZW58MHx8fHwxNzcxOTM0MDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fufu soup"
+    },
+    {
+      "id": "food-image-3",
+      "description": "A piece of grilled Tilapia.",
+      "imageUrl": "https://images.unsplash.com/photo-1600175074394-f2f4c500f7ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxncmlsbGVkJTIwZmlzaHxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grilled fish"
+    },
+    {
+      "id": "food-image-4",
+      "description": "A serving of Waakye.",
+      "imageUrl": "https://picsum.photos/seed/waakye/400/300",
+      "imageHint": "waakye rice"
+    },
+    {
+      "id": "food-image-5",
+      "description": "Fresh mango slices.",
+      "imageUrl": "https://images.unsplash.com/photo-1685478677113-8c4a58503230?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYW5nbyUyMGZydWl0fGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mango fruit"
+    },
+    {
+      "id": "food-image-6",
+      "description": "A glass of sobolo (hibiscus tea).",
+      "imageUrl": "https://images.unsplash.com/photo-1652128288793-6a2077ee246b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxoaWJpc2N1cyUyMHRlYXxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hibiscus tea"
+    },
+    {
+      "id": "user-avatar-1",
+      "description": "A placeholder user avatar.",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzE4OTQ5MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    }
+  ]
 }
