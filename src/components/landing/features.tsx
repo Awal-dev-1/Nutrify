@@ -1,4 +1,11 @@
-import Image from "next/image";
+import {
+  Bot,
+  Database,
+  HeartPulse,
+  Sparkles,
+  BarChart2,
+  CalendarCheck,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -6,38 +13,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const featuresList = [
   {
+    icon: <Bot className="h-10 w-10 text-primary" />,
     title: "AI Food Recognition",
-    description: "Snap a photo of your meal and let our AI identify the food and its nutrients.",
-    imageId: "feature-ai-recognition",
+    description:
+      "Snap a photo of your meal and let our AI identify the food and its nutrients.",
   },
   {
+    icon: <Database className="h-10 w-10 text-primary" />,
     title: "Local Ghanaian Food Database",
-    description: "The most comprehensive database of local dishes, from Waakye to Fufu.",
-    imageId: "feature-ghana-db",
+    description:
+      "The most comprehensive database of local dishes, from Waakye to Fufu.",
   },
   {
+    icon: <HeartPulse className="h-10 w-10 text-primary" />,
     title: "Smart Nutrient Tracking",
-    description: "Effortlessly track calories, macros (protein, carbs, fat), and key micronutrients.",
-    imageId: "feature-tracking",
+    description:
+      "Effortlessly track calories, macros (protein, carbs, fat), and key micronutrients.",
   },
   {
+    icon: <Sparkles className="h-10 w-10 text-primary" />,
     title: "Personalized Recommendations",
-    description: "Get smart suggestions on what to eat next based on your goals and deficiencies.",
-    imageId: "feature-recommendations",
+    description:
+      "Get smart suggestions on what to eat next based on your goals and deficiencies.",
   },
   {
+    icon: <BarChart2 className="h-10 w-10 text-primary" />,
     title: "Analytics & Trends",
-    description: "Visualize your progress with beautiful charts and see your habits over time.",
-    imageId: "feature-analytics",
+    description:
+      "Visualize your progress with beautiful charts and see your habits over time.",
   },
   {
+    icon: <CalendarCheck className="h-10 w-10 text-primary" />,
     title: "AI-Powered Meal Planning",
-    description: "Generate weekly meal plans tailored to your needs with a single click.",
-    imageId: "feature-meal-planning",
+    description:
+      "Generate weekly meal plans tailored to your needs with a single click.",
   },
 ];
 
@@ -55,31 +67,24 @@ export function Features() {
           </p>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featuresList.map((feature) => {
-            const image = PlaceHolderImages.find((img) => img.id === feature.imageId);
-            return (
-              <Card key={feature.title} className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
-                {image && (
-                  <div className="aspect-video relative">
-                    <Image
-                      src={image.imageUrl}
-                      alt={feature.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      data-ai-hint={image.imageHint}
-                    />
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {featuresList.map((feature) => (
+            <Card
+              key={feature.title}
+              className="text-center transition-all hover:shadow-lg hover:-translate-y-1"
+            >
+              <CardHeader>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                  {feature.icon}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardDescription className="mt-2">
+                  {feature.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>
