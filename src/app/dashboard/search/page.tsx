@@ -235,33 +235,33 @@ export default function SearchPage() {
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="space-y-2 px-1">
+      <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Search Foods</h1>
         <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
           Find detailed nutrition information for thousands of foods and local dishes.
         </p>
       </div>
 
-      {/* Search Section - Fixed responsiveness */}
-      <div className="relative group px-1">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2">
-          <SearchIcon className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+      {/* Search Section */}
+      <div className="relative group">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <SearchIcon className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
         </div>
         <Input
-          placeholder="Search foods..."
-          className="pl-9 pr-20 h-11 text-sm rounded-full border focus-visible:ring-primary/20"
+          placeholder="Search for foods, fruits, local dishes…"
+          className="h-12 w-full rounded-full border bg-background pl-12 pr-24 text-sm transition-all focus-visible:ring-primary/20 md:h-14 md:pl-14 md:text-base"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {searchQuery && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-full hover:bg-muted"
+              className="h-8 w-8 rounded-full hover:bg-muted"
               onClick={() => setSearchQuery("")}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </Button>
           )}
           <TooltipProvider>
@@ -270,9 +270,9 @@ export default function SearchPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 rounded-full hover:bg-muted"
+                  className="h-8 w-8 rounded-full hover:bg-muted"
                 >
-                  <Mic className="h-3.5 w-3.5" />
+                  <Mic className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -284,14 +284,14 @@ export default function SearchPage() {
       </div>
 
       {/* Results count - Mobile */}
-      <div className="flex items-center justify-between px-1 sm:hidden">
+      <div className="flex items-center justify-between sm:hidden">
         <Badge variant="secondary" className="px-3 py-1 text-xs">
           {resultCount} {resultCount === 1 ? 'result' : 'results'}
         </Badge>
       </div>
 
       {/* Categories - Horizontal Scroll */}
-      <div className="w-full overflow-x-auto pb-2 scrollbar-thin px-1">
+      <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
         <div className="flex gap-2 min-w-max">
           {categories.map((category) => (
             <Button
@@ -312,7 +312,7 @@ export default function SearchPage() {
       </div>
 
       {/* Controls Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center px-1">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         {/* Result count - desktop */}
         <div className="hidden sm:block">
           <Badge variant="secondary" className="px-3 py-1">
@@ -418,7 +418,7 @@ export default function SearchPage() {
       
       {/* Active Filters Display */}
       {isFiltersApplied && (
-        <div className="flex flex-wrap items-center gap-2 px-1">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Active:</span>
           {filters.calorieRange[0] > 0 && (
             <Badge variant="secondary" className="px-2 py-0.5 text-xs">
@@ -462,7 +462,7 @@ export default function SearchPage() {
       )}
       
       {/* Results Section */}
-      <div className="px-1">
+      <div>
         {loading ? (
           <div
             className={cn(
