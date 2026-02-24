@@ -92,7 +92,39 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
       <div className="block lg:hidden space-y-4">
         {daysOfWeek.map((day) => {
           const dayMeals = plannedMeals.filter(m => m.day === day);
-          if (dayMeals.length === 0) return null;
+          
+          if (dayMeals.length === 0) {
+            return (
+              <Card key={day} className="overflow-hidden">
+                <CardHeader className="bg-muted/30 py-3">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base font-semibold">{day}</CardTitle>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      0 kcal
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-3">
+                  <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
+                    No meals planned for this day.
+                  </div>
+                </CardContent>
+                <CardFooter className="p-3 pt-0 flex gap-2">
+                  {mealTypes.map((mealType) => (
+                    <Button 
+                      key={`${day}-${mealType}-add`}
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 text-xs"
+                      onClick={() => handleAddClick(day, mealType)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> {mealType}
+                    </Button>
+                  ))}
+                </CardFooter>
+              </Card>
+            );
+          }
           
           return (
             <Card key={day} className="overflow-hidden">
