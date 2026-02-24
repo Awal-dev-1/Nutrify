@@ -27,13 +27,19 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { mockUser } from '@/lib/data'
 
-const links = [
+const mainLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { href: '/dashboard/search', label: 'Search Food', icon: Search },
   { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
   { href: '/dashboard/goals', label: 'Goals', icon: Target },
+]
+
+const insightLinks = [
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/dashboard/planner', label: 'Meal Planner', icon: Calendar },
+]
+
+const aiLinks = [
   { href: '/dashboard/recognize', label: 'AI Recognition', icon: Bot },
   { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
 ]
@@ -41,57 +47,94 @@ const links = [
 export function MainSidebar() {
   const pathname = usePathname()
 
+  const renderLinks = (links: typeof mainLinks) => (
+    <SidebarMenu className="gap-1">
+      {links.map((link) => (
+        <SidebarMenuItem key={link.href}>
+          <SidebarMenuButton
+            asChild
+            isActive={pathname === link.href}
+            tooltip={link.label}
+            className="py-2"
+          >
+            <Link href={link.href}>
+              <link.icon className="h-4 w-4" />
+              <span>{link.label}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  )
+
   return (
     <>
-      <SidebarHeader>
+      <SidebarHeader className="p-4">
         <Logo />
       </SidebarHeader>
 
-      <SidebarContent className="p-2">
-        <SidebarMenu className="gap-2">
-          {links.map((link) => (
-            <SidebarMenuItem key={link.href}>
+      <SidebarContent className="px-3 py-4">
+        <div className="space-y-6">
+          {/* Main Navigation */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider">
+              Main
+            </p>
+            {renderLinks(mainLinks)}
+          </div>
+
+          {/* Insights */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider">
+              Insights
+            </p>
+            {renderLinks(insightLinks)}
+          </div>
+
+          {/* AI Features */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider">
+              AI Features
+            </p>
+            {renderLinks(aiLinks)}
+          </div>
+        </div>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t p-3">
+        {/* Settings */}
+        <div className="mb-3">
+          <SidebarMenu className="gap-1">
+            <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === link.href}
-                tooltip={link.label}
+                isActive={pathname === '/dashboard/settings'}
+                tooltip="Settings"
+                className="py-2"
               >
-                <Link href={link.href}>
-                  <link.icon />
-                  <span>{link.label}</span>
+                <Link href="/dashboard/settings">
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
+          </SidebarMenu>
+        </div>
 
-      <SidebarFooter className="p-2">
-        <Separator className="my-2" />
-        <SidebarMenu className="gap-2">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === '/dashboard/settings'}
-              tooltip="Settings"
-            >
-              <Link href="/dashboard/settings">
-                <Settings />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        
-        <div className="flex items-center gap-3 p-2 rounded-md transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:h-auto">
-            <Avatar className="h-8 w-8">
+        {/* User Profile */}
+        <div className="rounded-lg bg-muted/30 p-2 transition-colors group-data-[collapsible=icon]:p-2">
+          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+            <Avatar className="h-9 w-9 border border-border">
               <AvatarImage src={mockUser.profilePictureUrl} alt={mockUser.name} />
-              <AvatarFallback>{mockUser.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {mockUser.name.charAt(0)}
+              </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col overflow-hidden transition-all w-full group-data-[collapsible=icon]:hidden">
-              <p className="font-medium text-sm truncate">{mockUser.name}</p>
+            <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
+              <p className="text-sm font-semibold truncate leading-tight">{mockUser.name}</p>
               <p className="text-xs text-muted-foreground truncate">{mockUser.email}</p>
             </div>
+          </div>
         </div>
       </SidebarFooter>
     </>

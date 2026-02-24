@@ -31,71 +31,111 @@ export function FoodCard({ food, viewMode }: FoodCardProps) {
     <>
       <Card
         className={cn(
-          "transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden",
-          !isGridView && "flex"
+          "group transition-all duration-200 hover:shadow-lg overflow-hidden",
+          isGridView ? "flex flex-col" : "flex"
         )}
       >
+        {/* Image Container */}
         <div
           className={cn(
-            "relative",
-            isGridView ? "w-full h-48" : "w-1/3 h-full flex-shrink-0"
+            "relative overflow-hidden bg-muted",
+            isGridView ? "w-full h-48" : "w-1/3 h-auto min-h-[160px]"
           )}
         >
           <Image
             src={food.image}
             alt={food.name}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={food.imageHint}
           />
+          {/* Category Badge - Overlay for grid, inline for list */}
+          {isGridView && (
+            <Badge 
+              variant="secondary" 
+              className="absolute top-2 right-2 capitalize shadow-sm"
+            >
+              {food.category}
+            </Badge>
+          )}
         </div>
 
-        <div className="flex flex-col flex-grow">
-          <CardHeader className={cn(!isGridView && "p-4")}>
-            <div className="flex justify-between items-start">
-              <CardTitle className="text-lg">
-                <Link href={`/food/${food.id}`}>{food.name}</Link>
-              </CardTitle>
-              <Badge variant="outline" className="capitalize">
-                {food.category}
-              </Badge>
+        {/* Content Container */}
+        <div className={cn("flex-1 flex flex-col", isGridView ? "p-4" : "p-5")}>
+          {/* Header */}
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <Link 
+                href={`/food/${food.id}`}
+                className="hover:underline underline-offset-2"
+              >
+                <CardTitle className="text-base font-semibold leading-tight">
+                  {food.name}
+                </CardTitle>
+              </Link>
+              
+              {/* Category Badge - Only show in list view */}
+              {!isGridView && (
+                <Badge variant="outline" className="capitalize shrink-0">
+                  {food.category}
+                </Badge>
+              )}
             </div>
+            
             <CardDescription className="text-2xl font-bold text-primary">
-              {food.calories} kcal
+              {food.calories} <span className="text-sm font-normal text-muted-foreground">kcal</span>
             </CardDescription>
-          </CardHeader>
+          </div>
 
-          <CardContent className={cn("flex-grow", !isGridView && "p-4 pt-0")}>
-            <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Beef className="h-4 w-4 text-red-500" />
-                <span>{food.protein}g P</span>
+          {/* Macros */}
+          <div className="mt-4 flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 rounded-full bg-red-50 dark:bg-red-950/20">
+                <Beef className="h-3.5 w-3.5 text-red-500" />
               </div>
-              <div className="flex items-center gap-1">
-                <Wheat className="h-4 w-4 text-yellow-600" />
-                <span>{food.carbs}g C</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Droplets className="h-4 w-4 text-blue-500" />
-                <span>{food.fat}g F</span>
-              </div>
+              <span className="font-medium">{food.protein}g</span>
+              <span className="text-xs text-muted-foreground">protein</span>
             </div>
-          </CardContent>
-          <CardFooter className={cn("gap-2", !isGridView && "p-4 pt-0")}>
-            <Button asChild size="sm" className="flex-1">
+            
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 rounded-full bg-yellow-50 dark:bg-yellow-950/20">
+                <Wheat className="h-3.5 w-3.5 text-yellow-600" />
+              </div>
+              <span className="font-medium">{food.carbs}g</span>
+              <span className="text-xs text-muted-foreground">carbs</span>
+            </div>
+            
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 rounded-full bg-blue-50 dark:bg-blue-950/20">
+                <Droplets className="h-3.5 w-3.5 text-blue-500" />
+              </div>
+              <span className="font-medium">{food.fat}g</span>
+              <span className="text-xs text-muted-foreground">fat</span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className={cn("flex gap-2", isGridView ? "mt-4" : "mt-5")}>
+            <Button 
+              asChild 
+              variant="default" 
+              size="sm" 
+              className="flex-1 h-9"
+            >
               <Link href={`/food/${food.id}`}>View Details</Link>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="flex-1 h-9"
               onClick={() => setIsModalOpen(true)}
             >
               Quick Add
             </Button>
-          </CardFooter>
+          </div>
         </div>
       </Card>
+      
       <PortionSelectorModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

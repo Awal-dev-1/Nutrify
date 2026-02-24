@@ -45,36 +45,70 @@ export function PlannerControls({ onGenerate, onClear }: PlannerControlsProps) {
   }
 
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>
+    <div className="flex flex-col sm:flex-row gap-3">
+      {/* Generate Button */}
+      <Button 
+        variant="default" 
+        onClick={handleGenerate} 
+        disabled={isGenerating}
+        className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm"
+      >
         {isGenerating ? (
+          <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <span>Generating...</span>
+          </>
         ) : (
+          <>
             <Sparkles className="mr-2 h-4 w-4" />
+            <span>Generate Plan</span>
+          </>
         )}
-        Generate Plan
       </Button>
+
+      {/* Clear Button with Alert Dialog */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="destructive">
-            <Trash2 className="mr-2 h-4 w-4" /> Clear Plan
+          <Button 
+            variant="outline" 
+            className="flex-1 sm:flex-none border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+          >
+            <Trash2 className="mr-2 h-4 w-4" /> 
+            <span>Clear Plan</span>
           </Button>
         </AlertDialogTrigger>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-full bg-destructive/10">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </div>
+              Clear meal plan?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base pt-2">
               This will permanently clear your entire meal plan. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={onClear}>Clear Plan</AlertDialogAction>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={onClear}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Clear Plan
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-       <Button onClick={handleSave}>
-        <Save className="mr-2 h-4 w-4" /> Save Plan
+
+      {/* Save Button */}
+      <Button 
+        variant="secondary" 
+        onClick={handleSave}
+        className="flex-1 sm:flex-none bg-secondary/80 hover:bg-secondary"
+      >
+        <Save className="mr-2 h-4 w-4" /> 
+        <span>Save Plan</span>
       </Button>
     </div>
   );
