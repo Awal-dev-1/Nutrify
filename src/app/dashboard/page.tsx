@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -137,9 +138,9 @@ const quickActions = [
 
 export default function DashboardPage() {
   return (
-    <div className="grid gap-6">
+    <div className="space-y-6">
       {/* 1. Daily Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {summaryData.map((card) => {
           const status = getStatus(card.value, card.goal);
           return (
@@ -173,9 +174,10 @@ export default function DashboardPage() {
         })}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* 3. Nutrient Progress Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div className="space-y-6">
+          {/* Nutrient Progress Section */}
           <Card>
             <CardHeader>
               <CardTitle>Today's Nutrient Progress</CardTitle>
@@ -240,109 +242,111 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Weekly Trend Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Weekly Calorie Trend</CardTitle>
+              <CardDescription>
+                Your calorie intake for the last 7 days. Mock data for visual trend
+                only.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={weeklyChartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="day"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={10}
+                  />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={10} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="calories"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: "hsl(var(--primary))" }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
         </div>
 
+        {/* Right Column */}
         <div className="space-y-6">
-          {/* 6. Smart Tips Panel */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Smart Tips & Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <GlassWater className="h-5 w-5 mt-1 text-blue-500 flex-shrink-0" />
-                <p className="text-sm">
-                  Hydration reminder: Drink a glass of water now to stay on
-                  track for your daily goal.
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <Leaf className="h-5 w-5 mt-1 text-green-500 flex-shrink-0" />
-                <p className="text-sm">
-                  Protein intake appears low. Consider adding a handful of nuts
-                  or a portion of beans to your next snack.
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <Activity className="h-5 w-5 mt-1 text-red-500 flex-shrink-0" />
-                <p className="text-sm">
-                  Your iron intake is a bit below the target. Green leafy
-                  vegetables like spinach are a great source.
-                </p>
-              </div>
-              <CardDescription className="text-xs italic pt-2">
-                Guidance based on sample data.
-              </CardDescription>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href="/dashboard/recommendations">
-                  More Recommendations{" "}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* 7. Quick Actions Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-2">
-              {quickActions.map((action) => (
-                <Button variant="outline" asChild key={action.href}>
-                  <Link href={action.href}>
-                    <action.icon className="mr-2" /> {action.label}
-                  </Link>
+            {/* Smart Tips Panel */}
+            <Card>
+                <CardHeader>
+                <CardTitle>Smart Tips & Recommendations</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                <div className="flex items-start gap-3">
+                    <GlassWater className="h-5 w-5 mt-1 text-blue-500 flex-shrink-0" />
+                    <p className="text-sm">
+                    Hydration reminder: Drink a glass of water now to stay on
+                    track for your daily goal.
+                    </p>
+                </div>
+                <div className="flex items-start gap-3">
+                    <Leaf className="h-5 w-5 mt-1 text-green-500 flex-shrink-0" />
+                    <p className="text-sm">
+                    Protein intake appears low. Consider adding a handful of nuts
+                    or a portion of beans to your next snack.
+                    </p>
+                </div>
+                <div className="flex items-start gap-3">
+                    <Activity className="h-5 w-5 mt-1 text-red-500 flex-shrink-0" />
+                    <p className="text-sm">
+                    Your iron intake is a bit below the target. Green leafy
+                    vegetables like spinach are a great source.
+                    </p>
+                </div>
+                <CardDescription className="text-xs italic pt-2">
+                    Guidance based on sample data.
+                </CardDescription>
+                </CardContent>
+                <CardFooter>
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link href="/dashboard/recommendations">
+                    More Recommendations{" "}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
                 </Button>
-              ))}
-            </CardContent>
-          </Card>
+                </CardFooter>
+            </Card>
+            
+            {/* Quick Actions Card */}
+            <Card>
+                <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-2">
+                {quickActions.map((action) => (
+                    <Button variant="outline" asChild key={action.href}>
+                    <Link href={action.href}>
+                        <action.icon className="mr-2" /> {action.label}
+                    </Link>
+                    </Button>
+                ))}
+                </CardContent>
+            </Card>
         </div>
       </div>
 
-      {/* 5. Weekly Trend Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Calorie Trend</CardTitle>
-          <CardDescription>
-            Your calorie intake for the last 7 days. Mock data for visual trend
-            only.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={weeklyChartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="day"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={10}
-              />
-              <YAxis tickLine={false} axisLine={false} tickMargin={10} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="calories"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                dot={{ r: 4, fill: "hsl(var(--primary))" }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* 8. Footer */}
+      {/* Footer */}
       <div className="text-center text-sm text-muted-foreground py-4">
         <p>Remember: A balanced plate is a happy plate!</p>
       </div>
