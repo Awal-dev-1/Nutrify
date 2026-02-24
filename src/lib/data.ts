@@ -27,6 +27,7 @@ export const mockUser = {
   email: "akua.g@example.com",
   onboardingCompleted: true,
   profilePictureUrl: "https://picsum.photos/seed/akua/100/100",
+  goal: 'lose-weight'
 };
 
 export const mockFoods: Food[] = [
@@ -300,4 +301,3 @@ export const healthQuotes = [
   "A healthy outside starts from the inside.",
   "Take care of your body. It's the only place you have to live.",
 ];
-
