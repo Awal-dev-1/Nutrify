@@ -68,7 +68,7 @@ import {
 type Timeframe = '7d' | '30d' | '90d';
 
 export default function AnalyticsPage() {
-  const [timeframe, setTimeframe] = useState<Timeframe>('7d');
+  const [timeframe, setTimeframe] = useState<Timeframe>('30d');
   const [mockAnalyticsData, setMockAnalyticsData] = useState<DailyRecord[]>([]);
 
   useEffect(() => {
@@ -85,6 +85,9 @@ export default function AnalyticsPage() {
       return {
         avgCalories: 0,
         avgProtein: 0,
+        avgIron: 0,
+        avgVitaminA: 0,
+        avgCalcium: 0,
         goalAchievement: 0,
         highestCalorieDay: null,
         lowestCalorieDay: null,
@@ -98,12 +101,15 @@ export default function AnalyticsPage() {
         acc.protein += day.protein;
         acc.carbs += day.carbs;
         acc.fat += day.fat;
+        acc.iron += day.iron;
+        acc.vitaminA += day.vitaminA;
+        acc.calcium += day.calcium;
         if (day.calories <= userAnalyticsGoals.calories) {
           acc.daysGoalMet++;
         }
         return acc;
       },
-      { calories: 0, protein: 0, carbs: 0, fat: 0, daysGoalMet: 0 }
+      { calories: 0, protein: 0, carbs: 0, fat: 0, daysGoalMet: 0, iron: 0, vitaminA: 0, calcium: 0 }
     );
 
     const highestCalorieDay = [...data].sort((a, b) => b.calories - a.calories)[0];
@@ -119,6 +125,9 @@ export default function AnalyticsPage() {
     return {
       avgCalories: total.calories / data.length,
       avgProtein: total.protein / data.length,
+      avgIron: total.iron / data.length,
+      avgVitaminA: total.vitaminA / data.length,
+      avgCalcium: total.calcium / data.length,
       goalAchievement: (total.daysGoalMet / data.length) * 100,
       highestCalorieDay,
       lowestCalorieDay,
@@ -341,6 +350,70 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+          
+          {/* Micronutrient Trends */}
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b bg-muted/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-primary" />
+                    Micronutrient Trends
+                  </CardTitle>
+                  <CardDescription>
+                    Daily intake of key vitamins and minerals
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="px-3 py-1">
+                  Daily Intake
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 
+                    tickMargin={10}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    tickMargin={10} 
+                    unit="mg"
+                    domain={[0, 'dataMax + 100']}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    yAxisId="right"
+                    orientation="right"
+                    tickMargin={10} 
+                    unit="mcg"
+                    domain={[0, 'dataMax + 100']}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    verticalAlign="top" 
+                    height={36}
+                    iconType="circle"
+                    formatter={(value) => <span className="text-sm">{value}</span>}
+                  />
+                  <Line yAxisId="left" type="monotone" dataKey="iron" name="Iron (mg)" stroke="hsl(var(--chart-5))" dot={false} />
+                  <Line yAxisId="right" type="monotone" dataKey="vitaminA" name="Vitamin A (mcg)" stroke="hsl(var(--chart-1))" dot={false} />
+                  <Line yAxisId="left" type="monotone" dataKey="calcium" name="Calcium (mg)" stroke="hsl(var(--chart-4))" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:col-span-1 space-y-8">
@@ -520,13 +593,13 @@ export default function AnalyticsPage() {
               </div>
               <Separator />
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Avg. daily carbs</span>
-                <span className="font-medium">{(data.reduce((acc, d) => acc + d.carbs, 0) / data.length).toFixed(0)}g</span>
+                <span className="text-muted-foreground">Avg. daily Iron</span>
+                <span className="font-medium">{summaryStats.avgIron.toFixed(1)}mg</span>
               </div>
               <Separator />
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Avg. daily fat</span>
-                <span className="font-medium">{(data.reduce((acc, d) => acc + d.fat, 0) / data.length).toFixed(0)}g</span>
+                <span className="text-muted-foreground">Avg. daily Vitamin A</span>
+                <span className="font-medium">{summaryStats.avgVitaminA.toFixed(0)}mcg</span>
               </div>
             </CardContent>
           </Card>
@@ -598,7 +671,7 @@ const CustomTooltip: FC<any> = ({ active, payload, label }) => {
                 <span className="text-sm text-muted-foreground">{p.name || p.dataKey}</span>
               </div>
               <span className="text-sm font-medium tabular-nums">
-                {p.value.toFixed(0)}{p.unit || (p.dataKey === 'calories' ? ' kcal' : 'g')}
+                {p.value.toFixed(p.dataKey === 'iron' ? 1 : 0)}{p.unit || (p.dataKey === 'calories' ? ' kcal' : 'g')}
               </span>
             </div>
           ))}
