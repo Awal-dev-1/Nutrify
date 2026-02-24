@@ -20,9 +20,6 @@ import {
   Wheat,
   Droplets,
   Eye,
-  Edit,
-  Trash2,
-  Plus,
   Target,
   BarChart2,
   Calendar,
@@ -118,34 +115,6 @@ const microData = [
   { name: "Vitamin A", value: 600, goal: 900, unit: "mcg" },
   { name: "Calcium", value: 700, goal: 1000, unit: "mg" },
 ];
-
-const mealSummary = {
-  Breakfast: {
-    items: [
-      { name: "Oatmeal", portion: "1 cup", calories: 150 },
-      { name: "Banana", portion: "1 medium", calories: 105 },
-    ],
-    totalCalories: 255,
-  },
-  Lunch: {
-    items: [
-      { name: "Jollof Rice", portion: "1 serving", calories: 350 },
-      { name: "Grilled Chicken", portion: "100g", calories: 165 },
-    ],
-    totalCalories: 515,
-  },
-  Dinner: {
-    items: [{ name: "Fufu & Light Soup", portion: "1 small bowl", calories: 550 }],
-    totalCalories: 550,
-  },
-  Snacks: {
-    items: [
-      { name: "Mango", portion: "1 cup", calories: 100 },
-      { name: "Peanuts", portion: "1/4 cup", calories: 110 },
-    ],
-    totalCalories: 210,
-  },
-};
 
 const weeklyChartData = [
   { day: "Mon", calories: 2000 },
@@ -269,69 +238,6 @@ export default function DashboardPage() {
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* 4. Meal Summary Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Meal Summary</CardTitle>
-                  <CardDescription>Today's logged meals.</CardDescription>
-                </div>
-                <Button asChild>
-                  <Link href="/dashboard/tracker">
-                    <Plus className="mr-2 h-4 w-4" /> Add Meal
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {Object.entries(mealSummary).map(([mealType, details]) => (
-                <div key={mealType}>
-                  <div className="flex justify-between items-baseline mb-2">
-                    <h3 className="font-semibold text-lg">{mealType}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {details.totalCalories} kcal
-                    </p>
-                  </div>
-                  <div className="flow-root">
-                    <ul className="divide-y divide-border">
-                      {details.items.map((item) => (
-                        <li
-                          key={item.name}
-                          className="py-2 flex items-center justify-between"
-                        >
-                          <div>
-                            <p className="font-medium">{item.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {item.portion}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">{item.calories} kcal</p>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
             </CardContent>
           </Card>
         </div>
