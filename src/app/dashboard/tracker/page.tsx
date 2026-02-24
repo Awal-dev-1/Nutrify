@@ -339,9 +339,6 @@ const MealSections: FC<{meals: Record<MealType, LoggedFood[]>; onAddFoodClick: (
                                     <h3 className="text-lg font-semibold">{mealType}</h3>
                                     <div className="flex items-center gap-4">
                                         <span className="text-muted-foreground">{Math.round(totalCalories)} kcal</span>
-                                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onAddFoodClick(mealType); }}>
-                                            <Plus className="h-4 w-4 mr-2"/> Add Food
-                                        </Button>
                                     </div>
                                 </div>
                             </AccordionTrigger>
@@ -354,6 +351,11 @@ const MealSections: FC<{meals: Record<MealType, LoggedFood[]>; onAddFoodClick: (
                                     ) : (
                                         <p className="text-sm text-center text-muted-foreground py-4">No food logged for {mealType}.</p>
                                     )}
+                                     <div className="flex justify-end pt-2">
+                                        <Button size="sm" variant="ghost" onClick={() => onAddFoodClick(mealType)}>
+                                            <Plus className="h-4 w-4 mr-2"/> Add Food
+                                        </Button>
+                                    </div>
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
