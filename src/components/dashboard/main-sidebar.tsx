@@ -48,7 +48,7 @@ export function MainSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="p-2">
-        <SidebarMenu>
+        <SidebarMenu className="gap-2">
           {links.map((link) => (
             <SidebarMenuItem key={link.href}>
               <SidebarMenuButton
@@ -68,7 +68,7 @@ export function MainSidebar() {
 
       <SidebarFooter className="p-2">
         <Separator className="my-2" />
-        <SidebarMenu>
+        <SidebarMenu className="gap-2">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
