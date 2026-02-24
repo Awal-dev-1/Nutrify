@@ -247,15 +247,17 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Daily Tracker</h1>
-            <p className="text-sm md:text-base text-muted-foreground flex items-center gap-2">
+            <div className="text-sm md:text-base text-muted-foreground flex items-center gap-2">
               <span className={cn("inline-block w-2 h-2 rounded-full", isToday ? "bg-green-500" : "bg-primary")}></span>
+              <span>
               {date.toLocaleDateString("en-US", {
                 weekday: "long",
                 month: "long",
                 day: "numeric",
               })}
+              </span>
               {isToday && <Badge variant="secondary" className="ml-2 text-xs">Today</Badge>}
-            </p>
+            </div>
           </div>
         </div>
       </div>
