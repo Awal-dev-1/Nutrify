@@ -15,7 +15,7 @@ export const userAnalyticsGoals = {
   fat: 70,
 };
 
-const generateMockData = (): DailyRecord[] => {
+export const generateMockAnalyticsData = (): DailyRecord[] => {
   const data: DailyRecord[] = [];
   const today = new Date();
   for (let i = 29; i >= 0; i--) {
@@ -30,5 +30,3 @@ const generateMockData = (): DailyRecord[] => {
   }
   return data;
 };
-
-export const mockAnalyticsData: DailyRecord[] = generateMockData();

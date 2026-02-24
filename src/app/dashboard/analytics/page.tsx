@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, FC } from 'react';
+import { useState, useMemo, FC, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -26,7 +26,7 @@ import {
   Target,
 } from 'lucide-react';
 import {
-  mockAnalyticsData,
+  generateMockAnalyticsData,
   userAnalyticsGoals,
   type DailyRecord,
 } from '@/lib/analytics-data';
@@ -47,11 +47,16 @@ type Timeframe = '7d' | '30d';
 
 export default function AnalyticsPage() {
   const [timeframe, setTimeframe] = useState<Timeframe>('7d');
+  const [mockAnalyticsData, setMockAnalyticsData] = useState<DailyRecord[]>([]);
+
+  useEffect(() => {
+    setMockAnalyticsData(generateMockAnalyticsData());
+  }, []);
 
   const data = useMemo(() => {
     const days = timeframe === '7d' ? 7 : 30;
     return mockAnalyticsData.slice(-days);
-  }, [timeframe]);
+  }, [timeframe, mockAnalyticsData]);
 
   const summaryStats = useMemo(() => {
     if (data.length === 0)
