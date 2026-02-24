@@ -160,87 +160,43 @@ export default function DailyTrackerPage() {
 
   if (loggedFoods.length === 0) {
     return (
-      <EmptyState
-        icon={<ClipboardX className="h-16 w-16 text-muted-foreground" />}
-        title="No meals added today."
-        description="Start tracking your intake to see your progress."
-      >
-        <Button onClick={() => openAddModal('Breakfast')}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Your First Meal
-        </Button>
-         <AddFoodModal
-            isOpen={isAddModalOpen}
-            onClose={() => setAddModalOpen(false)}
-            onAddFood={handleAddFood}
-            mealType={mealToAdd}
-        />
-      </EmptyState>
+      <div className="space-y-6">
+        <Header onClearDay={clearDay} date={date} setDate={setDate} />
+        <EmptyState
+            icon={<ClipboardX className="h-16 w-16 text-muted-foreground" />}
+            title="No meals added today."
+            description="Start tracking your intake to see your progress."
+        >
+            <Button onClick={() => openAddModal('Breakfast')}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Your First Meal
+            </Button>
+            <AddFoodModal
+                isOpen={isAddModalOpen}
+                onClose={() => setAddModalOpen(false)}
+                onAddFood={handleAddFood}
+                mealType={mealToAdd}
+            />
+        </EmptyState>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h1 className="text-3xl font-bold">Daily Tracker</h1>
-            <p className="text-muted-foreground">
-            {date.toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            })}
-            </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline">Today</Button>
-          <Button variant="outline" size="icon">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="ml-4">
-                    <Trash2 className="mr-2 h-4 w-4" /> Clear Day
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This will permanently delete all logged food and water for this day. This action cannot be undone.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={clearDay}>Clear Day</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
+      <Header onClearDay={clearDay} date={date} setDate={setDate} />
 
-      {/* 2. & 3. Daily Summary & Progress */}
       <DailySummary totals={dailyTotals} goals={userGoals} />
       
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-            {/* 4. Meal Sections */}
             <MealSections meals={meals} onAddFoodClick={openAddModal} onEditFoodClick={openEditModal} onDeleteFoodClick={handleDeleteFood} />
         </div>
         <div className="lg:col-span-1 space-y-6">
-            {/* 8. Water Intake */}
             <WaterTracker intake={waterIntake} setIntake={setWaterIntake} goal={userGoals.water} />
-
-            {/* 9. Macro Distribution */}
             <MacroChart data={dailyTotals} />
         </div>
       </div>
       
-      {/* 6. & 7. Modals */}
       <AddFoodModal
         isOpen={isAddModalOpen}
         onClose={() => setAddModalOpen(false)}
@@ -259,6 +215,53 @@ export default function DailyTrackerPage() {
 }
 
 // Sub-components for better organization
+
+const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => void}> = ({ onClearDay, date, setDate }) => {
+    return (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 className="text-3xl font-bold">Daily Tracker</h1>
+                <p className="text-muted-foreground">
+                {date.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                })}
+                </p>
+            </div>
+            <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon">
+                <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline">Today</Button>
+            <Button variant="outline" size="icon">
+                <ChevronRight className="h-4 w-4" />
+            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="ml-4">
+                        <Trash2 className="mr-2 h-4 w-4" /> Clear Day
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete all logged food and water for this day. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={onClearDay}>Clear Day</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            </div>
+      </div>
+    );
+}
+
 
 const DailySummary: FC<{totals: any; goals: any}> = ({totals, goals}) => {
     const calorieProgress = (totals.calories / goals.calories) * 100;
@@ -426,7 +429,16 @@ const MacroChart: FC<{data: any}> = ({data}) => {
     const { protein, carbs, fat } = data;
     const totalMacros = protein + carbs + fat;
 
-    if(totalMacros === 0) return null;
+    if(totalMacros === 0) {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Macro Distribution</CardTitle></CardHeader>
+                <CardContent className="flex items-center justify-center h-[200px]">
+                    <p className="text-muted-foreground">Log meals to see distribution</p>
+                </CardContent>
+            </Card>
+        );
+    };
 
     const chartData = [
         {name: "Protein", value: protein, color: "hsl(var(--chart-2))"},
