@@ -78,7 +78,7 @@ export default function DashboardPage() {
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Bar dataKey="calories" fill="var(--color-calories)" radius={8} />
+                <Bar dataKey="calories" fill="var(--color-calories)" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ChartContainer>
           </CardContent>
