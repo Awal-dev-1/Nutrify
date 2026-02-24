@@ -3,9 +3,20 @@
 import { useTheme } from "next-themes"
 import { Sun, Moon, Laptop } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useEffect, useState } from "react"
+import { Skeleton } from "../ui/skeleton"
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <Skeleton className="w-full sm:w-[280px] h-10" />
+  }
 
   return (
     <Tabs defaultValue={theme} onValueChange={setTheme} className="w-full sm:w-[280px]">
