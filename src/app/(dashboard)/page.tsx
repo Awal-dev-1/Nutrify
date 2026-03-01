@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -180,7 +181,7 @@ export default function DashboardPage() {
     { title: "Fat", value: dailyLog.totalFat, goal: fatGoal, unit: "g", icon: <Droplets className="h-5 w-5 text-blue-500" />, color: "hsl(var(--chart-4))", bgColor: "bg-blue-50 dark:bg-blue-950/20" },
   ];
 
-  const overallProgress = goals ? (summaryData.reduce((acc, item) => item.goal > 0 ? acc + Math.min(100, (item.value / item.goal) * 100) : acc, 0) / summaryData.length) : 0;
+  const overallProgress = goals ? (summaryData.reduce((acc, item) => item.goal > 0 ? acc + Math.min(100, (item.value / item.goal) * 100) : acc, 0) / summaryData.filter(item => item.goal > 0).length) : 0;
 
   const macroData = [
     { name: "Protein", value: dailyLog.totalProtein, color: "hsl(var(--chart-2))" },
@@ -355,3 +356,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
