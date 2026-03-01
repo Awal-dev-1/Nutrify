@@ -1,53 +1,55 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, Salad, ChefHat, RefreshCw, Flame } from 'lucide-react';
+import { Loader2, Sparkles, Salad, RefreshCw, Flame } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { RecommendationCard } from '@/components/recommendations/recommendation-card';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { subscribeToRealtimeRecommendations } from '@/services/recommendationService';
+import { generateRecommendations } from '@/services/recommendationService';
 import type { RecommendationResult } from '@/services/recommendationService';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { doc } from 'firebase/firestore';
+import { format } from 'date-fns';
+import type { DailyLog } from '@/types/analytics';
 
 export default function RecommendationsPage() {
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
   const db = useFirestore();
   const [data, setData] = useState<RecommendationResult | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Fetch today's log for the summary card
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const dailyLogRef = useMemoFirebase(
+    () => (user ? doc(db, 'users', user.uid, 'dailyLogs', todayKey) : null),
+    [user, db, todayKey]
+  );
+  const { data: dailyLog, isLoading: isLogLoading } = useDoc<DailyLog>(dailyLogRef);
+
+  const fetchRecommendations = async () => {
     if (!user || !db) return;
-
     setIsLoading(true);
-
-    const unsubscribe = subscribeToRealtimeRecommendations(
-      db,
-      user.uid,
-      (result) => {
-        setData(result);
-        setIsLoading(false);
-        setError(null);
-      },
-      (err) => {
-        setError(err.message || 'Failed to get recommendations.');
-        setIsLoading(false);
-        console.error(err);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [user, db]);
-
+    setError(null);
+    try {
+      const result = await generateRecommendations(db, user.uid);
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch recommendations.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const SummaryCard = () => {
-    if (isLoading || !data) {
-        return (
+    if (isLogLoading) {
+       return (
              <Card>
                 <CardHeader>
                     <Skeleton className="h-5 w-3/4" />
@@ -64,15 +66,27 @@ export default function RecommendationsPage() {
         )
     }
 
-    const { calorieRemaining, goals } = data;
-    const consumed = goals.calories - calorieRemaining;
-    const progress = (consumed / goals.calories) * 100;
+    const goals = userProfile?.goals;
+    if (!goals) return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Today's Calorie Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">Set your goals to see your status.</p>
+            </CardContent>
+        </Card>
+    );
+
+    const consumed = dailyLog?.totalCalories || 0;
+    const calorieRemaining = goals.dailyCalorieGoal - consumed;
+    const progress = (consumed / goals.dailyCalorieGoal) * 100;
   
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Today's Calorie Status</CardTitle>
-          <CardDescription>Based on your goal of {goals.calories} kcal</CardDescription>
+          <CardDescription>Based on your goal of {goals.dailyCalorieGoal} kcal</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
            <div className="flex items-center justify-between">
@@ -85,7 +99,7 @@ export default function RecommendationsPage() {
           <Progress value={progress} />
            <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Consumed: {Math.round(consumed)} kcal</span>
-            <span>Goal: {goals.calories} kcal</span>
+            <span>Goal: {goals.dailyCalorieGoal} kcal</span>
           </div>
         </CardContent>
       </Card>
@@ -127,22 +141,39 @@ export default function RecommendationsPage() {
       );
     }
 
-    if (!data || data.recommendations.length === 0) {
+    if (!data) {
+      return (
+        <EmptyState
+          icon={<Sparkles className="h-16 w-16 text-muted-foreground" />}
+          title="Generate Meal Recommendations"
+          description="Click the button to get AI-powered meal suggestions based on your goals and today's intake."
+          className="border-2 border-dashed"
+        >
+          <Button onClick={fetchRecommendations} size="lg" disabled={isLoading}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate Recommendations
+          </Button>
+        </EmptyState>
+      );
+    }
+
+    if (data.recommendations.length === 0) {
       return (
         <EmptyState
           icon={<Salad className="h-16 w-16 text-muted-foreground" />}
           title="No recommendations for now"
-          description="Your recommendations will appear here as you log meals."
+          description="We couldn't find any suitable recommendations. Try logging more meals or adjusting your goals."
           className="border-2 border-dashed"
-        />
+        >
+        </EmptyState>
       );
     }
     
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {data.recommendations.map((rec) => (
+        {data.recommendations.map((rec, index) => (
           <div key={rec.id} className="relative group">
-            {rec.matchScore > 150 && (
+            {rec.matchScore > 40 && (
               <Badge className="absolute -top-2 -right-2 z-10 bg-primary shadow-lg">
                 Top Pick
               </Badge>
@@ -163,9 +194,15 @@ export default function RecommendationsPage() {
         <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight">AI Recommendations</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Suggestions update in real-time as you log your meals.
+              Smart meal suggestions tailored to your goals and today's intake.
             </p>
         </div>
+        {data && (
+            <Button variant="outline" onClick={fetchRecommendations} disabled={isLoading}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Regenerate
+            </Button>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
