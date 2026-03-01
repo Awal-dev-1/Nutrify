@@ -3,6 +3,7 @@ import { FirebaseApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection } from 'firebase/firestore';
 import { recognizeFood } from '@/ai/flows/recognize-food-flow';
+import { searchFoods } from '@/ai/flows/search-foods-flow';
 
 /**
  * Uploads an image to Firebase Storage for AI recognition.
@@ -42,7 +43,9 @@ export async function createScanDocument(
 }
 
 /**
- * Calls a multimodal AI model to analyze a food image and get detailed nutritional data.
+ * Orchestrates a two-step AI recognition process.
+ * 1. Identify food name from image.
+ * 2. Search for detailed nutritional info using the name.
  */
 export async function runFoodRecognition(
   db: Firestore,
@@ -53,23 +56,25 @@ export async function runFoodRecognition(
   const scanRef = doc(db, 'users', userId, 'aiScans', scanId);
 
   try {
-    // Call the single, powerful flow to get all data
-    const result = await recognizeFood({ imageUrl });
+    // Step 1: Get the food name from the image
+    const recognitionResult = await recognizeFood({ imageUrl });
+    const foodName = recognitionResult.foodName;
 
-    if (!result.isFood || !result.foodItem) {
-      await updateDoc(scanRef, {
-        status: 'failed',
-        reason: 'AI could not identify a food item in the image.',
-        predictions: [],
-      });
-      return;
+    if (!foodName) {
+        throw new Error("AI could not extract a food name from the image.");
     }
 
-    // Update Firestore with the rich data from the AI flow
-    // The frontend expects `predictions` to be an array.
+    // Step 2: Use the food name to get detailed nutritional data
+    const searchResult = await searchFoods({ query: foodName });
+
+    if (!searchResult.isFoodQuery || searchResult.foodItems.length === 0) {
+      throw new Error(`Could not find nutritional details for "${foodName}".`);
+    }
+
+    // Update Firestore with the rich data from the search flow
     await updateDoc(scanRef, {
       status: 'completed',
-      predictions: [result.foodItem], // Put the single result in an array
+      predictions: searchResult.foodItems, // Pass the array of results
     });
 
   } catch (error) {
