@@ -8,31 +8,20 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { mockFoods } from '@/lib/data';
 
-// This schema should match the Food type in src/lib/data.ts
-const FoodSearchResultSchema = z.object({
+const AiFoodSearchResultSchema = z.object({
   id: z.string().describe("A unique identifier for the food item, preferably a slug-like-string."),
   name: z.string().describe("The common name of the food item."),
-  category: z.enum(['Fruit', 'Vegetable', 'Protein', 'Grains', 'Beverage', 'Local Dish', 'Snack']).describe("The primary category of the food item."),
-  image: z.string().url().describe("A URL to a representative image of the food item."),
-  imageHint: z.string().describe("Two or three keywords for the image for AI hint."),
   calories: z.number().describe("Nutritional value: Calories per 100 grams of the food."),
-  protein: z.number().describe("Nutritional value: Protein in grams per 100 grams of the food."),
-  carbs: z.number().describe("Nutritional value: Carbohydrates in grams per 100 grams of the food."),
-  fat: z.number().describe("Nutritional value: Fats in grams per 100 grams of the food."),
-  nutrients: z.object({
-    fiber: z.number().describe("Nutritional value: Fiber in grams per 100g."),
-    sugar: z.number().optional().describe("Nutritional value: Sugar in grams per 100g."),
-    iron: z.number().describe("Nutritional value: Iron in milligrams per 100g."),
-    calcium: z.number().optional().describe("Nutritional value: Calcium in milligrams per 100g."),
-    vitaminA: z.number().describe("Nutritional value: Vitamin A in micrograms per 100g."),
-    vitaminC: z.number().optional().describe("Nutritional value: Vitamin C in milligrams per 100g."),
-    sodium: z.number().describe("Nutritional value: Sodium in milligrams per 100g."),
+  macros: z.object({
+    protein: z.number().describe("Nutritional value: Protein in grams per 100g."),
+    carbs: z.number().describe("Nutritional value: Carbohydrates in grams per 100g."),
+    fat: z.number().describe("Nutritional value: Fats in grams per 100g."),
   }),
-  description: z.string().describe("A brief description or general category of the food item."),
-  tags: z.array(z.string()).describe("An array of relevant dietary or descriptive tags (e.g., 'Vegan', 'High Protein')."),
+  matchScore: z.number().describe("A score from 0 to 1 indicating the relevance of the match."),
+  reason: z.string().describe("A brief explanation of why this food matches the query."),
 });
 
 const SearchFoodsInputSchema = z.object({
@@ -42,10 +31,12 @@ const SearchFoodsInputSchema = z.object({
 export type SearchFoodsInput = z.infer<typeof SearchFoodsInputSchema>;
 
 const SearchFoodsOutputSchema = z.object({
-  results: z.array(FoodSearchResultSchema).describe('An array of food items that match the search query.'),
+  results: z.array(AiFoodSearchResultSchema).describe('An array of food items that match the search query.'),
   interpretedQuery: z.string().optional().describe('A brief summary of how the AI interpreted the query.'),
 });
 export type SearchFoodsOutput = z.infer<typeof SearchFoodsOutputSchema>;
+export type AiFoodSearchResult = z.infer<typeof AiFoodSearchResultSchema>;
+
 
 export async function searchFoods(input: SearchFoodsInput): Promise<SearchFoodsOutput> {
   return searchFoodsFlow(input);
@@ -68,8 +59,19 @@ Return a list of matching food items. For each item, provide all the nutritional
 The nutritional values should be per 100g.
 Provide a brief summary of how you interpreted the query.
 
+For each result, include a "matchScore" (a fictional score from 0.85 to 0.99) and a "reason" explaining why it's a good match.
+
 Here is the list of available foods to search from:
-${JSON.stringify(mockFoods, null, 2)}
+${JSON.stringify(mockFoods.map(f => ({
+  id: f.id,
+  name: f.name,
+  calories: f.calories,
+  macros: {
+    protein: f.protein,
+    carbs: f.carbs,
+    fat: f.fat
+  }
+})), null, 2)}
 
 Only return foods from this list. If the query is "high protein", find the foods in the list with high protein. If the query is a food name, find that food.
 Behave like a search engine filtering the provided JSON data.
@@ -90,3 +92,4 @@ const searchFoodsFlow = ai.defineFlow(
     return output;
   }
 );
+```

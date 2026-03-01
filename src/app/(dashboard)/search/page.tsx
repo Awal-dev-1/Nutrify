@@ -5,8 +5,6 @@ import {
   Search as SearchIcon,
   X,
   Mic,
-  LayoutGrid,
-  List,
   Sparkles,
   Bot,
 } from "lucide-react";
@@ -18,24 +16,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Food } from "@/lib/data";
-import { FoodCard } from "@/components/food/food-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { searchFoods, type SearchFoodsOutput } from "@/ai/flows/search-foods-flow";
+import { searchFoods, type SearchFoodsOutput, type AiFoodSearchResult } from "@/ai/flows/search-foods-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AiFoodCard } from "@/components/food/ai-food-card";
 
-
-type ViewMode = "grid" | "list";
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchFoodsOutput['results']>([]);
   const [interpretedQuery, setInterpretedQuery] = useState<string | null>(null);
@@ -58,9 +52,7 @@ export default function SearchPage() {
 
       try {
         const response = await searchFoods({ query: debouncedSearchQuery });
-        // The AI might return foods not perfectly matching the 'Food' type, so we cast it.
-        // The FoodCard component should be robust enough to handle this.
-        setResults(response.results as Food[]); 
+        setResults(response.results); 
         setInterpretedQuery(response.interpretedQuery || null);
       } catch (error) {
         console.error("AI search failed:", error);
@@ -144,32 +136,6 @@ export default function SearchPage() {
               </AlertDescription>
             </Alert>
           )}
-          <div className="flex-1 hidden sm:block"></div>
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-0.5 sm:gap-1 bg-muted/50 p-0.5 sm:p-1 rounded-lg border ml-auto">
-            <Button
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("grid")}
-              className={cn(
-                "h-7 w-7 sm:h-8 sm:w-8 transition-all",
-                viewMode === "grid" && "bg-background shadow-sm"
-              )}
-            >
-              <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("list")}
-              className={cn(
-                "h-7 w-7 sm:h-8 sm:w-8 transition-all",
-                viewMode === "list" && "bg-background shadow-sm"
-              )}
-            >
-              <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </Button>
-          </div>
         </div>
       )}
 
@@ -179,21 +145,23 @@ export default function SearchPage() {
           <div
             className={cn(
               "grid gap-3 sm:gap-4",
-              viewMode === "grid"
-                ? "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                : "grid-cols-1"
+              "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             )}
           >
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="overflow-hidden">
-                <Skeleton className="h-32 xs:h-36 sm:h-40 md:h-48 w-full" />
-                <div className="p-2 sm:p-3 md:p-4 space-y-1.5 sm:space-y-2 md:space-y-3">
-                  <Skeleton className="h-3 sm:h-4 md:h-5 w-3/4" />
-                  <Skeleton className="h-2 sm:h-3 md:h-4 w-1/2" />
-                  <div className="flex gap-1 sm:gap-2 pt-1 sm:pt-2">
-                    <Skeleton className="h-6 sm:h-7 md:h-9 flex-1" />
-                    <Skeleton className="h-6 sm:h-7 md:h-9 flex-1" />
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <Skeleton className="h-5 w-3/5" />
+                    <Skeleton className="h-5 w-1/5" />
                   </div>
+                  <Skeleton className="h-4 w-4/5" />
+                  <div className="flex gap-2 pt-2">
+                    <Skeleton className="h-9 flex-1" />
+                    <Skeleton className="h-9 flex-1" />
+                    <Skeleton className="h-9 flex-1" />
+                  </div>
+                  <Skeleton className="h-10 w-full" />
                 </div>
               </Card>
             ))}
@@ -211,13 +179,11 @@ export default function SearchPage() {
             <div
               className={cn(
                 "grid gap-3 sm:gap-4",
-                viewMode === "grid"
-                  ? "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                  : "grid-cols-1"
+                "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
               )}
             >
               {results.map((food) => (
-                <FoodCard key={food.id} food={food as Food} viewMode={viewMode} />
+                <AiFoodCard key={food.id} food={food} />
               ))}
             </div>
           </>
@@ -235,3 +201,4 @@ export default function SearchPage() {
     </div>
   );
 }
+```
