@@ -10,7 +10,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { gemini3FlashPreview } from '@genkit-ai/google-genai';
 
 const SearchFoodsInputSchema = z.object({
   query: z.string().describe('The natural language search query from the user.'),
@@ -82,7 +81,6 @@ const searchFoodsFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await searchFoodsPrompt(input, {
-      model: gemini3FlashPreview,
       config: {
         temperature: 0.1,
       },
