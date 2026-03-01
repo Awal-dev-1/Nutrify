@@ -1,3 +1,5 @@
-export default function DeprecatedPage() {
-  return null;
+import { redirect } from 'next/navigation'
+
+export default function DashboardRootPage() {
+  redirect('/dashboard/tracker')
 }
