@@ -25,6 +25,7 @@ import type { AiScan } from '@/types/ai';
 import { doc } from 'firebase/firestore';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import type { FoodItem } from '@/types/food';
+import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 
 type Status = 'idle' | 'preview' | 'uploading' | 'processing' | 'results' | 'error';
 
@@ -89,7 +90,7 @@ export default function AiRecognitionPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
   const db = useFirestore();
   const app = useFirebaseApp();
 
@@ -101,7 +102,7 @@ export default function AiRecognitionPage() {
 
   useEffect(() => {
     if (scanResult && !isScanLoading) {
-      if (scanResult.status === 'completed' && scanResult.predictions.length > 0) {
+      if (scanResult.status === 'completed') {
         setStatus('results');
       } else if (scanResult.status === 'failed') {
         setStatus('error');
@@ -280,42 +281,31 @@ export default function AiRecognitionPage() {
                 <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Analysis Complete</AlertTitle>
-                    <AlertDescription>The AI could not identify a food in this image.</AlertDescription>
+                    <AlertDescription>The AI could not identify a food in this image. Please try another one.</AlertDescription>
                 </Alert>
             );
         }
         return (
-            <div className="space-y-6">
-                <div className="grid lg:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                        <div className="relative w-full max-w-sm mx-auto aspect-square rounded-xl overflow-hidden border-2">
-                            {scanResult.imageUrl && <Image src={scanResult.imageUrl} alt="Analyzed food" fill className="object-cover" />}
-                        </div>
+             <div className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                    <h3 className="text-xl font-bold">Analyzed Image</h3>
+                    <div className="relative w-full max-w-sm mx-auto aspect-square rounded-xl overflow-hidden border-2">
+                        {scanResult.imageUrl && <Image src={scanResult.imageUrl} alt="Analyzed food" fill className="object-cover" />}
                     </div>
-
-                    <div className="space-y-4">
-                        <h3 className="text-xl font-bold">AI Result</h3>
-                        <div className="space-y-3">
-                        {scanResult.predictions.map((item, i) => (
-                            <Card key={i} className="border-primary">
-                                <CardContent className="p-4 flex items-center justify-between">
-                                    <div className='flex-1 pr-4'>
-                                        <p className="font-semibold text-lg">{item.foodName}</p>
-                                        <p className="text-sm text-muted-foreground">{item.calories} kcal (estimated)</p>
-                                    </div>
-                                    <Button size="sm" onClick={() => setSelectedPrediction(item)}>Confirm & Add</Button>
-                                </CardContent>
-                            </Card>
-                        ))}
-                        </div>
-                         <Alert className="border-primary/20 bg-primary/5">
-                            <Lightbulb className="h-4 w-4 text-primary" />
-                            <AlertTitle className="text-primary">Not what you ate?</AlertTitle>
-                            <AlertDescription>
-                            Confirm the result to add it to your log, or try another image.
-                            </AlertDescription>
-                        </Alert>
+                </div>
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-bold">AI Results</h3>
+                        <p className="text-sm text-muted-foreground">The AI found the following item in your image. Review the details and add it to your tracker.</p>
                     </div>
+                    {scanResult.predictions.map((item, i) => (
+                        <AiFoodResultCard 
+                            key={i} 
+                            item={item} 
+                            userGoal={userProfile?.health?.primaryGoal}
+                            onAdd={setSelectedPrediction} 
+                        />
+                    ))}
                 </div>
             </div>
         );
