@@ -12,7 +12,7 @@ import { PreferencesStep } from "@/components/onboarding/step-preferences";
 import { ActivityStep } from "@/components/onboarding/step-activity";
 import { SummaryStep } from "@/components/onboarding/step-summary";
 import { LoadingStep } from "@/components/onboarding/step-loading";
-import { ChevronLeft, Leaf, Sparkles } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const totalSteps = 5;
@@ -84,10 +84,8 @@ export default function OnboardingPage() {
           {/* Header with Logo/Brand */}
           {step === 0 && (
             <div className="pt-8 flex justify-center">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
-                <Leaf className="h-5 w-5 text-primary" />
+              <div className="flex items-center px-4 py-2 rounded-full bg-primary/10">
                 <span className="font-semibold text-primary">Nutrify</span>
-                <Sparkles className="h-4 w-4 text-primary" />
               </div>
             </div>
           )}
