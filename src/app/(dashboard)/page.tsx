@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useMemo, useState, useEffect } from "react";
 import {
@@ -150,22 +150,14 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  if (!dailyLog || dailyLog.totalCalories === 0) {
-    return (
-      <EmptyState
-        icon={<ClipboardX className="h-16 w-16 text-muted-foreground" />}
-        title="No Records Yet"
-        description="You haven’t logged any meals today. Start by adding your first meal."
-        className="border-2 border-dashed rounded-2xl min-h-[60vh]"
-      >
-        <Button asChild size="lg" className="mt-4">
-          <Link href="/dashboard/tracker">
-            <PlusCircle className="mr-2 h-5 w-5" /> Add Meal
-          </Link>
-        </Button>
-      </EmptyState>
-    );
-  }
+  // Use the fetched dailyLog, or a default zero-state object if no log exists.
+  const currentLog = dailyLog || {
+    totalCalories: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    waterIntake: 0,
+  };
 
   const goals = userProfile?.goals;
   const calorieGoal = goals?.dailyCalorieGoal || 0;
@@ -174,26 +166,26 @@ export default function DashboardPage() {
   const fatGoal = goals ? (calorieGoal * (goals.fatPercentageGoal / 100)) / 9 : 0;
 
   const summaryData = [
-    { title: "Calories", value: dailyLog.totalCalories, goal: calorieGoal, unit: "kcal", icon: <Flame className="h-5 w-5 text-orange-500" />, color: "hsl(var(--primary))", bgColor: "bg-orange-50 dark:bg-orange-950/20" },
-    { title: "Protein", value: dailyLog.totalProtein, goal: proteinGoal, unit: "g", icon: <Beef className="h-5 w-5 text-red-500" />, color: "hsl(var(--chart-2))", bgColor: "bg-red-50 dark:bg-red-950/20" },
-    { title: "Carbs", value: dailyLog.totalCarbs, goal: carbsGoal, unit: "g", icon: <Wheat className="h-5 w-5 text-yellow-600" />, color: "hsl(var(--chart-3))", bgColor: "bg-yellow-50 dark:bg-yellow-950/20" },
-    { title: "Fat", value: dailyLog.totalFat, goal: fatGoal, unit: "g", icon: <Droplets className="h-5 w-5 text-blue-500" />, color: "hsl(var(--chart-4))", bgColor: "bg-blue-50 dark:bg-blue-950/20" },
+    { title: "Calories", value: currentLog.totalCalories, goal: calorieGoal, unit: "kcal", icon: <Flame className="h-5 w-5 text-orange-500" />, color: "hsl(var(--primary))", bgColor: "bg-orange-50 dark:bg-orange-950/20" },
+    { title: "Protein", value: currentLog.totalProtein, goal: proteinGoal, unit: "g", icon: <Beef className="h-5 w-5 text-red-500" />, color: "hsl(var(--chart-2))", bgColor: "bg-red-50 dark:bg-red-950/20" },
+    { title: "Carbs", value: currentLog.totalCarbs, goal: carbsGoal, unit: "g", icon: <Wheat className="h-5 w-5 text-yellow-600" />, color: "hsl(var(--chart-3))", bgColor: "bg-yellow-50 dark:bg-yellow-950/20" },
+    { title: "Fat", value: currentLog.totalFat, goal: fatGoal, unit: "g", icon: <Droplets className="h-5 w-5 text-blue-500" />, color: "hsl(var(--chart-4))", bgColor: "bg-blue-50 dark:bg-blue-950/20" },
   ];
 
   const overallProgress = goals ? (summaryData.reduce((acc, item) => item.goal > 0 ? acc + Math.min(100, (item.value / item.goal) * 100) : acc, 0) / summaryData.filter(item => item.goal > 0).length) : 0;
 
   const macroData = [
-    { name: "Protein", value: dailyLog.totalProtein, color: "hsl(var(--chart-2))" },
-    { name: "Carbs", value: dailyLog.totalCarbs, color: "hsl(var(--chart-3))" },
-    { name: "Fat", value: dailyLog.totalFat, color: "hsl(var(--chart-4))" },
+    { name: "Protein", value: currentLog.totalProtein, color: "hsl(var(--chart-2))" },
+    { name: "Carbs", value: currentLog.totalCarbs, color: "hsl(var(--chart-3))" },
+    { name: "Fat", value: currentLog.totalFat, color: "hsl(var(--chart-4))" },
   ];
 
   const weeklyChartData = Array.from({ length: 7 }).map((_, i) => {
     const date = subDays(new Date(), 6 - i);
-    const dateKey = format(date, 'yyyy-MM-dd');
-    const log = weeklyData.find(l => l.date === dateKey);
+    const dateKey = format(date, 'E');
+    const log = weeklyData.find(l => l.date === format(date, 'yyyy-MM-dd'));
     return {
-      day: format(date, 'E'),
+      day: dateKey,
       calories: log?.totalCalories || 0,
       goal: calorieGoal,
     };
@@ -342,12 +334,12 @@ export default function DashboardPage() {
           <Card className="bg-gradient-to-br from-muted/50 to-background">
             <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">Today's Summary</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Remaining calories</span><span className="font-bold text-lg">{Math.round(calorieGoal - dailyLog.totalCalories)} kcal</span></div>
-              <Progress value={calorieGoal > 0 ? (dailyLog.totalCalories / calorieGoal) * 100 : 0} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground pt-2"><span>Consumed: {Math.round(dailyLog.totalCalories)} kcal</span><span>Goal: {Math.round(calorieGoal)} kcal</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Remaining calories</span><span className="font-bold text-lg">{Math.round(calorieGoal - currentLog.totalCalories)} kcal</span></div>
+              <Progress value={calorieGoal > 0 ? (currentLog.totalCalories / calorieGoal) * 100 : 0} className="h-2" />
+              <div className="flex justify-between text-xs text-muted-foreground pt-2"><span>Consumed: {Math.round(currentLog.totalCalories)} kcal</span><span>Goal: {Math.round(calorieGoal)} kcal</span></div>
               <Separator />
-              <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Water intake</span><span className="font-medium">{dailyLog.waterIntake || 0} / 8 glasses</span></div>
-              <Progress value={dailyLog.waterIntake ? (dailyLog.waterIntake / 8) * 100 : 0} className="h-2 [&>div]:bg-blue-500" />
+              <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Water intake</span><span className="font-medium">{currentLog.waterIntake || 0} / 8 glasses</span></div>
+              <Progress value={currentLog.waterIntake ? (currentLog.waterIntake / 8) * 100 : 0} className="h-2 [&>div]:bg-blue-500" />
             </CardContent>
           </Card>
         </div>
@@ -355,4 +347,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-    
