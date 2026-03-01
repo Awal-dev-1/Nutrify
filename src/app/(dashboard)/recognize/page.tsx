@@ -31,6 +31,7 @@ export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorTitle, setErrorTitle] = useState<string>('Analysis Error');
   const [analysisResult, setAnalysisResult] = useState<RecognizeFoodImageOutput | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -39,6 +40,7 @@ export default function AiRecognitionPage() {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
+      setErrorTitle('Upload Error');
       setError('File size must be less than 5MB.');
       setStatus('error');
       return;
@@ -78,6 +80,7 @@ export default function AiRecognitionPage() {
 
       if (!response.isFood) {
         const errorMessage = response.message || "This does not appear to be a food item. Please upload a photo of food.";
+        setErrorTitle("Not a Food Item");
         setError(errorMessage);
         setStatus('error');
         toast({
@@ -94,6 +97,7 @@ export default function AiRecognitionPage() {
     } catch (e: any) {
       console.error(e);
       const errorMessage = e.message || "An unexpected error occurred during analysis.";
+      setErrorTitle("Analysis Failed");
       setError(errorMessage);
       setStatus('error');
       toast({
@@ -180,7 +184,7 @@ export default function AiRecognitionPage() {
           {status === 'error' && (
             <Alert variant="destructive" className="border-destructive/50">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Analysis Error</AlertTitle>
+              <AlertTitle>{errorTitle}</AlertTitle>
               <AlertDescription className="flex flex-col gap-4">
                 <p>{error}</p>
                 <Button variant="outline" size="sm" onClick={handleReset} className="w-fit">

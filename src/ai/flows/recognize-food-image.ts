@@ -48,9 +48,11 @@ const recognizeFoodImagePrompt = ai.definePrompt({
   name: 'recognizeFoodImagePrompt',
   input: { schema: RecognizeFoodImageInputSchema },
   output: { schema: RecognizeFoodImageOutputSchema },
-  prompt: `You are a high-performance Food Recognition AI. Identify the food item from the image.
-If the input is NOT food or drink, you MUST return a JSON object with 'isFood' set to false and a 'message' of "Invalid item", and stop processing. Do NOT provide nutritional data for non-food items.
-If the image is food, you MUST return the item's name, estimated calories, and primary ingredients. No dummy data is allowed.
+  prompt: `You are a specialized AI model with a single function: to identify food items in images. Your analysis is strict.
+1.  Analyze the provided image.
+2.  Determine if the primary subject of the image is an edible food or drink.
+3.  If the image is NOT food or drink (e.g., it contains animals, objects, people, or scenery), you MUST immediately respond with the JSON object: \`{ "isFood": false, "message": "The image does not contain a recognizable food item." }\`. Do not proceed further.
+4.  If and only if the image contains food, you MUST return a JSON object with 'isFood' set to true, along with the 'itemName', estimated 'calories', and a list of 'ingredients'.
 
 Image to analyze:
 {{media url=photoDataUri}}`,
