@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Upload,
@@ -23,10 +23,60 @@ import { useUser, useFirebaseApp, useFirestore, useDoc, useMemoFirebase } from '
 import { generateScanId, uploadFoodImage, createScanDocument, runFoodRecognition } from '@/services/aiRecognitionService';
 import type { AiScan } from '@/types/ai';
 import { doc } from 'firebase/firestore';
-import { Badge } from '@/components/ui/badge';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
+import type { FoodItem } from '@/types/food';
 
 type Status = 'idle' | 'preview' | 'uploading' | 'processing' | 'results' | 'error';
+
+// Helper to resize image client-side for faster processing
+const resizeImage = (file: File, maxWidth: number): Promise<{ file: File; dataUri: string }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return reject(new Error('Could not get canvas context'));
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUri = canvas.toDataURL(file.type);
+        
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            return reject(new Error('Could not create blob from canvas'));
+          }
+          const newFile = new File([blob], file.name, {
+            type: file.type,
+            lastModified: Date.now(),
+          });
+          resolve({ file: newFile, dataUri });
+        }, file.type, 0.9);
+      };
+      img.onerror = (err) => reject(err);
+      if (event.target?.result) {
+        img.src = event.target.result as string;
+      } else {
+        reject(new Error("FileReader did not produce a result."));
+      }
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+};
+
 
 export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
@@ -34,7 +84,7 @@ export default function AiRecognitionPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanId, setScanId] = useState<string | null>(null);
-  const [selectedPrediction, setSelectedPrediction] = useState<string | null>(null);
+  const [selectedPrediction, setSelectedPrediction] = useState<FoodItem | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -43,29 +93,24 @@ export default function AiRecognitionPage() {
   const db = useFirestore();
   const app = useFirebaseApp();
 
-  // Real-time listener for the scan document
   const scanDocRef = useMemoFirebase(
     () => (user && scanId ? doc(db, 'users', user.uid, 'aiScans', scanId) : null),
     [user, scanId, db]
   );
-  const { data: scanResult } = useDoc<AiScan>(scanDocRef);
+  const { data: scanResult, isLoading: isScanLoading } = useDoc<AiScan>(scanDocRef);
 
-  // Update local status based on Firestore document
-  if (scanResult && status !== 'results' && status !== 'error') {
-    if (scanResult.status === 'completed' || scanResult.status === 'failed') {
-        if (scanResult.status === 'completed' && scanResult.predictions.length > 0) {
-            setStatus('results');
-        } else if (scanResult.status === 'failed') {
-            setStatus('error');
-            setError(scanResult.reason || 'AI processing failed or no food was identified.');
-        } else {
-            setStatus('error');
-            setError('No strong match found. Try another image or a manual search.');
-        }
+  useEffect(() => {
+    if (scanResult && !isScanLoading) {
+      if (scanResult.status === 'completed' && scanResult.predictions.length > 0) {
+        setStatus('results');
+      } else if (scanResult.status === 'failed') {
+        setStatus('error');
+        setError(scanResult.reason || 'AI processing failed or no food was identified.');
+      }
     }
-  }
+  }, [scanResult, isScanLoading]);
 
-  const handleFileChange = (file: File | null) => {
+  const handleFileChange = async (file: File | null) => {
     if (!file || !db) return;
 
     if (file.size > 5 * 1024 * 1024) {
@@ -74,21 +119,27 @@ export default function AiRecognitionPage() {
       return;
     }
     
-    const newScanId = generateScanId(db);
-    setScanId(newScanId);
+    handleReset();
+    setStatus('preview');
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setUploadedImage(e.target?.result as string);
-      setImageFile(file);
-      setStatus('preview');
+    try {
+      const { file: resizedFile, dataUri } = await resizeImage(file, 800);
+      
+      const newScanId = generateScanId(db);
+      setScanId(newScanId);
+  
+      setUploadedImage(dataUri);
+      setImageFile(resizedFile);
       setError(null);
-    };
-    reader.readAsDataURL(file);
+    } catch (e: any) {
+        console.error("Image resizing failed:", e);
+        setError("Could not process the image. Please try a different one.");
+        setStatus('error');
+    }
   };
 
   const handleAnalyze = async () => {
-    if (!imageFile || !user || !scanId || !db || !app || !uploadedImage) return;
+    if (!imageFile || !user || !scanId || !db || !app) return;
     
     setStatus('uploading');
     setError(null);
@@ -97,7 +148,7 @@ export default function AiRecognitionPage() {
       const downloadURL = await uploadFoodImage(app, user.uid, scanId, imageFile);
       setStatus('processing');
       await createScanDocument(db, user.uid, scanId, downloadURL);
-      await runFoodRecognition(db, user.uid, scanId, uploadedImage);
+      await runFoodRecognition(db, user.uid, scanId, downloadURL);
     } catch (e: any) {
       console.error(e);
       const errorMessage = e.message || 'An unexpected error occurred during analysis.';
@@ -181,12 +232,18 @@ export default function AiRecognitionPage() {
         return (
             <div className="space-y-6">
               <div className="relative w-full max-w-sm mx-auto aspect-square rounded-xl overflow-hidden border-2 group">
-                <Image 
-                  src={uploadedImage!} 
-                  alt="Uploaded food" 
-                  fill 
-                  className="object-cover"
-                />
+                {uploadedImage ? (
+                    <Image 
+                        src={uploadedImage} 
+                        alt="Uploaded food" 
+                        fill 
+                        className="object-cover"
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-full bg-muted">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                )}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Button variant="destructive" size="icon" className="h-10 w-10" onClick={handleReset}>
                     <X className="h-5 w-5" />
@@ -194,7 +251,7 @@ export default function AiRecognitionPage() {
                 </div>
               </div>
               <div className="flex justify-center">
-                <Button size="lg" onClick={handleAnalyze} className="min-w-[200px] h-12">
+                <Button size="lg" onClick={handleAnalyze} className="min-w-[200px] h-12" disabled={!uploadedImage}>
                   <Sparkles className="mr-2 h-4 w-4" /> Analyze Image
                 </Button>
               </div>
@@ -212,7 +269,7 @@ export default function AiRecognitionPage() {
             <p className="mt-6 font-semibold text-lg">
               {status === 'uploading' ? 'Uploading image...' : 'AI is analyzing your food...'}
             </p>
-            <p className="text-muted-foreground">This may take 2-5 seconds.</p>
+            <p className="text-muted-foreground">This may take a few moments.</p>
             <Progress value={status === 'uploading' ? 20 : 50} className="w-64 mt-6" />
           </div>
         );
@@ -237,20 +294,16 @@ export default function AiRecognitionPage() {
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="text-xl font-bold">Top Predictions</h3>
+                        <h3 className="text-xl font-bold">AI Result</h3>
                         <div className="space-y-3">
                         {scanResult.predictions.map((item, i) => (
-                            <Card key={i} className={i === 0 ? "border-primary" : ""}>
+                            <Card key={i} className="border-primary">
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div className='flex-1 pr-4'>
-                                        <div className="flex items-center gap-2">
-                                            <p className="font-semibold">{item.name}</p>
-                                            {i === 0 && <Badge>Best Match</Badge>}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">Confidence: {(item.confidence * 100).toFixed(0)}%</p>
-                                        <Progress value={item.confidence * 100} className="h-1 mt-2" />
+                                        <p className="font-semibold text-lg">{item.foodName}</p>
+                                        <p className="text-sm text-muted-foreground">{item.calories} kcal (estimated)</p>
                                     </div>
-                                    <Button size="sm" onClick={() => setSelectedPrediction(item.name)}>Select</Button>
+                                    <Button size="sm" onClick={() => setSelectedPrediction(item)}>Confirm & Add</Button>
                                 </CardContent>
                             </Card>
                         ))}
@@ -259,7 +312,7 @@ export default function AiRecognitionPage() {
                             <Lightbulb className="h-4 w-4 text-primary" />
                             <AlertTitle className="text-primary">Not what you ate?</AlertTitle>
                             <AlertDescription>
-                            Select an item to confirm its nutritional details or try searching for it manually.
+                            Confirm the result to add it to your log, or try another image.
                             </AlertDescription>
                         </Alert>
                     </div>
@@ -316,7 +369,7 @@ export default function AiRecognitionPage() {
       <FoodConfirmationModal 
         isOpen={!!selectedPrediction}
         onClose={() => setSelectedPrediction(null)}
-        foodName={selectedPrediction}
+        foodItem={selectedPrediction}
       />
     </div>
   );

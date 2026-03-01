@@ -1,80 +1,66 @@
 'use server';
 /**
- * @fileOverview An AI flow for recognizing food items from an image.
+ * @fileOverview An AI flow for identifying food items from an image and providing detailed nutritional information.
  *
  * - recognizeFood - A function that handles the food recognition process.
  * - RecognizeFoodInput - The input type for the recognizeFood function.
  * - RecognizeFoodOutput - The return type for the recognizeFood function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
+import { FoodItem, FoodItemSchema } from '@/types/food';
 
 const RecognizeFoodInputSchema = z.object({
-  imageUrl: z
-    .string()
-    .url()
-    .describe(
-      "A public URL for a food image."
-    ),
+  imageUrl: z.string().url().describe('The public URL of the food image.'),
+  userGoal: z.string().optional().describe("The user's primary health goal (e.g., 'lose_weight')."),
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
+
 const RecognizeFoodOutputSchema = z.object({
-  labels: z
-    .array(
-      z.object({
-        label: z.string().describe('A single, generic label for an object detected in the image (e.g., "rice", "chicken", "salad").'),
-        confidence: z
-          .number()
-          .min(0)
-          .max(1)
-          .describe('The confidence score for this label, from 0.0 to 1.0.'),
-      })
-    )
-    .describe('An array of the top 5 most likely labels for objects in the image.'),
+  isFood: z.boolean().describe("A boolean indicating if the image contains food."),
+  foodItems: z.array(FoodItemSchema).describe("A list of identified food items. Should be empty if isFood is false."),
 });
 export type RecognizeFoodOutput = z.infer<typeof RecognizeFoodOutputSchema>;
 
+export async function recognizeFood(input: RecognizeFoodInput): Promise<RecognizeFoodOutput> {
+  const { output } = await ai.generate({
+      prompt: [
+        { text: `You are a world-class nutritional expert and food historian. Your task is to provide highly accurate and specific information about the food shown in the image.
 
-export async function recognizeFood(
-  input: RecognizeFoodInput
-): Promise<RecognizeFoodOutput> {
-  return recognizeFoodFlow(input);
-}
-
-const recognizeFoodFlow = ai.defineFlow(
-  {
-    name: 'recognizeFoodFlow',
-    inputSchema: RecognizeFoodInputSchema,
-    outputSchema: RecognizeFoodOutputSchema,
-  },
-  async input => {
-    const promptText = `You are an expert image classifier. Your task is to identify all potential food-related objects in the provided image.
+User's health goal: "${input.userGoal || 'Not specified'}".
 
 CRITICAL INSTRUCTIONS:
-1.  **DETECT GENERIC OBJECTS**: Do not try to name a specific dish. Instead, provide generic labels for what you see (e.g., "rice", "fish", "tomato", "leafy greens", "stew").
-2.  **PROVIDE LABELS**: Provide a list of the top 5 most likely labels for food items or ingredients you can identify.
-3.  **CONFIDENCE SCORE**: For each label, provide a confidence score between 0.0 (not confident) and 1.0 (very confident).
-4.  **JSON OUTPUT**: Your final output must be a valid JSON object that adheres to the provided output schema. Do not return anything if you cannot identify any food-like objects.`;
+1.  **Analyze the Image**: First, determine if the image contains food. If it does not, you MUST set 'isFood' to false and return an empty 'foodItems' array.
+2.  **Exact Dish Identification**: Identify the most likely single dish in the image. Do not list multiple possibilities unless they are part of a single meal.
+3.  **Detailed Information**: For the identified food item, provide a comprehensive breakdown similar to a text-based search.
 
-    const { output } = await ai.generate({
-        prompt: [
-            { text: promptText },
-            { media: { url: input.imageUrl, contentType: 'image/jpeg' } },
-        ],
-        output: {
-            format: 'json',
-            schema: RecognizeFoodOutputSchema,
-        },
-        config: {
-            timeout: 30000,
-        }
-    });
+For the food item you identify, you must provide:
+- foodName: The specific name of the identified food.
+- calories: An estimated calorie count for a standard portion.
+- macronutrientBreakdown: A breakdown of protein, carbohydrates, and fat in grams.
+- micronutrientBreakdown: A comprehensive list of key vitamins and minerals with amounts and units.
+- detailedRecipe: A complete recipe with ingredients and instructions.
+- foodHistory: A short, interesting, and verifiable fact or history about the food.
+- healthAnalysis: A personalized analysis based on the user's goal. Explain if the food is beneficial or detrimental for their specific goal and why.
 
-    if (!output) {
-        throw new Error("The AI model failed to produce an output.");
-    }
-    return output;
+If 'isFood' is false, you must return an empty 'foodItems' array.
+
+Format your response strictly as a JSON object adhering to the provided schema. Do not include extra commentary.` },
+        { media: { url: input.imageUrl, contentType: 'image/jpeg' } },
+      ],
+      output: {
+          format: 'json',
+          schema: RecognizeFoodOutputSchema,
+      },
+      config: {
+          timeout: 30000, // 30 second timeout
+      }
+  });
+
+  if (!output) {
+      return { isFood: false, foodItems: [] };
   }
-);
+  return output;
+}
