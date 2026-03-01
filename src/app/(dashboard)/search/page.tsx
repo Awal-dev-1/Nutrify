@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, type FC } from 'react';
+import { useState, type FC, useEffect } from 'react';
 import {
   Search as SearchIcon,
   X,
@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { mockUser } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDebounce } from '@/hooks/use-debounce';
 
 const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
   return (
@@ -88,7 +89,7 @@ const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
                         <CardTitle className="text-lg">Micronutrients</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm space-y-2">
-                        <ul className="space-y-1">
+                        <ul className="space-y-1 max-h-48 overflow-y-auto">
                             {item.micronutrientBreakdown.map((nutrient, i) => (
                               <li key={i} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">
                                 <span>{nutrient.split(':')[0]}</span>
@@ -138,10 +139,15 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+        setResult(null);
+        setError(null);
+        setHasSearched(false);
+        return
+    };
 
     setLoading(true);
     setError(null);
@@ -150,7 +156,7 @@ export default function SearchPage() {
 
     try {
       const response = await searchFoods({
-        query: searchQuery,
+        query: query,
         userGoal: mockUser.goal,
       });
 
@@ -176,6 +182,16 @@ export default function SearchPage() {
       setLoading(false);
     }
   };
+  
+  useEffect(() => {
+    handleSearch(debouncedSearchQuery);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery]);
+
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(searchQuery);
+  }
 
   return (
     <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
@@ -191,7 +207,7 @@ export default function SearchPage() {
 
       {/* Search Section */}
       <div className="max-w-4xl mx-auto">
-        <form onSubmit={handleSearch} className="relative group w-full flex gap-2">
+        <form onSubmit={onFormSubmit} className="relative group w-full flex gap-2">
           <div className="relative flex-1">
             <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary group-focus-within:text-primary transition-colors" />
@@ -245,6 +261,7 @@ export default function SearchPage() {
           <div className="space-y-4">
             <Skeleton className="h-8 w-3/5" />
             <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
         )}
 
@@ -272,5 +289,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    
