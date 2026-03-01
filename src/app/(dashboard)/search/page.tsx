@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -91,7 +92,7 @@ export default function SearchPage() {
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary group-focus-within:text-primary transition-colors" />
             </div>
             <Input
-              placeholder="What food are you curious about?"
+              placeholder="AI Search..."
               className="w-full h-12 md:h-14 rounded-full border-2 bg-background pl-10 sm:pl-12 text-sm md:text-base transition-all focus-visible:ring-primary/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
