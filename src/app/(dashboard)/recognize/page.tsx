@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Soup,
   CheckCircle,
+  Plus,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -76,7 +77,7 @@ export default function AiRecognitionPage() {
       });
 
       if (!response.isFood) {
-        const errorMessage = "This does not appear to be a food item. Please upload a photo of food.";
+        const errorMessage = response.message || "This does not appear to be a food item. Please upload a photo of food.";
         setError(errorMessage);
         setStatus('error');
         toast({
