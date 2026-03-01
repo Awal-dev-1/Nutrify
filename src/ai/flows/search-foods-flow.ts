@@ -10,7 +10,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { gemini25Flash } from '@genkit-ai/google-genai';
 
 const SearchFoodsInputSchema = z.object({
   query: z.string().describe('The natural language search query from the user.'),
