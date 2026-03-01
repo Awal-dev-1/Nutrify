@@ -3,7 +3,7 @@
  *
  * ## Core Philosophy
  * This ruleset enforces a strict user-ownership model. All user-generated data,
- * including profiles, food logs, and meal plans, is private and can only be
+ * including profiles, and daily logs, is private and can only be
  * accessed by the user who created it. This ensures strong data privacy and
  * prevents users from accessing or modifying each other's sensitive information.
  * Public data, like the global food database, is read-only for all authenticated
@@ -13,10 +13,8 @@
  * The data is organized hierarchically to reflect ownership:
  * - `/users/{userId}`: A top-level collection where each document represents a single
  *   user's profile. The document ID `{userId}` is the user's Firebase Auth UID.
- * - `/users/{userId}/dailyFoodLogs/{logId}`: A subcollection containing the user's
- *   private daily food consumption records.
- * - `/users/{userId}/mealPlans/{planId}`: A subcollection for the user's private
- *   meal plans.
+ * - `/users/{userId}/dailyLogs/{date}`: A subcollection containing aggregated
+ *   daily nutrition data. The document ID `{date}` is the date string 'YYYY-MM-DD'.
  * - `/foodItems/{foodId}`: A separate top-level collection containing a global,
  *   read-only library of food nutritional information.
  *
@@ -28,21 +26,6 @@
  * - **Read-Only Global Data**: The `/foodItems` collection is read-only for
  *   authenticated users. All client-side write operations are blocked to maintain
  *   the integrity of the global food database.
- * - **Relational Integrity**: When creating documents in user-specific subcollections
- *   (e.g., a new food log), the rules enforce that the document's internal `userId`
- *   field must match the parent path, ensuring data consistency.
- *
- * ## Denormalization for Authorization
- * To create fast and secure rules, ownership information is denormalized. Each
- * document in a user-specific subcollection (like `dailyFoodLogs`) contains a
- * `userId` field. This allows rules to validate ownership directly from the
- * document being created or updated without needing slow and costly `get()` calls
- * to parent documents.
- *
- * ## Structural Segregation
- * Private user data (`/users`) and public data (`/foodItems`) are stored in
- * separate top-level collections. This clear separation simplifies rule logic,
- * improves query performance, and provides a strong security boundary.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -92,21 +75,6 @@ service cloud.firestore {
       return data.id == resource.data.id && data.email == resource.data.email;
     }
 
-    /**
-     * Validates that a new document in a user subcollection (e.g., food log)
-     * has its internal `userId` field set correctly to the owner's UID.
-     */
-    function isValidSubcollectionCreate(userId) {
-      return request.resource.data.userId == userId;
-    }
-
-    /**
-     * Ensures the ownership link (`userId`) on a subcollection document is immutable.
-     */
-    function isOwnerFieldImmutable() {
-      return request.resource.data.userId == resource.data.userId;
-    }
-
     // -------------------------------------------------------------------------
     // Collection Rules
     // -------------------------------------------------------------------------
@@ -116,10 +84,6 @@ service cloud.firestore {
      *              own profile, but cannot read other users' profiles or list the
      *              collection to prevent user enumeration.
      * @path /users/{userId}
-     * @allow (create) An authenticated user creating their own profile document
-     *        where the document ID matches their UID.
-     * @deny (get) A signed-in user trying to read another user's profile document.
-     * @principle Restricts access to a user's own data tree and prevents data leakage.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
@@ -129,37 +93,13 @@ service cloud.firestore {
       allow delete: if isExistingOwner(userId);
 
       /**
-       * @description Manages a user's private daily food logs. Users have full
-       *              control over their own logs.
-       * @path /users/{userId}/dailyFoodLogs/{dailyFoodLogId}
-       * @allow (create) An authenticated user adding a new food log to their own
-       *        subcollection.
-       * @deny (list) A user trying to list the food logs of another user.
-       * @principle Enforces document ownership for writes and ensures relational integrity.
+       * @description Manages a user's private daily nutrition logs. Users have full
+       *              read and write control over their own logs to allow for
+       *              client-side aggregation and updates.
+       * @path /users/{userId}/dailyLogs/{date}
        */
-      match /dailyFoodLogs/{dailyFoodLogId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidSubcollectionCreate(userId);
-        allow update: if isExistingOwner(userId) && isOwnerFieldImmutable();
-        allow delete: if isExistingOwner(userId);
-      }
-
-      /**
-       * @description Manages a user's private meal plans. Users have full control
-       *              over their own meal plans.
-       * @path /users/{userId}/mealPlans/{mealPlanId}
-       * @allow (update) An authenticated user updating an existing meal plan in
-       *        their own subcollection.
-       * @deny (create) A user trying to create a meal plan for another user.
-       * @principle Enforces document ownership for writes and ensures relational integrity.
-       */
-      match /mealPlans/{mealPlanId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidSubcollectionCreate(userId);
-        allow update: if isExistingOwner(userId) && isOwnerFieldImmutable();
-        allow delete: if isExistingOwner(userId);
+      match /dailyLogs/{date} {
+        allow read, write: if isOwner(userId);
       }
     }
 
@@ -168,11 +108,6 @@ service cloud.firestore {
      *              to be readable by all authenticated application users but not
      *              writable by them, protecting it from client-side changes.
      * @path /foodItems/{foodItemId}
-     * @allow (get, list) Any authenticated user can read or list food items to
-     *        populate their meal logs.
-     * @deny (create, update, delete) All write operations are forbidden from the
-     *       client to protect data integrity.
-     * @principle Provides public read access while preventing unauthorized writes.
      */
     match /foodItems/{foodItemId} {
       allow get: if isSignedIn();

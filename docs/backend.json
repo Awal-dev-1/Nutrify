@@ -229,123 +229,45 @@
         "category"
       ]
     },
-    "DailyFoodLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DailyFoodLog",
+    "LoggedFoodItem": {
+      "title": "LoggedFoodItem",
       "type": "object",
-      "description": "Records a specific food item consumed by a user at a given meal time on a particular date.",
+      "description": "Represents a single food item logged as part of a meal within a daily log.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for a daily food log entry. (Primary Key)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who logged this food. (Relationship: UserProfile 1:N DailyFoodLog)"
-        },
-        "foodId": {
-          "type": "string",
-          "description": "Reference to the FoodItem that was logged. (Relationship: FoodItem 1:N DailyFoodLog)"
-        },
-        "mealType": {
-          "type": "string",
-          "description": "The meal category for which the food was logged (e.g., 'Breakfast', 'Lunch', 'Dinner', 'Snacks')."
-        },
-        "logDate": {
-          "type": "string",
-          "description": "The specific date (YYYY-MM-DD) on which the food was consumed.",
-          "format": "date"
-        },
-        "portionGrams": {
-          "type": "number",
-          "description": "The amount of the food item consumed in grams."
-        },
-        "loggedCalories": {
-          "type": "number",
-          "description": "The total calculated calories for this specific food portion at the time of logging."
-        },
-        "loggedProtein": {
-          "type": "number",
-          "description": "The total calculated protein in grams for this specific food portion at the time of logging."
-        },
-        "loggedCarbs": {
-          "type": "number",
-          "description": "The total calculated carbohydrates in grams for this specific food portion at the time of logging."
-        },
-        "loggedFat": {
-          "type": "number",
-          "description": "The total calculated fats in grams for this specific food portion at the time of logging."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when this food entry was logged.",
-          "format": "date-time"
-        }
+          "logId": { "type": "string" },
+          "foodId": { "type": "string" },
+          "name": { "type": "string" },
+          "quantity": { "type": "number" },
+          "calories": { "type": "number" },
+          "protein": { "type": "number" },
+          "carbs": { "type": "number" },
+          "fat": { "type": "number" },
+          "imageUrl": {"type": "string", "format": "uri"}
       },
-      "required": [
-        "id",
-        "userId",
-        "foodId",
-        "mealType",
-        "logDate",
-        "portionGrams",
-        "loggedCalories",
-        "loggedProtein",
-        "loggedCarbs",
-        "loggedFat",
-        "createdAt"
-      ]
+      "required": ["logId", "foodId", "name", "quantity", "calories"]
     },
-    "MealPlan": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MealPlan",
+    "DailyLog": {
+      "title": "DailyLog",
       "type": "object",
-      "description": "Represents a planned food item for a user on a specific day of the week and meal type.",
+      "description": "Aggregated daily nutritional data for a user, including total intake and a list of all food items consumed. Updated with every change in the tracker.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for a meal plan entry. (Primary Key)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile for whom this meal is planned. (Relationship: UserProfile 1:N MealPlan)"
-        },
-        "foodId": {
-          "type": "string",
-          "description": "Reference to the FoodItem that is planned. (Relationship: FoodItem 1:N MealPlan)"
-        },
-        "mealType": {
-          "type": "string",
-          "description": "The meal category for which the food is planned (e.g., 'Breakfast', 'Lunch', 'Dinner', 'Snacks')."
-        },
-        "planDayOfWeek": {
-          "type": "string",
-          "description": "The day of the week for which this meal is planned (e.g., 'Monday', 'Tuesday', 'Sunday')."
-        },
-        "portionGrams": {
-          "type": "number",
-          "description": "The amount of the food item planned in grams."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when this meal plan entry was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp of the last update to this meal plan entry.",
-          "format": "date-time"
+        "date": { "type": "string", "format": "date" },
+        "totalCalories": { "type": "number" },
+        "totalProtein": { "type": "number" },
+        "totalCarbs": { "type": "number" },
+        "totalFat": { "type": "number" },
+        "waterIntake": { "type": "number" },
+        "meals": {
+          "type": "object",
+          "properties": {
+            "Breakfast": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Lunch": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Dinner": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Snacks": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } }
+          }
         }
       },
-      "required": [
-        "id",
-        "userId",
-        "foodId",
-        "mealType",
-        "planDayOfWeek",
-        "portionGrams",
-        "createdAt"
-      ]
+      "required": ["date", "totalCalories", "totalProtein", "totalCarbs", "totalFat"]
     }
   },
   "auth": {
@@ -389,46 +311,26 @@
         }
       },
       {
-        "path": "/users/{userId}/dailyFoodLogs/{dailyFoodLogId}",
+        "path": "/users/{userId}/dailyLogs/{date}",
         "definition": {
-          "entityName": "DailyFoodLog",
+          "entityName": "DailyLog",
           "schema": {
-            "$ref": "#/backend/entities/DailyFoodLog"
+            "$ref": "#/backend/entities/DailyLog"
           },
-          "description": "User-specific collection for tracking daily food consumption. Each document represents a single logged food item for a user on a specific date. The `userId` in the path ensures authorization independence and supports Queryable by Authorization Predicates (QAPs). Includes denormalized 'userId' field for robust security rule validation and 'loggedCalories', 'loggedProtein', etc. for efficient retrieval.",
+          "description": "User-specific collection for storing aggregated daily nutritional data. The document ID is the date in 'YYYY-MM-DD' format. This structure is optimized for fast analytics queries.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier of the user, derived from the parent collection, matching their Firebase Authentication UID."
             },
             {
-              "name": "dailyFoodLogId",
-              "description": "The unique identifier for a specific daily food log entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/mealPlans/{mealPlanId}",
-        "definition": {
-          "entityName": "MealPlan",
-          "schema": {
-            "$ref": "#/backend/entities/MealPlan"
-          },
-          "description": "User-specific collection for storing planned meals across days of the week. The `userId` in the path ensures authorization independence and supports Queryable by Authorization Predicates (QAPs). Includes denormalized 'userId' field for robust security rule validation.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, derived from the parent collection, matching their Firebase Authentication UID."
-            },
-            {
-              "name": "mealPlanId",
-              "description": "The unique identifier for a specific meal plan entry."
+              "name": "date",
+              "description": "The date of the log in 'YYYY-MM-DD' format."
             }
           ]
         }
       }
     ],
-    "reasoning": "The recommended Firestore structure prioritizes security, scalability, and debuggability by strictly adhering to the core design principles, especially Authorization Independence and Queryable by Authorization Predicate (QAP).\n\n1.  **User Profiles (`/users/{userId}`):** User profiles are stored in a top-level collection, with the document ID (`{userId}`) directly matching the Firebase Authentication UID. This establishes a clear, path-based ownership model where a user's profile document (`resource.id`) is unequivocally tied to their authenticated identity (`request.auth.uid`). This direct mapping ensures Authorization Independence as rules for user profiles (`allow read, write: if request.auth.uid == resource.id;`) do not require any `get()` operations, making them atomic and highly performant.\n\n2.  **User-Specific Subcollections (`/users/{userId}/dailyFoodLogs` and `/users/{userId}/mealPlans`):** For user-owned data like daily food logs and meal plans, a hierarchical path structure is used. These are placed as subcollections under the respective user's profile, e.g., `/users/{userId}/dailyFoodLogs/{dailyFoodLogId}`. This design is critical for Authorization Independence and QAPs:\n    *   **Authorization Independence:** The `{userId}` wildcard in the path template directly exposes the owner's UID to the security rules. This eliminates the need for `get()` calls to a parent document to determine ownership. Rules can simply state `allow read, write: if request.auth.uid == userId;`. Furthermore, each document in these subcollections includes an explicit `userId` field, which acts as a denormalized `ownerId`. This field can be used in rules for an additional layer of validation (`request.auth.uid == resource.data.userId`), ensuring data integrity and preventing unauthorized data injection, without breaking atomicity.\n    *   **QAPs (Rules are not Filters):** This structure inherently supports secure `list` operations. When a user queries `/users/{request.auth.uid}/dailyFoodLogs`, the security rules enforce that the `{userId}` in the path must match `request.auth.uid`. Therefore, the query can only ever return data belonging to the authenticated user, satisfying the QAP principle by ensuring that `list` operations are naturally secure and do not expose unauthorized data.\n\n3.  **Global Food Database (`/foodItems`):** The `foodItems` collection is a top-level collection designed for global access. It contains static, publicly readable data about various food items. Since this data is intended to be available to all authenticated users for search and reference, its security posture is homogeneously 'publicly readable by authenticated users'. This segregates it from private user data and simplifies its security rules, ensuring that `list` operations on this collection are inherently secure as they are intended to return globally available data.\n\nOverall, this structure employs path-based ownership and strategic denormalization (explicit `userId` fields in subcollections) to achieve Authorization Independence. It uses structural segregation to define homogeneous security postures for collections and subcollections, which directly enables robust QAPs. This leads to simple, efficient, and easily debuggable Firestore security rules."
+    "reasoning": "The recommended Firestore structure prioritizes security, scalability, and query performance. Storing user-specific data under `/users/{userId}` ensures strong ownership and simplifies security rules. The new `/users/{userId}/dailyLogs/{date}` collection is specifically designed for analytics performance. By storing pre-aggregated daily totals in a single document per day (identified by date), the application can fetch analytics data for a date range (e.g., 7 or 30 days) with a single, efficient query, rather than needing to read and aggregate hundreds of individual food log documents on the client. This dramatically improves performance and reduces cost at scale."
   }
 }

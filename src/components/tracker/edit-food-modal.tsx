@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,13 +11,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { LoggedFood } from '@/lib/tracker-data';
+import type { LoggedFoodItem } from '@/types/analytics';
+import { mockFoods } from '@/lib/data';
 
 interface EditFoodModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (logId: string, newQuantity: number) => void;
-  loggedFood: LoggedFood | null;
+  loggedFood: LoggedFoodItem | null;
 }
 
 export function EditFoodModal({
@@ -34,7 +35,9 @@ export function EditFoodModal({
     }
   }, [loggedFood]);
 
-  const foodDetails = loggedFood?.foodData;
+  const foodDetails = useMemo(() => {
+    return mockFoods.find(f => f.id === loggedFood?.foodId);
+  }, [loggedFood]);
 
   const handleUpdate = () => {
     if (loggedFood) {
@@ -44,6 +47,8 @@ export function EditFoodModal({
   };
 
   if (!loggedFood || !foodDetails) return null;
+  
+  const calculatedCalories = (foodDetails.calories / 100) * quantity;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -51,15 +56,15 @@ export function EditFoodModal({
         <DialogHeader>
           <DialogTitle>Edit Portion</DialogTitle>
           <DialogDescription>
-            Update the quantity for {foodDetails.name}.
+            Update the quantity for {loggedFood.name}.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
             <div className="flex-grow">
-              <p className="font-semibold">{foodDetails.name}</p>
+              <p className="font-semibold">{loggedFood.name}</p>
               <p className="text-sm text-muted-foreground">
-                {foodDetails.calories} kcal per 100g
+                Original: {loggedFood.quantity}g ({Math.round(loggedFood.calories)} kcal)
               </p>
             </div>
           </div>
@@ -73,6 +78,9 @@ export function EditFoodModal({
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
             />
+             <p className="text-sm text-muted-foreground text-right">
+                Estimated: {Math.round(calculatedCalories)} kcal
+              </p>
           </div>
         </div>
         <DialogFooter>
