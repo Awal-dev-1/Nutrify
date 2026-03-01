@@ -1,3 +1,4 @@
+
 "use client"
 
 import { usePathname } from 'next/navigation'
@@ -28,9 +29,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUser } from '@/firebase'
 
 const mainLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/dashboard/search', label: 'AI Food Search', icon: Search },
   { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
+  { href: '/dashboard/search', label: 'AI Food Search', icon: Search },
   { href: '/dashboard/goals', label: 'Goals', icon: Target },
 ]
 
@@ -48,7 +48,7 @@ export function MainSidebar() {
   const pathname = usePathname()
   const { user } = useUser();
 
-  const renderLinks = (links: typeof mainLinks) => (
+  const renderLinks = (links: {href: string, label: string, icon: any}[]) => (
     <SidebarMenu className="gap-1">
       {links.map((link) => (
         <SidebarMenuItem key={link.href}>
