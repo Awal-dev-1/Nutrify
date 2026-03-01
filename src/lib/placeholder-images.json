@@ -9,56 +9,20 @@
     {
       "id": "food-search",
       "description": "Icon for searching or scanning food.",
-      "imageUrl": "https://images.unsplash.com/photo-1559384960-1a620795202e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYWduaWZ5aW5nJTIwZ2xhc3N8ZW58MHx8fHwxNzcxOTMxMTQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1632096936824-565d39f8e5eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFnbmlmeWluZyUyMGdsYXNzfGVufDB8fHx8MTc3MjM4NjU2NHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "magnifying glass"
     },
     {
       "id": "nutrient-breakdown",
       "description": "Icon for viewing nutrient breakdown.",
-      "imageUrl": "https://images.unsplash.com/photo-1543286386-713bdd548da4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaGFydCUyMHBpZXxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1758519289066-93959ca85213?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcnQlMjBwaWV8ZW58MHx8fHwxNzcyMzg2NTY0fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "chart pie"
     },
     {
       "id": "track-health",
       "description": "Icon for tracking and improving health.",
-      "imageUrl": "https://images.unsplash.com/photo-1762939079730-23708c0dd337?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxoZWFydGJlYXQlMjBsaW5lfGVufDB8fHx8MTc3MTkzNDAxM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1759693232553-86c07ce4641b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxoZWFydGJlYXQlMjBsaW5lfGVufDB8fHx8MTc3MjM4NjU2NHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "heartbeat line"
-    },
-    {
-      "id": "feature-ai-recognition",
-      "description": "Image for AI Food Recognition feature card.",
-      "imageUrl": "https://images.unsplash.com/photo-1630459933853-b2edeef3a838?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxyb2JvdCUyMGNhbWVyYXxlbnwwfHx8fDE3NzE5MzQwMTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "robot camera"
-    },
-    {
-      "id": "feature-ghana-db",
-      "description": "Image for Local Ghanaian Food Database feature card.",
-      "imageUrl": "https://images.unsplash.com/photo-1740824814728-76a85834814f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxnaGFuYSUyMGZsYWd8ZW58MHx8fHwxNzcxOTM0MDEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "ghana flag"
-    },
-    {
-      "id": "feature-tracking",
-      "description": "Image for Smart Nutrient Tracking feature card.",
-      "imageUrl": "https://images.unsplash.com/photo-1734503937317-3b88a42ac50c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxub3RlYm9vayUyMGNoYXJ0fGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "notebook chart"
-    },
-    {
-      "id": "feature-recommendations",
-      "description": "Image for Personalized Recommendations feature card.",
-      "imageUrl": "https://images.unsplash.com/photo-1661529667854-f80158f30f22?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxsaWdodGJ1bGIlMjBpZGVhfGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "lightbulb idea"
-    },
-    {
-      "id": "feature-analytics",
-      "description": "Image for Analytics & Trends feature card.",
-      "imageUrl": "https://images.unsplash.com/photo-1703532718168-e5943c3837fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhbmFseXRpY3MlMjBncmFwaHxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "analytics graph"
-    },
-    {
-      "id": "feature-meal-planning",
-      "description": "Image for Meal Planning feature card.",
-      "imageUrl": "https://images.unsplash.com/photo-1642489216436-4c5075b34d53?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYWxlbmRhciUyMG1lYWx8ZW58MHx8fHwxNzcxOTM0MDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "calendar meal"
     },
     {
       "id": "auth-background",
@@ -67,46 +31,130 @@
       "imageHint": "green abstract"
     },
     {
-      "id": "food-image-1",
+      "id": "user-avatar-1",
+      "description": "A placeholder user avatar.",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzE4OTQ5MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "jollof-rice",
       "description": "A plate of Jollof Rice.",
-      "imageUrl": "https://images.unsplash.com/photo-1540100716001-4b432820e37f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxqb2xsb2YlMjByaWNlfGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1610057098265-05f2bcbedd55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8am9sbG9mJTIwcmljZXxlbnwwfHx8fDE3NzIzODY1NjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "jollof rice"
     },
     {
-      "id": "food-image-2",
+      "id": "fufu-and-light-soup",
       "description": "A bowl of Fufu with soup.",
-      "imageUrl": "https://images.unsplash.com/photo-1701773169812-750e47f0ab19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZnVmdSUyMHNvdXB8ZW58MHx8fHwxNzcxOTM0MDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmdWZ1JTIwc291cHxlbnwwfHx8fDE3NzIzODY1NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "fufu soup"
     },
     {
-      "id": "food-image-3",
-      "description": "A piece of grilled Tilapia.",
-      "imageUrl": "https://images.unsplash.com/photo-1600175074394-f2f4c500f7ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxncmlsbGVkJTIwZmlzaHxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "grilled fish"
+      "id": "banku-and-tilapia",
+      "description": "Banku with grilled tilapia.",
+      "imageUrl": "https://picsum.photos/seed/banku/400/300",
+      "imageHint": "banku tilapia"
     },
     {
-      "id": "food-image-4",
+      "id": "waakye",
       "description": "A serving of Waakye.",
       "imageUrl": "https://picsum.photos/seed/waakye/400/300",
       "imageHint": "waakye rice"
     },
     {
-      "id": "food-image-5",
-      "description": "Fresh mango slices.",
-      "imageUrl": "https://images.unsplash.com/photo-1685478677113-8c4a58503230?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYW5nbyUyMGZydWl0fGVufDB8fHx8MTc3MTkzNDAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "mango fruit"
+      "id": "kelewele",
+      "description": "Spicy fried plantain.",
+      "imageUrl": "https://images.unsplash.com/photo-1720151569470-3aa02c20ce42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzcGljeSUyMHBsYW50YWlufGVufDB8fHx8MTc3MjM4NjU2NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "spicy plantain"
     },
     {
-      "id": "food-image-6",
+      "id": "grilled-tilapia",
+      "description": "A piece of grilled Tilapia.",
+      "imageUrl": "https://images.unsplash.com/photo-1509402308-817902776267?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxncmlsbGVkJTIwZmlzaHxlbnwwfHx8fDE3NzIzODY1NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grilled fish"
+    },
+    {
+      "id": "chicken-breast",
+      "description": "Grilled chicken breast.",
+      "imageUrl": "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxncmlsbGVkJTIwY2hpY2tlbnxlbnwwfHx8fDE3NzIzNzU5MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grilled chicken"
+    },
+    {
+      "id": "lentils",
+      "description": "A bowl of cooked lentils.",
+      "imageUrl": "https://images.unsplash.com/photo-1734772682896-2db9bf254596?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb29rZWQlMjBsZW50aWxzfGVufDB8fHx8MTc3MjM4NjU2NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cooked lentils"
+    },
+    {
+      "id": "apple",
+      "description": "A red apple.",
+      "imageUrl": "https://images.unsplash.com/photo-1694614826204-0b7dd87603d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cmVkJTIwYXBwbGV8ZW58MHx8fHwxNzcyMzg2MzM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "red apple"
+    },
+    {
+      "id": "banana",
+      "description": "A ripe banana.",
+      "imageUrl": "https://images.unsplash.com/photo-1647632250951-931b4c6f3b0d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxyaXBlJTIwYmFuYW5hfGVufDB8fHx8MTc3MjM4NjU2NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ripe banana"
+    },
+    {
+      "id": "mango",
+      "description": "Fresh mango slices.",
+      "imageUrl": "https://images.unsplash.com/photo-1722942469918-a8726909b540?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzbGljZWQlMjBtYW5nb3xlbnwwfHx8fDE3NzIzODY1NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sliced mango"
+    },
+    {
+      "id": "broccoli",
+      "description": "Broccoli florets.",
+      "imageUrl": "https://images.unsplash.com/photo-1656770181301-cf702868c21e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YnJvY2NvbGklMjBmbG9yZXRzfGVufDB8fHx8MTc3MjM4NjU2NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "broccoli florets"
+    },
+    {
+      "id": "spinach",
+      "description": "Fresh spinach leaves.",
+      "imageUrl": "https://images.unsplash.com/photo-1611255148978-67d7cd31a053?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZnJlc2glMjBzcGluYWNofGVufDB8fHx8MTc3MjM2NjA5M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fresh spinach"
+    },
+    {
+      "id": "brown-rice",
+      "description": "A bowl of cooked brown rice.",
+      "imageUrl": "https://images.unsplash.com/photo-1516684732162-798a0062be99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjb29rZWQlMjByaWNlfGVufDB8fHx8MTc3MjM4NjU2NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cooked rice"
+    },
+    {
+      "id": "oats",
+      "description": "A bowl of rolled oats.",
+      "imageUrl": "https://images.unsplash.com/photo-1585849540407-2ddb0ecaf8ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvYXRzJTIwYm93bHxlbnwwfHx8fDE3NzIzODY1NjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "oats bowl"
+    },
+    {
+      "id": "water",
+      "description": "A glass of water.",
+      "imageUrl": "https://images.unsplash.com/photo-1614887065001-06c958a7cddd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxnbGFzcyUyMHdhdGVyfGVufDB8fHx8MTc3MjM4NjU2NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "glass water"
+    },
+    {
+      "id": "sobolo",
       "description": "A glass of sobolo (hibiscus tea).",
-      "imageUrl": "https://images.unsplash.com/photo-1652128288793-6a2077ee246b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxoaWJpc2N1cyUyMHRlYXxlbnwwfHx8fDE3NzE5MzQwMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1667592157294-815a7f162679?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxoaWJpc2N1cyUyMHRlYXxlbnwwfHx8fDE3NzIzODY1NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "hibiscus tea"
     },
     {
-      "id": "user-avatar-1",
-      "description": "A placeholder user avatar.",
-      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzE4OTQ5MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
+      "id": "kontomire-stew",
+      "description": "Kontomire stew with boiled yam.",
+      "imageUrl": "https://images.unsplash.com/photo-1627880872609-f7ddd76616c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxrb250b21pcmUlMjBzdGV3fGVufDB8fHx8MTc3MjM4NjU2NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kontomire stew"
+    },
+    {
+      "id": "chicken-veggie-stir-fry",
+      "description": "Chicken and veggie stir-fry.",
+      "imageUrl": "https://images.unsplash.com/photo-1683549387218-f52690727f51?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGlja2VuJTIwc3RpcmZyeXxlbnwwfHx8fDE3NzIzODY1NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "chicken stirfry"
+    },
+    {
+      "id": "oatmeal-with-berries",
+      "description": "Oatmeal with berries and nuts.",
+      "imageUrl": "https://images.unsplash.com/photo-1690016336880-015ec03faf13?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxvYXRtZWFsJTIwYmVycmllc3xlbnwwfHx8fDE3NzIyODk1ODJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "oatmeal berries"
     }
   ]
 }

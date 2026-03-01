@@ -1,4 +1,10 @@
 import type { Food } from './data';
+import { PlaceHolderImages } from "./placeholder-images";
+
+const imageMap = PlaceHolderImages.reduce((acc, img) => {
+  acc[img.id] = img;
+  return acc;
+}, {} as Record<string, (typeof PlaceHolderImages)[0]>);
 
 export interface Recommendation extends Food {
   reason: string;
@@ -13,8 +19,8 @@ export const mockRecommendations: Recommendation[] = [
     id: 'kontomire-stew',
     name: 'Kontomire Stew with Boiled Yam',
     category: 'Local Dish',
-    image: 'https://picsum.photos/seed/kontomire/400/300',
-    imageHint: 'kontomire stew',
+    image: imageMap['kontomire-stew']?.imageUrl || '',
+    imageHint: imageMap['kontomire-stew']?.imageHint || 'kontomire stew',
     calories: 350,
     protein: 15,
     carbs: 45,
@@ -57,8 +63,8 @@ export const mockRecommendations: Recommendation[] = [
     id: 'chicken-veggie-stir-fry',
     name: 'Chicken & Veggie Stir-fry',
     category: 'Protein',
-    image: 'https://picsum.photos/seed/stirfry/400/300',
-    imageHint: 'chicken stirfry',
+    image: imageMap['chicken-veggie-stir-fry']?.imageUrl || '',
+    imageHint: imageMap['chicken-veggie-stir-fry']?.imageHint || 'chicken stirfry',
     calories: 400,
     protein: 35,
     carbs: 20,
@@ -100,8 +106,8 @@ export const mockRecommendations: Recommendation[] = [
     id: 'oatmeal-with-berries',
     name: 'Oatmeal with Berries & Nuts',
     category: 'Grains',
-    image: 'https://picsum.photos/seed/oatmeal/400/300',
-    imageHint: 'oatmeal berries',
+    image: imageMap['oatmeal-with-berries']?.imageUrl || '',
+    imageHint: imageMap['oatmeal-with-berries']?.imageHint || 'oatmeal berries',
     calories: 320,
     protein: 10,
     carbs: 50,
