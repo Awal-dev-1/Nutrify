@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -72,7 +71,7 @@ const quickActions = [
   { href: "/dashboard/goals", label: "Update Goals", icon: Target, color: "text-green-500" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart2, color: "text-purple-500" },
   { href: "/dashboard/planner", label: "Meal Planner", icon: Calendar, color: "text-orange-500" },
-  { href: "/dashboard/recommendations", label: "Recommendations", icon: Bot, color: "text-indigo-500" },
+  { href: "/dashboard/recognize", label: "AI Recognition", icon: Bot, color: "text-indigo-500" },
 ];
 
 const getStatus = (
@@ -331,7 +330,7 @@ export default function DashboardPage() {
           
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
+            <CardContent className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {quickActions.map((action) => (
                 <Button variant="outline" asChild key={action.href} className="h-auto py-3 px-2 justify-start hover:border-primary/50 hover:bg-primary/5 transition-all">
                   <Link href={action.href}><action.icon className={cn("mr-2 h-4 w-4", action.color)} /><span className="text-xs sm:text-sm">{action.label}</span></Link>
@@ -356,5 +355,4 @@ export default function DashboardPage() {
     </div>
   );
 }
-
     
