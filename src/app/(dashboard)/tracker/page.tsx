@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, type FC, useEffect } from "react";
@@ -63,7 +64,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
-import { format } from "date-fns";
+import { format, subDays, addDays } from "date-fns";
 import type { DailyLog, LoggedFoodItem } from "@/types/analytics";
 
 
@@ -339,7 +340,7 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
             variant="ghost" 
             size="icon" 
             className="h-8 w-8"
-            onClick={() => setDate(new Date(date.setDate(date.getDate() - 1)))}
+            onClick={() => setDate(subDays(date, 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -355,7 +356,7 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
             variant="ghost" 
             size="icon" 
             className="h-8 w-8"
-            onClick={() => setDate(new Date(date.setDate(date.getDate() + 1)))}
+            onClick={() => setDate(addDays(date, 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -619,22 +620,31 @@ const LoggedFoodItemComponent: FC<{
             
             <div className="flex items-center justify-between sm:justify-end gap-4">
                 <p className="font-medium text-sm sm:text-base">{Math.round(loggedFood.calories)} kcal</p>
-                <div className="sm:hidden">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
+                <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(loggedFood)}>
+                        <Pencil className="h-4 w-4"/>
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4"/>
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onEdit(loggedFood)}>
-                                <Pencil className="h-4 w-4 mr-2" /> Edit
-                            </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => onDelete(loggedFood.logId)} className="text-destructive">
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                        </AlertDialogTrigger>
+                         <AlertDialogContent className="sm:max-w-md w-[95vw] rounded-lg">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Remove {loggedFood.name}?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will remove this item from your meal log.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDelete(loggedFood.logId)}>
+                                    Remove
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
         </div>
