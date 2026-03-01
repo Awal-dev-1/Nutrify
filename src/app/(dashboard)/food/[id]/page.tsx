@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import {
   ArrowLeft,
   Heart,
@@ -72,9 +72,11 @@ const DAILY_VALUES = {
   sodium: 2300,
 };
 
-export default function FoodDetailsPage({ params }: { params: { id: string } }) {
+export default function FoodDetailsPage() {
+  const params = useParams();
+  const id = params.id as string;
   const { toast } = useToast();
-  const food = mockFoods.find((f) => f.id === params.id);
+  const food = mockFoods.find((f) => f.id === id);
 
   const [quantity, setQuantity] = useState(100);
   const [unit, setUnit] = useState('grams');
