@@ -10,15 +10,13 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { type FoodItem, FoodItemSchema } from '@/types/food';
+import { FoodItemSchema } from '@/types/food';
 
 const SearchFoodsInputSchema = z.object({
   query: z.string().describe('The natural language search query from the user.'),
   userGoal: z.string().optional().describe("The user's primary health goal (e.g., 'lose_weight')."),
 });
 export type SearchFoodsInput = z.infer<typeof SearchFoodsInputSchema>;
-
-export type { FoodItem };
 
 const SearchFoodsOutputSchema = z.object({
   isFoodQuery: z.boolean().describe("A boolean indicating if the query is about food."),

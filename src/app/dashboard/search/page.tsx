@@ -1,7 +1,7 @@
-
 'use client';
 
-import { useState, type FC, useSearchParams } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Search as SearchIcon,
   X,
@@ -9,153 +9,34 @@ import {
   Bot,
   Loader2,
   AlertCircle,
-  Stethoscope,
-  BookOpen,
-  CookingPot,
-  Salad,
-  Beef,
-  Wheat,
-  Droplets,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { searchFoods, type SearchFoodsOutput, type FoodItem } from '@/ai/flows/search-foods-flow';
+import { searchFoods, type SearchFoodsOutput } from '@/ai/flows/search-foods-flow';
+import type { FoodItem } from '@/types/food';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUser } from '@/firebase';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect } from 'react';
-
-const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string }> = ({ item, userGoal }) => {
-  return (
-    <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
-      <CardHeader className="bg-primary/5">
-        <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
-        <div className="text-3xl font-extrabold text-primary pt-2">
-            {item.calories.toFixed(0)}{' '}
-            <span className="text-lg font-medium text-muted-foreground">kcal (estimated)</span>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        <Tabs defaultValue="analysis" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
-                <TabsTrigger value="analysis"><Stethoscope className="h-4 w-4 mr-1" />Analysis</TabsTrigger>
-                <TabsTrigger value="nutrients"><Salad className="h-4 w-4 mr-1" />Nutrients</TabsTrigger>
-                <TabsTrigger value="history"><BookOpen className="h-4 w-4 mr-1" />History</TabsTrigger>
-                <TabsTrigger value="recipe"><CookingPot className="h-4 w-4 mr-1" />Recipe</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="analysis">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Health Analysis</CardTitle>
-                        <CardDescription>
-                          For your goal: <span className="capitalize font-medium text-primary">{userGoal?.replace('-', ' ') || 'Not set'}</span>
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-sm space-y-3">
-                      <p>{item.healthAnalysis}</p>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            
-            <TabsContent value="nutrients">
-              <div className="grid md:grid-cols-2 gap-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Macronutrients</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-3 gap-2 text-center">
-                        <div className="space-y-1">
-                            <div className="inline-flex p-2 rounded-full bg-red-50 dark:bg-red-950/20"><Beef className="h-4 w-4 text-red-500" /></div>
-                            <p className="text-xs text-muted-foreground">Protein</p>
-                            <p className="font-bold">{item.macronutrientBreakdown.protein.toFixed(1)}g</p>
-                        </div>
-                        <div className="space-y-1">
-                             <div className="inline-flex p-2 rounded-full bg-yellow-50 dark:bg-yellow-950/20"><Wheat className="h-4 w-4 text-yellow-600" /></div>
-                            <p className="text-xs text-muted-foreground">Carbs</p>
-                            <p className="font-bold">{item.macronutrientBreakdown.carbohydrates.toFixed(1)}g</p>
-                        </div>
-                        <div className="space-y-1">
-                             <div className="inline-flex p-2 rounded-full bg-blue-50 dark:bg-blue-950/20"><Droplets className="h-4 w-4 text-blue-500" /></div>
-                            <p className="text-xs text-muted-foreground">Fat</p>
-                            <p className="font-bold">{item.macronutrientBreakdown.fat.toFixed(1)}g</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Micronutrients</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm space-y-2">
-                        <ul className="space-y-1 max-h-48 overflow-y-auto">
-                            {item.micronutrientBreakdown.map((nutrient, i) => (
-                              <li key={i} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">
-                                <span>{nutrient.split(':')[0]}</span>
-                                <span className="font-medium">{nutrient.split(':')[1]}</span>
-                              </li>
-                            ))}
-                        </ul>
-                    </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="history">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Cultural History</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm space-y-3">
-                        <p>{item.foodHistory}</p>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            
-            <TabsContent value="recipe">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Detailed Recipe</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm space-y-6">
-                        <div>
-                            <h4 className="font-semibold text-base mb-2">Ingredients</h4>
-                            <ul className="list-disc list-outside pl-5 space-y-2">
-                                {item.detailedRecipe.ingredients.map((ingredient, i) => <li key={i}>{ingredient}</li>)}
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold text-base mb-2">Instructions</h4>
-                            <ol className="list-decimal list-outside pl-5 space-y-2">
-                                {item.detailedRecipe.instructions.map((instruction, i) => <li key={i}>{instruction}</li>)}
-                            </ol>
-                        </div>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
-  );
-};
-
+import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
+import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
+  const initialQuery = searchParams?.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SearchFoodsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(!!initialQuery);
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+
   const { toast } = useToast();
   const { userProfile, isProfileLoading } = useUser();
 
   useEffect(() => {
-    if (initialQuery) {
+    if (initialQuery && userProfile) {
         handleSearch(initialQuery);
     }
   }, [initialQuery, userProfile]);
@@ -295,11 +176,22 @@ export default function SearchPage() {
                 Found {result.foodItems.length} result{result.foodItems.length > 1 ? 's' : ''} for "{searchQuery}"
             </h2>
             {result.foodItems.map(item => (
-                <AiFoodResultCard key={item.foodName} item={item} userGoal={userProfile?.health?.primaryGoal} />
+                <AiFoodResultCard 
+                  key={item.foodName} 
+                  item={item} 
+                  userGoal={userProfile?.health?.primaryGoal}
+                  onAdd={setSelectedFood}
+                />
             ))}
           </div>
         )}
       </div>
+
+      <FoodConfirmationModal 
+        isOpen={!!selectedFood}
+        onClose={() => setSelectedFood(null)}
+        foodItem={selectedFood}
+      />
     </div>
   );
 }

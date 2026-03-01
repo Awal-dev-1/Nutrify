@@ -3,7 +3,7 @@
 import { doc, getDoc, setDoc, collection, Firestore } from 'firebase/firestore';
 import { format } from 'date-fns';
 import type { DailyLog, LoggedFoodItem } from '@/types/analytics';
-import type { FoodItem as AiFoodItem } from '@/ai/flows/search-foods-flow';
+import type { FoodItem as AiFoodItem } from '@/types/food';
 import type { Food } from '@/lib/data';
 
 /**

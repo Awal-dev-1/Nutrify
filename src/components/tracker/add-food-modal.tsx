@@ -12,7 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, AlertCircle, Leaf } from "lucide-react";
-import { searchFoods, type FoodItem } from "@/ai/flows/search-foods-flow";
+import { searchFoods } from "@/ai/flows/search-foods-flow";
+import type { FoodItem } from '@/types/food';
 import { useUser } from "@/firebase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
