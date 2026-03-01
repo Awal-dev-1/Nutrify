@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, type FC } from 'react';
+import { useState, type FC, useSearchParams } from 'react';
 import {
   Search as SearchIcon,
   X,
@@ -24,10 +25,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { searchFoods, type SearchFoodsOutput, type FoodItem } from '@/ai/flows/search-foods-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { mockUser } from '@/lib/data';
+import { useUser } from '@/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect } from 'react';
 
-const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
+const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string }> = ({ item, userGoal }) => {
   return (
     <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
       <CardHeader className="bg-primary/5">
@@ -50,7 +52,9 @@ const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
                 <Card>
                     <CardHeader>
                         <CardTitle>Health Analysis</CardTitle>
-                        <CardDescription>For your goal: <span className="capitalize font-medium text-primary">{mockUser.goal.replace('-', ' ')}</span></CardDescription>
+                        <CardDescription>
+                          For your goal: <span className="capitalize font-medium text-primary">{userGoal?.replace('-', ' ') || 'Not set'}</span>
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="text-sm space-y-3">
                       <p>{item.healthAnalysis}</p>
@@ -140,12 +144,21 @@ const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
 
 
 export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SearchFoodsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(!!initialQuery);
   const { toast } = useToast();
+  const { userProfile, isProfileLoading } = useUser();
+
+  useEffect(() => {
+    if (initialQuery) {
+        handleSearch(initialQuery);
+    }
+  }, [initialQuery, userProfile]);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -161,9 +174,10 @@ export default function SearchPage() {
     setHasSearched(true);
 
     try {
+      const userGoal = userProfile?.health?.primaryGoal;
       const response = await searchFoods({
         query: query,
-        userGoal: mockUser.goal,
+        userGoal: userGoal,
       });
 
       if (!response.isFoodQuery) {
@@ -235,9 +249,9 @@ export default function SearchPage() {
             type="submit"
             size="lg"
             className="h-14 rounded-full px-6"
-            disabled={loading || !searchQuery.trim()}
+            disabled={loading || !searchQuery.trim() || isProfileLoading}
           >
-            {loading ? (
+            {loading || isProfileLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <SearchIcon className="mr-2 h-4 w-4" />
@@ -258,7 +272,7 @@ export default function SearchPage() {
           />
         )}
         
-        {loading && (
+        {(loading || isProfileLoading) && (
           <div className="space-y-4">
             <Skeleton className="h-8 w-3/5" />
             <Skeleton className="h-64 w-full" />
@@ -281,7 +295,7 @@ export default function SearchPage() {
                 Found {result.foodItems.length} result{result.foodItems.length > 1 ? 's' : ''} for "{searchQuery}"
             </h2>
             {result.foodItems.map(item => (
-                <AiFoodResultCard key={item.foodName} item={item} />
+                <AiFoodResultCard key={item.foodName} item={item} userGoal={userProfile?.health?.primaryGoal} />
             ))}
           </div>
         )}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -143,7 +144,7 @@ const weeklyChartData = [
 
 const quickActions = [
   { href: "/dashboard/tracker", label: "Add Meal", icon: PlusCircle, color: "text-primary" },
-  { href: "/dashboard/search", label: "Search Food", icon: Search, color: "text-blue-500" },
+  { href: "/dashboard/search", label: "AI Food Search", icon: Search, color: "text-blue-500" },
   { href: "/dashboard/goals", label: "Update Goals", icon: Target, color: "text-green-500" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart2, color: "text-purple-500" },
   { href: "/dashboard/planner", label: "Meal Planner", icon: Calendar, color: "text-orange-500" },

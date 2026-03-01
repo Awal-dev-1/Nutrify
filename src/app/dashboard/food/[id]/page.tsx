@@ -1,9 +1,9 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
   Heart,
@@ -15,7 +15,6 @@ import {
   Droplets,
   Zap,
   Leaf,
-  Info,
 } from 'lucide-react';
 import {
   PieChart,
@@ -96,7 +95,7 @@ export default function FoodDetailsPage() {
         description="The food item you are looking for does not exist in our database."
       >
         <Button asChild className="mt-4">
-          <Link href="/dashboard/search">Back to Search</Link>
+          <Link href="/dashboard/search">Back to AI Food Search</Link>
         </Button>
       </EmptyState>
     );
@@ -136,7 +135,7 @@ export default function FoodDetailsPage() {
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Food Search", href: "/dashboard/search" },
+    { label: "AI Food Search", href: "/dashboard/search" },
     { label: food.name },
   ];
 
@@ -147,7 +146,7 @@ export default function FoodDetailsPage() {
         <Button variant="ghost" asChild>
           <Link href="/dashboard/search">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Search
+            Back to AI Search
           </Link>
         </Button>
         <Breadcrumbs items={breadcrumbItems} className="hidden md:block" />
@@ -159,19 +158,8 @@ export default function FoodDetailsPage() {
 
       {/* 2. Food Header */}
       <Card>
-        <div className="grid md:grid-cols-3 gap-6 p-6">
-          <div className="md:col-span-1">
-            <div className="relative aspect-square rounded-lg overflow-hidden shadow-md">
-              <Image
-                src={food.image}
-                alt={food.name}
-                fill
-                className="object-cover"
-                data-ai-hint={food.imageHint}
-              />
-            </div>
-          </div>
-          <div className="md:col-span-2 space-y-4">
+        <div className="p-6">
+          <div className="space-y-4">
             <Badge variant="outline">{food.category}</Badge>
             <h1 className="text-4xl font-bold">{food.name}</h1>
             <p className="text-muted-foreground">{food.description}</p>
