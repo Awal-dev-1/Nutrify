@@ -55,7 +55,7 @@ export default function OnboardingPage() {
             title: "Profile Created!",
             description: "Welcome to Nutrify! Your personalized dashboard is ready."
         });
-        router.push("/dashboard");
+        router.push("/dashboard/tracker");
     } catch (error) {
         console.error("Failed to complete onboarding:", error);
         toast({

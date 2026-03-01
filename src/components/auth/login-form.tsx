@@ -44,7 +44,8 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await login(auth, values.email, values.password);
-      router.push("/dashboard");
+      // The parent page (`/login`) is responsible for handling the redirect
+      // after the auth state changes. This component just handles the login action.
     } catch (error: any) {
       toast({
         variant: "destructive",
