@@ -8,7 +8,7 @@ import { RecommendationCard } from '@/components/recommendations/recommendation-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { getRecommendations } from '@/services/recommendationService';
+import { subscribeToRealtimeRecommendations } from '@/services/recommendationService';
 import type { RecommendationResult } from '@/services/recommendationService';
 import { useUser, useFirestore } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -21,29 +21,49 @@ export default function RecommendationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecommendations = async () => {
-    if (!user || !db) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await getRecommendations(db, user.uid);
-      setData(result);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch recommendations.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (user && db) {
-      fetchRecommendations();
-    }
+    if (!user || !db) return;
+
+    setIsLoading(true);
+
+    const unsubscribe = subscribeToRealtimeRecommendations(
+      db,
+      user.uid,
+      (result) => {
+        setData(result);
+        setIsLoading(false);
+        setError(null);
+      },
+      (err) => {
+        setError(err.message || 'Failed to get recommendations.');
+        setIsLoading(false);
+        console.error(err);
+      }
+    );
+
+    return () => unsubscribe();
   }, [user, db]);
 
+
   const SummaryCard = () => {
-    if (!data) return null;
+    if (isLoading || !data) {
+        return (
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-2 w-full" />
+                    </div>
+                     <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+            </Card>
+        )
+    }
+
     const { calorieRemaining, goals } = data;
     const consumed = goals.calories - calorieRemaining;
     const progress = (consumed / goals.calories) * 100;
@@ -112,19 +132,15 @@ export default function RecommendationsPage() {
         <EmptyState
           icon={<Salad className="h-16 w-16 text-muted-foreground" />}
           title="No recommendations for now"
-          description="Log some meals, and we'll generate personalized suggestions for you here."
+          description="Your recommendations will appear here as you log meals."
           className="border-2 border-dashed"
-        >
-          <Button onClick={fetchRecommendations} size="lg" variant="outline" className="mt-4">
-            <RefreshCw className="mr-2 h-4 w-4" /> Try Refreshing
-          </Button>
-        </EmptyState>
+        />
       );
     }
     
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {data.recommendations.map((rec, index) => (
+        {data.recommendations.map((rec) => (
           <div key={rec.id} className="relative group">
             {rec.matchScore > 150 && (
               <Badge className="absolute -top-2 -right-2 z-10 bg-primary shadow-lg">
@@ -147,13 +163,9 @@ export default function RecommendationsPage() {
         <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight">AI Recommendations</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Smart meal suggestions tailored to your goals and today's intake.
+              Suggestions update in real-time as you log your meals.
             </p>
         </div>
-        <Button variant="outline" onClick={fetchRecommendations} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-        </Button>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
