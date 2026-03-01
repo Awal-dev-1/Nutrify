@@ -78,6 +78,11 @@ export default function SearchPage() {
     isHalal: false,
   });
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -328,71 +333,75 @@ export default function SearchPage() {
 
         {/* Right side controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
-          {/* Filter - Desktop Dropdown */}
-          <div className="hidden lg:block">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className={cn(
-                    "relative gap-1 sm:gap-2 h-8 sm:h-9 text-xs sm:text-sm",
-                    isFiltersApplied && "border-primary/50 bg-primary/5"
-                  )}
-                >
-                  <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Filters</span>
-                  {isFiltersApplied && (
-                    <Badge variant="secondary" className="ml-0.5 sm:ml-1 h-4 w-4 sm:h-5 sm:w-5 p-0 rounded-full text-xs">
-                      •
-                    </Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72 sm:w-80 p-4 sm:p-5" align="end">
-                <DropdownMenuLabel className="px-0 text-sm sm:text-base">Advanced Filters</DropdownMenuLabel>
-                <p className="text-xs text-muted-foreground mt-1 mb-2 sm:mb-3 px-0">
-                  Refine your search with specific criteria
-                </p>
-                <FilterContent />
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {isClient && (
+            <>
+              {/* Filter - Desktop Dropdown */}
+              <div className="hidden lg:block">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className={cn(
+                        "relative gap-1 sm:gap-2 h-8 sm:h-9 text-xs sm:text-sm",
+                        isFiltersApplied && "border-primary/50 bg-primary/5"
+                      )}
+                    >
+                      <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Filters</span>
+                      {isFiltersApplied && (
+                        <Badge variant="secondary" className="ml-0.5 sm:ml-1 h-4 w-4 sm:h-5 sm:w-5 p-0 rounded-full text-xs">
+                          •
+                        </Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-72 sm:w-80 p-4 sm:p-5" align="end">
+                    <DropdownMenuLabel className="px-0 text-sm sm:text-base">Advanced Filters</DropdownMenuLabel>
+                    <p className="text-xs text-muted-foreground mt-1 mb-2 sm:mb-3 px-0">
+                      Refine your search with specific criteria
+                    </p>
+                    <FilterContent />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
-          {/* Filter - Mobile/Tablet Sheet */}
-          <div className="lg:hidden">
-            <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-              <SheetTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className={cn(
-                    "relative gap-1 sm:gap-2 h-8 sm:h-9 text-xs sm:text-sm",
-                    isFiltersApplied && "border-primary/50 bg-primary/5"
-                  )}
-                >
-                  <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Filters</span>
-                  {isFiltersApplied && (
-                    <Badge variant="secondary" className="ml-0.5 sm:ml-1 h-4 w-4 sm:h-5 sm:w-5 p-0 rounded-full text-xs">
-                      •
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl px-3 sm:px-4">
-                <SheetHeader className="text-left pb-3 sm:pb-4">
-                  <SheetTitle className="text-base sm:text-lg">Advanced Filters</SheetTitle>
-                  <SheetDescription className="text-xs sm:text-sm">
-                    Refine your search with specific criteria
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="py-3 sm:py-4 overflow-y-auto max-h-[60vh]">
-                  <FilterContent />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+              {/* Filter - Mobile/Tablet Sheet */}
+              <div className="lg:hidden">
+                <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                  <SheetTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className={cn(
+                        "relative gap-1 sm:gap-2 h-8 sm:h-9 text-xs sm:text-sm",
+                        isFiltersApplied && "border-primary/50 bg-primary/5"
+                      )}
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Filters</span>
+                      {isFiltersApplied && (
+                        <Badge variant="secondary" className="ml-0.5 sm:ml-1 h-4 w-4 sm:h-5 sm:w-5 p-0 rounded-full text-xs">
+                          •
+                        </Badge>
+                      )}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl px-3 sm:px-4">
+                    <SheetHeader className="text-left pb-3 sm:pb-4">
+                      <SheetTitle className="text-base sm:text-lg">Advanced Filters</SheetTitle>
+                      <SheetDescription className="text-xs sm:text-sm">
+                        Refine your search with specific criteria
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="py-3 sm:py-4 overflow-y-auto max-h-[60vh]">
+                      <FilterContent />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </>
+          )}
 
           {/* View Mode Toggle */}
           <div className="flex items-center gap-0.5 sm:gap-1 bg-muted/50 p-0.5 sm:p-1 rounded-lg border">
