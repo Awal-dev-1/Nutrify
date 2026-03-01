@@ -206,7 +206,7 @@ export default function SearchPage() {
             </div>
             <Input
               placeholder="AI Search..."
-              className="w-full h-14 rounded-full border-2 bg-background pl-12 text-base transition-all focus-visible:ring-primary/20"
+              className="w-full h-14 rounded-full border-2 bg-background pl-12 pr-12 text-base transition-all focus-visible:ring-primary/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -229,11 +229,11 @@ export default function SearchPage() {
             disabled={loading || !searchQuery.trim()}
           >
             {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <SearchIcon className="h-5 w-5" />
+              <SearchIcon className="mr-2 h-4 w-4" />
             )}
-            <span className="sr-only">Search</span>
+            <span>Search</span>
           </Button>
         </form>
       </div>
