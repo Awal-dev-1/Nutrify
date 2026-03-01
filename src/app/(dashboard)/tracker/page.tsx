@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, type FC, useEffect } from "react";
@@ -63,7 +62,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { format, subDays, addDays } from "date-fns";
 import type { DailyLog, LoggedFoodItem } from "@/types/analytics";
 
@@ -82,7 +81,7 @@ export default function DailyTrackerPage() {
     [user, db, dateKey]
   );
   
-  const { data: dailyLog, isLoading: isLogLoading, error: logError } = useDoc<DailyLog>(dailyLogRef);
+  const { data: dailyLog, isLoading: isLogLoading } = useDoc<DailyLog>(dailyLogRef);
 
   const [waterIntake, setWaterIntake] = useState(0);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -167,17 +166,18 @@ export default function DailyTrackerPage() {
         const itemIndex = newMeals[mealKey].findIndex(item => item.logId === logId);
         if (itemIndex > -1) {
             const originalItem = newMeals[mealKey][itemIndex];
-            const foodInfo = mockFoods.find(f => f.id === originalItem.foodId);
-            if(foodInfo){
-                foodName = foodInfo.name;
-                const ratio = newQuantity / 100;
+            foodName = originalItem.name;
+            const originalQuantity = originalItem.quantity;
+
+            if (originalQuantity > 0) {
+                const ratio = newQuantity / originalQuantity;
                 newMeals[mealKey][itemIndex] = {
                     ...originalItem,
                     quantity: newQuantity,
-                    calories: foodInfo.calories * ratio,
-                    protein: foodInfo.protein * ratio,
-                    carbs: foodInfo.carbs * ratio,
-                    fat: foodInfo.fat * ratio,
+                    calories: originalItem.calories * ratio,
+                    protein: originalItem.protein * ratio,
+                    carbs: originalItem.carbs * ratio,
+                    fat: originalItem.fat * ratio,
                 };
             }
             break;
@@ -235,7 +235,7 @@ export default function DailyTrackerPage() {
             meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
             waterIntake: 0,
             totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0
-        }, { merge: false }); // Overwrite the document
+        }, { merge: true });
     }
     toast({
       title: "Day Cleared",
