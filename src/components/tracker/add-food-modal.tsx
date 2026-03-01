@@ -12,8 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, AlertCircle, Leaf } from "lucide-react";
-import { searchFoods, type AiFoodData } from "@/ai/flows/search-foods-flow";
-import { mockUser } from "@/lib/data";
+import { searchFoods, type FoodItem } from "@/ai/flows/search-foods-flow";
+import { useUser } from "@/firebase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +24,7 @@ type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 interface AddFoodModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddFood: (foodData: AiFoodData, quantity: number, mealType: MealType) => void;
+  onAddFood: (foodData: FoodItem, quantity: number, mealType: MealType) => void;
   mealType: MealType | null;
 }
 
@@ -32,8 +32,9 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [aiResult, setAiResult] = useState<AiFoodData | null>(null);
+  const [aiResult, setAiResult] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(100);
+  const { userProfile } = useUser();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,14 +47,14 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
     try {
       const response = await searchFoods({
         query: searchQuery,
-        userGoal: mockUser.goal,
+        userGoal: userProfile?.health?.primaryGoal,
       });
 
-      if ('error' in response) {
-        throw new Error(response.error);
+      if (!response.isFoodQuery || response.foodItems.length === 0) {
+        throw new Error("Could not find nutritional information for that food.");
       }
 
-      setAiResult(response);
+      setAiResult(response.foodItems[0]);
     } catch (err: any) {
       setError(err.message || 'Could not fetch AI-powered results.');
     } finally {
@@ -137,13 +138,13 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
                         <div>
                             <h3 className="font-bold flex items-center gap-2">
                                 <Leaf className="text-primary h-4 w-4" />
-                                {aiResult.name}
+                                {aiResult.foodName}
                             </h3>
-                            <p className="text-xs text-muted-foreground">{aiResult.description}</p>
+                            <p className="text-xs text-muted-foreground">AI-generated nutritional estimate</p>
                         </div>
                         <div className="text-right">
                             <p className="font-bold text-primary">{aiResult.calories} kcal</p>
-                            <p className="text-xs text-muted-foreground">per {aiResult.servingSize}</p>
+                            <p className="text-xs text-muted-foreground">per standard serving</p>
                         </div>
                     </div>
                   </CardContent>
