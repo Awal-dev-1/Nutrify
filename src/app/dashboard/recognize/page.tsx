@@ -147,8 +147,7 @@ export default function AiRecognitionPage() {
   };
 
   const handleAnalyze = async () => {
-    // uploadedImage is the data URI of the resized image
-    if (!imageFile || !user || !scanId || !db || !app || !uploadedImage) return;
+    if (!imageFile || !user || !scanId || !db || !app) return;
     
     setStatus('uploading');
     setError(null);
@@ -159,8 +158,8 @@ export default function AiRecognitionPage() {
       setStatus('processing');
       // 2. Create the doc in firestore
       await createScanDocument(db, user.uid, scanId, downloadURL);
-      // 3. Run recognition with the RESIZED data URI
-      await runFoodRecognition(db, user.uid, scanId, uploadedImage);
+      // 3. Run recognition with the Storage URL
+      await runFoodRecognition(db, user.uid, scanId, downloadURL);
     } catch (e: any) {
       console.error(e);
       const errorMessage = e.message || 'An unexpected error occurred during analysis.';

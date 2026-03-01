@@ -11,10 +11,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const RecognizeFoodInputSchema = z.object({
-  imageDataUri: z
+  imageUrl: z
     .string()
+    .url()
     .describe(
-      "A photo of food, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A public URL for a food image."
     ),
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
@@ -42,23 +43,6 @@ export async function recognizeFood(
   return recognizeFoodFlow(input);
 }
 
-const recognizeFoodPrompt = ai.definePrompt({
-  name: 'recognizeFoodLabelsPrompt',
-  input: {schema: RecognizeFoodInputSchema},
-  output: {schema: RecognizeFoodOutputSchema},
-  prompt: `You are an expert image classifier. Your task is to identify all potential food-related objects in the provided image.
-
-CRITICAL INSTRUCTIONS:
-1.  **DETECT GENERIC OBJECTS**: Do not try to name a specific dish. Instead, provide generic labels for what you see (e.g., "rice", "fish", "tomato", "leafy greens", "stew").
-2.  **PROVIDE LABELS**: Provide a list of the top 5 most likely labels for food items or ingredients you can identify.
-3.  **CONFIDENCE SCORE**: For each label, provide a confidence score between 0.0 (not confident) and 1.0 (very confident).
-4.  **JSON OUTPUT**: Your final output must be a valid JSON object that adheres to the provided output schema. Do not return anything if you cannot identify any food-like objects.
-
-Image to analyze:
-{{media url=imageDataUri}}
-`,
-});
-
 const recognizeFoodFlow = ai.defineFlow(
   {
     name: 'recognizeFoodFlow',
@@ -66,7 +50,28 @@ const recognizeFoodFlow = ai.defineFlow(
     outputSchema: RecognizeFoodOutputSchema,
   },
   async input => {
-    const { output } = await recognizeFoodPrompt(input);
+    const promptText = `You are an expert image classifier. Your task is to identify all potential food-related objects in the provided image.
+
+CRITICAL INSTRUCTIONS:
+1.  **DETECT GENERIC OBJECTS**: Do not try to name a specific dish. Instead, provide generic labels for what you see (e.g., "rice", "fish", "tomato", "leafy greens", "stew").
+2.  **PROVIDE LABELS**: Provide a list of the top 5 most likely labels for food items or ingredients you can identify.
+3.  **CONFIDENCE SCORE**: For each label, provide a confidence score between 0.0 (not confident) and 1.0 (very confident).
+4.  **JSON OUTPUT**: Your final output must be a valid JSON object that adheres to the provided output schema. Do not return anything if you cannot identify any food-like objects.`;
+
+    const { output } = await ai.generate({
+        prompt: [
+            { text: promptText },
+            { media: { url: input.imageUrl, contentType: 'image/jpeg' } },
+        ],
+        output: {
+            format: 'json',
+            schema: RecognizeFoodOutputSchema,
+        },
+        config: {
+            timeout: 30000,
+        }
+    });
+
     if (!output) {
         throw new Error("The AI model failed to produce an output.");
     }

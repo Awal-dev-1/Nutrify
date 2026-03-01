@@ -61,13 +61,13 @@ export async function runFoodRecognition(
   db: Firestore,
   userId: string,
   scanId: string,
-  imageDataUri: string
+  imageUrl: string
 ) {
   const scanRef = doc(db, 'users', userId, 'aiScans', scanId);
 
   try {
     // 1. Get generic labels from AI
-    const aiResult = await recognizeFood({ imageDataUri });
+    const aiResult = await recognizeFood({ imageUrl });
 
     if (!aiResult.labels || aiResult.labels.length === 0) {
       await updateDoc(scanRef, {
