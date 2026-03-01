@@ -9,7 +9,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { mockFoods } from '@/lib/data';
 
 const AiFoodSearchResultSchema = z.object({
   id: z.string().describe("A unique identifier for the food item, preferably a slug-like-string."),
@@ -46,35 +45,29 @@ const searchFoodsPrompt = ai.definePrompt({
   name: 'searchFoodsPrompt',
   input: { schema: SearchFoodsInputSchema },
   output: { schema: SearchFoodsOutputSchema },
-  prompt: `You are a food database search engine for a Ghanaian nutrition app called Nutrify.
-Your task is to respond to a user's food search query.
-The query can be a simple food name, a natural language query (e.g., "high protein lunch"), or include dietary restrictions.
+  prompt: `You are an AI nutritionist and food database for "Nutrify", a smart nutrition app for Ghanaian users.
+Your task is to respond to a user's food search query with accurate nutritional information.
 
-Based on the user's query: "{{query}}", find relevant food items from the provided food list.
-Prioritize Ghanaian local dishes when relevant.
+The user's query is: "{{query}}".
 
-If the user specifies dietary preferences like {{#if dietaryPreferences}}'{{#each dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}'{{/if}}, make sure the returned food items match those preferences.
+You can handle:
+- Specific food names (e.g., "Jollof Rice")
+- Natural language queries (e.g., "high protein lunch", "low calorie snacks")
+- Queries with dietary restrictions (e.g., "vegan ghanaian dinner")
 
-Return a list of matching food items. For each item, provide all the nutritional details as specified in the output schema.
-The nutritional values should be per 100g.
-Provide a brief summary of how you interpreted the query.
+Based on the query, generate a list of relevant food items. Prioritize Ghanaian local dishes when appropriate.
+If the user specifies dietary preferences like {{#if dietaryPreferences}}'{{#each dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}'{{/if}}, ensure your suggestions are compatible.
 
-For each result, include a "matchScore" (a fictional score from 0.85 to 0.99) and a "reason" explaining why it's a good match.
+For each food item you return, provide the following details, making your best estimate for nutritional values per 100g:
+- A unique, slug-like ID.
+- The food's name.
+- Calories.
+- Macros (protein, carbs, fat).
+- A "matchScore" (from 0 to 1) indicating how well it matches the query.
+- A "reason" explaining why this food is a good suggestion.
 
-Here is the list of available foods to search from:
-${JSON.stringify(mockFoods.map(f => ({
-  id: f.id,
-  name: f.name,
-  calories: f.calories,
-  macros: {
-    protein: f.protein,
-    carbs: f.carbs,
-    fat: f.fat
-  }
-})), null, 2)}
-
-Only return foods from this list. If the query is "high protein", find the foods in the list with high protein. If the query is a food name, find that food.
-Behave like a search engine filtering the provided JSON data.
+Also, provide a brief summary of how you interpreted the user's query in the 'interpretedQuery' field.
+Your entire output must conform to the specified JSON schema. Do not return foods that are not relevant to the query.
 `,
 });
 
