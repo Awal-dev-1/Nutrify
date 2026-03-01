@@ -82,7 +82,6 @@ const searchFoodsFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await searchFoodsPrompt(input, {
-      model: gemini25Flash,
       config: {
         temperature: 0.1,
       },
