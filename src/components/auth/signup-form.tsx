@@ -82,7 +82,7 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Akua Mansa" {...field} />
+                    <Input placeholder="Mohammed Awal" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
