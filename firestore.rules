@@ -101,6 +101,14 @@ service cloud.firestore {
       match /dailyLogs/{date} {
         allow read, write: if isOwner(userId);
       }
+      
+      /**
+       * @description Manages a user's generated recommendation history.
+       * @path /users/{userId}/generatedRecommendations/{recommendationId}
+       */
+      match /generatedRecommendations/{recommendationId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     /**

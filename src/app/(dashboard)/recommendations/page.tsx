@@ -8,25 +8,36 @@ import { RecommendationCard } from '@/components/recommendations/recommendation-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { getRecommendations } from '@/services/recommendationService';
+import { generateRecommendations } from '@/services/recommendationService';
 import type { RecommendationResult } from '@/services/recommendationService';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { doc } from 'firebase/firestore';
+import { format } from 'date-fns';
+import type { DailyLog } from '@/types/analytics';
 
 export default function RecommendationsPage() {
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
   const db = useFirestore();
   const [data, setData] = useState<RecommendationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch today's log for the summary card
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const dailyLogRef = useMemoFirebase(
+    () => (user ? doc(db, 'users', user.uid, 'dailyLogs', todayKey) : null),
+    [user, db, todayKey]
+  );
+  const { data: dailyLog, isLoading: isLogLoading } = useDoc<DailyLog>(dailyLogRef);
 
   const fetchRecommendations = async () => {
     if (!user || !db) return;
     setIsLoading(true);
     setError(null);
     try {
-      const result = await getRecommendations(db, user.uid);
+      const result = await generateRecommendations(db, user.uid);
       setData(result);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch recommendations.');
@@ -37,16 +48,45 @@ export default function RecommendationsPage() {
   };
 
   const SummaryCard = () => {
-    if (!data) return null;
-    const { calorieRemaining, goals } = data;
-    const consumed = goals.calories - calorieRemaining;
-    const progress = (consumed / goals.calories) * 100;
+    if (isLogLoading) {
+       return (
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-2 w-full" />
+                    </div>
+                     <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+            </Card>
+        )
+    }
+
+    const goals = userProfile?.goals;
+    if (!goals) return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Today's Calorie Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">Set your goals to see your status.</p>
+            </CardContent>
+        </Card>
+    );
+
+    const consumed = dailyLog?.totalCalories || 0;
+    const calorieRemaining = goals.dailyCalorieGoal - consumed;
+    const progress = (consumed / goals.dailyCalorieGoal) * 100;
   
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Today's Calorie Status</CardTitle>
-          <CardDescription>Based on your goal of {goals.calories} kcal</CardDescription>
+          <CardDescription>Based on your goal of {goals.dailyCalorieGoal} kcal</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
            <div className="flex items-center justify-between">
@@ -59,7 +99,7 @@ export default function RecommendationsPage() {
           <Progress value={progress} />
            <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Consumed: {Math.round(consumed)} kcal</span>
-            <span>Goal: {goals.calories} kcal</span>
+            <span>Goal: {goals.dailyCalorieGoal} kcal</span>
           </div>
         </CardContent>
       </Card>
@@ -133,7 +173,7 @@ export default function RecommendationsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {data.recommendations.map((rec, index) => (
           <div key={rec.id} className="relative group">
-            {rec.matchScore > 150 && (
+            {rec.matchScore > 40 && (
               <Badge className="absolute -top-2 -right-2 z-10 bg-primary shadow-lg">
                 Top Pick
               </Badge>

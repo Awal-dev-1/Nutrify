@@ -205,6 +205,13 @@
           "type": "boolean",
           "description": "Flag indicating if the food item is considered a local Ghanaian dish or ingredient."
         },
+        "tags": {
+          "type": "array",
+          "description": "An array of descriptive tags, including dietary tags like 'Vegan', 'Halal', 'Gluten-Free'.",
+          "items": {
+            "type": "string"
+          }
+        },
         "smallServingGrams": {
           "type": "number",
           "description": "Weight in grams for a 'Small' portion size of this food. (Optional)"
@@ -268,6 +275,36 @@
         }
       },
       "required": ["date", "totalCalories", "totalProtein", "totalCarbs", "totalFat"]
+    },
+    "RecommendationItem": {
+      "title": "RecommendationItem",
+      "type": "object",
+      "description": "A single recommended food item with scoring and reasoning.",
+      "properties": {
+        "foodId": { "type": "string" },
+        "name": { "type": "string" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "reason": { "type": "string" },
+        "score": { "type": "number" }
+      },
+      "required": ["foodId", "name", "calories", "reason", "score"]
+    },
+    "GeneratedRecommendations": {
+      "title": "GeneratedRecommendations",
+      "type": "object",
+      "description": "A set of generated food recommendations for a user at a specific time.",
+      "properties": {
+        "createdAt": { "type": "string", "format": "date-time" },
+        "basedOnGoal": { "type": "string" },
+        "recommendations": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/RecommendationItem" }
+        }
+      },
+      "required": ["createdAt", "basedOnGoal", "recommendations"]
     }
   },
   "auth": {
@@ -326,6 +363,26 @@
             {
               "name": "date",
               "description": "The date of the log in 'YYYY-MM-DD' format."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/generatedRecommendations/{recommendationId}",
+        "definition": {
+          "entityName": "GeneratedRecommendations",
+          "schema": {
+            "$ref": "#/backend/entities/GeneratedRecommendations"
+          },
+          "description": "Stores historical sets of generated meal recommendations for a user. Each document is a snapshot of recommendations at a point in time.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's ID."
+            },
+            {
+              "name": "recommendationId",
+              "description": "The unique ID for this set of recommendations."
             }
           ]
         }

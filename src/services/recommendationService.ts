@@ -6,8 +6,9 @@ import {
   getDoc,
   getDocs,
   limit,
-  onSnapshot,
+  addDoc,
   query,
+  serverTimestamp,
   type Firestore,
 } from 'firebase/firestore';
 import { format } from 'date-fns';
@@ -15,24 +16,21 @@ import type { UserProfile } from '@/firebase';
 import type { DailyLog } from '@/types/analytics';
 import type { Food } from '@/lib/data';
 
+// This matches the RecommendationItem entity
 export interface Recommendation extends Food {
   reason: string;
   matchScore: number;
 }
 
+// This matches the return structure for the frontend
 export interface RecommendationResult {
-  calorieRemaining: number;
-  goals: { calories: number; protein: number; carbs: number; fat: number };
-  macroStatus: {
-    proteinDeficit: number;
-    carbDeficit: number;
-    fatDeficit: number;
-  };
+  goal: string;
   recommendations: Recommendation[];
 }
 
 let allFoods: Food[] = []; // In-memory cache for the global food list
 
+// Fetches all foods from the 'foodItems' collection and caches them.
 async function getCachedFoods(db: Firestore): Promise<Food[]> {
   if (allFoods.length === 0) {
     const foodsQuery = query(collection(db, 'foodItems'), limit(100));
@@ -42,147 +40,102 @@ async function getCachedFoods(db: Firestore): Promise<Food[]> {
   return allFoods;
 }
 
-export function subscribeToRealtimeRecommendations(
+// Main function to generate recommendations.
+export async function generateRecommendations(
   db: Firestore,
-  userId: string,
-  callback: (result: RecommendationResult) => void,
-  onError: (error: Error) => void
-): () => void {
-  const processRecommendations = async (dailyLog: DailyLog | null) => {
-    try {
-      // 1. Fetch user profile and foods (uses cache for foods)
-      const userRef = doc(db, 'users', userId);
-      const [userSnap, foods] = await Promise.all([
-        getDoc(userRef),
-        getCachedFoods(db),
-      ]);
+  userId: string
+): Promise<RecommendationResult> {
+  // 1. Fetch user profile, today's log, and food data
+  const userRef = doc(db, 'users', userId);
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const dailyLogRef = doc(db, 'users', userId, 'dailyLogs', todayKey);
 
-      if (!userSnap.exists()) {
-        throw new Error('User profile not found. Please complete onboarding.');
-      }
-      const userProfile = userSnap.data() as UserProfile;
+  const [userSnap, dailyLogSnap, foods] = await Promise.all([
+    getDoc(userRef),
+    getDoc(dailyLogRef),
+    getCachedFoods(db),
+  ]);
 
-      // 2. Calculate User State
-      const goals = userProfile.goals || { dailyCalorieGoal: 2200, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
-      const intake = dailyLog || { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 };
+  if (!userSnap.exists()) {
+    throw new Error('User profile not found. Please complete onboarding.');
+  }
+  const userProfile = userSnap.data() as UserProfile;
+  const dailyLog = dailyLogSnap.exists() ? (dailyLogSnap.data() as DailyLog) : null;
 
-      const calorieRemaining = goals.dailyCalorieGoal - intake.totalCalories;
-      const proteinGoalGrams = (goals.dailyCalorieGoal * (goals.proteinPercentageGoal / 100)) / 4;
-      const carbsGoalGrams = (goals.dailyCalorieGoal * (goals.carbsPercentageGoal / 100)) / 4;
-      const fatGoalGrams = (goals.dailyCalorieGoal * (goals.fatPercentageGoal / 100)) / 9;
-      
-      const proteinProgress = proteinGoalGrams > 0 ? intake.totalProtein / proteinGoalGrams : 1;
-      const carbsProgress = carbsGoalGrams > 0 ? intake.totalCarbs / carbsGoalGrams : 1;
-      const fatProgress = fatGoalGrams > 0 ? intake.totalFat / fatGoalGrams : 1;
+  // 2. Define goals and current state
+  const primaryGoal = userProfile.health?.primaryGoal || 'maintain-weight';
+  const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2200;
+  const currentCalories = dailyLog?.totalCalories || 0;
+  const calorieRemaining = calorieGoal - currentCalories;
 
-      const macroStatus = {
-        proteinDeficit: Math.max(0, 1 - proteinProgress),
-        carbDeficit: Math.max(0, 1 - carbsProgress),
-        fatDeficit: Math.max(0, 1 - fatProgress),
-      };
+  // 3. Filter foods based on dietary preferences
+  const userPreferences = userProfile.health?.dietaryPreferences?.map(p => p.toLowerCase()) || [];
+  let filteredFoods = foods;
 
-      // 3. Filter Foods
-      const userPreferences = userProfile.health?.dietaryPreferences?.map(p => p.toLowerCase()) || [];
-      let filteredFoods = foods;
+  if (userPreferences.length > 0 && !userPreferences.includes('none')) {
+    filteredFoods = foods.filter(food => {
+      const foodTags = food.tags.map(t => t.toLowerCase());
+      return userPreferences.every(pref => foodTags.includes(pref));
+    });
+  }
 
-      if (userPreferences.length > 0 && !userPreferences.includes('none')) {
-        filteredFoods = foods.filter(food => {
-          const foodTags = food.tags.map(t => t.toLowerCase());
-          return userPreferences.every(pref => foodTags.includes(pref));
-        });
-      }
+  // 4. Score foods based on goals and current state
+  const scoredFoods: Recommendation[] = filteredFoods.map(food => {
+    let score = 0;
+    let reason = 'A balanced and nutritious option.';
 
-      // 4. Score Foods
-      const scoredFoods: Recommendation[] = filteredFoods.map(food => {
-        let score = 100;
-        let reason = '';
-        const primaryGoal = userProfile.health?.primaryGoal || 'maintain-weight';
-
-        if (primaryGoal === 'lose-weight') {
-            if (food.calories > 450) score -= 40;
-            if (food.calories < 350) score += 20;
-            score += food.protein * 2;
-            score -= food.fat * 1.5;
-            score += (food.nutrients.fiber || 0) * 3;
-        } else if (primaryGoal === 'gain-weight') {
-            score += food.calories * 0.2;
-            score += food.protein * 2.5;
-            score += food.carbs * 1.5;
-        } else {
-            score -= Math.abs(food.calories - 400) * 0.1;
-            score += food.protein * 1.5;
-            score += (food.nutrients.fiber || 0) * 2;
-        }
-
-        if (macroStatus.proteinDeficit > 0.5) score += food.protein * (macroStatus.proteinDeficit * 2);
-        if (macroStatus.carbDeficit > 0.6) score += food.carbs * macroStatus.carbDeficit;
-        
-        if (food.calories > calorieRemaining && calorieRemaining > 0) {
-          score -= 30;
-        } else if (calorieRemaining < 200 && food.calories > 300) {
-          score -= 50;
-        }
-
-        if (food.protein > 20 && macroStatus.proteinDeficit > 0.4) {
-          reason = 'Excellent source of protein to help you meet your daily target.';
-        } else if (food.calories < 300 && primaryGoal === 'lose-weight') {
-          reason = 'A low-calorie option to help you stay within your goals.';
-        } else if ((food.nutrients.fiber || 0) > 5) {
-          reason = 'High in fiber, which can help with satiety and digestion.';
-        } else if (primaryGoal === 'gain-weight' && food.calories > 500) {
-          reason = 'A calorie-dense choice to support your muscle-gaining goals.';
-        } else {
-          reason = 'A balanced and nutritious option to add to your day.';
-        }
-        
-        const hour = new Date().getHours();
-        if (hour >= 5 && hour < 11 && food.category === 'Grains') {
-          reason = 'A great high-energy start to your morning.';
-        }
-        if (hour >= 18 && food.calories < 400) {
-          reason = 'A lighter, balanced option perfect for dinner.';
-        }
-
-        return { ...food, reason, matchScore: score };
-      });
-
-      // 5. Sort and return
-      const recommendations = scoredFoods
-        .sort((a, b) => b.matchScore - a.matchScore)
-        .slice(0, 5);
-
-      const result: RecommendationResult = {
-        calorieRemaining,
-        goals: {
-            calories: goals.dailyCalorieGoal,
-            protein: proteinGoalGrams,
-            carbs: carbsGoalGrams,
-            fat: fatGoalGrams,
-        },
-        macroStatus,
-        recommendations,
-      };
-
-      callback(result);
-
-    } catch (err: any) {
-      onError(err);
+    // Goal-based scoring
+    if (primaryGoal === 'lose-weight') {
+      if (food.calories < 400) score += 30;
+      if (food.protein > 20) score += 20;
+      if (food.fat < 15) score += 10;
+      if (score > 30) reason = 'High in protein and low in calories for weight loss.';
+    } else if (primaryGoal === 'gain-weight') {
+      if (food.calories > 500) score += 30;
+      if (food.protein > 25) score += 20;
+      if (score > 30) reason = 'A high-energy meal to support weight gain.';
+    } else { // Maintain weight
+      score += 20; // Base score for balanced foods
+      reason = 'A balanced choice to help maintain your weight.'
     }
+
+    // Adjust score based on remaining calories
+    if (calorieRemaining > 0 && food.calories > calorieRemaining * 1.2) {
+      score -= 50; // Heavily penalize foods that would push user way over the goal
+    } else if (calorieRemaining > 0 && food.calories < calorieRemaining * 0.8) {
+      score += 15; // Reward foods that fit well within remaining budget
+    }
+
+    return { ...food, reason, matchScore: score };
+  });
+
+  // 5. Sort and select top 5
+  const topRecommendations = scoredFoods
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 5);
+
+  // 6. Store the generated recommendations in Firestore
+  const recommendationsToStore = topRecommendations.map(r => ({
+    foodId: r.id,
+    name: r.name,
+    calories: r.calories,
+    protein: r.protein,
+    carbs: r.carbs,
+    fat: r.fat,
+    reason: r.reason,
+    score: r.matchScore,
+  }));
+
+  const recommendationsCollectionRef = collection(db, 'users', userId, 'generatedRecommendations');
+  await addDoc(recommendationsCollectionRef, {
+    createdAt: serverTimestamp(),
+    basedOnGoal: primaryGoal,
+    recommendations: recommendationsToStore,
+  });
+
+  // 7. Return the result for the frontend
+  return {
+    goal: primaryGoal,
+    recommendations: topRecommendations,
   };
-
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const dailyLogRef = doc(db, 'users', userId, 'dailyLogs', today);
-
-  const unsubscribe = onSnapshot(dailyLogRef, 
-    (docSnap) => {
-      const dailyLog = docSnap.exists() ? (docSnap.data() as DailyLog) : null;
-      processRecommendations(dailyLog);
-    },
-    (err) => {
-      console.error("Realtime recommendations listener error:", err);
-      onError(err);
-    }
-  );
-
-  return unsubscribe;
 }
