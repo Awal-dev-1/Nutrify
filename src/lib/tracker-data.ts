@@ -1,3 +1,4 @@
+
 import type { Food } from './data';
 
 export type LoggedFood = {
