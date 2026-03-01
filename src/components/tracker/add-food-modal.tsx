@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -68,7 +67,6 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
         {selectedFood ? (
             <div className="py-4 space-y-4">
                  <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                    <Image src={selectedFood.image} alt={selectedFood.name} width={60} height={60} className="rounded-md object-cover" data-ai-hint={selectedFood.imageHint} />
                     <div className="flex-grow">
                         <p className="font-semibold">{selectedFood.name}</p>
                         <p className="text-sm text-muted-foreground">{selectedFood.calories} kcal per 100g</p>
@@ -98,14 +96,6 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
                   className="flex items-center gap-4 p-2 rounded-lg cursor-pointer hover:bg-muted"
                   onClick={() => setSelectedFood(food)}
                 >
-                  <Image
-                    src={food.image}
-                    alt={food.name}
-                    width={40}
-                    height={40}
-                    className="rounded-md object-cover"
-                    data-ai-hint={food.imageHint}
-                  />
                   <div>
                     <p className="font-medium">{food.name}</p>
                     <p className="text-sm text-muted-foreground">{food.calories} kcal</p>

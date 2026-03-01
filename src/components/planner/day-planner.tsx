@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -227,15 +226,6 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                             if (!food) return null;
                             return (
                               <div key={meal.id} className="flex items-center gap-3 p-3 hover:bg-muted/30 transition-colors group">
-                                <div className="relative h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
-                                  <Image 
-                                    src={food.image} 
-                                    alt={food.name} 
-                                    fill
-                                    className="object-cover"
-                                    data-ai-hint={food.imageHint}
-                                  />
-                                </div>
                                 <div className="flex-grow min-w-0">
                                   <p className="font-medium truncate">{food.name}</p>
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">

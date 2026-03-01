@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -54,7 +53,6 @@ export function EditFoodModal({ isOpen, onClose, onUpdate, loggedFood }: EditFoo
         </DialogHeader>
         <div className="py-4 space-y-4">
             <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                <Image src={foodDetails.image} alt={foodDetails.name} width={60} height={60} className="rounded-md object-cover" data-ai-hint={foodDetails.imageHint}/>
                 <div className="flex-grow">
                     <p className="font-semibold">{foodDetails.name}</p>
                     <p className="text-sm text-muted-foreground">{foodDetails.calories} kcal per 100g</p>

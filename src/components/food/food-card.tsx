@@ -1,16 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import type { Food } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,43 +21,17 @@ interface FoodCardProps {
 
 export function FoodCard({ food, viewMode }: FoodCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isGridView = viewMode === "grid";
 
   return (
     <>
       <Card
         className={cn(
           "group transition-all duration-200 hover:shadow-lg overflow-hidden",
-          isGridView ? "flex flex-col" : "flex"
+          "flex flex-col"
         )}
       >
-        {/* Image Container */}
-        <div
-          className={cn(
-            "relative overflow-hidden bg-muted",
-            isGridView ? "w-full h-48" : "w-1/3 h-auto min-h-[160px]"
-          )}
-        >
-          <Image
-            src={food.image}
-            alt={food.name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint={food.imageHint}
-          />
-          {/* Category Badge - Overlay for grid, inline for list */}
-          {isGridView && (
-            <Badge 
-              variant="secondary" 
-              className="absolute top-2 right-2 capitalize shadow-sm"
-            >
-              {food.category}
-            </Badge>
-          )}
-        </div>
-
         {/* Content Container */}
-        <div className={cn("flex-1 flex flex-col", isGridView ? "p-4" : "p-5")}>
+        <div className={cn("flex-1 flex flex-col p-4")}>
           {/* Header */}
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
@@ -74,12 +44,9 @@ export function FoodCard({ food, viewMode }: FoodCardProps) {
                 </CardTitle>
               </Link>
               
-              {/* Category Badge - Only show in list view */}
-              {!isGridView && (
-                <Badge variant="outline" className="capitalize shrink-0">
-                  {food.category}
-                </Badge>
-              )}
+              <Badge variant="outline" className="capitalize shrink-0">
+                {food.category}
+              </Badge>
             </div>
             
             <CardDescription className="text-2xl font-bold text-primary">
@@ -115,7 +82,7 @@ export function FoodCard({ food, viewMode }: FoodCardProps) {
           </div>
 
           {/* Actions */}
-          <div className={cn("flex gap-2", isGridView ? "mt-4" : "mt-5")}>
+          <div className={cn("flex gap-2 mt-5")}>
             <Button 
               asChild 
               variant="default" 

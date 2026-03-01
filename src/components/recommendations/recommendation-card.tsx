@@ -32,18 +32,9 @@ export function RecommendationCard({ recommendation, onSelect }: RecommendationC
 
   return (
     <Card
-      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full flex flex-col"
       onClick={onSelect}
     >
-      <div className="relative h-48 w-full">
-        <Image
-          src={recommendation.image}
-          alt={recommendation.name}
-          fill
-          className="object-cover"
-          data-ai-hint={recommendation.imageHint}
-        />
-      </div>
       <CardHeader>
         <CardTitle>{recommendation.name}</CardTitle>
         <div className="flex flex-wrap gap-2 pt-1">
@@ -52,7 +43,7 @@ export function RecommendationCard({ recommendation, onSelect }: RecommendationC
           ))}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-md text-sm text-primary/80">
             <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <p>{recommendation.reason}</p>

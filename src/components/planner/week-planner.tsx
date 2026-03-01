@@ -156,15 +156,6 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                           if (!food) return null;
                           return (
                             <div key={meal.id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/30">
-                              <div className="relative h-8 w-8 rounded-md overflow-hidden flex-shrink-0">
-                                <Image 
-                                  src={food.image} 
-                                  alt={food.name} 
-                                  fill
-                                  className="object-cover"
-                                  data-ai-hint={food.imageHint}
-                                />
-                              </div>
                               <div className="flex-grow min-w-0">
                                 <p className="font-medium truncate">{food.name}</p>
                                 <p className="text-xs text-muted-foreground">{meal.quantity}g · {Math.round(food.calories * meal.quantity / 100)} kcal</p>
@@ -267,15 +258,6 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                               return (
                                 <div key={meal.id} className="group relative text-xs p-1.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors">
                                   <div className="flex items-center gap-1.5">
-                                    <div className="relative h-6 w-6 rounded-sm overflow-hidden flex-shrink-0">
-                                      <Image 
-                                        src={food.image} 
-                                        alt={food.name} 
-                                        fill
-                                        className="object-cover"
-                                        data-ai-hint={food.imageHint}
-                                      />
-                                    </div>
                                     <div className="flex-grow min-w-0">
                                       <p className="font-medium truncate">{food.name}</p>
                                       <p className="text-[10px] text-muted-foreground">{meal.quantity}g</p>

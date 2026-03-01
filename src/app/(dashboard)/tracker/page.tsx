@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, type FC } from "react";
@@ -600,15 +599,6 @@ const LoggedFoodItem: FC<{
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group">
             <div className="flex items-center gap-3 flex-1">
-                <div className="relative h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
-                    <Image 
-                        src={food.image} 
-                        alt={food.name} 
-                        fill
-                        className="object-cover"
-                        data-ai-hint={food.imageHint}
-                    />
-                </div>
                 <div className="flex-grow min-w-0">
                     <p className="font-semibold truncate">{food.name}</p>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -751,7 +741,7 @@ const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goa
                 <div className="text-center text-sm">
                     <span className="text-muted-foreground">{percentage.toFixed(0)}% of daily goal</span>
                     {percentage >= 100 && (
-                        <Badge variant="secondary" className="ml-2 text-xs bg-green-100 text-green-700">Goal met!</Badge>
+                        <Badge variant="success" className="ml-2 text-xs">Goal met!</Badge>
                     )}
                 </div>
             </CardContent>
