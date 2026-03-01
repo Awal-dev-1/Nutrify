@@ -154,7 +154,7 @@ export default function DashboardPage() {
     return (
       <EmptyState
         icon={<ClipboardX className="h-16 w-16 text-muted-foreground" />}
-        title="No Meals Logged Yet"
+        title="No Records Yet"
         description="You haven’t logged any meals today. Start by adding your first meal."
         className="border-2 border-dashed rounded-2xl min-h-[60vh]"
       >
