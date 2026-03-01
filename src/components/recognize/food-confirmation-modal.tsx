@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { searchFoods, type FoodItem as AiFoodItem } from '@/ai/flows/search-foods-flow';
-import { addFoodToLog } from '@/services/trackerService';
-import { useUser, useFirestore } from '@/firebase';
+import { addFoodItemToLog } from '@/services/trackerService';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -23,59 +22,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, AlertCircle, Plus, Flame, Beef, Wheat, Droplets, UtensilsCrossed } from 'lucide-react';
+import { Loader2, AlertCircle, Plus, Flame, Beef, Wheat, Droplets } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { doc } from 'firebase/firestore';
+import type { Food } from '@/lib/data';
 
 interface FoodConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   foodName: string | null;
+  foodId: string | null;
 }
 
-export function FoodConfirmationModal({ isOpen, onClose, foodName }: FoodConfirmationModalProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [foodData, setFoodData] = useState<AiFoodItem | null>(null);
+export function FoodConfirmationModal({ isOpen, onClose, foodName, foodId }: FoodConfirmationModalProps) {
   const [quantity, setQuantity] = useState(100);
   const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks'>('Lunch');
   const [isAdding, setIsAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
 
+  const foodDocRef = useMemoFirebase(
+    () => (foodId ? doc(db, 'foodItems', foodId) : null),
+    [foodId, db]
+  );
+  const { data: foodData, isLoading: loading, error: docError } = useDoc<Food>(foodDocRef);
+
   useEffect(() => {
-    if (isOpen && foodName) {
-      const fetchFoodData = async () => {
-        setLoading(true);
-        setError(null);
-        setFoodData(null);
-        try {
-          const response = await searchFoods({ query: foodName });
-          if (!response.isFoodQuery || response.foodItems.length === 0) {
-            throw new Error('Could not retrieve nutritional details for this item.');
-          }
-          setFoodData(response.foodItems[0]);
-        } catch (err: any) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchFoodData();
+    if (docError) {
+      setError(`Failed to load food details: ${docError.message}`);
     }
-  }, [isOpen, foodName]);
+  }, [docError]);
+
+  useEffect(() => {
+    // Reset state when modal opens
+    if (isOpen) {
+      setQuantity(100);
+      setMealType('Lunch');
+      setIsAdding(false);
+      setError(null);
+    }
+  }, [isOpen]);
 
   const handleAddToTracker = async () => {
     if (!foodData || !user || !db) return;
     setIsAdding(true);
     try {
-      await addFoodToLog(db, user.uid, mealType, foodData, quantity);
+      await addFoodItemToLog(db, user.uid, mealType, foodData, quantity);
       toast({
         title: 'Success!',
-        description: `${foodData.foodName} has been added to your tracker.`,
+        description: `${foodData.name} has been added to your tracker.`,
       });
       router.push('/dashboard/tracker');
       onClose();
@@ -93,9 +93,9 @@ export function FoodConfirmationModal({ isOpen, onClose, foodName }: FoodConfirm
   
   const calculatedNutrients = foodData ? {
       calories: foodData.calories * (quantity / 100),
-      protein: foodData.macronutrientBreakdown.protein * (quantity / 100),
-      carbs: foodData.macronutrientBreakdown.carbohydrates * (quantity / 100),
-      fat: foodData.macronutrientBreakdown.fat * (quantity / 100),
+      protein: foodData.protein * (quantity / 100),
+      carbs: foodData.carbs * (quantity / 100),
+      fat: foodData.fat * (quantity / 100),
   } : null;
 
   return (
@@ -104,7 +104,7 @@ export function FoodConfirmationModal({ isOpen, onClose, foodName }: FoodConfirm
         <DialogHeader>
           <DialogTitle>Confirm & Add Food</DialogTitle>
           <DialogDescription>
-            Verify the details and add this item to your daily tracker.
+            Verify the details for {foodName} and add it to your daily tracker.
           </DialogDescription>
         </DialogHeader>
 
@@ -126,8 +126,8 @@ export function FoodConfirmationModal({ isOpen, onClose, foodName }: FoodConfirm
           {foodData && calculatedNutrients && (
             <div className="space-y-4 animate-in fade-in-50">
               <div className='p-4 rounded-lg border bg-muted/50'>
-                <h3 className="font-bold">{foodData.foodName}</h3>
-                <p className="text-xs text-muted-foreground">AI-generated nutritional estimate</p>
+                <h3 className="font-bold">{foodData.name}</h3>
+                <p className="text-xs text-muted-foreground">Nutritional estimate for {quantity}g</p>
                 <div className='mt-3 flex justify-around text-center'>
                     <div>
                         <Flame className='mx-auto h-5 w-5 text-orange-500' />

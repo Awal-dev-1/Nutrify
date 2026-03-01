@@ -5,6 +5,7 @@ export type AiScan = {
     predictions: {
       name: string;
       confidence: number;
+      foodId: string | null;
     }[];
     selectedFoodId: string | null;
     createdAt: any; // Firestore timestamp

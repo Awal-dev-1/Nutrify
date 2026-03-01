@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef } from 'react';
@@ -28,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 
 type Status = 'idle' | 'preview' | 'uploading' | 'processing' | 'results' | 'error';
+type Prediction = AiScan['predictions'][0];
 
 export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
@@ -35,7 +35,7 @@ export default function AiRecognitionPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanId, setScanId] = useState<string | null>(null);
-  const [selectedPrediction, setSelectedPrediction] = useState<string | null>(null);
+  const [selectedPrediction, setSelectedPrediction] = useState<Prediction | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -251,7 +251,7 @@ export default function AiRecognitionPage() {
                                         <p className="text-sm text-muted-foreground">Confidence: {(item.confidence * 100).toFixed(0)}%</p>
                                         <Progress value={item.confidence * 100} className="h-1 mt-2" />
                                     </div>
-                                    <Button size="sm" onClick={() => setSelectedPrediction(item.name)}>Select</Button>
+                                    <Button size="sm" onClick={() => setSelectedPrediction(item)}>Select</Button>
                                 </CardContent>
                             </Card>
                         ))}
@@ -317,7 +317,8 @@ export default function AiRecognitionPage() {
       <FoodConfirmationModal 
         isOpen={!!selectedPrediction}
         onClose={() => setSelectedPrediction(null)}
-        foodName={selectedPrediction}
+        foodName={selectedPrediction?.name || null}
+        foodId={selectedPrediction?.foodId || null}
       />
     </div>
   );

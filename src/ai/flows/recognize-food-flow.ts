@@ -20,19 +20,18 @@ const RecognizeFoodInputSchema = z.object({
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
 const RecognizeFoodOutputSchema = z.object({
-  isFood: z.boolean().describe('A boolean indicating if the image contains food or drink.'),
-  predictions: z
+  labels: z
     .array(
       z.object({
-        name: z.string().describe('The common name of the identified food item (e.g., "Jollof Rice", "Apple").'),
+        label: z.string().describe('A single, generic label for an object detected in the image (e.g., "rice", "chicken", "salad").'),
         confidence: z
           .number()
           .min(0)
           .max(1)
-          .describe('The confidence score of the prediction, from 0.0 to 1.0.'),
+          .describe('The confidence score for this label, from 0.0 to 1.0.'),
       })
     )
-    .describe('An array of the top 3 predictions for the food item in the image. This should be empty if isFood is false.'),
+    .describe('An array of the top 5 most likely labels for objects in the image.'),
 });
 export type RecognizeFoodOutput = z.infer<typeof RecognizeFoodOutputSchema>;
 
@@ -44,17 +43,16 @@ export async function recognizeFood(
 }
 
 const recognizeFoodPrompt = ai.definePrompt({
-  name: 'recognizeFoodPrompt',
+  name: 'recognizeFoodLabelsPrompt',
   input: {schema: RecognizeFoodInputSchema},
   output: {schema: RecognizeFoodOutputSchema},
-  prompt: `You are an expert food classifier for a nutrition application. Your task is to identify the food item in the provided image.
+  prompt: `You are an expert image classifier. Your task is to identify all potential food-related objects in the provided image.
 
 CRITICAL INSTRUCTIONS:
-1.  **STRICTLY FOOD ONLY**: First, determine if the image contains a food item or a beverage. If it is not clearly identifiable as food or drink (e.g., it's a person, a car, a landscape, an abstract object), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **IDENTIFY THE FOOD**: If the image is a food item, identify the most likely food. Be specific (e.g., "Jollof Rice with Chicken" instead of just "Rice").
-3.  **PROVIDE PREDICTIONS**: Provide a list of the top 3 most likely predictions, even if you are very confident about the first one.
-4.  **CONFIDENCE SCORE**: For each prediction, provide a confidence score between 0.0 (not confident) and 1.0 (very confident).
-5.  **JSON OUTPUT**: Your final output must be a valid JSON object that adheres to the provided output schema.
+1.  **DETECT GENERIC OBJECTS**: Do not try to name a specific dish. Instead, provide generic labels for what you see (e.g., "rice", "fish", "tomato", "leafy greens", "stew").
+2.  **PROVIDE LABELS**: Provide a list of the top 5 most likely labels for food items or ingredients you can identify.
+3.  **CONFIDENCE SCORE**: For each label, provide a confidence score between 0.0 (not confident) and 1.0 (very confident).
+4.  **JSON OUTPUT**: Your final output must be a valid JSON object that adheres to the provided output schema. Do not return anything if you cannot identify any food-like objects.
 
 Image to analyze:
 {{media url=imageDataUri}}

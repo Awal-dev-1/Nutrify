@@ -1,8 +1,10 @@
 'use client';
 import { FirebaseApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection, getDocs, query } from 'firebase/firestore';
 import { recognizeFood } from '@/ai/flows/recognize-food-flow';
+import type { Food } from '@/lib/data';
+import type { AiScan } from '@/types/ai';
 
 /**
  * Uploads an image to Firebase Storage for AI recognition.
@@ -41,9 +43,19 @@ export async function createScanDocument(
   });
 }
 
+let allFoods: Food[] = []; // In-memory cache
+async function getCachedFoods(db: Firestore): Promise<Food[]> {
+  if (allFoods.length === 0) {
+    const foodsQuery = query(collection(db, 'foodItems'));
+    const foodsSnap = await getDocs(foodsQuery);
+    allFoods = foodsSnap.docs.map(doc => ({ ...(doc.data() as Omit<Food, 'id'>), id: doc.id }));
+  }
+  return allFoods;
+}
+
 /**
- * Calls the AI flow to process the image and updates the scan document with results.
- * This function replaces the backend Cloud Function for the MVP.
+ * Calls the AI flow to get labels, matches them against the food database, and updates the scan document.
+ * This simulates a backend Cloud Function.
  */
 export async function runFoodRecognition(
   db: Firestore,
@@ -54,26 +66,82 @@ export async function runFoodRecognition(
   const scanRef = doc(db, 'users', userId, 'aiScans', scanId);
 
   try {
-    const result = await recognizeFood({ imageDataUri });
+    // 1. Get generic labels from AI
+    const aiResult = await recognizeFood({ imageDataUri });
 
-    if (!result.isFood) {
-        await updateDoc(scanRef, {
-            status: 'failed',
-            predictions: [],
-            reason: 'The uploaded image was not identified as a food item.',
-        });
-        return;
+    if (!aiResult.labels || aiResult.labels.length === 0) {
+      await updateDoc(scanRef, {
+        status: 'failed',
+        reason: 'AI could not detect any food items in the image.',
+      });
+      return;
     }
 
+    // 2. Get all food items from Firestore (cached)
+    const foodDb = await getCachedFoods(db);
+
+    // 3. Filter AI labels and match with food DB
+    const highConfidenceLabels = aiResult.labels.filter(l => l.confidence > 0.6);
+    const matches: (AiScan['predictions'][0] & { score: number })[] = [];
+
+    for (const food of foodDb) {
+      let bestScore = 0;
+      const foodNameLower = food.name.toLowerCase();
+      const foodTagsLower = food.tags.map(t => t.toLowerCase());
+
+      for (const label of highConfidenceLabels) {
+        const labelLower = label.label.toLowerCase();
+        let currentScore = 0;
+        if (foodNameLower.includes(labelLower)) {
+          currentScore = label.confidence * 100; // Primary match
+        } else if (foodTagsLower.some(tag => tag.includes(labelLower))) {
+          currentScore = label.confidence * 50; // Secondary match on tags
+        }
+
+        if (currentScore > bestScore) {
+          bestScore = currentScore;
+        }
+      }
+      
+      if (bestScore > 0) {
+        matches.push({
+          name: food.name,
+          foodId: food.id,
+          confidence: 0, // Placeholder
+          score: bestScore,
+        });
+      }
+    }
+
+    // 4. Sort, limit, and format final predictions
+    const finalPredictions = matches
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map(match => ({
+        name: match.name,
+        foodId: match.foodId,
+        confidence: Math.min(match.score / 100, 1), // Normalize score
+      }));
+
+    if (finalPredictions.length === 0) {
+      await updateDoc(scanRef, {
+        status: 'failed',
+        predictions: [],
+        reason: 'No matching food found in the database for the detected items.',
+      });
+      return;
+    }
+
+    // 5. Update Firestore
     await updateDoc(scanRef, {
       status: 'completed',
-      predictions: result.predictions,
+      predictions: finalPredictions,
     });
   } catch (error) {
     console.error("Failed to run AI food recognition:", error);
     await updateDoc(scanRef, {
       status: 'failed',
-      reason: 'The AI model failed to process the image.'
+      reason: error instanceof Error ? error.message : 'The AI model failed to process the image.'
     });
   }
 }
