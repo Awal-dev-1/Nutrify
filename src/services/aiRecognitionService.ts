@@ -1,10 +1,8 @@
 'use client';
 import { FirebaseApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection, getDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection } from 'firebase/firestore';
 import { recognizeFood } from '@/ai/flows/recognize-food-flow';
-import { searchFoods } from '@/ai/flows/search-foods-flow';
-import type { UserProfile } from '@/firebase';
 
 /**
  * Uploads an image to Firebase Storage for AI recognition.
@@ -44,9 +42,7 @@ export async function createScanDocument(
 }
 
 /**
- * A two-step process to get detailed food info from an image.
- * 1. Calls a simple AI flow to get the food's name from the image.
- * 2. Calls a powerful search flow to get detailed nutritional data for that name.
+ * Calls a multimodal AI model to analyze a food image and get detailed nutritional data.
  */
 export async function runFoodRecognition(
   db: Firestore,
@@ -55,13 +51,12 @@ export async function runFoodRecognition(
   imageUrl: string
 ) {
   const scanRef = doc(db, 'users', userId, 'aiScans', scanId);
-  const userRef = doc(db, 'users', userId);
 
   try {
-    // Step 1: Get the name of the food from the image
-    const recognitionResult = await recognizeFood({ imageUrl });
+    // Call the single, powerful flow to get all data
+    const result = await recognizeFood({ imageUrl });
 
-    if (!recognitionResult.isFood || !recognitionResult.foodName) {
+    if (!result.isFood || !result.foodItem) {
       await updateDoc(scanRef, {
         status: 'failed',
         reason: 'AI could not identify a food item in the image.',
@@ -69,30 +64,12 @@ export async function runFoodRecognition(
       });
       return;
     }
-    
-    // Step 2: Use the food name to get detailed information via the search flow
-    const userSnap = await getDoc(userRef);
-    const userProfile = userSnap.exists() ? userSnap.data() as UserProfile : null;
-    const userGoal = userProfile?.health?.primaryGoal;
 
-    const searchResult = await searchFoods({
-        query: recognitionResult.foodName,
-        userGoal,
-    });
-
-    if (!searchResult.isFoodQuery || searchResult.foodItems.length === 0) {
-        await updateDoc(scanRef, {
-            status: 'failed',
-            reason: `Identified "${recognitionResult.foodName}", but could not find detailed nutritional data.`,
-            predictions: [],
-        });
-        return;
-    }
-
-    // Step 3: Update Firestore with the rich data from the search flow
+    // Update Firestore with the rich data from the AI flow
+    // The frontend expects `predictions` to be an array.
     await updateDoc(scanRef, {
       status: 'completed',
-      predictions: searchResult.foodItems,
+      predictions: [result.foodItem], // Put the single result in an array
     });
 
   } catch (error) {
