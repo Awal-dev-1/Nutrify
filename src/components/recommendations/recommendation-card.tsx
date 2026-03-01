@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,37 +8,43 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, PlusCircle } from 'lucide-react';
+import { Lightbulb, PlusCircle, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { Recommendation } from '@/lib/recommendations-data';
+import type { Recommendation } from '@/services/recommendationService';
 
 interface RecommendationCardProps {
   recommendation: Recommendation;
-  onSelect: () => void;
 }
 
-export function RecommendationCard({ recommendation, onSelect }: RecommendationCardProps) {
+export function RecommendationCard({ recommendation }: RecommendationCardProps) {
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleQuickAdd = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent modal from opening
+    e.stopPropagation(); 
     toast({
       title: 'Added to Tracker!',
       description: `${recommendation.name} has been added to your lunch.`,
     });
   };
 
+  const handleSelect = () => {
+    router.push(`/dashboard/food/${recommendation.id}`);
+  };
+
   return (
     <Card
-      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full flex flex-col"
-      onClick={onSelect}
+      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full flex flex-col border-2"
+      onClick={handleSelect}
     >
       <CardHeader>
         <CardTitle>{recommendation.name}</CardTitle>
+        <CardDescription>{recommendation.calories} kcal per 100g</CardDescription>
         <div className="flex flex-wrap gap-2 pt-1">
-          {recommendation.tags.map((tag) => (
+          {recommendation.tags.slice(0, 3).map((tag) => (
             <Badge key={tag} variant="outline">{tag}</Badge>
           ))}
         </div>
@@ -48,16 +54,13 @@ export function RecommendationCard({ recommendation, onSelect }: RecommendationC
             <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <p>{recommendation.reason}</p>
         </div>
-        <div className="mt-4">
-            <h4 className="font-semibold mb-2">Recipe Preview</h4>
-            <p className="text-sm text-muted-foreground line-clamp-3">
-                {recommendation.recipe.instructions.join(' ')}
-            </p>
-        </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col sm:flex-row gap-2">
         <Button className="w-full" onClick={handleQuickAdd}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add to Tracker
+          <PlusCircle className="mr-2 h-4 w-4" /> Quick Add
+        </Button>
+         <Button variant="secondary" className="w-full" onClick={handleSelect}>
+           Details <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
