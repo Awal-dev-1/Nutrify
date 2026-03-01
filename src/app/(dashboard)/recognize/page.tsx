@@ -81,12 +81,25 @@ export default function AiRecognitionPage() {
     try {
       const response = await recognizeFoodImage({ photoDataUri: uploadedImage });
 
-      if (!response.identifiedFoods || response.identifiedFoods.length === 0) {
+      // Gatekeeper check
+      if (!response.isFood) {
+        const errorMessage = response.message || "The uploaded image does not appear to be food.";
+        setError(errorMessage);
+        setStatus('error');
+        toast({
+          variant: "destructive",
+          title: "Not a Food Item",
+          description: errorMessage,
+        });
+        return;
+      }
+
+      if (!response.data || !response.data.identifiedFoods || response.data.identifiedFoods.length === 0) {
         throw new Error("The AI could not identify any food in the image. Please try a clearer picture.");
       }
 
       // Map AI results to the existing food database
-      const mappedPredictions: Prediction[] = response.identifiedFoods
+      const mappedPredictions: Prediction[] = response.data.identifiedFoods
         .map(aiFood => {
           // Use a simple case-insensitive match. A more robust solution might use fuzzy searching.
           const matchedFood = mockFoods.find(mockFood =>
@@ -102,7 +115,7 @@ export default function AiRecognitionPage() {
         .filter((p): p is Prediction => p !== null);
 
       if (mappedPredictions.length === 0) {
-        throw new Error(`AI identified "${response.identifiedFoods[0].foodName}", but it could not be matched to an item in our database.`);
+        throw new Error(`AI identified "${response.data.identifiedFoods[0].foodName}", but it could not be matched to an item in our database.`);
       }
 
       setPredictions(mappedPredictions.sort((a, b) => b.confidence - a.confidence));
@@ -110,8 +123,14 @@ export default function AiRecognitionPage() {
 
     } catch (e: any) {
       console.error(e);
-      setError(e.message || "An unexpected error occurred during analysis.");
+      const errorMessage = e.message || "An unexpected error occurred during analysis.";
+      setError(errorMessage);
       setStatus('error');
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: errorMessage,
+      });
     }
   };
   
@@ -191,7 +210,7 @@ export default function AiRecognitionPage() {
                 Take a photo or upload an image of your food
               </CardDescription>
             </div>
-            {status !== 'idle' && status !== 'error' && (
+            {status !== 'idle' && (
               <Button variant="ghost" size="sm" onClick={handleReset} className="h-8">
                 <RotateCcw className="h-3 w-3 mr-2" /> New Image
               </Button>

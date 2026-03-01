@@ -38,7 +38,7 @@ const FoodItemSchema = z.object({
   }),
 });
 
-const RecognizeFoodImageOutputSchema = z.object({
+const FoodDataSchema = z.object({
   identifiedFoods: z
     .array(FoodItemSchema)
     .describe('An array of identified food items with their estimated nutritional content.'),
@@ -46,6 +46,12 @@ const RecognizeFoodImageOutputSchema = z.object({
     .string()
     .optional()
     .describe('An optional general description of the meal or plate.'),
+});
+
+const RecognizeFoodImageOutputSchema = z.object({
+    isFood: z.boolean().describe("A boolean indicating if the image contains food."),
+    message: z.string().describe("A message indicating success or the reason for failure."),
+    data: FoodDataSchema.nullable().describe("The identified food data, or null if it's not food."),
 });
 export type RecognizeFoodImageOutput = z.infer<typeof RecognizeFoodImageOutputSchema>;
 
@@ -60,9 +66,26 @@ const recognizeFoodImagePrompt = ai.definePrompt({
   input: {schema: RecognizeFoodImageInputSchema},
   output: {schema: RecognizeFoodImageOutputSchema},
   model: 'googleai/gemini-1.5-flash',
-  prompt: `You are an expert nutritionist and food identifier. Your task is to analyze the provided image of food and identify all distinct food items present. For each identified food item, provide its name, a confidence score (between 0 and 1), and a detailed estimation of its nutritional content (calories, protein, carbs, fat, fiber, iron, vitamin A, sodium) for a typical serving size. Be as accurate as possible with the nutritional estimates.
+  prompt: `You are a "Food-Only" AI assistant. Your sole purpose is to identify and process food items.
 
-Consider common Ghanaian foods and serving sizes where applicable. Provide the output in a JSON array format as described by the output schema.
+If the user uploads an image that is not a food item, a drink, or a grocery product, you must return a specific JSON error. DO NOT attempt to describe non-food items (e.g., if shown a car, do not say "This is a red car"). Instead, immediately trigger the rejection response.
+
+**Rejection Format:**
+{
+  "isFood": false,
+  "message": "This is not a food item. Please upload a photo of food or a menu.",
+  "data": null
+}
+
+**Acceptance Format:**
+If the image IS a food item, analyze it. Identify all distinct food items present. For each identified food item, provide its name, a confidence score (between 0 and 1), and a detailed estimation of its nutritional content (calories, protein, carbs, fat, fiber, iron, vitamin A, sodium) for a typical serving size. Be as accurate as possible with the nutritional estimates.
+
+Consider common Ghanaian foods and serving sizes where applicable. Provide the output in a JSON format according to the 'data' field in the schema, nested within the acceptance format:
+{
+  "isFood": true,
+  "message": "Success",
+  "data": { ...food details... }
+}
 
 Image: {{media url=photoDataUri}}`,
 });
