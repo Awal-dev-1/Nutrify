@@ -10,7 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const RecognizeFoodInputSchema = z.object({
+const RecognizeFoodInputSchema = z.object({
   imageDataUri: z
     .string()
     .describe(
@@ -19,7 +19,7 @@ export const RecognizeFoodInputSchema = z.object({
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
-export const RecognizeFoodOutputSchema = z.object({
+const RecognizeFoodOutputSchema = z.object({
   isFood: z.boolean().describe('A boolean indicating if the image contains food or drink.'),
   predictions: z
     .array(
