@@ -13,6 +13,12 @@ import {
   ScanLine,
   Salad,
   AlertCircle,
+  BookOpen,
+  Beef,
+  Wheat,
+  Droplets,
+  Stethoscope,
+  CookingPot
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,26 +26,21 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { mockFoods, type Food } from '@/lib/data';
+import { mockUser } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PortionSelectorModal } from '@/components/food/portion-selector-modal';
 import { cn } from '@/lib/utils';
-import { recognizeFoodImage } from '@/ai/flows/recognize-food-image';
+import { recognizeFoodImage, type FoodAnalysis } from '@/ai/flows/recognize-food-image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from '@/components/ui/separator';
 
 type Status = 'idle' | 'preview' | 'analyzing' | 'results' | 'error';
 
-interface Prediction {
-  food: Food;
-  confidence: number;
-}
 
 export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<FoodAnalysis | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -77,9 +78,13 @@ export default function AiRecognitionPage() {
     if (!uploadedImage) return;
     setStatus('analyzing');
     setError(null);
+    setAnalysisResult(null);
 
     try {
-      const response = await recognizeFoodImage({ photoDataUri: uploadedImage });
+      const response = await recognizeFoodImage({ 
+        photoDataUri: uploadedImage,
+        userGoal: mockUser.goal,
+      });
 
       // Gatekeeper check
       if (!response.isFood) {
@@ -94,31 +99,11 @@ export default function AiRecognitionPage() {
         return;
       }
 
-      if (!response.data || !response.data.identifiedFoods || response.data.identifiedFoods.length === 0) {
+      if (!response.data) {
         throw new Error("The AI could not identify any food in the image. Please try a clearer picture.");
       }
 
-      // Map AI results to the existing food database
-      const mappedPredictions: Prediction[] = response.data.identifiedFoods
-        .map(aiFood => {
-          // Use a simple case-insensitive match. A more robust solution might use fuzzy searching.
-          const matchedFood = mockFoods.find(mockFood =>
-            mockFood.name.toLowerCase().includes(aiFood.foodName.toLowerCase()) ||
-            aiFood.foodName.toLowerCase().includes(mockFood.name.toLowerCase())
-          );
-          
-          if (matchedFood) {
-            return { food: matchedFood, confidence: aiFood.confidence };
-          }
-          return null;
-        })
-        .filter((p): p is Prediction => p !== null);
-
-      if (mappedPredictions.length === 0) {
-        throw new Error(`AI identified "${response.data.identifiedFoods[0].foodName}", but it could not be matched to an item in our database.`);
-      }
-
-      setPredictions(mappedPredictions.sort((a, b) => b.confidence - a.confidence));
+      setAnalysisResult(response.data);
       setStatus('results');
 
     } catch (e: any) {
@@ -134,17 +119,11 @@ export default function AiRecognitionPage() {
     }
   };
   
-  const handleSelectPrediction = (food: Food) => {
-      setSelectedFood(food);
-      setIsModalOpen(true);
-  }
-
   const handleReset = () => {
     setStatus('idle');
     setUploadedImage(null);
     setError(null);
-    setPredictions([]);
-    setSelectedFood(null);
+    setAnalysisResult(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -198,7 +177,7 @@ export default function AiRecognitionPage() {
       </div>
 
       {/* Main Card */}
-      <Card className="max-w-4xl mx-auto border-2 overflow-hidden">
+      <Card className="max-w-6xl mx-auto border-2 overflow-hidden">
         <CardHeader className="border-b bg-muted/5">
           <div className="flex items-center justify-between">
             <div>
@@ -280,106 +259,120 @@ export default function AiRecognitionPage() {
             </div>
           )}
 
-          {status === 'results' && (
+          {status === 'results' && analysisResult && (
             <div className="space-y-6">
-              <div className="flex flex-col lg:flex-row gap-6">
-                {/* Image Preview Column */}
-                <div className="lg:w-1/3 space-y-3">
-                  <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
-                    {uploadedImage && (
-                      <Image 
-                        src={uploadedImage} 
-                        alt="Uploaded food" 
-                        fill 
-                        className="object-cover"
-                      />
-                    )}
-                  </div>
-                  <Button variant="outline" className="w-full" onClick={handleReset}>
-                    <RotateCcw className="mr-2 h-4 w-4" /> Try Another Image
-                  </Button>
-                </div>
-
-                {/* Predictions Column */}
-                <div className="lg:w-2/3 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold flex items-center gap-2">
-                      <Salad className="h-5 w-5 text-primary" />
-                      Top Predictions
-                    </h3>
-                    <Badge variant="outline" className="px-3 py-1">
-                      {predictions.length} matches
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {predictions.map((p, index) => (
-                      <Card 
-                        key={p.food.id} 
-                        className={cn(
-                          "overflow-hidden transition-all hover:shadow-md",
-                          index === 0 && "border-primary/50 bg-primary/5"
-                        )}
-                      >
-                        <div className="flex items-center p-3 gap-4">
-                          <div className="flex-grow min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold truncate">{p.food.name}</p>
-                              {index === 0 && (
-                                <Badge className="bg-primary text-primary-foreground">Best Match</Badge>
-                              )}
-                            </div>
-                            
-                            <div className="flex items-center gap-3">
-                              <Progress 
-                                value={p.confidence * 100} 
-                                className={cn(
-                                  "h-2 w-24",
-                                  index === 0 ? "[&>div]:bg-primary" : "[&>div]:bg-muted-foreground"
-                                )} 
-                              />
-                              <span className="text-sm font-medium tabular-nums">
-                                {Math.round(p.confidence * 100)}%
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleSelectPrediction(p.food)}
-                            variant={index === 0 ? "default" : "outline"}
-                            className="flex-shrink-0"
-                          >
-                            Select
-                          </Button>
+                <div className="grid lg:grid-cols-2 gap-8">
+                    {/* Left Column: Image & Core Stats */}
+                    <div className="space-y-4">
+                        <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
+                            {uploadedImage && <Image src={uploadedImage} alt={analysisResult.foodName} fill className="object-cover" />}
                         </div>
-                      </Card>
-                    ))}
-                  </div>
+                        <h2 className="text-3xl font-bold">{analysisResult.foodName}</h2>
+                        <div className="text-4xl font-extrabold text-primary">
+                            {analysisResult.calories.toFixed(0)}{' '}
+                            <span className="text-xl font-medium text-muted-foreground">kcal (estimated)</span>
+                        </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Macronutrients</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-3 gap-4 text-center">
+                                <div className="space-y-1">
+                                    <div className="inline-flex p-2 rounded-full bg-red-50 dark:bg-red-950/20">
+                                        <Beef className="h-5 w-5 text-red-500" />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Protein</p>
+                                    <p className="font-bold text-lg">{analysisResult.macronutrientBreakdown.protein.toFixed(1)}g</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="inline-flex p-2 rounded-full bg-yellow-50 dark:bg-yellow-950/20">
+                                        <Wheat className="h-5 w-5 text-yellow-600" />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Carbs</p>
+                                    <p className="font-bold text-lg">{analysisResult.macronutrientBreakdown.carbohydrates.toFixed(1)}g</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="inline-flex p-2 rounded-full bg-blue-50 dark:bg-blue-950/20">
+                                        <Droplets className="h-5 w-5 text-blue-500" />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Fat</p>
+                                    <p className="font-bold text-lg">{analysisResult.macronutrientBreakdown.fat.toFixed(1)}g</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                  <Alert className="border-primary/20 bg-primary/5">
-                    <Lightbulb className="h-4 w-4 text-primary" />
-                    <AlertTitle className="text-primary">Not the right food?</AlertTitle>
-                    <AlertDescription>
-                      The AI couldn't find a perfect match? You can select a different prediction or search for it manually.
-                    </AlertDescription>
-                  </Alert>
+                    {/* Right Column: AI Analysis Tabs */}
+                    <div className="space-y-4">
+                        <Tabs defaultValue="analysis" className="w-full">
+                            <TabsList className="grid w-full grid-cols-4">
+                                <TabsTrigger value="analysis"><Stethoscope className="h-4 w-4 mr-1" />Analysis</TabsTrigger>
+                                <TabsTrigger value="history"><BookOpen className="h-4 w-4 mr-1" />History</TabsTrigger>
+                                <TabsTrigger value="recipes"><CookingPot className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
+                                <TabsTrigger value="nutrients"><Salad className="h-4 w-4 mr-1" />Nutrients</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="analysis" className="mt-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Health Analysis</CardTitle>
+                                        <CardDescription>For your goal: <span className="capitalize font-medium text-primary">{mockUser.goal.replace('-', ' ')}</span></CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="text-sm space-y-3">
+                                      <p>{analysisResult.healthAnalysis}</p>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                            
+                            <TabsContent value="history" className="mt-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Cultural History</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="text-sm space-y-3">
+                                        <p>{analysisResult.foodHistory}</p>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                            
+                            <TabsContent value="recipes" className="mt-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Recipe Ideas</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="text-sm space-y-3">
+                                        <ul className="list-disc list-outside pl-5 space-y-2">
+                                            {analysisResult.possibleRecipes.map((recipe, i) => <li key={i}>{recipe}</li>)}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value="nutrients" className="mt-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Micronutrients</CardTitle>
+                                        <CardDescription>Key vitamins and minerals in this meal.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="text-sm space-y-3">
+                                        <ul className="space-y-2">
+                                            {analysisResult.micronutrientBreakdown.map((nutrient, i) => (
+                                              <li key={i} className="flex justify-between p-2 rounded-md bg-muted/50">
+                                                <span>{nutrient.split(':')[0]}</span>
+                                                <span className="font-medium">{nutrient.split(':')[1]}</span>
+                                              </li>
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
                 </div>
-              </div>
             </div>
           )}
         </CardContent>
       </Card>
-      
-      {selectedFood && (
-        <PortionSelectorModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-          }}
-          food={selectedFood}
-        />
-      )}
     </div>
   );
 }

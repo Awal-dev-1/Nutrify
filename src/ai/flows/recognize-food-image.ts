@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for recognizing food items from an image and estimating their nutritional content.
+ * @fileOverview A Genkit flow for recognizing food items from an image and estimating their nutritional content, history, and health impact.
  *
  * - recognizeFoodImage - A function that handles the food recognition process.
  * - RecognizeFoodImageInput - The input type for the recognizeFoodImage function.
@@ -16,42 +16,30 @@ const RecognizeFoodImageInputSchema = z.object({
     .describe(
       "A photo of a meal or food, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  userGoal: z.string().optional().describe("The user's main health goal (e.g., 'weight-loss')."),
 });
 export type RecognizeFoodImageInput = z.infer<typeof RecognizeFoodImageInputSchema>;
 
-const FoodItemSchema = z.object({
-  foodName: z.string().describe('The identified name of the food item.'),
-  confidence: z
-    .number()
-    .min(0)
-    .max(1)
-    .describe('The confidence score (0-1) of the identification.'),
-  estimatedNutrients: z.object({
-    calories: z.number().describe('Estimated calories for a typical serving in kcal.'),
-    protein: z.number().describe('Estimated protein for a typical serving in grams.'),
-    carbs: z.number().describe('Estimated carbohydrates for a typical serving in grams.'),
-    fat: z.number().describe('Estimated fat for a typical serving in grams.'),
-    fiber: z.number().describe('Estimated fiber for a typical serving in grams.'),
-    iron: z.number().describe('Estimated iron for a typical serving in milligrams.'),
-    vitaminA: z.number().describe('Estimated Vitamin A for a typical serving in micrograms RAE.'),
-    sodium: z.number().describe('Estimated sodium for a typical serving in milligrams.'),
-  }),
+const FoodAnalysisSchema = z.object({
+    foodName: z.string().describe("The specific name of the identified food."),
+    calories: z.number().describe("An estimated calorie count for the portion shown."),
+    macronutrientBreakdown: z.object({
+        protein: z.number().describe("Grams of protein."),
+        carbohydrates: z.number().describe("Grams of carbohydrates."),
+        fat: z.number().describe("Grams of fat."),
+    }),
+    micronutrientBreakdown: z.array(z.string()).describe('A list of key vitamins and minerals and their amounts (e.g., "Iron: 10mg", "Vitamin C: 500IU").'),
+    possibleRecipes: z.array(z.string()).describe("A few suggested recipes or variations for the identified meal."),
+    foodHistory: z.string().describe("A short, interesting history about the food's origin or cultural significance."),
+    healthAnalysis: z.string().describe("Personalized health analysis based on the user's goal."),
 });
 
-const FoodDataSchema = z.object({
-  identifiedFoods: z
-    .array(FoodItemSchema)
-    .describe('An array of identified food items with their estimated nutritional content.'),
-  generalDescription: z
-    .string()
-    .optional()
-    .describe('An optional general description of the meal or plate.'),
-});
+export type FoodAnalysis = z.infer<typeof FoodAnalysisSchema>;
 
 const RecognizeFoodImageOutputSchema = z.object({
     isFood: z.boolean().describe("A boolean indicating if the image contains food."),
-    message: z.string().describe("A message indicating success or the reason for failure."),
-    data: FoodDataSchema.nullable().describe("The identified food data, or null if it's not food."),
+    message: z.string().optional().describe("A message indicating success or the reason for failure."),
+    data: FoodAnalysisSchema.nullable().describe("The identified food data, or null if it's not food."),
 });
 export type RecognizeFoodImageOutput = z.infer<typeof RecognizeFoodImageOutputSchema>;
 
@@ -66,28 +54,36 @@ const recognizeFoodImagePrompt = ai.definePrompt({
   input: {schema: RecognizeFoodImageInputSchema},
   output: {schema: RecognizeFoodImageOutputSchema},
   model: 'googleai/gemini-1.5-flash',
-  prompt: `You are a "Food-Only" AI assistant. Your sole purpose is to identify and process food items.
+  prompt: `You are an expert culinary AI, nutritionist, and historian. The user's main health goal is "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
-If the user uploads an image that is not a food item, a drink, or a grocery product, you must return a specific JSON error. DO NOT attempt to describe non-food items (e.g., if shown a car, do not say "This is a red car"). Instead, immediately trigger the rejection response.
+First, determine if the image provided contains food. Be discerning. Set the 'isFood' field to true only if you are confident. If it's a picture of something else, set 'isFood' to false.
 
-**Rejection Format:**
+If and only if the image contains food, your second task is to analyze the meal and provide a detailed nutritional breakdown, a compelling history, and a personalized health analysis based on the user's goal. If you recognize a specific regional dish (e.g., Ghanaian Waakye), name it correctly.
+
+If 'isFood' is false, you must return this exact JSON format and nothing else:
 {
   "isFood": false,
   "message": "This is not a food item. Please upload a photo of food or a menu.",
   "data": null
 }
 
-**Acceptance Format:**
-If the image IS a food item, analyze it. Identify all distinct food items present. For each identified food item, provide its name, a confidence score (between 0 and 1), and a detailed estimation of its nutritional content (calories, protein, carbs, fat, fiber, iron, vitamin A, sodium) for a typical serving size. Be as accurate as possible with the nutritional estimates.
 
-Consider common Ghanaian foods and serving sizes where applicable. Provide the output in a JSON format according to the 'data' field in the schema, nested within the acceptance format:
-{
-  "isFood": true,
-  "message": "Success",
-  "data": { ...food details... }
-}
+If 'isFood' is true, provide the following information and structure your response according to the schema:
 
-Image: {{media url=photoDataUri}}`,
+- foodName: The specific name of the identified food.
+- calories: An estimated calorie count for the portion shown.
+- macronutrientBreakdown: A breakdown of protein, carbohydrates, and fat in grams.
+- micronutrientBreakdown: A list of key vitamins and minerals, including their amounts and units (e.g., "Iron: 10mg", "Vitamin C: 500IU").
+- possibleRecipes: Suggest a few recipes or variations for the identified meal.
+- foodHistory: Provide a short, interesting history about the food's origin or cultural significance.
+- healthAnalysis: Based on the user's goal ("{{userGoal}}"), you MUST provide a 'healthAnalysis'. This analysis should explain if the food is good or bad for their specific goal and why.
+  - If the goal is "lose-weight", analyze if the food's calorie density and nutrient profile supports a caloric deficit.
+  - If the goal is "gain-weight", analyze if the food's protein and calorie content is beneficial for muscle synthesis.
+  - If the goal is "maintain-weight", analyze if the food is a balanced choice for maintaining a healthy weight.
+  - If no goal is provided, this can be a general health tip about the food.
+
+Image of the food is below:
+{{media url=photoDataUri}}`,
 });
 
 const recognizeFoodImageFlow = ai.defineFlow(
