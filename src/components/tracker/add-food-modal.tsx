@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,107 +11,170 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { mockFoods, type Food } from "@/lib/data";
-import { useDebounce } from "@/hooks/use-debounce";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Loader2, AlertCircle, Leaf } from "lucide-react";
+import { searchFoods, type AiFoodData } from "@/ai/flows/search-foods-flow";
+import { mockUser } from "@/lib/data";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 
 interface AddFoodModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddFood: (food: Food, quantity: number, mealType: MealType) => void;
+  onAddFood: (foodData: AiFoodData, quantity: number, mealType: MealType) => void;
   mealType: MealType | null;
 }
 
 export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AiFoodData | null>(null);
   const [quantity, setQuantity] = useState(100);
 
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
 
-  const searchResults = useMemo(() => {
-    if (!debouncedSearch) return mockFoods.slice(0, 10); // Show some initial items
-    return mockFoods.filter((food) =>
-      food.name.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
-  }, [debouncedSearch]);
+    setLoading(true);
+    setError(null);
+    setAiResult(null);
+
+    try {
+      const response = await searchFoods({
+        query: searchQuery,
+        userGoal: mockUser.goal,
+      });
+
+      if ('error' in response) {
+        throw new Error(response.error);
+      }
+
+      setAiResult(response);
+    } catch (err: any) {
+      setError(err.message || 'Could not fetch AI-powered results.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
-    if (selectedFood && mealType) {
-      onAddFood(selectedFood, quantity, mealType);
+    if (aiResult && mealType) {
+      onAddFood(aiResult, quantity, mealType);
       resetAndClose();
     }
   };
 
   const resetAndClose = () => {
-    setSelectedFood(null);
     setSearchQuery("");
+    setLoading(false);
+    setError(null);
+    setAiResult(null);
     setQuantity(100);
     onClose();
-  }
+  };
+
+  const resetSearch = () => {
+    setSearchQuery("");
+    setLoading(false);
+    setError(null);
+    setAiResult(null);
+  };
 
   if (!mealType) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add Food to {mealType}</DialogTitle>
-          {!selectedFood && <DialogDescription>Search for a food item to add to your meal.</DialogDescription>}
+          <DialogDescription>
+            Use AI to search for any food and get its nutritional information.
+          </DialogDescription>
         </DialogHeader>
 
-        {selectedFood ? (
-            <div className="py-4 space-y-4">
-                 <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                    <div className="flex-grow">
-                        <p className="font-semibold">{selectedFood.name}</p>
-                        <p className="text-sm text-muted-foreground">{selectedFood.calories} kcal per 100g</p>
-                    </div>
-                </div>
-                 <div className="space-y-2">
-                    <label htmlFor="quantity" className="text-sm font-medium">Quantity (grams)</label>
-                    <Input id="quantity" type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} />
-                </div>
+        <div className="py-4 space-y-4">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder='e.g., "Boiled yam with garden egg stew"'
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-        ) : (
-        <>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Search foods..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <ScrollArea className="h-64 mt-4">
-            <div className="space-y-2">
-              {searchResults.map((food) => (
-                <div
-                  key={food.id}
-                  className="flex items-center gap-4 p-2 rounded-lg cursor-pointer hover:bg-muted"
-                  onClick={() => setSelectedFood(food)}
-                >
-                  <div>
-                    <p className="font-medium">{food.name}</p>
-                    <p className="text-sm text-muted-foreground">{food.calories} kcal</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </>
-        )}
-
-        <DialogFooter>
-            {selectedFood && <Button variant="ghost" onClick={() => setSelectedFood(null)}>Back to search</Button>}
-            <Button onClick={resetAndClose} variant="outline">Cancel</Button>
-            <Button onClick={handleAdd} disabled={!selectedFood}>
-                <Plus className="mr-2 h-4 w-4" /> Add Item
+            <Button type="submit" disabled={loading || !searchQuery.trim()}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
+          </form>
+
+          <div className="min-h-[200px]">
+            {loading && (
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-3/5" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            )}
+
+            {error && !loading && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>AI Search Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {aiResult && !loading && (
+              <div className="space-y-4 animate-in fade-in-50">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="font-bold flex items-center gap-2">
+                                <Leaf className="text-primary h-4 w-4" />
+                                {aiResult.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">{aiResult.description}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="font-bold text-primary">{aiResult.calories} kcal</p>
+                            <p className="text-xs text-muted-foreground">per {aiResult.servingSize}</p>
+                        </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-2">
+                  <label htmlFor="quantity" className="text-sm font-medium">
+                    Quantity (grams)
+                  </label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <DialogFooter className="sm:justify-between">
+            {aiResult && <Button variant="ghost" onClick={resetSearch}>Search Again</Button>}
+            <div className="flex gap-2">
+              <Button onClick={resetAndClose} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={handleAdd} disabled={!aiResult || loading}>
+                <Plus className="mr-2 h-4 w-4" /> Add Item
+              </Button>
+            </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

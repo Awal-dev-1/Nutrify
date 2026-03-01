@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { mockFoods } from '@/lib/data';
 import type { LoggedFood } from '@/lib/tracker-data';
 
 interface EditFoodModalProps {
@@ -35,9 +34,7 @@ export function EditFoodModal({
     }
   }, [loggedFood]);
 
-  const foodDetails = loggedFood
-    ? mockFoods.find((f) => f.id === loggedFood.foodId)
-    : null;
+  const foodDetails = loggedFood?.foodData;
 
   const handleUpdate = () => {
     if (loggedFood) {

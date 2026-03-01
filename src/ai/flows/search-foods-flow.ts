@@ -20,7 +20,7 @@ export type SearchFoodsInput = z.infer<typeof SearchFoodsInputSchema>;
 const AiFoodDataSchema = z.object({
   name: z.string(),
   description: z.string(),
-  servingSize: z.string(),
+  servingSize: z.string().describe('The serving size for which the nutritional data is provided, which MUST be "100g".'),
   calories: z.number(),
   macros: z.object({
     protein: z.number(),
@@ -64,13 +64,14 @@ User goal:
 
 Your task:
 Return accurate nutrition information for the food searched.
-If it is a known dish, provide realistic average nutrition values per standard serving.
+If it is a known dish, provide realistic average nutrition values per 100g serving.
+The servingSize field in the output must ALWAYS be "100g".
 
 Return ONLY JSON in this format:
 {
   "name": "string",
   "description": "string",
-  "servingSize": "string",
+  "servingSize": "100g",
   "calories": number,
   "macros": {
     "protein": number,
