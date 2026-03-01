@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, Salad, ChefHat, RefreshCw, Flame } from 'lucide-react';
+import { Loader2, Sparkles, Salad, RefreshCw, Flame } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { RecommendationCard } from '@/components/recommendations/recommendation-card';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { getRecommendations } from '@/services/recommendationService';
@@ -18,7 +18,7 @@ export default function RecommendationsPage() {
   const { user } = useUser();
   const db = useFirestore();
   const [data, setData] = useState<RecommendationResult | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRecommendations = async () => {
@@ -35,10 +35,6 @@ export default function RecommendationsPage() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchRecommendations();
-  }, [user, db]);
 
   const SummaryCard = () => {
     if (!data) return null;
@@ -105,17 +101,30 @@ export default function RecommendationsPage() {
       );
     }
 
-    if (!data || data.recommendations.length === 0) {
+    if (!data) {
+      return (
+        <EmptyState
+          icon={<Sparkles className="h-16 w-16 text-muted-foreground" />}
+          title="Generate Meal Recommendations"
+          description="Click the button to get AI-powered meal suggestions based on your goals and today's intake."
+          className="border-2 border-dashed"
+        >
+          <Button onClick={fetchRecommendations} size="lg" disabled={isLoading}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate Recommendations
+          </Button>
+        </EmptyState>
+      );
+    }
+
+    if (data.recommendations.length === 0) {
       return (
         <EmptyState
           icon={<Salad className="h-16 w-16 text-muted-foreground" />}
           title="No recommendations for now"
-          description="Log some meals, and we'll generate personalized suggestions for you here."
+          description="We couldn't find any suitable recommendations. Try logging more meals or adjusting your goals."
           className="border-2 border-dashed"
         >
-          <Button onClick={fetchRecommendations} size="lg" variant="outline" className="mt-4">
-            <RefreshCw className="mr-2 h-4 w-4" /> Try Refreshing
-          </Button>
         </EmptyState>
       );
     }
@@ -148,10 +157,12 @@ export default function RecommendationsPage() {
               Smart meal suggestions tailored to your goals and today's intake.
             </p>
         </div>
-        <Button variant="outline" onClick={fetchRecommendations} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-        </Button>
+        {data && (
+            <Button variant="outline" onClick={fetchRecommendations} disabled={isLoading}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Regenerate
+            </Button>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
