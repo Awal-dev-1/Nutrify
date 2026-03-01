@@ -12,9 +12,8 @@ import {
   ScanLine,
   Salad,
   AlertCircle,
-  Soup,
   CheckCircle,
-  Plus,
+  Clock,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,87 +21,96 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { recognizeFoodImage, type RecognizeFoodImageOutput } from '@/ai/flows/recognize-food-image';
+import { useUser, useFirebaseApp, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { generateScanId, uploadFoodImage, createScanDocument, simulateBackendProcessing } from '@/services/aiRecognitionService';
+import type { AiScan } from '@/types/ai';
+import { doc } from 'firebase/firestore';
+import { Badge } from '@/components/ui/badge';
 
-type Status = 'idle' | 'preview' | 'analyzing' | 'results' | 'error';
-
+type Status = 'idle' | 'preview' | 'uploading' | 'processing' | 'results' | 'error';
 
 export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [errorTitle, setErrorTitle] = useState<string>('Analysis Error');
-  const [analysisResult, setAnalysisResult] = useState<RecognizeFoodImageOutput | null>(null);
+  const [scanId, setScanId] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  const { user } = useUser();
+  const db = useFirestore();
+  const app = useFirebaseApp();
+
+  // Real-time listener for the scan document
+  const scanDocRef = useMemoFirebase(
+    () => (user && scanId ? doc(db, 'users', user.uid, 'aiScans', scanId) : null),
+    [user, scanId, db]
+  );
+  const { data: scanResult, isLoading: isScanLoading } = useDoc<AiScan>(scanDocRef);
+
+  // Update local status based on Firestore document
+  // This is the core of the real-time update
+  if (scanResult && status !== 'results' && status !== 'error') {
+    if (scanResult.status === 'completed' && status !== 'results') {
+      setStatus('results');
+    } else if (scanResult.status === 'failed' && status !== 'error') {
+        setStatus('error');
+        setError('AI processing failed. Please try again.');
+    }
+  }
 
   const handleFileChange = (file: File | null) => {
-    if (!file) return;
+    if (!file || !db) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setErrorTitle('Upload Error');
       setError('File size must be less than 5MB.');
       setStatus('error');
       return;
     }
+    
+    // Generate a unique ID for this scan
+    const newScanId = generateScanId(db);
+    setScanId(newScanId);
 
     const reader = new FileReader();
     reader.onload = (e) => {
       setUploadedImage(e.target?.result as string);
+      setImageFile(file);
       setStatus('preview');
       setError(null);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files?.[0];
-    handleFileChange(file || null);
-  }, []);
-
   const handleAnalyze = async () => {
-    if (!uploadedImage) return;
-    setStatus('analyzing');
+    if (!imageFile || !user || !scanId || !db || !app) return;
+    
+    setStatus('uploading');
     setError(null);
-    setAnalysisResult(null);
 
     try {
-      const response = await recognizeFoodImage({ 
-        photoDataUri: uploadedImage,
-      });
-
-      if (!response.isFood) {
-        const errorMessage = response.message || "This does not appear to be a food item. Please upload a photo of food.";
-        setErrorTitle("Not a Food Item");
-        setError(errorMessage);
-        setStatus('error');
-        toast({
-          variant: "destructive",
-          title: "Not a Food Item",
-          description: errorMessage,
-        });
-        return;
-      }
+      // 1. Upload image to Storage
+      const downloadURL = await uploadFoodImage(app, user.uid, scanId, imageFile);
       
-      setAnalysisResult(response);
-      setStatus('results');
+      // 2. Create Firestore document to track progress
+      setStatus('processing');
+      await createScanDocument(db, user.uid, scanId, downloadURL);
+
+      // 3. Simulate the backend Cloud Function for MVP purposes
+      // In a real app, a Cloud Function would be triggered by the Storage upload
+      // and would update the Firestore document itself.
+      await simulateBackendProcessing(db, user.uid, scanId);
 
     } catch (e: any) {
       console.error(e);
-      const errorMessage = e.message || "An unexpected error occurred during analysis.";
-      setErrorTitle("Analysis Failed");
+      const errorMessage = e.message || 'An unexpected error occurred during analysis.';
       setError(errorMessage);
       setStatus('error');
       toast({
-        variant: "destructive",
-        title: "Analysis Failed",
+        variant: 'destructive',
+        title: 'Analysis Failed',
         description: errorMessage,
       });
     }
@@ -111,8 +119,9 @@ export default function AiRecognitionPage() {
   const handleReset = () => {
     setStatus('idle');
     setUploadedImage(null);
+    setImageFile(null);
     setError(null);
-    setAnalysisResult(null);
+    setScanId(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -121,8 +130,11 @@ export default function AiRecognitionPage() {
   const Uploader = () => (
     <div
       className="border-2 border-dashed rounded-xl p-12 flex flex-col items-center justify-center text-center min-h-[300px] cursor-pointer hover:bg-muted/50 transition-all group"
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        handleFileChange(e.dataTransfer.files?.[0] || null);
+      }}
       onClick={() => fileInputRef.current?.click()}
     >
       <div className="p-4 rounded-full bg-primary/10 mb-4 group-hover:scale-110 transition-transform">
@@ -140,9 +152,114 @@ export default function AiRecognitionPage() {
     </div>
   );
 
+  const renderContent = () => {
+    switch (status) {
+      case 'idle':
+        return <Uploader />;
+      
+      case 'error':
+        return (
+          <Alert variant="destructive" className="border-destructive/50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Analysis Error</AlertTitle>
+            <AlertDescription className="flex flex-col gap-4">
+              <p>{error}</p>
+              <Button variant="outline" size="sm" onClick={handleReset} className="w-fit">
+                <RotateCcw className="mr-2 h-3 w-3" /> Try Again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        );
+
+      case 'preview':
+        return (
+            <div className="space-y-6">
+              <div className="relative w-full max-w-md mx-auto aspect-square rounded-xl overflow-hidden border-2 group">
+                <Image 
+                  src={uploadedImage!} 
+                  alt="Uploaded food" 
+                  fill 
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button variant="destructive" size="icon" className="h-10 w-10" onClick={handleReset}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <Button size="lg" onClick={handleAnalyze} className="min-w-[200px] h-12">
+                  <Sparkles className="mr-2 h-4 w-4" /> Analyze Image
+                </Button>
+              </div>
+            </div>
+        );
+
+      case 'uploading':
+      case 'processing':
+        return (
+          <div className="min-h-[400px] flex flex-col items-center justify-center text-center">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              <Loader2 className="h-16 w-16 animate-spin text-primary relative" />
+            </div>
+            <p className="mt-6 font-semibold text-lg">
+              {status === 'uploading' ? 'Uploading image...' : 'AI is analyzing your food...'}
+            </p>
+            <p className="text-muted-foreground">This may take a moment</p>
+            <Progress value={status === 'uploading' ? 20 : 50} className="w-64 mt-6" />
+          </div>
+        );
+
+      case 'results':
+        if (!scanResult || scanResult.predictions.length === 0) {
+            return (
+                <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Analysis Complete</AlertTitle>
+                    <AlertDescription>The AI could not identify a food in this image.</AlertDescription>
+                </Alert>
+            );
+        }
+        return (
+            <div className="space-y-6">
+                <div className="grid lg:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
+                            {uploadedImage && <Image src={uploadedImage} alt="Analyzed food" fill className="object-cover" />}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-bold">Top Predictions</h3>
+                        <div className="space-y-3">
+                        {scanResult.predictions.map((item, i) => (
+                            <Card key={i} className={i === 0 ? "border-primary" : ""}>
+                                <CardContent className="p-4 flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold">{item.name}</p>
+                                            {i === 0 && <Badge>Best Match</Badge>}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Confidence: {(item.confidence * 100).toFixed(0)}%</p>
+                                    </div>
+                                    <Button size="sm">Select</Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-8">
-      {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
@@ -157,7 +274,6 @@ export default function AiRecognitionPage() {
         </div>
       </div>
 
-      {/* Main Card */}
       <Card className="max-w-4xl mx-auto border-2 overflow-hidden">
         <CardHeader className="border-b bg-muted/5">
           <div className="flex items-center justify-between">
@@ -179,101 +295,17 @@ export default function AiRecognitionPage() {
         </CardHeader>
         
         <CardContent className="p-6">
-          {status === 'idle' && <Uploader />}
-          
-          {status === 'error' && (
-            <Alert variant="destructive" className="border-destructive/50">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{errorTitle}</AlertTitle>
-              <AlertDescription className="flex flex-col gap-4">
-                <p>{error}</p>
-                <Button variant="outline" size="sm" onClick={handleReset} className="w-fit">
-                  <RotateCcw className="mr-2 h-3 w-3" /> Try Again
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {status === 'preview' && uploadedImage && (
-            <div className="space-y-6">
-              <div className="relative w-full max-w-md mx-auto aspect-square rounded-xl overflow-hidden border-2 group">
-                <Image 
-                  src={uploadedImage} 
-                  alt="Uploaded food" 
-                  fill 
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button variant="destructive" size="icon" className="h-10 w-10" onClick={handleReset}>
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <Button size="lg" onClick={handleAnalyze} className="min-w-[200px] h-12">
-                  <Sparkles className="mr-2 h-4 w-4" /> Analyze Image
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {status === 'analyzing' && (
-            <div className="min-h-[400px] flex flex-col items-center justify-center text-center">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-                <Loader2 className="h-16 w-16 animate-spin text-primary relative" />
-              </div>
-              <p className="mt-6 font-semibold text-lg">AI is analyzing your food...</p>
-              <p className="text-muted-foreground">This may take a few seconds</p>
-              <Progress value={45} className="w-64 mt-6" />
-            </div>
-          )}
-
-          {status === 'results' && analysisResult && analysisResult.isFood && (
-            <div className="space-y-6">
-                <div className="grid lg:grid-cols-2 gap-8">
-                    {/* Left Column: Image & Core Stats */}
-                    <div className="space-y-4">
-                        <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
-                            {uploadedImage && <Image src={uploadedImage} alt={analysisResult.itemName} fill className="object-cover" />}
-                        </div>
-                        <h2 className="text-3xl font-bold">{analysisResult.itemName}</h2>
-                        <div className="text-4xl font-extrabold text-primary">
-                            {analysisResult.calories.toFixed(0)}{' '}
-                            <span className="text-xl font-medium text-muted-foreground">kcal (estimated)</span>
-                        </div>
-                         <Button className="w-full">
-                            <Plus className="mr-2 h-4 w-4"/> Add to Daily Tracker
-                        </Button>
-                    </div>
-
-                    {/* Right Column: AI Analysis */}
-                    <div className="space-y-4">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                              <Soup className="h-5 w-5 text-primary" />
-                              Ingredients
-                            </CardTitle>
-                            <CardDescription>Primary ingredients identified by the AI.</CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <ul className="grid grid-cols-2 gap-2 text-sm">
-                              {analysisResult.ingredients.map((item, i) => (
-                                <li key={i} className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                  <span>{item}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </div>
-          )}
+          {renderContent()}
         </CardContent>
       </Card>
+
+      <Alert>
+        <Clock className="h-4 w-4" />
+        <AlertTitle>Backend Simulation</AlertTitle>
+        <AlertDescription>
+          For this MVP, the AI analysis is simulated on the client. In a production environment, a Cloud Function would process the image in the backend.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }

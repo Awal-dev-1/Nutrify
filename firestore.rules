@@ -109,6 +109,14 @@ service cloud.firestore {
       match /generatedRecommendations/{recommendationId} {
         allow read, write: if isOwner(userId);
       }
+      
+      /**
+       * @description Manages a user's AI food recognition scans.
+       * @path /users/{userId}/aiScans/{scanId}
+       */
+      match /aiScans/{scanId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     /**
