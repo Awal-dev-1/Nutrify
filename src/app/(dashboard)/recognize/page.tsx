@@ -180,7 +180,7 @@ export default function AiRecognitionPage() {
       case 'preview':
         return (
             <div className="space-y-6">
-              <div className="relative w-full max-w-md mx-auto aspect-square rounded-xl overflow-hidden border-2 group">
+              <div className="relative w-full max-w-sm mx-auto aspect-square rounded-xl overflow-hidden border-2 group">
                 <Image 
                   src={uploadedImage!} 
                   alt="Uploaded food" 
@@ -231,7 +231,7 @@ export default function AiRecognitionPage() {
             <div className="space-y-6">
                 <div className="grid lg:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
+                        <div className="relative w-full max-w-sm mx-auto aspect-square rounded-xl overflow-hidden border-2">
                             {scanResult.imageUrl && <Image src={scanResult.imageUrl} alt="Analyzed food" fill className="object-cover" />}
                         </div>
                     </div>
