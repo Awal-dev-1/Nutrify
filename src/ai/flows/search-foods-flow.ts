@@ -17,33 +17,28 @@ const SearchFoodsInputSchema = z.object({
 });
 export type SearchFoodsInput = z.infer<typeof SearchFoodsInputSchema>;
 
-const AiFoodDataSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  servingSize: z.string().describe('The serving size for which the nutritional data is provided, which MUST be "100g".'),
-  calories: z.number(),
-  macros: z.object({
-    protein: z.number(),
-    carbs: z.number(),
-    fat: z.number(),
+const FoodItemSchema = z.object({
+  foodName: z.string().describe("The specific name of the identified food."),
+  calories: z.number().describe("An estimated calorie count for a standard portion."),
+  macronutrientBreakdown: z.object({
+    protein: z.number().describe("Grams of protein."),
+    carbohydrates: z.number().describe("Grams of carbohydrates."),
+    fat: z.number().describe("Grams of fat."),
   }),
-  micros: z.object({
-    iron: z.number().nullable(),
-    calcium: z.number().nullable(),
-    fiber: z.number().nullable(),
-  }),
-  healthAnalysis: z.string(),
-  goalAlignmentAdvice: z.string(),
+  micronutrientBreakdown: z.array(z.string()).describe('A list of key vitamins and minerals and their amounts (e.g., "Iron: 10mg", "Vitamin C: 500IU").'),
+  possibleRecipes: z.array(z.string()).describe("A few suggested easy-to-prepare recipes or variations for the identified meal."),
+  foodHistory: z.string().describe("A short, interesting, and verifiable history about the food's origin or cultural significance."),
+  healthAnalysis: z.string().describe("Personalized health analysis based on the user's goal."),
 });
 
-const AiFoodErrorSchema = z.object({
-  error: z.string(),
-});
+export type FoodItem = z.infer<typeof FoodItemSchema>;
 
-const SearchFoodsOutputSchema = z.union([AiFoodDataSchema, AiFoodErrorSchema]);
+const SearchFoodsOutputSchema = z.object({
+  isFoodQuery: z.boolean().describe("A boolean indicating if the query is about food."),
+  foodItems: z.array(FoodItemSchema).describe("A list of identified food items. Should be empty if isFoodQuery is false."),
+});
 
 export type SearchFoodsOutput = z.infer<typeof SearchFoodsOutputSchema>;
-export type AiFoodData = z.infer<typeof AiFoodDataSchema>;
 
 
 export async function searchFoods(input: SearchFoodsInput): Promise<SearchFoodsOutput> {
@@ -51,62 +46,43 @@ export async function searchFoods(input: SearchFoodsInput): Promise<SearchFoodsO
 }
 
 const searchFoodsPrompt = ai.definePrompt({
-  name: 'searchFoodsV2Prompt',
+  name: 'searchFoodsV3Prompt',
   input: { schema: SearchFoodsInputSchema },
   output: { schema: SearchFoodsOutputSchema },
-  prompt: `You are a certified nutrition database assistant.
+  prompt: `You are a world-class nutritional expert and food historian. A user is looking for information about food. Their main health goal is "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
-A user searched for:
-"{{{query}}}"
+First, carefully determine if the user's query is actually about food. Set the 'isFoodQuery' field to true if it is, and false otherwise. Be strict; general questions or non-food topics should result in 'isFoodQuery' being false.
 
-User goal:
-"{{#if userGoal}}{{{userGoal}}}{{else}}Not specified{{/if}}"
+If and only if the query is about food, provide a list of food items with their nutritional information. For each food item, you must provide:
+- Macronutrients: protein, carbohydrates, and fat in grams.
+- Micronutrients: A detailed list of key vitamins and minerals, including their amounts and standard units (e.g., "10mg", "500IU", "2.4mcg"). Be as comprehensive as possible.
+- Suggest some possible recipes that are easy to prepare.
 
-Your task:
-Return accurate nutrition information for the food searched.
-If it is a known dish, provide realistic average nutrition values per 100g serving.
-The servingSize field in the output must ALWAYS be "100g".
+Based on the user's goal ("{{userGoal}}"), you must provide a 'healthAnalysis' for each food item. This analysis should explain if the food is good or bad for their specific goal and why. Be specific in your reasoning.
+- If the goal is "weight-loss", analyze if the food's calorie density, fiber content, and nutrient profile supports a caloric deficit and satiety.
+- If the goal is "muscle-gain", analyze if the food's protein and calorie content is beneficial for muscle protein synthesis and recovery.
+- If the goal is "maintenance", analyze if the food is a balanced, nutrient-dense choice for maintaining a healthy weight and overall well-being.
+- If no goal is provided, this can be a general health tip about the food's benefits.
 
-Return ONLY JSON in this format:
-{
-  "name": "string",
-  "description": "string",
-  "servingSize": "100g",
-  "calories": number,
-  "macros": {
-    "protein": number,
-    "carbs": number,
-    "fat": number
-  },
-  "micros": {
-    "iron": number|null,
-    "calcium": number|null,
-    "fiber": number|null
-  },
-  "healthAnalysis": "string",
-  "goalAlignmentAdvice": "string"
-}
+Also, for each food, provide a 'foodHistory' which is a short, interesting, and verifiable fact or brief history about the food's origin or cultural significance.
 
-Rules:
-- Do not explain outside JSON.
-- Do not include extra commentary.
-- If food is unknown, say:
-{
-  "error": "Food not recognized"
-}
-`,
+If 'isFoodQuery' is false, you must return an empty 'foodItems' array.
+
+Query: {{{query}}}
+
+Format your response strictly as a JSON object adhering to the provided schema.`,
 });
 
 const searchFoodsFlow = ai.defineFlow(
   {
-    name: 'searchFoodsV2Flow',
+    name: 'searchFoodsV3Flow',
     inputSchema: SearchFoodsInputSchema,
     outputSchema: SearchFoodsOutputSchema,
   },
   async (input) => {
     const { output } = await searchFoodsPrompt(input);
     if (!output) {
-      return { error: 'Failed to get a response from the AI model.' };
+      return { isFoodQuery: false, foodItems: [] };
     }
     return output;
   }

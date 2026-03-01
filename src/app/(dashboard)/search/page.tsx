@@ -1,41 +1,142 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, type FC } from 'react';
 import {
   Search as SearchIcon,
   X,
   Sparkles,
   Bot,
-  Flame,
+  Loader2,
+  AlertCircle,
+  Stethoscope,
+  BookOpen,
+  CookingPot,
+  Salad,
   Beef,
   Wheat,
   Droplets,
-  Heart,
-  Scale,
-  Brain,
-  Leaf,
-  Loader2,
-  AlertCircle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { searchFoods, type AiFoodData } from '@/ai/flows/search-foods-flow';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { searchFoods, type SearchFoodsOutput, type FoodItem } from '@/ai/flows/search-foods-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { mockUser } from '@/lib/data'; // To get the user's goal
+import { mockUser } from '@/lib/data';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
+  return (
+    <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
+      <CardHeader className="bg-primary/5">
+        <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
+        <div className="text-3xl font-extrabold text-primary pt-2">
+            {item.calories.toFixed(0)}{' '}
+            <span className="text-lg font-medium text-muted-foreground">kcal (estimated)</span>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6">
+        <Tabs defaultValue="analysis" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
+                <TabsTrigger value="analysis"><Stethoscope className="h-4 w-4 mr-1" />Analysis</TabsTrigger>
+                <TabsTrigger value="nutrients"><Salad className="h-4 w-4 mr-1" />Nutrients</TabsTrigger>
+                <TabsTrigger value="history"><BookOpen className="h-4 w-4 mr-1" />History</TabsTrigger>
+                <TabsTrigger value="recipes"><CookingPot className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="analysis">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Health Analysis</CardTitle>
+                        <CardDescription>For your goal: <span className="capitalize font-medium text-primary">{mockUser.goal.replace('-', ' ')}</span></CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-3">
+                      <p>{item.healthAnalysis}</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="nutrients">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">Macronutrients</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-3 gap-2 text-center">
+                        <div className="space-y-1">
+                            <div className="inline-flex p-2 rounded-full bg-red-50 dark:bg-red-950/20"><Beef className="h-4 w-4 text-red-500" /></div>
+                            <p className="text-xs text-muted-foreground">Protein</p>
+                            <p className="font-bold">{item.macronutrientBreakdown.protein.toFixed(1)}g</p>
+                        </div>
+                        <div className="space-y-1">
+                             <div className="inline-flex p-2 rounded-full bg-yellow-50 dark:bg-yellow-950/20"><Wheat className="h-4 w-4 text-yellow-600" /></div>
+                            <p className="text-xs text-muted-foreground">Carbs</p>
+                            <p className="font-bold">{item.macronutrientBreakdown.carbohydrates.toFixed(1)}g</p>
+                        </div>
+                        <div className="space-y-1">
+                             <div className="inline-flex p-2 rounded-full bg-blue-50 dark:bg-blue-950/20"><Droplets className="h-4 w-4 text-blue-500" /></div>
+                            <p className="text-xs text-muted-foreground">Fat</p>
+                            <p className="font-bold">{item.macronutrientBreakdown.fat.toFixed(1)}g</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">Micronutrients</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-2">
+                        <ul className="space-y-1">
+                            {item.micronutrientBreakdown.map((nutrient, i) => (
+                              <li key={i} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">
+                                <span>{nutrient.split(':')[0]}</span>
+                                <span className="font-medium">{nutrient.split(':')[1]}</span>
+                              </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="history">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Cultural History</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-3">
+                        <p>{item.foodHistory}</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="recipes">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recipe Ideas</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-3">
+                        <ul className="list-disc list-outside pl-5 space-y-2">
+                            {item.possibleRecipes.map((recipe, i) => <li key={i}>{recipe}</li>)}
+                        </ul>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<AiFoodData | null>(null);
+  const [result, setResult] = useState<SearchFoodsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-
   const { toast } = useToast();
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -50,11 +151,15 @@ export default function SearchPage() {
     try {
       const response = await searchFoods({
         query: searchQuery,
-        userGoal: mockUser.goal, // Pass user goal for context
+        userGoal: mockUser.goal,
       });
 
-      if ('error' in response) {
-        throw new Error(response.error);
+      if (!response.isFoodQuery) {
+        throw new Error("I can only provide information about food. Please try a different search.");
+      }
+      
+      if(response.foodItems.length === 0){
+        throw new Error("I couldn't find any information for that food. Please try rephrasing your search.");
       }
 
       setResult(response);
@@ -137,116 +242,31 @@ export default function SearchPage() {
         )}
         
         {loading && (
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <Skeleton className="h-8 w-3/5" />
-              <Skeleton className="h-5 w-4/5" />
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <Skeleton className="h-20 w-full" />
-              <div className="grid grid-cols-2 gap-4">
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-              </div>
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-3/5" />
+            <Skeleton className="h-64 w-full" />
+          </div>
         )}
 
         {error && !loading && (
           <Alert variant="destructive" className="border-destructive/50">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>AI Error: Food Not Recognized</AlertTitle>
+              <AlertTitle>AI Search Error</AlertTitle>
               <AlertDescription>
-                {error}. Please try rephrasing your search or checking for typos.
+                {error}
               </AlertDescription>
             </Alert>
         )}
 
-        {result && !loading && !error && (
-          <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
-            <CardHeader className="bg-primary/5">
-              <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                <Leaf className="text-primary" />
-                {result.name}
-              </CardTitle>
-              <CardDescription>{result.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 grid md:grid-cols-2 gap-8">
-              {/* Left Column: Core Stats */}
-              <div className="space-y-6">
-                {/* Serving & Calories */}
-                <div className="flex justify-around text-center">
-                    <div>
-                        <p className="text-sm text-muted-foreground">Serving Size</p>
-                        <p className="text-2xl font-bold">{result.servingSize}</p>
-                    </div>
-                    <Separator orientation="vertical" className="h-16" />
-                    <div>
-                        <p className="text-sm text-muted-foreground">Calories</p>
-                        <p className="text-2xl font-bold text-primary">{result.calories} kcal</p>
-                    </div>
-                </div>
-
-                <Separator />
-
-                {/* Macros */}
-                <div>
-                  <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                    <Scale className="h-4 w-4 text-muted-foreground" />
-                    Macronutrients
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-center">
-                          <p className="text-sm text-muted-foreground">Protein</p>
-                          <p className="text-lg font-bold">{result.macros.protein}g</p>
-                      </div>
-                       <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/20 text-center">
-                          <p className="text-sm text-muted-foreground">Carbs</p>
-                          <p className="text-lg font-bold">{result.macros.carbs}g</p>
-                      </div>
-                       <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 text-center">
-                          <p className="text-sm text-muted-foreground">Fat</p>
-                          <p className="text-lg font-bold">{result.macros.fat}g</p>
-                      </div>
-                  </div>
-                </div>
-                 {/* Micros */}
-                 {(result.micros.fiber || result.micros.iron || result.micros.calcium) && (
-                    <div>
-                        <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                          <Heart className="h-4 w-4 text-muted-foreground" />
-                          Micronutrients
-                        </h3>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                          {result.micros.fiber && <p><strong>Fiber:</strong> {result.micros.fiber}g</p>}
-                          {result.micros.iron && <p><strong>Iron:</strong> {result.micros.iron}mg</p>}
-                          {result.micros.calcium && <p><strong>Calcium:</strong> {result.micros.calcium}mg</p>}
-                        </div>
-                    </div>
-                 )}
-              </div>
-
-              {/* Right Column: AI Insights */}
-              <div className="space-y-6">
-                <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20">
-                    <h3 className="text-base font-semibold mb-2 flex items-center gap-2 text-green-700 dark:text-green-400">
-                      <Brain className="h-4 w-4" />
-                      Health Analysis
-                    </h3>
-                    <p className="text-sm text-green-800 dark:text-green-300/90">{result.healthAnalysis}</p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20">
-                    <h3 className="text-base font-semibold mb-2 flex items-center gap-2 text-purple-700 dark:text-purple-400">
-                      <Bot className="h-4 w-4" />
-                      Goal Alignment Advice
-                    </h3>
-                    <p className="text-sm text-purple-800 dark:text-purple-300/90">{result.goalAlignmentAdvice}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {result && result.isFoodQuery && result.foodItems.length > 0 && !loading && !error && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold">
+                Found {result.foodItems.length} result{result.foodItems.length > 1 ? 's' : ''} for "{searchQuery}"
+            </h2>
+            {result.foodItems.map(item => (
+                <AiFoodResultCard key={item.foodName} item={item} />
+            ))}
+          </div>
         )}
       </div>
     </div>
