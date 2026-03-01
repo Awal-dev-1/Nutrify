@@ -3,7 +3,6 @@ import { FirebaseApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection } from 'firebase/firestore';
 import { recognizeFood } from '@/ai/flows/recognize-food-flow';
-import { searchFoods } from '@/ai/flows/search-foods-flow';
 
 /**
  * Uploads an image to Firebase Storage for AI recognition.
@@ -43,38 +42,33 @@ export async function createScanDocument(
 }
 
 /**
- * Orchestrates a two-step AI recognition process.
- * 1. Identify food name from image.
- * 2. Search for detailed nutritional info using the name.
+ * Orchestrates a one-step AI recognition process.
+ * 1. Identify food and get nutritional info from image.
  */
 export async function runFoodRecognition(
   db: Firestore,
   userId: string,
   scanId: string,
-  imageUrl: string
+  imageUrl: string,
+  userGoal?: string
 ) {
   const scanRef = doc(db, 'users', userId, 'aiScans', scanId);
 
   try {
-    // Step 1: Get the food name from the image
-    const recognitionResult = await recognizeFood({ imageUrl });
-    const foodName = recognitionResult.foodName;
+    // Call the single, powerful recognition flow
+    const result = await recognizeFood({ 
+      imageUrl,
+      userGoal,
+    });
 
-    if (!foodName) {
-        throw new Error("AI could not extract a food name from the image.");
+    if (!result.isFoodQuery || result.foodItems.length === 0) {
+      throw new Error(`AI could not identify a food in the image or it was not a food item.`);
     }
 
-    // Step 2: Use the food name to get detailed nutritional data
-    const searchResult = await searchFoods({ query: foodName });
-
-    if (!searchResult.isFoodQuery || searchResult.foodItems.length === 0) {
-      throw new Error(`Could not find nutritional details for "${foodName}".`);
-    }
-
-    // Update Firestore with the rich data from the search flow
+    // Update Firestore with the rich data from the new flow
     await updateDoc(scanRef, {
       status: 'completed',
-      predictions: searchResult.foodItems, // Pass the array of results
+      predictions: result.foodItems, // Pass the full array of rich FoodItem objects
     });
 
   } catch (error) {

@@ -149,7 +149,7 @@ export default function AiRecognitionPage() {
       const downloadURL = await uploadFoodImage(app, user.uid, scanId, imageFile);
       setStatus('processing');
       await createScanDocument(db, user.uid, scanId, downloadURL);
-      await runFoodRecognition(db, user.uid, scanId, downloadURL);
+      await runFoodRecognition(db, user.uid, scanId, downloadURL, userProfile?.health?.primaryGoal);
     } catch (e: any) {
       console.error(e);
       const errorMessage = e.message || 'An unexpected error occurred during analysis.';
