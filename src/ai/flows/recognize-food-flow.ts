@@ -12,12 +12,12 @@ import { ai } from '@/ai/genkit';
 import { FoodItemSchema } from '@/types/food';
 import { z } from 'zod';
 
-export const RecognizeFoodInputSchema = z.object({
+const RecognizeFoodInputSchema = z.object({
   imageUrl: z.string().describe('The public URL of the food image, typically a Firebase Storage URL.'),
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
-export const RecognizeFoodOutputSchema = z.object({
+const RecognizeFoodOutputSchema = z.object({
     isFood: z.boolean().describe("A boolean indicating if the image contains food."),
     foodItem: FoodItemSchema.optional().describe("The detailed information of the most prominent food item identified. Should be empty if isFood is false."),
 });
