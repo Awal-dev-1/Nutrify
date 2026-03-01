@@ -14,6 +14,7 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  Lightbulb,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,10 +23,11 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUser, useFirebaseApp, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { generateScanId, uploadFoodImage, createScanDocument, simulateBackendProcessing } from '@/services/aiRecognitionService';
+import { generateScanId, uploadFoodImage, createScanDocument, runFoodRecognition } from '@/services/aiRecognitionService';
 import type { AiScan } from '@/types/ai';
 import { doc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 type Status = 'idle' | 'preview' | 'uploading' | 'processing' | 'results' | 'error';
 
@@ -51,13 +53,14 @@ export default function AiRecognitionPage() {
   const { data: scanResult, isLoading: isScanLoading } = useDoc<AiScan>(scanDocRef);
 
   // Update local status based on Firestore document
-  // This is the core of the real-time update
   if (scanResult && status !== 'results' && status !== 'error') {
-    if (scanResult.status === 'completed' && status !== 'results') {
-      setStatus('results');
-    } else if (scanResult.status === 'failed' && status !== 'error') {
-        setStatus('error');
-        setError('AI processing failed. Please try again.');
+    if (scanResult.status === 'completed' || scanResult.status === 'failed') {
+        if (scanResult.status === 'completed' && scanResult.predictions.length > 0) {
+            setStatus('results');
+        } else {
+            setStatus('error');
+            setError(scanResult.reason || 'AI processing failed or no food was identified.');
+        }
     }
   }
 
@@ -85,7 +88,7 @@ export default function AiRecognitionPage() {
   };
 
   const handleAnalyze = async () => {
-    if (!imageFile || !user || !scanId || !db || !app) return;
+    if (!imageFile || !user || !scanId || !db || !app || !uploadedImage) return;
     
     setStatus('uploading');
     setError(null);
@@ -98,10 +101,9 @@ export default function AiRecognitionPage() {
       setStatus('processing');
       await createScanDocument(db, user.uid, scanId, downloadURL);
 
-      // 3. Simulate the backend Cloud Function for MVP purposes
-      // In a real app, a Cloud Function would be triggered by the Storage upload
-      // and would update the Firestore document itself.
-      await simulateBackendProcessing(db, user.uid, scanId);
+      // 3. Trigger the AI processing by calling our server flow
+      //    This replaces the "Cloud Function simulation"
+      await runFoodRecognition(db, user.uid, scanId, uploadedImage);
 
     } catch (e: any) {
       console.error(e);
@@ -161,7 +163,7 @@ export default function AiRecognitionPage() {
         return (
           <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Analysis Error</AlertTitle>
+            <AlertTitle>Not a Food Item</AlertTitle>
             <AlertDescription className="flex flex-col gap-4">
               <p>{error}</p>
               <Button variant="outline" size="sm" onClick={handleReset} className="w-fit">
@@ -226,7 +228,7 @@ export default function AiRecognitionPage() {
                 <div className="grid lg:grid-cols-2 gap-8">
                     <div className="space-y-4">
                         <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
-                            {uploadedImage && <Image src={uploadedImage} alt="Analyzed food" fill className="object-cover" />}
+                            {scanResult.imageUrl && <Image src={scanResult.imageUrl} alt="Analyzed food" fill className="object-cover" />}
                         </div>
                     </div>
 
@@ -243,11 +245,20 @@ export default function AiRecognitionPage() {
                                         </div>
                                         <p className="text-sm text-muted-foreground">Confidence: {(item.confidence * 100).toFixed(0)}%</p>
                                     </div>
-                                    <Button size="sm">Select</Button>
+                                    <Button size="sm" asChild>
+                                        <Link href={`/dashboard/search?q=${encodeURIComponent(item.name)}`}>Select</Link>
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}
                         </div>
+                         <Alert className="border-primary/20 bg-primary/5">
+                            <Lightbulb className="h-4 w-4 text-primary" />
+                            <AlertTitle className="text-primary">Not what you ate?</AlertTitle>
+                            <AlertDescription>
+                            Select an item to view its nutritional details or try searching for it manually.
+                            </AlertDescription>
+                        </Alert>
                     </div>
                 </div>
             </div>
@@ -298,14 +309,6 @@ export default function AiRecognitionPage() {
           {renderContent()}
         </CardContent>
       </Card>
-
-      <Alert>
-        <Clock className="h-4 w-4" />
-        <AlertTitle>Backend Simulation</AlertTitle>
-        <AlertDescription>
-          For this MVP, the AI analysis is simulated on the client. In a production environment, a Cloud Function would process the image in the backend.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }

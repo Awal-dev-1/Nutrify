@@ -2,6 +2,7 @@
 import { FirebaseApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, updateDoc, Firestore, serverTimestamp, collection } from 'firebase/firestore';
+import { recognizeFood } from '@/ai/flows/recognize-food-flow';
 
 /**
  * Uploads an image to Firebase Storage for AI recognition.
@@ -41,37 +42,42 @@ export async function createScanDocument(
 }
 
 /**
- * Simulates a backend AI processing function and updates the scan document with results.
- * In a real application, this logic would live in a Cloud Function.
+ * Calls the AI flow to process the image and updates the scan document with results.
+ * This function replaces the backend Cloud Function for the MVP.
  */
-export async function simulateBackendProcessing(
+export async function runFoodRecognition(
   db: Firestore,
   userId: string,
-  scanId: string
+  scanId: string,
+  imageDataUri: string
 ) {
   const scanRef = doc(db, 'users', userId, 'aiScans', scanId);
-  // Simulate AI processing time
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  
-  // In a real app, this would come from an AI service
-  const mockPredictions = [
-    { name: "Jollof Rice", confidence: 0.87 },
-    { name: "Banku and Tilapia", confidence: 0.65 },
-    { name: "Kelewele", confidence: 0.52 },
-  ];
 
   try {
+    const result = await recognizeFood({ imageDataUri });
+
+    if (!result.isFood) {
+        await updateDoc(scanRef, {
+            status: 'failed',
+            predictions: [],
+            reason: 'The uploaded image was not identified as a food item.',
+        });
+        return;
+    }
+
     await updateDoc(scanRef, {
       status: 'completed',
-      predictions: mockPredictions,
+      predictions: result.predictions,
     });
   } catch (error) {
-      console.error("Failed to update scan document:", error);
-      await updateDoc(scanRef, {
-        status: 'failed',
-      });
+    console.error("Failed to run AI food recognition:", error);
+    await updateDoc(scanRef, {
+      status: 'failed',
+      reason: 'The AI model failed to process the image.'
+    });
   }
 }
+
 
 /**
  * Generates a new unique ID for a scan document.

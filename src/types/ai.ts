@@ -8,4 +8,5 @@ export type AiScan = {
     }[];
     selectedFoodId: string | null;
     createdAt: any; // Firestore timestamp
+    reason?: string; // Optional field for failure reason
 }
