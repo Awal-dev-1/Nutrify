@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FC, useEffect } from 'react';
+import { useState, type FC } from 'react';
 import {
   Search as SearchIcon,
   X,
@@ -26,7 +26,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { mockUser } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDebounce } from '@/hooks/use-debounce';
 
 const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
   return (
@@ -138,7 +137,6 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -182,17 +180,6 @@ export default function SearchPage() {
     }
   };
   
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-        handleSearch(debouncedSearchQuery);
-    } else {
-        setResult(null);
-        setError(null);
-        setHasSearched(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchQuery]);
-
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearch(searchQuery);
@@ -253,7 +240,7 @@ export default function SearchPage() {
 
       {/* Results Section */}
       <div className="max-w-4xl pt-8">
-        {!hasSearched && !loading && !debouncedSearchQuery && (
+        {!hasSearched && !loading && (
            <EmptyState
             icon={<Bot className="h-16 w-16 text-muted-foreground" />}
             title="Ready to assist"
