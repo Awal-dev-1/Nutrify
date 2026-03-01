@@ -26,7 +26,10 @@ const FoodItemSchema = z.object({
     fat: z.number().describe("Grams of fat."),
   }),
   micronutrientBreakdown: z.array(z.string()).describe('A list of key vitamins and minerals and their amounts (e.g., "Iron: 10mg", "Vitamin C: 500IU").'),
-  possibleRecipes: z.array(z.string()).describe("A few suggested easy-to-prepare recipes or variations for the identified meal."),
+  detailedRecipe: z.object({
+    ingredients: z.array(z.string()).describe("A list of all ingredients required, with specific quantities (e.g., '1 cup flour', '200g chicken breast')."),
+    instructions: z.array(z.string()).describe("A step-by-step guide to preparing the food.")
+  }).describe("A detailed recipe for the identified food item."),
   foodHistory: z.string().describe("A short, interesting, and verifiable history about the food's origin or cultural significance."),
   healthAnalysis: z.string().describe("Personalized health analysis based on the user's goal."),
 });
@@ -49,28 +52,35 @@ const searchFoodsPrompt = ai.definePrompt({
   name: 'searchFoodsV3Prompt',
   input: { schema: SearchFoodsInputSchema },
   output: { schema: SearchFoodsOutputSchema },
-  prompt: `You are a world-class nutritional expert and food historian. A user is looking for information about food. Their main health goal is "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
+  prompt: `You are a world-class nutritional expert and food historian. Your task is to provide highly accurate and specific information about the food requested by the user.
 
-First, carefully determine if the user's query is actually about food. Set the 'isFoodQuery' field to true if it is, and false otherwise. Be strict; general questions or non-food topics should result in 'isFoodQuery' being false.
+User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
-If and only if the query is about food, provide a list of food items that match the query. For each food item, you must provide:
+CRITICAL INSTRUCTIONS:
+1.  **Exact Match Only**: You MUST only provide information for the exact food item specified in the user's query. Do not provide information for related or similar foods. If the query is ambiguous, provide the most common interpretation.
+2.  **Food Queries Only**: First, determine if the user's query is strictly about food. If it is not, you MUST set 'isFoodQuery' to false and return an empty 'foodItems' array.
+3.  **Detailed Recipe Generation**: For the \`detailedRecipe\` field, you must provide a complete, practical recipe.
+    -   \`ingredients\`: List every ingredient with precise measurements (e.g., "1 cup (240ml) water", "150g chicken breast").
+    -   \`instructions\`: Provide clear, step-by-step instructions for preparation.
+
+For each food item that EXACTLY matches the query, you must provide:
 - foodName: The specific name of the identified food.
 - calories: An estimated calorie count for a standard portion.
 - macronutrientBreakdown: A breakdown of protein, carbohydrates, and fat in grams.
-- micronutrientBreakdown: A detailed list of key vitamins and minerals, including their amounts and standard units (e.g., "Iron: 10mg", "Vitamin C: 500IU", "2.4mcg"). Be as comprehensive as possible.
-- possibleRecipes: A few suggested easy-to-prepare recipes or variations for the identified meal.
-- foodHistory: A short, interesting, and verifiable fact or brief history about the food's origin or cultural significance.
-- healthAnalysis: A personalized health analysis based on the user's goal ("{{userGoal}}"). This analysis should explain if the food is good or bad for their specific goal and why. Be specific in your reasoning.
-  - If the goal is "weight-loss", analyze if the food's calorie density, fiber content, and nutrient profile supports a caloric deficit and satiety.
-  - If the goal is "muscle-gain", analyze if the food's protein and calorie content is beneficial for muscle protein synthesis and recovery.
-  - If the goal is "maintenance", analyze if the food is a balanced, nutrient-dense choice for maintaining a healthy weight and overall well-being.
-  - If no goal is provided, this can be a general health tip about the food's benefits.
+- micronutrientBreakdown: A comprehensive list of key vitamins and minerals with amounts and units (e.g., "Iron: 10mg", "Vitamin C: 500IU", "2.4mcg").
+- detailedRecipe: A complete recipe as described in the critical instructions.
+- foodHistory: A short, interesting, and verifiable fact or history about the food.
+- healthAnalysis: A personalized analysis based on the user's goal. Explain if the food is beneficial or detrimental for their specific goal and why.
+  - If the goal is "weight-loss", analyze calorie density, fiber, and satiety.
+  - If the goal is "muscle-gain", analyze protein and calorie content for muscle synthesis.
+  - If the goal is "maintenance", analyze if it is a balanced, nutrient-dense choice.
+  - If no goal is specified, provide a general health tip.
 
 If 'isFoodQuery' is false, you must return an empty 'foodItems' array.
 
 User Query: {{{query}}}
 
-Format your response strictly as a JSON object adhering to the provided schema. Do not explain outside the JSON. Do not include extra commentary.`,
+Format your response strictly as a JSON object adhering to the provided schema. Do not include extra commentary.`,
 });
 
 const searchFoodsFlow = ai.defineFlow(

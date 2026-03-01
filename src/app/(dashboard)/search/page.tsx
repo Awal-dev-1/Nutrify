@@ -43,7 +43,7 @@ const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
                 <TabsTrigger value="analysis"><Stethoscope className="h-4 w-4 mr-1" />Analysis</TabsTrigger>
                 <TabsTrigger value="nutrients"><Salad className="h-4 w-4 mr-1" />Nutrients</TabsTrigger>
                 <TabsTrigger value="history"><BookOpen className="h-4 w-4 mr-1" />History</TabsTrigger>
-                <TabsTrigger value="recipes"><CookingPot className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
+                <TabsTrigger value="recipe"><CookingPot className="h-4 w-4 mr-1" />Recipe</TabsTrigger>
             </TabsList>
             
             <TabsContent value="analysis">
@@ -111,15 +111,24 @@ const AiFoodResultCard: FC<{ item: FoodItem }> = ({ item }) => {
                 </Card>
             </TabsContent>
             
-            <TabsContent value="recipes">
+            <TabsContent value="recipe">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Recipe Ideas</CardTitle>
+                        <CardTitle>Detailed Recipe</CardTitle>
                     </CardHeader>
-                    <CardContent className="text-sm space-y-3">
-                        <ul className="list-disc list-outside pl-5 space-y-2">
-                            {item.possibleRecipes.map((recipe, i) => <li key={i}>{recipe}</li>)}
-                        </ul>
+                    <CardContent className="text-sm space-y-6">
+                        <div>
+                            <h4 className="font-semibold text-base mb-2">Ingredients</h4>
+                            <ul className="list-disc list-outside pl-5 space-y-2">
+                                {item.detailedRecipe.ingredients.map((ingredient, i) => <li key={i}>{ingredient}</li>)}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-base mb-2">Instructions</h4>
+                            <ol className="list-decimal list-outside pl-5 space-y-2">
+                                {item.detailedRecipe.instructions.map((instruction, i) => <li key={i}>{instruction}</li>)}
+                            </ol>
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -225,7 +234,7 @@ export default function SearchPage() {
           <Button
             type="submit"
             size="lg"
-            className="h-14 rounded-full"
+            className="h-14 rounded-full px-6"
             disabled={loading || !searchQuery.trim()}
           >
             {loading ? (
