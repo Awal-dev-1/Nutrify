@@ -23,81 +23,105 @@
           "type": "boolean",
           "description": "Flag indicating if the user has completed the initial onboarding wizard."
         },
-        "gender": {
-          "type": "string",
-          "description": "User's self-identified gender (e.g., 'Male', 'Female', 'Other')."
-        },
-        "age": {
-          "type": "number",
-          "description": "User's age in years."
-        },
-        "heightCm": {
-          "type": "number",
-          "description": "User's height in centimeters."
-        },
-        "weightKg": {
-          "type": "number",
-          "description": "User's current weight in kilograms."
-        },
-        "unitPreference": {
-          "type": "string",
-          "description": "Preferred unit system for measurements (e.g., 'metric' for cm/kg, 'imperial' for ft/lbs)."
-        },
-        "goalType": {
-          "type": "string",
-          "description": "User's primary nutrition goal (e.g., 'Lose Weight', 'Maintain Weight', 'Gain Weight', 'Eat Healthier')."
-        },
-        "dietaryPreferences": {
-          "type": "array",
-          "description": "An array of dietary restrictions or preferences selected by the user (e.g., 'Vegan', 'Halal', 'Diabetic-Friendly').",
-          "items": {
-            "type": "string"
+        "profile": {
+          "type": "object",
+          "description": "Contains the user's core physical and demographic information.",
+          "properties": {
+            "gender": {
+              "type": "string",
+              "description": "User's self-identified gender (e.g., 'Male', 'Female', 'Other')."
+            },
+            "age": {
+              "type": "number",
+              "description": "User's age in years."
+            },
+            "heightCm": {
+              "type": "number",
+              "description": "User's height in centimeters."
+            },
+            "weightKg": {
+              "type": "number",
+              "description": "User's current weight in kilograms."
+            },
+            "activityLevel": {
+              "type": "string",
+              "description": "User's self-reported activity level (e.g., 'Low', 'Moderate', 'Active', 'Very Active')."
+            },
+             "profileImageUrl": {
+              "type": "string",
+              "description": "URL to the user's profile picture.",
+              "format": "uri"
+            }
           }
         },
-        "activityLevel": {
-          "type": "string",
-          "description": "User's self-reported activity level (e.g., 'Low', 'Moderate', 'Active', 'Very Active')."
+        "health": {
+          "type": "object",
+          "description": "Contains the user's primary health goals and dietary constraints.",
+          "properties": {
+             "primaryGoal": {
+              "type": "string",
+              "description": "User's primary nutrition goal (e.g., 'Lose Weight', 'Maintain Weight', 'Gain Weight', 'Eat Healthier')."
+            },
+            "dietaryPreferences": {
+              "type": "array",
+              "description": "An array of dietary restrictions or preferences selected by the user (e.g., 'Vegan', 'Halal', 'Diabetic-Friendly').",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         },
-        "dailyCalorieGoal": {
-          "type": "number",
-          "description": "The user's target daily calorie intake."
+        "goals": {
+          "type": "object",
+          "description": "Contains the user's specific nutritional targets.",
+          "properties": {
+             "dailyCalorieGoal": {
+              "type": "number",
+              "description": "The user's target daily calorie intake."
+            },
+            "proteinPercentageGoal": {
+              "type": "number",
+              "description": "Target percentage of daily calories from protein (0-100)."
+            },
+            "carbsPercentageGoal": {
+              "type": "number",
+              "description": "Target percentage of daily calories from carbohydrates (0-100)."
+            },
+            "fatPercentageGoal": {
+              "type": "number",
+              "description": "Target percentage of daily calories from fats (0-100)."
+            },
+            "ironTargetMg": {
+              "type": "number",
+              "description": "User's target daily iron intake in milligrams."
+            },
+            "vitaminATargetMcg": {
+              "type": "number",
+              "description": "User's target daily Vitamin A intake in micrograms."
+            }
+          }
         },
-        "proteinPercentageGoal": {
-          "type": "number",
-          "description": "Target percentage of daily calories from protein (0-100)."
-        },
-        "carbsPercentageGoal": {
-          "type": "number",
-          "description": "Target percentage of daily calories from carbohydrates (0-100)."
-        },
-        "fatPercentageGoal": {
-          "type": "number",
-          "description": "Target percentage of daily calories from fats (0-100)."
-        },
-        "ironTargetMg": {
-          "type": "number",
-          "description": "User's target daily iron intake in milligrams."
-        },
-        "vitaminATargetMcg": {
-          "type": "number",
-          "description": "User's target daily Vitamin A intake in micrograms."
-        },
-        "profileImageUrl": {
-          "type": "string",
-          "description": "URL to the user's profile picture.",
-          "format": "uri"
-        },
-        "themePreference": {
-          "type": "string",
-          "description": "User's preferred application theme (e.g., 'Light', 'Dark')."
-        },
-        "languagePreference": {
-          "type": "string",
-          "description": "User's preferred language for the application (e.g., 'English', 'Twi', 'Ewe')."
-        },
-        "reminderEnabled": {
-          "type": "boolean",
-          "description": "Flag indicating if daily nutrition reminders are enabled for the user."
+        "preferences": {
+            "type": "object",
+            "description": "Application-specific user preferences.",
+            "properties": {
+                "unitPreference": {
+                "type": "string",
+                "description": "Preferred unit system for measurements (e.g., 'metric' for cm/kg, 'imperial' for ft/lbs)."
+                },
+                "themePreference": {
+                "type": "string",
+                "description": "User's preferred application theme (e.g., 'Light', 'Dark')."
+                },
+                "languagePreference": {
+                "type": "string",
+                "description": "User's preferred language for the application (e.g., 'English', 'Twi', 'Ewe')."
+                },
+                "reminderEnabled": {
+                "type": "boolean",
+                "description": "Flag indicating if daily nutrition reminders are enabled for the user."
+                }
+            }
         },
         "createdAt": {
           "type": "string",
@@ -115,17 +139,6 @@
         "name",
         "email",
         "onboardingCompleted",
-        "gender",
-        "age",
-        "heightCm",
-        "weightKg",
-        "unitPreference",
-        "goalType",
-        "activityLevel",
-        "dailyCalorieGoal",
-        "proteinPercentageGoal",
-        "carbsPercentageGoal",
-        "fatPercentageGoal",
         "createdAt"
       ]
     },

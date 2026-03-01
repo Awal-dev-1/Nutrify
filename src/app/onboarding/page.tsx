@@ -14,6 +14,9 @@ import { SummaryStep } from "@/components/onboarding/step-summary";
 import { LoadingStep } from "@/components/onboarding/step-loading";
 import { ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUser, useFirestore } from "@/firebase";
+import { completeOnboarding } from "@/services/onboardingService";
+import { useToast } from "@/hooks/use-toast";
 
 const totalSteps = 5;
 
@@ -21,6 +24,9 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({});
   const router = useRouter();
+  const { user } = useUser();
+  const db = useFirestore();
+  const { toast } = useToast();
 
   const handleNext = (data: any) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -33,12 +39,32 @@ export default function OnboardingPage() {
     setStep((prev) => prev - 1);
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    if (!user || !db) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not save your profile. Please try again."
+        });
+        return;
+    };
     setStep(totalSteps + 1); // Loading step
-    setTimeout(() => {
-        // TODO: Save data and update user onboarding status
+    try {
+        await completeOnboarding(db, user.uid, formData as any);
+        toast({
+            title: "Profile Created!",
+            description: "Welcome to Nutrify! Your personalized dashboard is ready."
+        });
         router.push("/dashboard");
-    }, 2000);
+    } catch (error) {
+        console.error("Failed to complete onboarding:", error);
+        toast({
+            variant: "destructive",
+            title: "Onboarding Failed",
+            description: "There was a problem creating your profile. Please try again."
+        });
+        setStep(step - 1); // Go back to summary step
+    }
   };
 
   const stepsComponents = [

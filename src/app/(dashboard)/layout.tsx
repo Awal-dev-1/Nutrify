@@ -13,16 +13,21 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
+    if (isUserLoading || isProfileLoading) {
+      return;
     }
-  }, [user, isUserLoading, router]);
+    if (!user) {
+      router.push('/login');
+    } else if (user && userProfile && !userProfile.onboardingCompleted) {
+      router.push('/onboarding');
+    }
+  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
   
-  if (isUserLoading || !user) {
+  if (isUserLoading || isProfileLoading || !user || (userProfile && !userProfile.onboardingCompleted)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <p>Loading...</p>
