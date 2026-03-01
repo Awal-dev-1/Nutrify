@@ -53,7 +53,7 @@ const recognizeFoodImagePrompt = ai.definePrompt({
   name: 'recognizeFoodImagePrompt',
   input: {schema: RecognizeFoodImageInputSchema},
   output: {schema: RecognizeFoodImageOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   prompt: `You are a "Food-Only" AI assistant. Your sole purpose is to identify and process food items.
 
 Strict Validation Rule:
