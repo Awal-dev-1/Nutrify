@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, FC } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Upload,
@@ -8,7 +8,6 @@ import {
   Loader2,
   X,
   Sparkles,
-  CheckCircle,
   Lightbulb,
   RotateCcw,
   ScanLine,
@@ -25,25 +24,20 @@ import { mockFoods, type Food } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PortionSelectorModal } from '@/components/food/portion-selector-modal';
 import { cn } from '@/lib/utils';
+import { recognizeFoodImage } from '@/ai/flows/recognize-food-image';
 
 type Status = 'idle' | 'preview' | 'analyzing' | 'results' | 'error';
 
-interface MockPrediction {
+interface Prediction {
   food: Food;
   confidence: number;
 }
-
-const mockPredictions: MockPrediction[] = [
-  { food: mockFoods.find(f => f.id === 'jollof-rice')!, confidence: 0.87 },
-  { food: mockFoods.find(f => f.id === 'banku-and-tilapia')!, confidence: 0.65 },
-  { food: mockFoods.find(f => f.id === 'kelewele')!, confidence: 0.52 },
-];
 
 export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [predictions, setPredictions] = useState<MockPrediction[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,12 +73,46 @@ export default function AiRecognitionPage() {
     handleFileChange(file || null);
   }, []);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!uploadedImage) return;
     setStatus('analyzing');
-    setTimeout(() => {
-      setPredictions(mockPredictions.sort((a, b) => b.confidence - a.confidence));
+    setError(null);
+
+    try {
+      const response = await recognizeFoodImage({ photoDataUri: uploadedImage });
+
+      if (!response.identifiedFoods || response.identifiedFoods.length === 0) {
+        throw new Error("The AI could not identify any food in the image. Please try a clearer picture.");
+      }
+
+      // Map AI results to the existing food database
+      const mappedPredictions: Prediction[] = response.identifiedFoods
+        .map(aiFood => {
+          // Use a simple case-insensitive match. A more robust solution might use fuzzy searching.
+          const matchedFood = mockFoods.find(mockFood =>
+            mockFood.name.toLowerCase().includes(aiFood.foodName.toLowerCase()) ||
+            aiFood.foodName.toLowerCase().includes(mockFood.name.toLowerCase())
+          );
+          
+          if (matchedFood) {
+            return { food: matchedFood, confidence: aiFood.confidence };
+          }
+          return null;
+        })
+        .filter((p): p is Prediction => p !== null);
+
+      if (mappedPredictions.length === 0) {
+        throw new Error(`AI identified "${response.identifiedFoods[0].foodName}", but it could not be matched to an item in our database.`);
+      }
+
+      setPredictions(mappedPredictions.sort((a, b) => b.confidence - a.confidence));
       setStatus('results');
-    }, 2000);
+
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || "An unexpected error occurred during analysis.");
+      setStatus('error');
+    }
   };
   
   const handleSelectPrediction = (food: Food) => {
@@ -98,6 +126,9 @@ export default function AiRecognitionPage() {
     setError(null);
     setPredictions([]);
     setSelectedFood(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
   
   const Uploader = () => (
@@ -185,7 +216,7 @@ export default function AiRecognitionPage() {
           {status === 'error' && (
             <Alert variant="destructive" className="border-destructive/50">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Upload Error</AlertTitle>
+              <AlertTitle>Analysis Error</AlertTitle>
               <AlertDescription className="flex flex-col gap-4">
                 <p>{error}</p>
                 <Button variant="outline" size="sm" onClick={handleReset} className="w-fit">
@@ -311,7 +342,7 @@ export default function AiRecognitionPage() {
                     <Lightbulb className="h-4 w-4 text-primary" />
                     <AlertTitle className="text-primary">Not the right food?</AlertTitle>
                     <AlertDescription>
-                      You can select a different prediction above or search for it manually.
+                      The AI couldn't find a perfect match? You can select a different prediction or search for it manually.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -326,7 +357,6 @@ export default function AiRecognitionPage() {
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            handleReset();
           }}
           food={selectedFood}
         />
