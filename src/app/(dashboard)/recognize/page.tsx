@@ -8,30 +8,20 @@ import {
   Loader2,
   X,
   Sparkles,
-  Lightbulb,
   RotateCcw,
   ScanLine,
   Salad,
   AlertCircle,
-  BookOpen,
-  Beef,
-  Wheat,
-  Droplets,
-  Stethoscope,
-  CookingPot
+  Soup,
+  CheckCircle,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { mockUser } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { cn } from '@/lib/utils';
-import { recognizeFoodImage, type FoodAnalysis } from '@/ai/flows/recognize-food-image';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from '@/components/ui/separator';
+import { recognizeFoodImage, type RecognizeFoodImageOutput } from '@/ai/flows/recognize-food-image';
 
 type Status = 'idle' | 'preview' | 'analyzing' | 'results' | 'error';
 
@@ -40,7 +30,7 @@ export default function AiRecognitionPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<FoodAnalysis | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<RecognizeFoodImageOutput | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -83,12 +73,10 @@ export default function AiRecognitionPage() {
     try {
       const response = await recognizeFoodImage({ 
         photoDataUri: uploadedImage,
-        userGoal: mockUser.goal,
       });
 
-      // Gatekeeper check
       if (!response.isFood) {
-        const errorMessage = response.message || "The uploaded image does not appear to be food.";
+        const errorMessage = "This does not appear to be a food item. Please upload a photo of food.";
         setError(errorMessage);
         setStatus('error');
         toast({
@@ -98,12 +86,8 @@ export default function AiRecognitionPage() {
         });
         return;
       }
-
-      if (!response.data) {
-        throw new Error("The AI could not identify any food in the image. Please try a clearer picture.");
-      }
-
-      setAnalysisResult(response.data);
+      
+      setAnalysisResult(response);
       setStatus('results');
 
     } catch (e: any) {
@@ -141,14 +125,6 @@ export default function AiRecognitionPage() {
       </div>
       <p className="text-lg font-semibold mb-2">Drag & drop or click to upload</p>
       <p className="text-sm text-muted-foreground mb-4">PNG, JPG, or WEBP. Max 5MB.</p>
-      <div className="flex gap-2">
-        <Badge variant="secondary" className="px-3 py-1">
-          <Camera className="h-3 w-3 mr-1" /> Camera
-        </Badge>
-        <Badge variant="secondary" className="px-3 py-1">
-          <ScanLine className="h-3 w-3 mr-1" /> Scan
-        </Badge>
-      </div>
       <input
         type="file"
         ref={fileInputRef}
@@ -170,14 +146,14 @@ export default function AiRecognitionPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">AI Food Recognition</h1>
             <p className="text-muted-foreground">
-              Upload a food image and let Nutrify identify it instantly. Supports common meals and local dishes.
+              Upload a food image and let Nutrify identify it instantly.
             </p>
           </div>
         </div>
       </div>
 
       {/* Main Card */}
-      <Card className="max-w-6xl mx-auto border-2 overflow-hidden">
+      <Card className="max-w-4xl mx-auto border-2 overflow-hidden">
         <CardHeader className="border-b bg-muted/5">
           <div className="flex items-center justify-between">
             <div>
@@ -198,18 +174,7 @@ export default function AiRecognitionPage() {
         </CardHeader>
         
         <CardContent className="p-6">
-          {status === 'idle' && (
-            <div className="space-y-4">
-              <Uploader />
-              <Button 
-                variant="outline" 
-                className="w-full h-12 border-dashed" 
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Camera className="mr-2 h-4 w-4" /> Use Camera
-              </Button>
-            </div>
-          )}
+          {status === 'idle' && <Uploader />}
           
           {status === 'error' && (
             <Alert variant="destructive" className="border-destructive/50">
@@ -259,114 +224,45 @@ export default function AiRecognitionPage() {
             </div>
           )}
 
-          {status === 'results' && analysisResult && (
+          {status === 'results' && analysisResult && analysisResult.isFood && (
             <div className="space-y-6">
                 <div className="grid lg:grid-cols-2 gap-8">
                     {/* Left Column: Image & Core Stats */}
                     <div className="space-y-4">
                         <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2">
-                            {uploadedImage && <Image src={uploadedImage} alt={analysisResult.foodName} fill className="object-cover" />}
+                            {uploadedImage && <Image src={uploadedImage} alt={analysisResult.itemName} fill className="object-cover" />}
                         </div>
-                        <h2 className="text-3xl font-bold">{analysisResult.foodName}</h2>
+                        <h2 className="text-3xl font-bold">{analysisResult.itemName}</h2>
                         <div className="text-4xl font-extrabold text-primary">
                             {analysisResult.calories.toFixed(0)}{' '}
                             <span className="text-xl font-medium text-muted-foreground">kcal (estimated)</span>
                         </div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg">Macronutrients</CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-3 gap-4 text-center">
-                                <div className="space-y-1">
-                                    <div className="inline-flex p-2 rounded-full bg-red-50 dark:bg-red-950/20">
-                                        <Beef className="h-5 w-5 text-red-500" />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Protein</p>
-                                    <p className="font-bold text-lg">{analysisResult.macronutrientBreakdown.protein.toFixed(1)}g</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="inline-flex p-2 rounded-full bg-yellow-50 dark:bg-yellow-950/20">
-                                        <Wheat className="h-5 w-5 text-yellow-600" />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Carbs</p>
-                                    <p className="font-bold text-lg">{analysisResult.macronutrientBreakdown.carbohydrates.toFixed(1)}g</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="inline-flex p-2 rounded-full bg-blue-50 dark:bg-blue-950/20">
-                                        <Droplets className="h-5 w-5 text-blue-500" />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Fat</p>
-                                    <p className="font-bold text-lg">{analysisResult.macronutrientBreakdown.fat.toFixed(1)}g</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                         <Button className="w-full">
+                            <Plus className="mr-2 h-4 w-4"/> Add to Daily Tracker
+                        </Button>
                     </div>
 
-                    {/* Right Column: AI Analysis Tabs */}
+                    {/* Right Column: AI Analysis */}
                     <div className="space-y-4">
-                        <Tabs defaultValue="analysis" className="w-full">
-                            <TabsList className="grid w-full grid-cols-4">
-                                <TabsTrigger value="analysis"><Stethoscope className="h-4 w-4 mr-1" />Analysis</TabsTrigger>
-                                <TabsTrigger value="history"><BookOpen className="h-4 w-4 mr-1" />History</TabsTrigger>
-                                <TabsTrigger value="recipes"><CookingPot className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
-                                <TabsTrigger value="nutrients"><Salad className="h-4 w-4 mr-1" />Nutrients</TabsTrigger>
-                            </TabsList>
-                            
-                            <TabsContent value="analysis" className="mt-4">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Health Analysis</CardTitle>
-                                        <CardDescription>For your goal: <span className="capitalize font-medium text-primary">{mockUser.goal.replace('-', ' ')}</span></CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="text-sm space-y-3">
-                                      <p>{analysisResult.healthAnalysis}</p>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-                            
-                            <TabsContent value="history" className="mt-4">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Cultural History</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-sm space-y-3">
-                                        <p>{analysisResult.foodHistory}</p>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-                            
-                            <TabsContent value="recipes" className="mt-4">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Recipe Ideas</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-sm space-y-3">
-                                        <ul className="list-disc list-outside pl-5 space-y-2">
-                                            {analysisResult.possibleRecipes.map((recipe, i) => <li key={i}>{recipe}</li>)}
-                                        </ul>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-
-                            <TabsContent value="nutrients" className="mt-4">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Micronutrients</CardTitle>
-                                        <CardDescription>Key vitamins and minerals in this meal.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="text-sm space-y-3">
-                                        <ul className="space-y-2">
-                                            {analysisResult.micronutrientBreakdown.map((nutrient, i) => (
-                                              <li key={i} className="flex justify-between p-2 rounded-md bg-muted/50">
-                                                <span>{nutrient.split(':')[0]}</span>
-                                                <span className="font-medium">{nutrient.split(':')[1]}</span>
-                                              </li>
-                                            ))}
-                                        </ul>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-                        </Tabs>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Soup className="h-5 w-5 text-primary" />
+                              Ingredients
+                            </CardTitle>
+                            <CardDescription>Primary ingredients identified by the AI.</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="grid grid-cols-2 gap-2 text-sm">
+                              {analysisResult.ingredients.map((item, i) => (
+                                <li key={i} className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>
