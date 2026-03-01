@@ -25,7 +25,7 @@ import {
 import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { mockUser } from '@/lib/data'
+import { useUser } from '@/firebase'
 
 const mainLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
@@ -46,6 +46,7 @@ const aiLinks = [
 
 export function MainSidebar() {
   const pathname = usePathname()
+  const { user } = useUser();
 
   const renderLinks = (links: typeof mainLinks) => (
     <SidebarMenu className="gap-1">
@@ -125,14 +126,14 @@ export function MainSidebar() {
         <div className="rounded-lg bg-muted/30 p-2 transition-colors group-data-[collapsible=icon]:p-2">
           <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
             <Avatar className="h-9 w-9 border border-border">
-              <AvatarImage src={mockUser.profilePictureUrl} alt={mockUser.name} />
+              <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || ""} />
               <AvatarFallback className="bg-primary/10 text-primary">
-                {mockUser.name.charAt(0)}
+                {user?.displayName?.charAt(0)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
-              <p className="text-sm font-semibold truncate leading-tight">{mockUser.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{mockUser.email}</p>
+              <p className="text-sm font-semibold truncate leading-tight">{user?.displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
         </div>
