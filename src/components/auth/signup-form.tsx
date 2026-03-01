@@ -52,6 +52,10 @@ export function SignUpForm() {
     setIsLoading(true);
     try {
       await signup(auth, db, values.email, values.password, values.name);
+      toast({
+        title: "Account Created!",
+        description: "You have been successfully signed up.",
+      });
       router.push("/onboarding");
     } catch (error: any) {
       toast({
