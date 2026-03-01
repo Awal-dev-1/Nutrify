@@ -29,7 +29,7 @@ import { useUser } from '@/firebase'
 
 const mainLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/dashboard/search', label: 'Search Food', icon: Search },
+  { href: '/dashboard/search', label: 'AI Food Search', icon: Search },
   { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
   { href: '/dashboard/goals', label: 'Goals', icon: Target },
 ]

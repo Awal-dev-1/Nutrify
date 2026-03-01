@@ -94,7 +94,7 @@ export default function FoodDetailsPage() {
         description="The food item you are looking for does not exist in our database."
       >
         <Button asChild className="mt-4">
-          <Link href="/dashboard/search">Back to Search</Link>
+          <Link href="/dashboard/search">Back to AI Food Search</Link>
         </Button>
       </EmptyState>
     );
@@ -134,7 +134,7 @@ export default function FoodDetailsPage() {
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Food Search", href: "/dashboard/search" },
+    { label: "AI Food Search", href: "/dashboard/search" },
     { label: food.name },
   ];
 
@@ -145,7 +145,7 @@ export default function FoodDetailsPage() {
         <Button variant="ghost" asChild>
           <Link href="/dashboard/search">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Search
+            Back to AI Search
           </Link>
         </Button>
         <Breadcrumbs items={breadcrumbItems} className="hidden md:block" />
