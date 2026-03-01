@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,11 +8,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { mockFoods } from "@/lib/data";
-import type { LoggedFood } from "@/lib/tracker-data";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { mockFoods } from '@/lib/data';
+import type { LoggedFood } from '@/lib/tracker-data';
 
 interface EditFoodModalProps {
   isOpen: boolean;
@@ -22,7 +21,12 @@ interface EditFoodModalProps {
   loggedFood: LoggedFood | null;
 }
 
-export function EditFoodModal({ isOpen, onClose, onUpdate, loggedFood }: EditFoodModalProps) {
+export function EditFoodModal({
+  isOpen,
+  onClose,
+  onUpdate,
+  loggedFood,
+}: EditFoodModalProps) {
   const [quantity, setQuantity] = useState(loggedFood?.quantity || 100);
 
   useEffect(() => {
@@ -31,7 +35,9 @@ export function EditFoodModal({ isOpen, onClose, onUpdate, loggedFood }: EditFoo
     }
   }, [loggedFood]);
 
-  const foodDetails = loggedFood ? mockFoods.find(f => f.id === loggedFood.foodId) : null;
+  const foodDetails = loggedFood
+    ? mockFoods.find((f) => f.id === loggedFood.foodId)
+    : null;
 
   const handleUpdate = () => {
     if (loggedFood) {
@@ -52,19 +58,30 @@ export function EditFoodModal({ isOpen, onClose, onUpdate, loggedFood }: EditFoo
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
-            <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                <div className="flex-grow">
-                    <p className="font-semibold">{foodDetails.name}</p>
-                    <p className="text-sm text-muted-foreground">{foodDetails.calories} kcal per 100g</p>
-                </div>
+          <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
+            <div className="flex-grow">
+              <p className="font-semibold">{foodDetails.name}</p>
+              <p className="text-sm text-muted-foreground">
+                {foodDetails.calories} kcal per 100g
+              </p>
             </div>
-            <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium">New Quantity (grams)</label>
-                <Input id="quantity" type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} />
-            </div>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="quantity" className="text-sm font-medium">
+              New Quantity (grams)
+            </label>
+            <Input
+              id="quantity"
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+            />
+          </div>
         </div>
         <DialogFooter>
-          <Button onClick={onClose} variant="outline">Cancel</Button>
+          <Button onClick={onClose} variant="outline">
+            Cancel
+          </Button>
           <Button onClick={handleUpdate}>Update Portion</Button>
         </DialogFooter>
       </DialogContent>

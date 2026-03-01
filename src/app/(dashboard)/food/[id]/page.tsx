@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
   Heart,
@@ -15,7 +14,6 @@ import {
   Droplets,
   Zap,
   Leaf,
-  Info,
 } from 'lucide-react';
 import {
   PieChart,

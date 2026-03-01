@@ -1,35 +1,38 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Search as SearchIcon,
   X,
   Mic,
   Sparkles,
   Bot,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useDebounce } from "@/hooks/use-debounce";
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { searchFoods, type SearchFoodsOutput, type AiFoodSearchResult } from "@/ai/flows/search-foods-flow";
-import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AiFoodCard } from "@/components/food/ai-food-card";
-
+} from '@/components/ui/tooltip';
+import { EmptyState } from '@/components/shared/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useDebounce } from '@/hooks/use-debounce';
+import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  searchFoods,
+  type SearchFoodsOutput,
+  type AiFoodSearchResult,
+} from '@/ai/flows/search-foods-flow';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AiFoodCard } from '@/components/food/ai-food-card';
 
 export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchFoodsOutput['results']>([]);
   const [interpretedQuery, setInterpretedQuery] = useState<string | null>(null);
@@ -52,14 +55,14 @@ export default function SearchPage() {
 
       try {
         const response = await searchFoods({ query: debouncedSearchQuery });
-        setResults(response.results); 
+        setResults(response.results);
         setInterpretedQuery(response.interpretedQuery || null);
       } catch (error) {
-        console.error("AI search failed:", error);
+        console.error('AI search failed:', error);
         toast({
-          variant: "destructive",
-          title: "AI Search Failed",
-          description: "Could not fetch AI-powered results. Please try again.",
+          variant: 'destructive',
+          title: 'AI Search Failed',
+          description: 'Could not fetch AI-powered results. Please try again.',
         });
         setResults([]);
       } finally {
@@ -76,9 +79,12 @@ export default function SearchPage() {
     <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
       <div className="space-y-1 sm:space-y-2 max-w-7xl mx-auto">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">AI Food Search</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
+          AI Food Search
+        </h1>
         <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-          Use natural language to find foods. Try "high protein ghanaian lunch" or "low calorie snacks".
+          Use natural language to find foods. Try "high protein ghanaian lunch"
+          or "low calorie snacks".
         </p>
       </div>
 
@@ -100,7 +106,7 @@ export default function SearchPage() {
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 sm:h-8 sm:w-8 rounded-full hover:bg-muted"
-                onClick={() => setSearchQuery("")}
+                onClick={() => setSearchQuery('')}
               >
                 <X className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
@@ -116,7 +122,10 @@ export default function SearchPage() {
                     <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs sm:text-sm">
+                <TooltipContent
+                  side="bottom"
+                  className="text-xs sm:text-sm"
+                >
                   <p>Voice search coming soon</p>
                 </TooltipContent>
               </Tooltip>
@@ -124,7 +133,7 @@ export default function SearchPage() {
           </div>
         </div>
       </div>
-      
+
       {/* AI Interpretation & View Toggle */}
       {(interpretedQuery || loading || results.length > 0) && (
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center max-w-7xl mx-auto">
@@ -144,8 +153,8 @@ export default function SearchPage() {
         {loading ? (
           <div
             className={cn(
-              "grid gap-3 sm:gap-4",
-              "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              'grid gap-3 sm:gap-4',
+              'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
             )}
           >
             {Array.from({ length: 6 }).map((_, i) => (
@@ -170,16 +179,23 @@ export default function SearchPage() {
           <>
             <div className="mb-2 sm:mb-3 md:mb-4 flex items-center justify-between">
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Showing <span className="font-medium text-foreground">{resultCount}</span> AI-powered results
+                Showing{' '}
+                <span className="font-medium text-foreground">
+                  {resultCount}
+                </span>{' '}
+                AI-powered results
               </p>
-              <Badge variant="outline" className="px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 text-xs">
+              <Badge
+                variant="outline"
+                className="px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 text-xs"
+              >
                 <Sparkles className="h-3 w-3 mr-1" /> Sorted by relevance
               </Badge>
             </div>
             <div
               className={cn(
-                "grid gap-3 sm:gap-4",
-                "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                'grid gap-3 sm:gap-4',
+                'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
               )}
             >
               {results.map((food) => (
@@ -188,9 +204,12 @@ export default function SearchPage() {
             </div>
           </>
         ) : (
-          debouncedSearchQuery && !loading && (
+          debouncedSearchQuery &&
+          !loading && (
             <EmptyState
-              icon={<SearchIcon className="h-10 sm:h-12 md:h-16 w-10 sm:w-12 md:w-16 text-muted-foreground" />}
+              icon={
+                <SearchIcon className="h-10 sm:h-12 md:h-16 w-10 sm:w-12 md:w-16 text-muted-foreground" />
+              }
               title="No foods match your search"
               description="The AI couldn't find any matching foods. Try a different search term."
               className="border-2 border-dashed rounded-lg sm:rounded-xl md:rounded-2xl py-8 sm:py-12 md:py-16 px-3 sm:px-4"
