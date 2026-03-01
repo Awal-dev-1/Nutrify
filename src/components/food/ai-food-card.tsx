@@ -119,4 +119,3 @@ export function AiFoodCard({ food }: { food: AiFoodSearchResult }) {
     </>
   );
 }
-```

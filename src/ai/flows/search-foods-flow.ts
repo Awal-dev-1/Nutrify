@@ -92,4 +92,3 @@ const searchFoodsFlow = ai.defineFlow(
     return output;
   }
 );
-```
