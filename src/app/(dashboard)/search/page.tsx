@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FC, useEffect } from 'react';
@@ -184,7 +183,13 @@ export default function SearchPage() {
   };
   
   useEffect(() => {
-    handleSearch(debouncedSearchQuery);
+    if (debouncedSearchQuery) {
+        handleSearch(debouncedSearchQuery);
+    } else {
+        setResult(null);
+        setError(null);
+        setHasSearched(false);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchQuery]);
 
@@ -194,27 +199,27 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+    <div className="w-full space-y-8">
       {/* Header */}
-      <div className="space-y-1 sm:space-y-2 max-w-7xl mx-auto">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
-          AI Nutrition Search
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">
+          AI Food Search
         </h1>
-        <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
+        <p className="text-muted-foreground">
           Ask the AI anything about food nutrition. Try "Kenkey with grilled tilapia" or "A regular sized apple".
         </p>
       </div>
 
       {/* Search Section */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl">
         <form onSubmit={onFormSubmit} className="relative group w-full flex gap-2">
           <div className="relative flex-1">
-            <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2">
-              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary group-focus-within:text-primary transition-colors" />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <Sparkles className="h-5 w-5 text-primary group-focus-within:text-primary transition-colors" />
             </div>
             <Input
               placeholder="AI Search..."
-              className="w-full h-12 md:h-14 rounded-full border-2 bg-background pl-10 sm:pl-12 text-sm md:text-base transition-all focus-visible:ring-primary/20"
+              className="w-full h-14 rounded-full border-2 bg-background pl-12 text-base transition-all focus-visible:ring-primary/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -233,7 +238,7 @@ export default function SearchPage() {
           <Button
             type="submit"
             size="lg"
-            className="h-12 md:h-14 rounded-full"
+            className="h-14 rounded-full"
             disabled={loading || !searchQuery.trim()}
           >
             {loading ? (
@@ -247,8 +252,8 @@ export default function SearchPage() {
       </div>
 
       {/* Results Section */}
-      <div className="max-w-4xl mx-auto pt-8">
-        {!hasSearched && (
+      <div className="max-w-4xl pt-8">
+        {!hasSearched && !loading && !debouncedSearchQuery && (
            <EmptyState
             icon={<Bot className="h-16 w-16 text-muted-foreground" />}
             title="Ready to assist"
@@ -260,7 +265,6 @@ export default function SearchPage() {
         {loading && (
           <div className="space-y-4">
             <Skeleton className="h-8 w-3/5" />
-            <Skeleton className="h-64 w-full" />
             <Skeleton className="h-64 w-full" />
           </div>
         )}
