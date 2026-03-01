@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { FoodItem, FoodItemSchema } from '@/types/food';
+import { type FoodItem, FoodItemSchema } from '@/types/food';
 
 const SearchFoodsInputSchema = z.object({
   query: z.string().describe('The natural language search query from the user.'),
