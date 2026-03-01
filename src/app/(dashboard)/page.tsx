@@ -1,7 +1,4 @@
-
-'use client';
-// This page created a route conflict and has been disabled. 
-// The main dashboard page is now the Daily Tracker.
-export default function DeprecatedDashboardRootPage() {
+// This page has been moved to src/app/dashboard/page.tsx to resolve a routing conflict.
+export default function DeprecatedPage() {
   return null;
 }
