@@ -23,9 +23,9 @@
  *   disallowed to protect user privacy.
  * - **Strict Ownership**: All access to a user's data tree (`/users/{userId}/...`)
  *   is gated by checking if the requester's UID matches the `{userId}` in the path.
- * - **Read-Only Global Data**: The `/foodItems` collection is read-only for
- *   authenticated users. All client-side write operations are blocked to maintain
- *   the integrity of the global food database.
+ * - **Publicly Writable Food Data**: The `/foodItems` collection is readable by all
+ *   authenticated users. Client-side writes are permitted to allow the AI to
+ *   cache new food details, but deletes are blocked to prevent data loss.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -121,16 +121,17 @@ service cloud.firestore {
     }
 
     /**
-     * @description A global, public database of food items. This data is intended
-     *              to be readable by all authenticated application users but not
-     *              writable by them, protecting it from client-side changes.
+     * @description A global, public database of food items. This data is readable
+     *              by all authenticated users. Writes are also allowed to enable
+     *              the AI service to cache new recipes, but deletes are blocked.
      * @path /foodItems/{foodItemId}
      */
     match /foodItems/{foodItemId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
+      // Allow create/update so the client can cache AI-generated food details
+      // for the "View Recipe" feature. Deletes are disallowed to prevent data loss.
+      allow create, update: if isSignedIn();
       allow delete: if false;
     }
   }
