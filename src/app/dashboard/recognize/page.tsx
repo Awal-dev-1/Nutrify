@@ -13,7 +13,6 @@ import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-
 import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
@@ -35,7 +34,6 @@ export default function RecognizePage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isMobile = useIsMobile();
 
 
   // Effect to handle file selection and create a preview URL
@@ -206,27 +204,25 @@ export default function RecognizePage() {
         return (
           <div className='w-full lg:w-3/4 mx-auto space-y-4'>
             <ImageUploader onFileSelect={handleFileSelect} />
-            {isMobile && (
-              <>
-                <div className="relative flex items-center">
-                  <div className="flex-grow border-t border-gray-300"></div>
-                  <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
-                  <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-                <Button variant="secondary" className="w-full" onClick={() => setIsCameraOpen(true)} disabled={hasCameraPermission === false}>
-                    <Camera className="mr-2 h-4 w-4" /> Use Camera
-                </Button>
-                {hasCameraPermission === false && (
-                    <Alert variant="destructive" className="mt-4">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Camera Disabled</AlertTitle>
-                        <AlertDescription>
-                            You have previously denied camera access. Please enable it in your browser settings to use this feature.
-                        </AlertDescription>
-                    </Alert>
-                )}
-              </>
-            )}
+            <div className="block sm:hidden space-y-4">
+              <div className="relative flex items-center">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+              <Button variant="secondary" className="w-full" onClick={() => setIsCameraOpen(true)} disabled={hasCameraPermission === false}>
+                  <Camera className="mr-2 h-4 w-4" /> Use Camera
+              </Button>
+              {hasCameraPermission === false && (
+                  <Alert variant="destructive" className="mt-4">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Camera Disabled</AlertTitle>
+                      <AlertDescription>
+                          You have previously denied camera access. Please enable it in your browser settings to use this feature.
+                      </AlertDescription>
+                  </Alert>
+              )}
+            </div>
           </div>
         );
 
