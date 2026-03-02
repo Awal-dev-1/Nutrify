@@ -33,10 +33,9 @@ export function RecipeDetailModal({ isOpen, onClose, foodId }: RecipeDetailModal
   const { data: food, isLoading, error } = useDoc<FoodItem>(foodRef);
 
   const renderContent = () => {
-    if (isLoading || !food && isOpen) {
+    if (isLoading) {
       return (
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-3/4" />
+        <div className="space-y-6 py-4">
           <div className="space-y-4">
             <Skeleton className="h-6 w-1/4" />
             <Skeleton className="h-4 w-full" />
@@ -63,7 +62,7 @@ export function RecipeDetailModal({ isOpen, onClose, foodId }: RecipeDetailModal
     }
 
     if (!food) {
-      return <p>No recipe details found.</p>;
+      return <p className="py-4">No recipe details found.</p>;
     }
 
     return (
@@ -92,8 +91,17 @@ export function RecipeDetailModal({ isOpen, onClose, foodId }: RecipeDetailModal
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{food?.foodName || <Skeleton className="h-8 w-48" />}</DialogTitle>
-          <DialogDescription>{food?.foodHistory || <Skeleton className="h-4 w-full mt-1" />}</DialogDescription>
+          {isLoading || !food ? (
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ) : (
+            <>
+              <DialogTitle className="text-2xl">{food.foodName}</DialogTitle>
+              {food.foodHistory && <DialogDescription>{food.foodHistory}</DialogDescription>}
+            </>
+          )}
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
