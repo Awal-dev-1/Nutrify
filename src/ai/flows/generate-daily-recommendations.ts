@@ -79,7 +79,9 @@ const generateDailyRecommendationsFlow = ai.defineFlow(
     outputSchema: GenerateDailyRecommendationsOutputSchema,
   },
   async (input) => {
-    const { output } = await generateDailyRecommendationsPrompt(input);
+    const { output } = await generateDailyRecommendationsPrompt(input, {
+      config: { temperature: 0.2 },
+    });
     if (!output) {
       throw new Error("The AI failed to generate daily recommendations.");
     }

@@ -32,11 +32,11 @@ const DailyMealPlanSchema = z.object({
 
 const GeneratePersonalizedMealPlanInputSchema = z.object({
   personalDetails: z.object({
-    gender: z.enum(['male', 'female', 'other']).describe('User's gender.'),
-    age: z.number().min(0).max(120).describe('User's age in years.'),
-    heightCm: z.number().min(50).max(250).describe('User's height in centimeters.'),
-    weightKg: z.number().min(20).max(300).describe('User's weight in kilograms.'),
-    activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe('User's physical activity level.'),
+    gender: z.enum(['male', 'female', 'other']).describe('User\'s gender.'),
+    age: z.number().min(0).max(120).describe('User\'s age in years.'),
+    heightCm: z.number().min(50).max(250).describe('User\'s height in centimeters.'),
+    weightKg: z.number().min(20).max(300).describe('User\'s weight in kilograms.'),
+    activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe('User\'s physical activity level.'),
   }).describe('Personal details of the user.'),
   dietaryGoals: z.object({
     goal: z.enum(['lose weight', 'maintain weight', 'gain weight', 'eat healthier']).describe('Overall dietary goal.'),
@@ -50,8 +50,8 @@ const GeneratePersonalizedMealPlanInputSchema = z.object({
       iron: z.number().min(0).optional().describe('Optional: Target daily Iron intake in mg.'),
       vitaminA: z.number().min(0).optional().describe('Optional: Target daily Vitamin A intake in mcg.'),
     }).optional().describe('Optional: Target daily micronutrient intake.'),
-  }).describe('User's dietary goals.'),
-  dietaryPreferences: z.array(z.string()).describe('List of user's dietary preferences (e.g., Vegan, Halal).'),
+  }).describe('User\'s dietary goals.'),
+  dietaryPreferences: z.array(z.string()).describe('List of user\'s dietary preferences (e.g., Vegan, Halal).'),
   recentNutrientIntake: z.object({
     averageDailyCalories: z.number().describe('Average daily calorie intake.'),
     averageDailyProtein: z.number().describe('Average daily protein intake in grams.'),
@@ -61,7 +61,7 @@ const GeneratePersonalizedMealPlanInputSchema = z.object({
     averageDailyVitaminA: z.number().describe('Average daily Vitamin A intake in mcg.'),
     recentDeficiencies: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient deficiencies.'),
     recentExcesses: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient excesses.'),
-  }).describe('User's recent average daily nutrient intake.'),
+  }).describe('User\'s recent average daily nutrient intake.'),
 });
 export type GeneratePersonalizedMealPlanInput = z.infer<typeof GeneratePersonalizedMealPlanInputSchema>;
 
@@ -144,7 +144,9 @@ const generatePersonalizedMealPlanFlow = ai.defineFlow(
     outputSchema: GeneratePersonalizedMealPlanOutputSchema,
   },
   async (input) => {
-    const { output } = await generatePersonalizedMealPlanPrompt(input);
+    const { output } = await generatePersonalizedMealPlanPrompt(input, {
+      config: { temperature: 0.2 },
+    });
     return output!;
   }
 );

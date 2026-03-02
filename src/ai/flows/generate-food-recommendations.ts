@@ -51,12 +51,13 @@ const GenerateFoodRecommendationsInputSchema = z.object({
   }),
   availableFoods: z.array(AiFoodItemSchema).describe("A list of all available food items from the database."),
 });
-export type GenerateFoodRecommendationsInput = z.infer<typeof GenerateFoodRecommendationsInputSchema>;
 
 const GenerateFoodRecommendationsOutputSchema = z.object({
   recommendations: z.array(RecommendationItemSchema).describe("A list of 3-5 recommended food items, sorted by score."),
   insightTips: z.array(z.string()).describe("A list of 2-3 actionable, insightful tips based on the user's goal and the recommendations provided."),
 });
+
+export type GenerateFoodRecommendationsInput = z.infer<typeof GenerateFoodRecommendationsInputSchema>;
 export type GenerateFoodRecommendationsOutput = z.infer<typeof GenerateFoodRecommendationsOutputSchema>;
 
 export async function generateFoodRecommendations(input: GenerateFoodRecommendationsInput): Promise<GenerateFoodRecommendationsOutput> {
@@ -110,7 +111,9 @@ const generateFoodRecommendationsFlow = ai.defineFlow(
     outputSchema: GenerateFoodRecommendationsOutputSchema,
   },
   async (input) => {
-    const { output } = await generateFoodRecommendationsPrompt(input);
+    const { output } = await generateFoodRecommendationsPrompt(input, {
+      config: { temperature: 0.2 },
+    });
     if (!output) {
       return { recommendations: [], insightTips: [] };
     }

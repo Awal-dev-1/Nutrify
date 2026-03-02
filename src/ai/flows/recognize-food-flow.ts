@@ -62,7 +62,9 @@ const recognizeFoodFlow = ai.defineFlow(
     outputSchema: RecognizeFoodOutputSchema,
   },
   async (input) => {
-    const { output } = await recognizeFoodPrompt(input);
+    const { output } = await recognizeFoodPrompt(input, {
+      config: { temperature: 0.2 },
+    });
     return output!;
   }
 );
