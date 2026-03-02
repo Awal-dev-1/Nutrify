@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 type Timeframe = '7d' | '30d' | '90d';
 
