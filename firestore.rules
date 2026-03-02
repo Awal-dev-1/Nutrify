@@ -79,38 +79,51 @@ service cloud.firestore {
       allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && isValidUserUpdate();
 
       /**
-       * @description Manages a user's private daily nutrition logs. Users have full
-       *              read and write control over their own logs to allow for
-       *              client-side aggregation and updates.
-       * @path /users/{userId}/dailyLogs/{date}
+       * @description Manages a user's private daily nutrition logs.
+       * @path /users/{userId}/dailyLogs
        */
       match /dailyLogs/{date} {
-        allow read, write: if isOwner(userId);
+        // Document-level access: get, update, delete, and create (with setDoc)
+        allow get, write: if isOwner(userId);
+      }
+      match /dailyLogs {
+        // Collection-level access: list (for queries)
+        allow list: if isOwner(userId);
       }
       
       /**
        * @description Manages a user's generated recommendation history.
-       * @path /users/{userId}/generatedRecommendations/{recommendationId}
+       * @path /users/{userId}/generatedRecommendations
        */
       match /generatedRecommendations/{recommendationId} {
-        allow read, write: if isOwner(userId);
+        // Document-level access: get, update, delete
+        allow get, update, delete: if isOwner(userId);
+      }
+      match /generatedRecommendations {
+        // Collection-level access: list (for queries), create (for addDoc)
+        allow list, create: if isOwner(userId);
       }
 
       /**
-       * @description Manages AI food recognition scans. Users can create and read their own
-       *              scan documents.
-       * @path /users/{userId}/aiScans/{scanId}
+       * @description Manages AI food recognition scans.
+       * @path /users/{userId}/aiScans
        */
       match /aiScans/{scanId} {
+         // Document-level access: get, update, delete, and create (with setDoc)
         allow read, write: if isOwner(userId);
       }
-
+      
       /**
        * @description Manages a user's private meal plans.
-       * @path /users/{userId}/plannedMeals/{mealId}
+       * @path /users/{userId}/plannedMeals
        */
       match /plannedMeals/{mealId} {
-        allow read, write: if isOwner(userId);
+        // Document-level access: get, update, delete
+        allow get, update, delete: if isOwner(userId);
+      }
+      match /plannedMeals {
+         // Collection-level access: list (query), create (add)
+        allow list, create: if isOwner(userId);
       }
     }
 
@@ -126,5 +139,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
