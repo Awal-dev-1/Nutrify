@@ -1,20 +1,20 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { getAnalyticsData } from '@/services/analyticsService';
-import type { DailyLog, AnalyticsData, LoggedFoodItem } from '@/types/analytics';
+import type { DailyLog, AnalyticsData } from '@/types/analytics';
+import type { GeneratedRecommendations, RecommendationItem } from '@/types/recommendations';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Flame, Beef, Wheat, Droplets, PlusCircle, ScanLine, Utensils } from 'lucide-react';
+import { Flame, Beef, Wheat, Droplets, PlusCircle, ScanLine, Search, Target, Lightbulb, ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/shared/empty-state';
-import Image from 'next/image';
 
 const OverviewPage = () => {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -44,7 +44,16 @@ const OverviewPage = () => {
     }
   }, [user, db]);
 
-  const isLoading = isProfileLoading || isLogLoading || isWeeklyLoading;
+  // Fetch latest recommendations
+  const recommendationsQuery = useMemoFirebase(
+    () => user ? query(collection(db, 'users', user.uid, 'generatedRecommendations'), orderBy('createdAt', 'desc'), limit(1)) : null,
+    [user, db]
+  );
+  const { data: recommendationsData, isLoading: isRecsLoading } = useCollection<GeneratedRecommendations>(recommendationsQuery);
+  const latestRecs = useMemo(() => recommendationsData?.[0]?.recommendations || [], [recommendationsData]);
+
+
+  const isLoading = isProfileLoading || isLogLoading || isWeeklyLoading || isRecsLoading;
   
   const userGoals = userProfile?.goals || { dailyCalorieGoal: 2000, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
   const derivedGoals = {
@@ -55,47 +64,18 @@ const OverviewPage = () => {
   };
 
   const todayTotals = dailyLog || { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 };
-  const recentItems = useMemo(() => {
-    if (!dailyLog?.meals) return [];
-    return Object.values(dailyLog.meals).flat().slice(-3).reverse();
-  }, [dailyLog]);
   
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
+  const calorieRemaining = derivedGoals.calories - todayTotals.totalCalories;
 
   if (isLoading) {
     return <DashboardSkeleton />;
-  }
-  
-  const hasLoggedAnythingToday = dailyLog && dailyLog.totalCalories > 0;
-  const hasLoggedAnythingEver = weeklyData && weeklyData.some(d => d.calories > 0);
-
-
-  if (!hasLoggedAnythingToday && !hasLoggedAnythingEver) {
-     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome, {userProfile?.name || 'User'}!</h1>
-            <EmptyState
-              icon={<Utensils className="h-16 w-16 text-muted-foreground" />}
-              title="Ready to start your day?"
-              description="Log your first meal to see your personalized dashboard come to life."
-            >
-              <div className="flex gap-4 mt-6">
-                <Button size="lg" asChild>
-                    <Link href="/dashboard/tracker"><PlusCircle className="mr-2 h-4 w-4" /> Log a Meal</Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild>
-                    <Link href="/dashboard/recognize"><ScanLine className="mr-2 h-4 w-4" /> Scan a Meal</Link>
-                </Button>
-              </div>
-            </EmptyState>
-        </div>
-     );
   }
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <h1 className="text-3xl font-bold tracking-tight">Today's Overview</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column */}
@@ -104,17 +84,24 @@ const OverviewPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Today's Summary</CardTitle>
-              <CardDescription>Your progress towards today's goals.</CardDescription>
+              <CardDescription>Your real-time progress towards today's goals.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <div className="flex justify-between items-baseline mb-2">
-                    <span className="font-medium flex items-center gap-2"><Flame className="text-orange-500"/> Calories</span>
-                    <span className="text-muted-foreground text-sm">{todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                     <div>
+                        <div className="flex justify-between items-baseline mb-2">
+                            <span className="font-medium flex items-center gap-2"><Flame className="text-orange-500"/> Calories</span>
+                            <span className="text-muted-foreground text-sm">{todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal</span>
+                        </div>
+                        <Progress value={calorieProgress} />
+                    </div>
+                    <div className="text-center md:border-l md:pl-6">
+                        <p className="text-sm text-muted-foreground">Calories Remaining</p>
+                        <p className="text-4xl font-bold text-primary">{Math.round(calorieRemaining)}</p>
+                    </div>
                 </div>
-                <Progress value={calorieProgress} />
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
+
+              <div className="grid grid-cols-3 gap-4 text-center pt-6 border-t">
                  <MacroStat icon={<Beef className="text-red-500"/>} label="Protein" value={todayTotals.totalProtein} goal={derivedGoals.protein} />
                  <MacroStat icon={<Wheat className="text-yellow-600"/>} label="Carbs" value={todayTotals.totalCarbs} goal={derivedGoals.carbs} />
                  <MacroStat icon={<Droplets className="text-blue-500"/>} label="Fat" value={todayTotals.totalFat} goal={derivedGoals.fat} />
@@ -155,31 +142,43 @@ const OverviewPage = () => {
                 <CardHeader>
                     <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                    <Button size="lg" asChild>
-                        <Link href="/dashboard/tracker"><PlusCircle className="mr-2 h-4 w-4" /> Log a Meal</Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild>
-                        <Link href="/dashboard/recognize"><ScanLine className="mr-2 h-4 w-4" /> Scan a Meal</Link>
-                    </Button>
+                <CardContent className="grid grid-cols-2 gap-3">
+                    <Button asChild className="h-12"><Link href="/dashboard/tracker"><PlusCircle className="mr-2 h-4 w-4" /> Add Meal</Link></Button>
+                    <Button asChild variant="outline" className="h-12"><Link href="/dashboard/search"><Search className="mr-2 h-4 w-4" /> Search</Link></Button>
+                    <Button asChild variant="secondary" className="col-span-2 h-12"><Link href="/dashboard/goals"><Target className="mr-2 h-4 w-4" /> Update Goals</Link></Button>
                 </CardContent>
             </Card>
 
-            {/* Recent Activity */}
+            {/* Smart Recommendations */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
+                     <CardTitle className="text-lg">Smart Suggestions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {recentItems.length > 0 ? (
+                  {isRecsLoading ? <RecommendationSkeleton/> : 
+                    latestRecs.length > 0 ? (
                         <div className="space-y-3">
-                            {recentItems.map(item => (
-                                <RecentItem key={item.logId} item={item} />
-                            ))}
+                            {latestRecs.slice(0, 2).map((rec, i) => <RecommendationItemPreview key={i} rec={rec} />)}
+                            <Button asChild variant="secondary" className="w-full mt-2">
+                                <Link href="/dashboard/recommendations">View All Recommendations</Link>
+                            </Button>
                         </div>
                     ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4">No meals logged today.</p>
-                    )}
+                        <p className="text-sm text-muted-foreground text-center py-4">No recommendations yet. Generate them on the Recommendations page!</p>
+                    )
+                  }
+                </CardContent>
+            </Card>
+
+            {/* Hydration Tip */}
+            <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2 text-blue-600 dark:text-blue-300"><Droplets /> Hydration Tip</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                        Drinking water before a meal can help with digestion and make you feel fuller, preventing overeating.
+                    </p>
                 </CardContent>
             </Card>
         </div>
@@ -196,24 +195,50 @@ const MacroStat = ({ icon, label, value, goal }: { icon: React.ReactNode, label:
     </div>
 );
 
-const RecentItem = ({ item }: { item: LoggedFoodItem }) => (
-    <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-        <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="rounded-md object-cover h-10 w-10" />
-        <div className="flex-1">
-            <p className="font-medium text-sm truncate">{item.name}</p>
-            <p className="text-xs text-muted-foreground">{item.calories.toFixed(0)} kcal &bull; {item.quantity}g</p>
+const RecommendationItemPreview = ({ rec }: { rec: RecommendationItem }) => (
+    <Link href={`/dashboard/food/${rec.foodId}`} className="block">
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors group">
+            <div className="p-2 bg-background rounded-md">
+                <Lightbulb className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1">
+                <p className="font-medium text-sm truncate">{rec.name}</p>
+                <p className="text-xs text-muted-foreground">{rec.calories.toFixed(0)} kcal &bull; {rec.reason.slice(0, 30)}...</p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+        </div>
+    </Link>
+);
+
+
+const RecommendationSkeleton = () => (
+    <div className="space-y-3">
+        <div className="flex items-center gap-3 p-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+            </div>
+        </div>
+         <div className="flex items-center gap-3 p-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+            </div>
         </div>
     </div>
 );
 
+
 const DashboardSkeleton = () => (
   <div className="space-y-8">
-    <Skeleton className="h-9 w-64" />
+    <Skeleton className="h-9 w-80" />
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-6">
         <Card>
           <CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader>
-          <CardContent className="space-y-6"><Skeleton className="h-8 w-full" /><div className="grid grid-cols-3 gap-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></CardContent>
+          <CardContent className="space-y-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div><div className="grid grid-cols-3 gap-4 pt-6 border-t"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></CardContent>
         </Card>
         <Card>
           <CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader>
@@ -223,11 +248,15 @@ const DashboardSkeleton = () => (
       <div className="lg:col-span-1 space-y-6">
         <Card>
           <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
-          <CardContent className="flex flex-col gap-3"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></CardContent>
+          <CardContent className="grid grid-cols-2 gap-3"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full col-span-2" /></CardContent>
         </Card>
         <Card>
+          <CardHeader><Skeleton className="h-6 w-40" /></CardHeader>
+          <CardContent><RecommendationSkeleton /></CardContent>
+        </Card>
+         <Card>
           <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
-          <CardContent className="space-y-3"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></CardContent>
+          <CardContent><Skeleton className="h-10 w-full" /></CardContent>
         </Card>
       </div>
     </div>
