@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUser, useFirestore } from "@/firebase";
 import { completeOnboarding } from "@/services/onboardingService";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const totalSteps = 5;
 
