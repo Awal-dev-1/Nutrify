@@ -15,22 +15,25 @@ export default function LoginPage() {
       return; // Wait for auth and profile state to be determined
     }
 
+    // This logic handles redirection for a user who is already logged in
+    // or has just successfully logged in.
     if (user && userProfile) {
       if (userProfile.onboardingCompleted) {
+        // User is fully set up, go to the main dashboard.
         router.push("/dashboard/overview");
       } else {
+        // User has a profile but hasn't finished onboarding. Send them there.
         router.push("/onboarding");
       }
-    } else if (user) {
-      // User is authenticated but profile is not (yet) available.
-      // This can happen briefly on first signup. Go to onboarding.
-      router.push("/onboarding");
     }
-    // If no user, remain on login page.
+    // If there's no user, or a user without a profile document,
+    // we remain on the login page. The signup flow is responsible
+    // for directing new users to the onboarding page.
     
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
 
-  if (isUserLoading || isProfileLoading || user) {
+  // Show a loading screen while auth state is being determined or while redirecting.
+  if (isUserLoading || isProfileLoading || (user && userProfile)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <p>Loading...</p>
