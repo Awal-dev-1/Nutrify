@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, type FC, useEffect } from "react";
@@ -22,7 +23,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { mockFoods, type Food } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import {
   Plus,
@@ -40,7 +40,6 @@ import {
   Droplets,
   UtensilsCrossed,
   Calendar,
-  MoreVertical,
   Loader2,
 } from "lucide-react";
 import {
@@ -55,16 +54,11 @@ import { AddFoodModal } from "@/components/tracker/add-food-modal";
 import { EditFoodModal } from "@/components/tracker/edit-food-modal";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection } from "firebase/firestore";
 import { format, subDays, addDays } from "date-fns";
 import type { DailyLog, LoggedFoodItem } from "@/types/analytics";
+import type { FoodItem as AiFoodItem } from "@/types/food";
 
 
 type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
@@ -83,7 +77,6 @@ export default function DailyTrackerPage() {
   
   const { data: dailyLog, isLoading: isLogLoading } = useDoc<DailyLog>(dailyLogRef);
 
-  const [waterIntake, setWaterIntake] = useState(0);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [mealToAdd, setMealToAdd] = useState<MealType | null>(null);
   const [editingFood, setEditingFood] = useState<LoggedFoodItem | null>(null);
@@ -97,22 +90,21 @@ export default function DailyTrackerPage() {
     water: 8,
   };
 
-  useEffect(() => {
-    if (dailyLog) {
-      setWaterIntake(dailyLog.waterIntake || 0);
-    } else {
-      setWaterIntake(0);
-    }
-  }, [dailyLog]);
-
   const meals = useMemo(() => {
     return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] };
   }, [dailyLog]);
   
   const loggedFoods = useMemo(() => Object.values(meals).flat(), [meals]);
 
-  const dailyTotals = dailyLog || { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 };
-
+  const dailyTotals = useMemo(() => {
+    return dailyLog || { 
+      totalCalories: 0, 
+      totalProtein: 0, 
+      totalCarbs: 0, 
+      totalFat: 0,
+      waterIntake: 0,
+    };
+  }, [dailyLog]);
 
   const updateDailyLog = async (updatedMeals: Record<MealType, LoggedFoodItem[]>, water: number) => {
     if (!dailyLogRef) return;
@@ -135,26 +127,27 @@ export default function DailyTrackerPage() {
     await setDoc(dailyLogRef, newLog, { merge: true });
   };
   
-  const handleAddFood = (food: Food, quantity: number, mealType: MealType) => {
+  const handleAddFood = (foodData: AiFoodItem, quantity: number, mealType: MealType) => {
+    if(!db) return;
     const ratio = quantity / 100;
     const newLogItem: LoggedFoodItem = {
-      logId: `${Date.now()}`,
-      foodId: food.id,
-      name: food.name,
-      imageUrl: food.image,
+      logId: doc(collection(db, 'temp')).id,
+      foodId: foodData.foodName, // Using name as ID for AI-sourced items
+      name: foodData.foodName,
       quantity,
-      calories: food.calories * ratio,
-      protein: food.protein * ratio,
-      carbs: food.carbs * ratio,
-      fat: food.fat * ratio,
+      calories: foodData.calories * ratio,
+      protein: foodData.macronutrientBreakdown.protein * ratio,
+      carbs: foodData.macronutrientBreakdown.carbohydrates * ratio,
+      fat: foodData.macronutrientBreakdown.fat * ratio,
+      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(foodData.foodName)}/100/100`,
     };
     
     const newMeals = { ...meals, [mealType]: [...meals[mealType], newLogItem] };
-    updateDailyLog(newMeals, waterIntake);
+    updateDailyLog(newMeals, dailyTotals.waterIntake);
     
     toast({
       title: "Food Added!",
-      description: `${food.name} added to ${mealType}.`,
+      description: `${foodData.foodName} added to ${mealType}.`,
     });
   };
 
@@ -184,7 +177,7 @@ export default function DailyTrackerPage() {
         }
     }
 
-    updateDailyLog(newMeals, waterIntake);
+    updateDailyLog(newMeals, dailyTotals.waterIntake);
     toast({
         title: "Portion Updated!",
         description: `The portion for ${foodName} has been updated.`,
@@ -206,7 +199,7 @@ export default function DailyTrackerPage() {
         });
         if (newMeals[mealKey].length < originalLength) break;
     }
-    updateDailyLog(newMeals, waterIntake);
+    updateDailyLog(newMeals, dailyTotals.waterIntake);
     toast({
         variant: "destructive",
         title: "Food Removed!",
@@ -215,7 +208,6 @@ export default function DailyTrackerPage() {
   };
 
   const handleWaterChange = (newIntake: number) => {
-    setWaterIntake(newIntake);
     updateDailyLog(meals, newIntake);
   }
 
@@ -230,12 +222,13 @@ export default function DailyTrackerPage() {
 
   const clearDay = () => {
     if(dailyLogRef) {
-        setDoc(dailyLogRef, {
+        const emptyLog: DailyLog = {
             date: dateKey,
             meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
             waterIntake: 0,
             totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0
-        }, { merge: true });
+        };
+        setDoc(dailyLogRef, emptyLog, { merge: false }); // Overwrite completely
     }
     toast({
       title: "Day Cleared",
@@ -247,50 +240,40 @@ export default function DailyTrackerPage() {
     return <div className="flex h-[60vh] items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>
   }
 
-  if (loggedFoods.length === 0) {
-    return (
-      <div className="space-y-8">
-        <Header onClearDay={clearDay} date={date} setDate={setDate} />
-        <EmptyState
+  return (
+    <div className="space-y-6 md:space-y-8">
+      <Header onClearDay={clearDay} date={date} setDate={setDate} />
+
+      {loggedFoods.length === 0 ? (
+         <EmptyState
           icon={<ClipboardX className="h-16 w-16 text-muted-foreground" />}
-          title="No meals logged today"
+          title="No meals logged for this day"
           description="Start tracking your intake to see your progress and meet your goals."
-          className="border-2 border-dashed rounded-2xl py-16"
         >
           <Button onClick={() => openAddModal('Breakfast')} size="lg" className="mt-4">
             <PlusCircle className="mr-2 h-5 w-5" /> Add Your First Meal
           </Button>
         </EmptyState>
-        <AddFoodModal
-          isOpen={isAddModalOpen}
-          onClose={() => setAddModalOpen(false)}
-          onAddFood={handleAddFood}
-          mealType={mealToAdd}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6 md:space-y-8">
-      <Header onClearDay={clearDay} date={date} setDate={setDate} />
-
-      <DailySummary totals={dailyTotals} goals={derivedGoals} />
-      
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-        <div className="lg:col-span-2">
-          <MealSections 
-            meals={meals} 
-            onAddFoodClick={openAddModal} 
-            onEditFoodClick={openEditModal} 
-            onDeleteFoodClick={handleDeleteFood} 
-          />
-        </div>
-        <div className="lg:col-span-1 space-y-6 md:space-y-8">
-          <WaterTracker intake={waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
-          <MacroChart data={dailyTotals} />
-        </div>
-      </div>
+      ) : (
+        <>
+          <DailySummary totals={dailyTotals} goals={derivedGoals} />
+          
+          <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="lg:col-span-2">
+              <MealSections 
+                meals={meals} 
+                onAddFoodClick={openAddModal} 
+                onEditFoodClick={openEditModal} 
+                onDeleteFoodClick={handleDeleteFood} 
+              />
+            </div>
+            <div className="lg:col-span-1 space-y-6 md:space-y-8">
+              <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
+              <MacroChart data={dailyTotals} />
+            </div>
+          </div>
+        </>
+      )}
       
       <AddFoodModal
         isOpen={isAddModalOpen}
@@ -324,10 +307,7 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Daily Tracker</h1>
             <div className="text-sm md:text-base text-muted-foreground flex items-center gap-2">
-              <span className={cn("inline-block w-2 h-2 rounded-full", isToday ? "bg-green-500" : "bg-primary")}></span>
-              <span>
-              {format(date, "EEEE, MMMM d")}
-              </span>
+              <span>{format(date, "EEEE, MMMM d")}</span>
               {isToday && <Badge variant="secondary" className="ml-2 text-xs">Today</Badge>}
             </div>
           </div>
@@ -349,6 +329,7 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
             size="sm" 
             className="h-8 px-3 text-xs md:text-sm"
             onClick={() => setDate(new Date())}
+            disabled={isToday}
           >
             Today
           </Button>
@@ -379,7 +360,7 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
                 <div className="p-2 rounded-full bg-destructive/10">
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </div>
-                Clear today's data?
+                Clear this day's data?
               </AlertDialogTitle>
               <AlertDialogDescription className="pt-2">
                 This will permanently delete all logged food and water for this day. This action cannot be undone.
@@ -398,91 +379,72 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
   );
 };
 
-const DailySummary: FC<{totals: any; goals: any}> = ({totals, goals}) => {
+const DailySummary: FC<{totals: DailyLog; goals: any}> = ({totals, goals}) => {
   const calorieProgress = (totals.totalCalories / goals.calories) * 100;
   const remainingCalories = Math.max(0, goals.calories - totals.totalCalories);
-  const proteinProgress = (totals.totalProtein / goals.protein) * 100;
-  const carbsProgress = (totals.totalCarbs / goals.carbs) * 100;
-  const fatProgress = (totals.totalFat / goals.fat) * 100;
   
   return (
-    <Card className="overflow-hidden border-0 shadow-md">
-      <CardContent className="hidden md:grid md:grid-cols-3 divide-x p-0">
-          {/* Calories Ring */}
-          <div className="p-6 flex items-center justify-center">
-            <div className="relative w-40 h-40">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { value: totals.totalCalories },
-                      { value: remainingCalories }
-                    ]}
-                    dataKey="value"
-                    innerRadius={50}
-                    outerRadius={65}
-                    startAngle={90}
-                    endAngle={450}
-                    cornerRadius={10}
-                    stroke="none"
-                  >
-                    <Cell fill="hsl(var(--primary))" />
-                    <Cell fill="hsl(var(--muted))" />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold">{Math.round(totals.totalCalories)}</span>
-                <span className="text-xs text-muted-foreground">of {goals.calories}</span>
+    <Card className="overflow-hidden border-2 shadow-sm">
+      <CardContent className="grid md:grid-cols-2 p-0">
+          <div className="p-6 flex flex-col justify-center">
+            <CardTitle className="text-lg mb-4">Calorie Summary</CardTitle>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Consumed</p>
+                <p className="text-2xl font-bold">{Math.round(totals.totalCalories)}</p>
               </div>
-            </div>
-          </div>
-
-          {/* Remaining Stats */}
-          <div className="p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Flame className="h-5 w-5 text-primary" />
-              </div>
-              <div>
+               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Remaining</p>
-                <p className="text-2xl font-bold">{Math.round(remainingCalories)} kcal</p>
+                <p className="text-2xl font-bold text-primary">{Math.round(remainingCalories)}</p>
+              </div>
+               <div className="space-y-1 col-span-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0</span>
+                  <span>Goal: {goals.calories} kcal</span>
+                </div>
+                <Progress value={calorieProgress} className="h-2.5" />
               </div>
             </div>
-            <Progress value={calorieProgress} className="h-2" />
           </div>
 
-          {/* Macros */}
-          <div className="p-6 grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="inline-flex p-2 rounded-full bg-red-50 dark:bg-red-950/20 mb-2">
-                <Beef className="h-4 w-4 text-red-500" />
-              </div>
-              <p className="text-sm font-medium">{Math.round(totals.totalProtein)}g</p>
-              <p className="text-xs text-muted-foreground">Protein</p>
-              <Progress value={proteinProgress} className="h-1 mt-2 [&>div]:bg-red-500" />
-            </div>
-            <div className="text-center">
-              <div className="inline-flex p-2 rounded-full bg-yellow-50 dark:bg-yellow-950/20 mb-2">
-                <Wheat className="h-4 w-4 text-yellow-600" />
-              </div>
-              <p className="text-sm font-medium">{Math.round(totals.totalCarbs)}g</p>
-              <p className="text-xs text-muted-foreground">Carbs</p>
-              <Progress value={carbsProgress} className="h-1 mt-2 [&>div]:bg-yellow-600" />
-            </div>
-            <div className="text-center">
-              <div className="inline-flex p-2 rounded-full bg-blue-50 dark:bg-blue-950/20 mb-2">
-                <Droplets className="h-4 w-4 text-blue-500" />
-              </div>
-              <p className="text-sm font-medium">{Math.round(totals.totalFat)}g</p>
-              <p className="text-xs text-muted-foreground">Fat</p>
-              <Progress value={fatProgress} className="h-1 mt-2 [&>div]:bg-blue-500" />
-            </div>
+          <div className="p-6 grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l bg-muted/30">
+            <MacroSummary 
+              label="Protein" 
+              value={totals.totalProtein} 
+              goal={goals.protein} 
+              icon={<Beef className="h-4 w-4 text-red-500" />}
+              colorClass="[&>div]:bg-red-500"
+            />
+            <MacroSummary 
+              label="Carbs" 
+              value={totals.totalCarbs} 
+              goal={goals.carbs} 
+              icon={<Wheat className="h-4 w-4 text-yellow-600" />}
+              colorClass="[&>div]:bg-yellow-600"
+            />
+            <MacroSummary 
+              label="Fat" 
+              value={totals.totalFat} 
+              goal={goals.fat} 
+              icon={<Droplets className="h-4 w-4 text-blue-500" />}
+              colorClass="[&>div]:bg-blue-500"
+            />
           </div>
       </CardContent>
     </Card>
   );
 };
+
+const MacroSummary: FC<{label: string, value: number, goal: number, icon: React.ReactNode, colorClass: string}> = ({label, value, goal, icon, colorClass}) => (
+  <div className="text-center">
+      <div className="inline-flex p-2 rounded-full bg-background mb-2">
+        {icon}
+      </div>
+      <p className="text-sm font-medium">{Math.round(value)}g</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <Progress value={(value / goal) * 100} className={cn("h-1.5 mt-2", colorClass)} />
+  </div>
+);
 
 const MealSections: FC<{
   meals: Record<MealType, LoggedFoodItem[]>; 
@@ -509,9 +471,11 @@ const MealSections: FC<{
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Today's Meals</h2>
-            <Badge variant="outline" className="px-3 py-1">
-              {totalMealsCount} {totalMealsCount === 1 ? 'item' : 'items'}
-            </Badge>
+            {totalMealsCount > 0 && 
+              <Badge variant="outline" className="px-3 py-1">
+                {totalMealsCount} {totalMealsCount === 1 ? 'item' : 'items'}
+              </Badge>
+            }
           </div>
           
           <Accordion type="multiple" defaultValue={mealOrder} className="space-y-3">
@@ -599,7 +563,7 @@ const LoggedFoodItemComponent: FC<{
                     <p className="font-semibold truncate">{loggedFood.name}</p>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         <span>{loggedFood.quantity}g</span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span className="flex items-center gap-1">
                             <Beef className="h-3 w-3 text-red-500" />
                             {loggedFood.protein.toFixed(0)}g
@@ -639,7 +603,7 @@ const LoggedFoodItemComponent: FC<{
                             </AlertDialogHeader>
                             <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => onDelete(loggedFood.logId)}>
+                                <AlertDialogAction onClick={() => onDelete(loggedFood.logId)} className="bg-destructive hover:bg-destructive/90">
                                     Remove
                                 </AlertDialogAction>
                             </AlertDialogFooter>
@@ -684,7 +648,6 @@ const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goa
                         size="icon" 
                         onClick={() => setIntake(intake + 1)}
                         className="h-10 w-10 rounded-full"
-                        disabled={intake >= goal}
                     >
                         <Plus className="h-4 w-4"/>
                     </Button>
@@ -696,7 +659,7 @@ const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goa
     );
 };
 
-const MacroChart: FC<{data: any}> = ({data}) => {
+const MacroChart: FC<{data: DailyLog}> = ({data}) => {
     const { totalProtein, totalCarbs, totalFat } = data;
     const totalMacros = totalProtein + totalCarbs + totalFat;
 
@@ -730,7 +693,7 @@ const MacroChart: FC<{data: any}> = ({data}) => {
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                         <Pie
                             data={chartData}
@@ -738,8 +701,8 @@ const MacroChart: FC<{data: any}> = ({data}) => {
                             nameKey="name"
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
+                            innerRadius={50}
+                            outerRadius={70}
                             paddingAngle={2}
                             cornerRadius={4}
                             labelLine={false}
@@ -761,17 +724,17 @@ const MacroChart: FC<{data: any}> = ({data}) => {
                     </PieChart>
                 </ResponsiveContainer>
                 
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                    <div className="text-center p-2 rounded-lg bg-red-50 dark:bg-red-950/20">
-                        <p className="text-xs text-muted-foreground">Protein</p>
+                <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+                    <div className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20">
+                        <p className="text-xs font-bold text-red-600 dark:text-red-400">Protein</p>
                         <p className="text-sm font-bold">{totalProtein.toFixed(0)}g</p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
-                        <p className="text-xs text-muted-foreground">Carbs</p>
+                    <div className="p-2 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+                        <p className="text-xs font-bold text-yellow-600 dark:text-yellow-400">Carbs</p>
                         <p className="text-sm font-bold">{totalCarbs.toFixed(0)}g</p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                        <p className="text-xs text-muted-foreground">Fat</p>
+                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                        <p className="text-xs font-bold text-blue-600 dark:text-blue-400">Fat</p>
                         <p className="text-sm font-bold">{totalFat.toFixed(0)}g</p>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -75,7 +76,7 @@ export function EditFoodModal({
               onChange={(e) => setQuantity(Number(e.target.value))}
             />
              <p className="text-sm text-muted-foreground text-right">
-                Estimated: {Math.round(calculatedCalories)} kcal
+                Estimated calories: {Math.round(calculatedCalories)}
               </p>
           </div>
         </div>

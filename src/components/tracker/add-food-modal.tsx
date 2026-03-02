@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -18,7 +19,6 @@ import { useUser } from "@/firebase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 
 type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 
@@ -145,7 +145,7 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
                         </div>
                         <div className="text-right">
                             <p className="font-bold text-primary">{aiResult.calories} kcal</p>
-                            <p className="text-xs text-muted-foreground">per standard serving</p>
+                            <p className="text-xs text-muted-foreground">per 100g</p>
                         </div>
                     </div>
                   </CardContent>
@@ -167,9 +167,9 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-between">
+        <DialogFooter className="sm:justify-between pt-4 border-t">
             {aiResult && <Button variant="ghost" onClick={resetSearch}>Search Again</Button>}
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-auto">
               <Button onClick={resetAndClose} variant="outline">
                 Cancel
               </Button>
