@@ -14,6 +14,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
 } from 'recharts';
 import {
   Card,
@@ -34,10 +35,10 @@ import type {
 import {
   Activity,
   Lightbulb,
-  Target,
-  TrendingUp,
   Beef,
   AlertCircle,
+  Wheat,
+  Droplets,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -52,7 +53,7 @@ const AnalyticsPage = () => {
     chartData: AnalyticsData[];
     summary: AnalyticsSummary;
     insights: string[];
-    goals: { calories: number; protein: number };
+    goals: { calories: number; protein: number; carbs: number; fat: number };
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -182,25 +183,25 @@ const AnalyticsPage = () => {
           change={((summary.averageCalories - goals.calories) / goals.calories) * 100}
         />
         <StatCard
-          title="Goal Achievement"
-          value={summary.goalAchievementRate.toFixed(0)}
-          unit="%"
-          icon={<Target />}
-          change={summary.goalAchievementRate - 80}
-        />
-        <StatCard
-          title="Consistency Score"
-          value={summary.consistencyScore.toFixed(0)}
-          unit="/ 100"
-          icon={<TrendingUp />}
-          change={summary.consistencyScore - 80}
-        />
-        <StatCard
           title="Avg. Daily Protein"
           value={summary.averageProtein.toFixed(0)}
-          unit="grams"
+          unit="g"
           icon={<Beef />}
           change={((summary.averageProtein - goals.protein) / goals.protein) * 100}
+        />
+        <StatCard
+          title="Avg. Daily Carbs"
+          value={summary.averageCarbs.toFixed(0)}
+          unit="g"
+          icon={<Wheat />}
+          change={((summary.averageCarbs - goals.carbs) / goals.carbs) * 100}
+        />
+        <StatCard
+          title="Avg. Daily Fat"
+          value={summary.averageFat.toFixed(0)}
+          unit="g"
+          icon={<Droplets />}
+          change={((summary.averageFat - goals.fat) / goals.fat) * 100}
         />
       </div>
 
@@ -247,55 +248,85 @@ const AnalyticsPage = () => {
         </CardContent>
       </Card>
       
-      <div className="grid gap-4 md:grid-cols-5">
-        {/* Insights & Macro Chart */}
-        <div className="md:col-span-3 grid gap-4">
-             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Lightbulb /> AI-Generated Insights
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ul className="space-y-3 list-disc list-inside text-sm">
-                        {insights.map((insight, i) => <li key={i}>{insight}</li>)}
-                    </ul>
-                </CardContent>
-            </Card>
-        </div>
-        <div className="md:col-span-2">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Average Macro Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={macroDistribution}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            >
-                            {macroDistribution.map((entry) => (
-                                <Cell key={entry.name} fill={entry.color} />
-                            ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: 'hsl(var(--background))',
-                                    border: '1px solid hsl(var(--border))',
-                                }}
-                            />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-             </Card>
-        </div>
+      <Card>
+        <CardHeader>
+            <CardTitle>Macronutrient Trends</CardTitle>
+            <CardDescription>Your daily protein, carb, and fat intake over the selected period.</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                        dataKey="date"
+                        tickFormatter={(str) => format(new Date(str), 'MMM d')}
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                    />
+                    <YAxis unit="g" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: 'hsl(var(--background))',
+                            border: '1px solid hsl(var(--border))',
+                        }}
+                        labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="protein" name="Protein" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="carbs" name="Carbs" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="fat" name="Fat" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+            <CardHeader>
+                <CardTitle>Average Macro Distribution</CardTitle>
+                 <CardDescription>The average percentage split of your macronutrients.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                        <Pie
+                            data={macroDistribution}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                        {macroDistribution.map((entry) => (
+                            <Cell key={entry.name} fill={entry.color} />
+                        ))}
+                        </Pie>
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: 'hsl(var(--background))',
+                                border: '1px solid hsl(var(--border))',
+                            }}
+                        />
+                        <Legend />
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+         </Card>
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Lightbulb /> AI-Generated Insights
+                </CardTitle>
+                <CardDescription>Actionable advice based on your data.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-3 list-disc list-inside text-sm">
+                    {insights.map((insight, i) => <li key={i}>{insight}</li>)}
+                </ul>
+            </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -303,6 +334,15 @@ const AnalyticsPage = () => {
 
 const StatCard = ({ title, value, unit, icon, change }: { title: string; value: string; unit?: string; icon: React.ReactNode; change: number; }) => {
   const isPositive = change >= 0;
+  const isNeutral = Math.abs(change) < 5;
+  
+  let changeText: string;
+  if(isNeutral) {
+    changeText = 'on target'
+  } else {
+    changeText = `${Math.abs(change).toFixed(0)}% ${isPositive ? 'above' : 'below'} target`
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -314,8 +354,8 @@ const StatCard = ({ title, value, unit, icon, change }: { title: string; value: 
           {value}
           {unit && <span className="text-base font-normal text-muted-foreground ml-1">{unit}</span>}
         </div>
-        <p className="text-xs text-muted-foreground">
-          {change.toFixed(1)}% {isPositive ? 'above' : 'below'} target
+        <p className={cn("text-xs", isNeutral ? 'text-muted-foreground' : isPositive ? 'text-orange-600' : 'text-green-600')}>
+            {changeText}
         </p>
       </CardContent>
     </Card>
@@ -335,9 +375,10 @@ const AnalyticsSkeleton = () => (
       <Skeleton className="h-28" />
     </div>
     <Skeleton className="h-[420px]" />
+    <Skeleton className="h-[420px]" />
      <div className="grid gap-4 md:grid-cols-2">
-        <Skeleton className="h-48" />
-        <Skeleton className="h-48" />
+        <Skeleton className="h-80" />
+        <Skeleton className="h-80" />
      </div>
   </div>
 );

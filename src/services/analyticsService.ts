@@ -23,6 +23,8 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
     return {
       averageCalories: 0,
       averageProtein: 0,
+      averageCarbs: 0,
+      averageFat: 0,
       goalAchievementRate: 0,
       highestCalorieDay: null,
       lowestCalorieDay: null,
@@ -34,12 +36,14 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
     (acc, day) => {
       acc.calories += day.calories;
       acc.protein += day.protein;
+      acc.carbs += day.carbs;
+      acc.fat += day.fat;
       if (day.calories > 0 && day.calories <= goal) {
         acc.daysGoalMet++;
       }
       return acc;
     },
-    { calories: 0, protein: 0, daysGoalMet: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, daysGoalMet: 0 }
   );
 
   const nonZeroDays = data.filter(d => d.calories > 0);
@@ -53,6 +57,8 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
   return {
     averageCalories: averageCalories,
     averageProtein: total.protein / data.length,
+    averageCarbs: total.carbs / data.length,
+    averageFat: total.fat / data.length,
     goalAchievementRate: (total.daysGoalMet / data.length) * 100,
     highestCalorieDay,
     lowestCalorieDay,
@@ -109,6 +115,8 @@ export async function getAnalyticsData(
   const userProfile = userDocSnap.data() as UserProfile;
   const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2000;
   const proteinGoal = (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4;
+  const carbsGoal = (calorieGoal * ((userProfile.goals?.carbsPercentageGoal || 40) / 100)) / 4;
+  const fatGoal = (calorieGoal * ((userProfile.goals?.fatPercentageGoal || 30) / 100)) / 9;
 
 
   // 2. Fetch daily logs for the period
@@ -152,6 +160,8 @@ export async function getAnalyticsData(
     goals: {
         calories: calorieGoal,
         protein: proteinGoal,
+        carbs: carbsGoal,
+        fat: fatGoal,
     }
   };
 }

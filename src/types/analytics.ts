@@ -38,6 +38,8 @@ export type AnalyticsData = {
 export type AnalyticsSummary = {
     averageCalories: number;
     averageProtein: number;
+    averageCarbs: number;
+    averageFat: number;
     goalAchievementRate: number;
     highestCalorieDay: AnalyticsData | null;
     lowestCalorieDay: AnalyticsData | null;
