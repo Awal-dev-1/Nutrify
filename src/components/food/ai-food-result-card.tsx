@@ -70,12 +70,35 @@ export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (i
                     </CardHeader>
                     <CardContent className="text-sm space-y-2">
                         <ul className="space-y-1 max-h-48 overflow-y-auto">
-                            {item.micronutrientBreakdown.map((nutrient, i) => (
-                              <li key={i} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">
-                                <span>{nutrient.split(':')[0]}</span>
-                                <span className="font-medium">{nutrient.split(':')[1]}</span>
-                              </li>
-                            ))}
+                            {Object.entries(item.micronutrientBreakdown).map(([key, value]) => {
+                                if (value === undefined || value === null) {
+                                    return null;
+                                }
+                                const keyToLabel: Record<string, string> = {
+                                    fiber: "Fiber",
+                                    sugar: "Sugar",
+                                    iron: "Iron",
+                                    calcium: "Calcium",
+                                    vitaminA: "Vitamin A",
+                                    vitaminC: "Vitamin C",
+                                    sodium: "Sodium",
+                                };
+                                const keyToUnit: Record<string, string> = {
+                                    fiber: "g",
+                                    sugar: "g",
+                                    iron: "mg",
+                                    calcium: "mg",
+                                    vitaminA: "µg",
+                                    vitaminC: "mg",
+                                    sodium: "mg",
+                                };
+                                return (
+                                  <li key={key} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">
+                                    <span>{keyToLabel[key] || key}</span>
+                                    <span className="font-medium">{(value as number).toFixed(1)}{keyToUnit[key] || ''}</span>
+                                  </li>
+                                );
+                            })}
                         </ul>
                     </CardContent>
                 </Card>
