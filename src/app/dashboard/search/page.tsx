@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Search as SearchIcon,
@@ -9,6 +9,7 @@ import {
   Bot,
   Loader2,
   AlertCircle,
+  Mic,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUser } from '@/firebase';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
+import { cn } from '@/lib/utils';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -31,13 +33,64 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(!!initialQuery);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
 
+  // New states for voice search
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
   const { toast } = useToast();
   const { userProfile, isProfileLoading } = useUser();
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    // SpeechRecognition is a browser-specific API, so we need to check for its existence on the client.
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      // Browser doesn't support the API. The mic button will show a toast.
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false; // We want to capture a single phrase
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      toast({
+        variant: 'destructive',
+        title: 'Voice Error',
+        description: `Could not recognize speech: ${event.error}`,
+      });
+      setIsRecording(false);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+    };
+
+    recognitionRef.current = recognition;
+
+    // Cleanup function
+    return () => {
+      recognition.stop();
+    };
+  }, [toast]);
 
   useEffect(() => {
     if (initialQuery && userProfile) {
         handleSearch(initialQuery);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery, userProfile]);
 
   const handleSearch = async (query: string) => {
@@ -88,6 +141,23 @@ export default function SearchPage() {
     handleSearch(searchQuery);
   }
 
+  const handleMicClick = () => {
+    if (!recognitionRef.current) {
+        toast({
+            variant: 'destructive',
+            title: 'Unsupported Feature',
+            description: 'Your browser does not support voice recognition.',
+        });
+        return;
+    }
+    
+    if (isRecording) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
+  };
+
   return (
     <div className="w-full space-y-8">
       {/* Header */}
@@ -108,22 +178,36 @@ export default function SearchPage() {
               <Sparkles className="h-5 w-5 text-primary group-focus-within:text-primary transition-colors" />
             </div>
             <Input
-              placeholder="AI Search..."
-              className="w-full h-14 rounded-full border-2 bg-background pl-12 pr-12 text-base transition-all focus-visible:ring-primary/20"
+              placeholder="Ask AI or click the mic to speak..."
+              className="w-full h-14 rounded-full border-2 bg-background pl-12 pr-24 text-base transition-all focus-visible:ring-primary/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full hover:bg-muted"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {searchQuery && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="h-8 w-8 rounded-full hover:bg-muted"
+                    onClick={() => setSearchQuery('')}
+                >
+                    <X className="h-4 w-4" />
+                </Button>
+                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    onClick={handleMicClick}
+                    className={cn(
+                        "h-8 w-8 rounded-full hover:bg-muted",
+                        isRecording && "bg-destructive/20 text-destructive hover:bg-destructive/30"
+                    )}
+                >
+                    <Mic className={cn("h-4 w-4", isRecording && "animate-pulse")} />
+                </Button>
+            </div>
           </div>
           <Button
             type="submit"
