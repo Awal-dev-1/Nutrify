@@ -14,11 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { LoggedFoodItem } from '@/types/analytics';
 
+type EditableFoodItem = Pick<LoggedFoodItem, 'logId' | 'quantity'>
+
 interface EditFoodModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (logId: string, newQuantity: number) => void;
-  loggedFood: Omit<LoggedFoodItem, 'imageUrl' | 'carbs' | 'fat' | 'protein' | 'name' | 'iron' | 'vitaminA' | 'sodium'> | null;
+  loggedFood: EditableFoodItem | null;
 }
 
 export function EditFoodModal({

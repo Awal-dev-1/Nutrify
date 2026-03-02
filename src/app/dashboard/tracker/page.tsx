@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, type FC, useEffect } from "react";
-import Image from "next/image";
+import { useState, useMemo, type FC } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -41,14 +40,8 @@ import {
   UtensilsCrossed,
   Calendar,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AddFoodModal } from "@/components/tracker/add-food-modal";
 import { EditFoodModal } from "@/components/tracker/edit-food-modal";
@@ -79,7 +72,7 @@ export default function DailyTrackerPage() {
 
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [mealToAdd, setMealToAdd] = useState<MealType | null>(null);
-  const [editingFood, setEditingFood] = useState<LoggedFoodItem | null>(null);
+  const [editingFood, setEditingFood] = useState<Pick<LoggedFoodItem, 'logId' | 'quantity'> | null>(null);
   
   const userGoals = userProfile?.goals || { dailyCalorieGoal: 2000, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
   const derivedGoals = {
@@ -94,17 +87,11 @@ export default function DailyTrackerPage() {
     return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] };
   }, [dailyLog]);
   
-  const loggedFoods = useMemo(() => Object.values(meals).flat(), [meals]);
-
   const dailyTotals = useMemo(() => {
     return dailyLog || { 
-      totalCalories: 0, 
-      totalProtein: 0, 
-      totalCarbs: 0, 
-      totalFat: 0,
-      totalIron: 0,
-      totalVitaminA: 0,
-      totalSodium: 0,
+      totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
+      totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
+      totalSugar: 0, totalCalcium: 0, totalVitaminC: 0,
       waterIntake: 0,
     };
   }, [dailyLog]);
@@ -112,7 +99,8 @@ export default function DailyTrackerPage() {
   const updateDailyLog = async (updatedMeals: Record<MealType, LoggedFoodItem[]>, water: number) => {
     if (!dailyLogRef) return;
     
-    const totals = Object.values(updatedMeals).flat().reduce((acc, item) => {
+    const allMeals = Object.values(updatedMeals).flat();
+    const totals = allMeals.reduce((acc, item) => {
         acc.totalCalories += item.calories;
         acc.totalProtein += item.protein;
         acc.totalCarbs += item.carbs;
@@ -120,8 +108,16 @@ export default function DailyTrackerPage() {
         acc.totalIron += item.iron || 0;
         acc.totalVitaminA += item.vitaminA || 0;
         acc.totalSodium += item.sodium || 0;
+        acc.totalFiber += item.fiber || 0;
+        acc.totalSugar += item.sugar || 0;
+        acc.totalCalcium += item.calcium || 0;
+        acc.totalVitaminC += item.vitaminC || 0;
         return acc;
-    }, { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalIron: 0, totalVitaminA: 0, totalSodium: 0 });
+    }, { 
+        totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, 
+        totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
+        totalSugar: 0, totalCalcium: 0, totalVitaminC: 0
+    });
 
     const newLog: DailyLog = {
       date: dateKey,
@@ -138,7 +134,7 @@ export default function DailyTrackerPage() {
     const ratio = quantity / 100;
     const newLogItem: LoggedFoodItem = {
       logId: doc(collection(db, 'temp')).id,
-      foodId: foodData.foodName, // Using name as ID for AI-sourced items
+      foodId: foodData.foodName,
       name: foodData.foodName,
       quantity,
       calories: (foodData.calories || 0) * ratio,
@@ -148,7 +144,10 @@ export default function DailyTrackerPage() {
       iron: (foodData.micronutrientBreakdown?.iron || 0) * ratio,
       vitaminA: (foodData.micronutrientBreakdown?.vitaminA || 0) * ratio,
       sodium: (foodData.micronutrientBreakdown?.sodium || 0) * ratio,
-      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(foodData.foodName)}/100/100`,
+      fiber: (foodData.micronutrientBreakdown?.fiber || 0) * ratio,
+      sugar: (foodData.micronutrientBreakdown?.sugar || 0) * ratio,
+      calcium: (foodData.micronutrientBreakdown?.calcium || 0) * ratio,
+      vitaminC: (foodData.micronutrientBreakdown?.vitaminC || 0) * ratio,
     };
     
     const newMeals = { ...meals, [mealType]: [...meals[mealType], newLogItem] };
@@ -183,6 +182,10 @@ export default function DailyTrackerPage() {
                     iron: (originalItem.iron || 0) * ratio,
                     vitaminA: (originalItem.vitaminA || 0) * ratio,
                     sodium: (originalItem.sodium || 0) * ratio,
+                    fiber: (originalItem.fiber || 0) * ratio,
+                    sugar: (originalItem.sugar || 0) * ratio,
+                    calcium: (originalItem.calcium || 0) * ratio,
+                    vitaminC: (originalItem.vitaminC || 0) * ratio,
                 };
             }
             break;
@@ -229,7 +232,7 @@ export default function DailyTrackerPage() {
   };
   
   const openEditModal = (food: LoggedFoodItem) => {
-    setEditingFood(food);
+    setEditingFood({ logId: food.logId, quantity: food.quantity });
   };
 
   const clearDay = () => {
@@ -239,7 +242,8 @@ export default function DailyTrackerPage() {
             meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
             waterIntake: 0,
             totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
-            totalIron: 0, totalVitaminA: 0, totalSodium: 0,
+            totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
+            totalSugar: 0, totalCalcium: 0, totalVitaminC: 0
         };
         setDoc(dailyLogRef, emptyLog, { merge: false }); // Overwrite completely
     }
@@ -257,11 +261,11 @@ export default function DailyTrackerPage() {
     <div className="space-y-6 md:space-y-8">
       <Header onClearDay={clearDay} date={date} setDate={setDate} />
 
-      {loggedFoods.length === 0 ? (
+      {!dailyLog || Object.values(meals).flat().length === 0 ? (
          <EmptyState
           icon={<ClipboardX className="h-16 w-16 text-muted-foreground" />}
-          title="No meals logged for this day"
-          description="Start tracking your intake to see your progress and meet your goals."
+          title="No Records Yet"
+          description="You haven’t logged any meals today. Add a meal to get started."
         >
           <Button onClick={() => openAddModal('Breakfast')} size="lg" className="mt-4">
             <PlusCircle className="mr-2 h-5 w-5" /> Add Your First Meal
@@ -269,20 +273,20 @@ export default function DailyTrackerPage() {
         </EmptyState>
       ) : (
         <>
-          <DailySummary totals={dailyTotals} goals={derivedGoals} />
-          
           <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-            <div className="lg:col-span-2">
-              <MealSections 
-                meals={meals} 
-                onAddFoodClick={openAddModal} 
-                onEditFoodClick={openEditModal} 
-                onDeleteFoodClick={handleDeleteFood} 
-              />
+            <div className="lg:col-span-2 space-y-6">
+                <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
+                <MacroProgressBars totals={dailyTotals} goals={derivedGoals} />
+                <MealSections 
+                    meals={meals} 
+                    onAddFoodClick={openAddModal} 
+                    onEditFoodClick={openEditModal} 
+                    onDeleteFoodClick={handleDeleteFood} 
+                />
             </div>
             <div className="lg:col-span-1 space-y-6 md:space-y-8">
-              <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
-              <MacroChart data={dailyTotals} />
+                <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
+                <MicroNutrientGrid totals={dailyTotals} />
             </div>
           </div>
         </>
@@ -392,72 +396,58 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
   );
 };
 
-const DailySummary: FC<{totals: DailyLog; goals: any}> = ({totals, goals}) => {
-  const calorieProgress = (totals.totalCalories / goals.calories) * 100;
-  const remainingCalories = Math.max(0, goals.calories - totals.totalCalories);
-  
+const CalorieSummaryCard: FC<{ totals: DailyLog; goal: number }> = ({ totals, goal }) => {
+  const calorieProgress = (totals.totalCalories / goal) * 100;
+  const remainingCalories = Math.max(0, goal - totals.totalCalories);
+
   return (
     <Card className="overflow-hidden border-2 shadow-sm">
-      <CardContent className="grid md:grid-cols-2 p-0">
-          <div className="p-6 flex flex-col justify-center">
-            <CardTitle className="text-lg mb-4">Calorie Summary</CardTitle>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Consumed</p>
-                <p className="text-2xl font-bold">{Math.round(totals.totalCalories)}</p>
-              </div>
-               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Remaining</p>
-                <p className="text-2xl font-bold text-primary">{Math.round(remainingCalories)}</p>
-              </div>
-               <div className="space-y-1 col-span-2">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0</span>
-                  <span>Goal: {goals.calories} kcal</span>
-                </div>
-                <Progress value={calorieProgress} className="h-2.5" />
-              </div>
+      <CardContent className="p-6 flex flex-col justify-center">
+        <CardTitle className="text-lg mb-4">Calorie Summary</CardTitle>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Consumed</p>
+            <p className="text-2xl font-bold">{Math.round(totals.totalCalories)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Remaining</p>
+            <p className="text-2xl font-bold text-primary">{Math.round(remainingCalories)}</p>
+          </div>
+          <div className="space-y-1 col-span-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>0</span>
+              <span>Goal: {goal} kcal</span>
             </div>
+            <Progress value={calorieProgress} className="h-2.5" />
           </div>
-
-          <div className="p-6 grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l bg-muted/30">
-            <MacroSummary 
-              label="Protein" 
-              value={totals.totalProtein} 
-              goal={goals.protein} 
-              icon={<Beef className="h-4 w-4 text-red-500" />}
-              colorClass="[&>div]:bg-red-500"
-            />
-            <MacroSummary 
-              label="Carbs" 
-              value={totals.totalCarbs} 
-              goal={goals.carbs} 
-              icon={<Wheat className="h-4 w-4 text-yellow-600" />}
-              colorClass="[&>div]:bg-yellow-600"
-            />
-            <MacroSummary 
-              label="Fat" 
-              value={totals.totalFat} 
-              goal={goals.fat} 
-              icon={<Droplets className="h-4 w-4 text-blue-500" />}
-              colorClass="[&>div]:bg-blue-500"
-            />
-          </div>
+        </div>
       </CardContent>
     </Card>
   );
 };
 
-const MacroSummary: FC<{label: string, value: number, goal: number, icon: React.ReactNode, colorClass: string}> = ({label, value, goal, icon, colorClass}) => (
-  <div className="text-center">
-      <div className="inline-flex p-2 rounded-full bg-background mb-2">
-        {icon}
-      </div>
-      <p className="text-sm font-medium">{Math.round(value)}g</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <Progress value={(value / goal) * 100} className={cn("h-1.5 mt-2", colorClass)} />
-  </div>
+const MacroProgressBars: FC<{ totals: DailyLog; goals: any }> = ({ totals, goals }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Macronutrient Goals</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <MacroBar label="Protein" value={totals.totalProtein} goal={goals.protein} unit="g" colorClass="[&>div]:bg-red-500" />
+        <MacroBar label="Carbs" value={totals.totalCarbs} goal={goals.carbs} unit="g" colorClass="[&>div]:bg-yellow-600" />
+        <MacroBar label="Fat" value={totals.totalFat} goal={goals.fat} unit="g" colorClass="[&>div]:bg-blue-500" />
+      </CardContent>
+    </Card>
 );
+
+const MacroBar: FC<{label: string, value: number, goal: number, unit: string, colorClass: string}> = ({label, value, goal, unit, colorClass}) => (
+    <div className="space-y-1.5">
+        <div className="flex justify-between text-sm">
+            <span className="font-medium">{label}</span>
+            <span className="text-muted-foreground">{value.toFixed(0)} / {goal.toFixed(0)} {unit}</span>
+        </div>
+        <Progress value={(value/goal)*100} className={cn("h-2", colorClass)} />
+    </div>
+)
 
 const MealSections: FC<{
   meals: Record<MealType, LoggedFoodItem[]>; 
@@ -563,35 +553,25 @@ const LoggedFoodItemComponent: FC<{
 
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group">
-            <div className="flex items-center gap-3 flex-1">
-                 <div className="relative h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
-                    <Image 
-                        src={loggedFood.imageUrl} 
-                        alt={loggedFood.name} 
-                        fill
-                        className="object-cover"
-                    />
-                </div>
-                <div className="flex-grow min-w-0">
-                    <p className="font-semibold truncate">{loggedFood.name}</p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <span>{loggedFood.quantity}g</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="flex items-center gap-1">
-                            <Beef className="h-3 w-3 text-red-500" />
-                            {loggedFood.protein.toFixed(0)}g
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                            <Wheat className="h-3 w-3 text-yellow-600" />
-                            {loggedFood.carbs.toFixed(0)}g
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                            <Droplets className="h-3 w-3 text-blue-500" />
-                            {loggedFood.fat.toFixed(0)}g
-                        </span>
-                    </div>
+            <div className="flex-grow min-w-0">
+                <p className="font-semibold truncate">{loggedFood.name}</p>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span>{loggedFood.quantity}g</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1">
+                        <Beef className="h-3 w-3 text-red-500" />
+                        {loggedFood.protein.toFixed(0)}g
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                        <Wheat className="h-3 w-3 text-yellow-600" />
+                        {loggedFood.carbs.toFixed(0)}g
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                        <Droplets className="h-3 w-3 text-blue-500" />
+                        {loggedFood.fat.toFixed(0)}g
+                    </span>
                 </div>
             </div>
             
@@ -629,8 +609,6 @@ const LoggedFoodItemComponent: FC<{
 };
 
 const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goal: number}> = ({intake, setIntake, goal}) => {
-    const percentage = (intake / goal) * 100;
-    
     return (
         <Card className="overflow-hidden border shadow-sm">
             <CardHeader className="pb-3">
@@ -654,6 +632,7 @@ const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goa
                     <div className="text-center">
                         <span className="text-4xl font-bold">{intake}</span>
                         <span className="text-muted-foreground ml-2">/ {goal}</span>
+                        <span className="text-muted-foreground text-sm ml-1">glasses</span>
                     </div>
                     
                     <Button 
@@ -666,92 +645,31 @@ const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goa
                     </Button>
                 </div>
                 
-                <Progress value={percentage} className="h-2 [&>div]:bg-blue-500" />
+                <Progress value={(intake / goal) * 100} className="h-2 [&>div]:bg-blue-500" />
             </CardContent>
         </Card>
     );
 };
 
-const MacroChart: FC<{data: DailyLog}> = ({data}) => {
-    const { totalProtein, totalCarbs, totalFat } = data;
-    const totalMacros = totalProtein + totalCarbs + totalFat;
+const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-base">Micronutrient Overview</CardTitle>
+    </CardHeader>
+    <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <MicroStat label="Fiber" value={totals.totalFiber} unit="g" />
+      <MicroStat label="Sugar" value={totals.totalSugar} unit="g" />
+      <MicroStat label="Sodium" value={totals.totalSodium} unit="mg" />
+      <MicroStat label="Calcium" value={totals.totalCalcium} unit="mg" />
+      <MicroStat label="Iron" value={totals.totalIron} unit="mg" />
+      <MicroStat label="Vit. A" value={totals.totalVitaminA} unit="µg" />
+    </CardContent>
+  </Card>
+);
 
-    if(totalMacros === 0) {
-        return (
-            <Card className="overflow-hidden border shadow-sm">
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Macro Distribution</CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center justify-center h-[250px]">
-                    <div className="text-center">
-                        <PieChart className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                        <p className="text-sm text-muted-foreground">Log meals to see distribution</p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    const chartData = [
-        {name: "Protein", value: totalProtein, color: "hsl(var(--chart-2))"},
-        {name: "Carbs", value: totalCarbs, color: "hsl(var(--chart-3))"},
-        {name: "Fat", value: totalFat, color: "hsl(var(--chart-4))"},
-    ];
-
-    return (
-        <Card className="overflow-hidden border shadow-sm">
-            <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                    Macro Distribution
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                        <Pie
-                            data={chartData}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={50}
-                            outerRadius={70}
-                            paddingAngle={2}
-                            cornerRadius={4}
-                            labelLine={false}
-                            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                        >
-                            {chartData.map((entry) => (
-                                <Cell key={entry.name} fill={entry.color} />
-                            ))}
-                        </Pie>
-                        <Tooltip 
-                            contentStyle={{ 
-                                backgroundColor: 'hsl(var(--background))', 
-                                border: '1px solid hsl(var(--border))',
-                                borderRadius: 'var(--radius)',
-                                padding: '8px 12px'
-                            }} 
-                            formatter={(value: number) => [`${value.toFixed(0)}g`, '']}
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
-                
-                <div className="grid grid-cols-3 gap-2 mt-4 text-center">
-                    <div className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20">
-                        <p className="text-xs font-bold text-red-600 dark:text-red-400">Protein</p>
-                        <p className="text-sm font-bold">{totalProtein.toFixed(0)}g</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
-                        <p className="text-xs font-bold text-yellow-600 dark:text-yellow-400">Carbs</p>
-                        <p className="text-sm font-bold">{totalCarbs.toFixed(0)}g</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                        <p className="text-xs font-bold text-blue-600 dark:text-blue-400">Fat</p>
-                        <p className="text-sm font-bold">{totalFat.toFixed(0)}g</p>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-};
+const MicroStat: FC<{label:string, value:number, unit:string}> = ({ label, value, unit }) => (
+  <div className="p-2 bg-muted/50 rounded-lg text-center">
+    <p className="text-xs text-muted-foreground">{label}</p>
+    <p className="text-base font-bold">{Math.round(value)}{unit}</p>
+  </div>
+);

@@ -34,7 +34,10 @@ export async function addFoodToLog(
     iron: (foodData.micronutrientBreakdown?.iron || 0) * ratio,
     vitaminA: (foodData.micronutrientBreakdown?.vitaminA || 0) * ratio,
     sodium: (foodData.micronutrientBreakdown?.sodium || 0) * ratio,
-    imageUrl: `https://picsum.photos/seed/${encodeURIComponent(foodData.foodName)}/100/100`,
+    fiber: (foodData.micronutrientBreakdown?.fiber || 0) * ratio,
+    sugar: (foodData.micronutrientBreakdown?.sugar || 0) * ratio,
+    calcium: (foodData.micronutrientBreakdown?.calcium || 0) * ratio,
+    vitaminC: (foodData.micronutrientBreakdown?.vitaminC || 0) * ratio,
   };
 
   const docSnap = await getDoc(dailyLogRef);
@@ -45,13 +48,9 @@ export async function addFoodToLog(
   } else {
     dailyLog = {
       date: dateKey,
-      totalCalories: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0,
-      totalIron: 0,
-      totalVitaminA: 0,
-      totalSodium: 0,
+      totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
+      totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
+      totalSugar: 0, totalCalcium: 0, totalVitaminC: 0,
       waterIntake: 0,
       meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
     };
@@ -67,7 +66,10 @@ export async function addFoodToLog(
   dailyLog.totalIron = allMeals.reduce((sum, item) => sum + (item.iron || 0), 0);
   dailyLog.totalVitaminA = allMeals.reduce((sum, item) => sum + (item.vitaminA || 0), 0);
   dailyLog.totalSodium = allMeals.reduce((sum, item) => sum + (item.sodium || 0), 0);
-
+  dailyLog.totalFiber = allMeals.reduce((sum, item) => sum + (item.fiber || 0), 0);
+  dailyLog.totalSugar = allMeals.reduce((sum, item) => sum + (item.sugar || 0), 0);
+  dailyLog.totalCalcium = allMeals.reduce((sum, item) => sum + (item.calcium || 0), 0);
+  dailyLog.totalVitaminC = allMeals.reduce((sum, item) => sum + (item.vitaminC || 0), 0);
 
   await setDoc(dailyLogRef, dailyLog);
 }
@@ -100,7 +102,10 @@ export async function addFoodItemToLog(
     iron: (foodItem.nutrients.iron || 0) * ratio,
     vitaminA: (foodItem.nutrients.vitaminA || 0) * ratio,
     sodium: (foodItem.nutrients.sodium || 0) * ratio,
-    imageUrl: foodItem.image,
+    fiber: (foodItem.nutrients.fiber || 0) * ratio,
+    sugar: (foodItem.nutrients.sugar || 0) * ratio,
+    calcium: (foodItem.nutrients.calcium || 0) * ratio,
+    vitaminC: (foodItem.nutrients.vitaminC || 0) * ratio,
   };
 
   const docSnap = await getDoc(dailyLogRef);
@@ -111,13 +116,9 @@ export async function addFoodItemToLog(
   } else {
     dailyLog = {
       date: dateKey,
-      totalCalories: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0,
-      totalIron: 0,
-      totalVitaminA: 0,
-      totalSodium: 0,
+      totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
+      totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
+      totalSugar: 0, totalCalcium: 0, totalVitaminC: 0,
       waterIntake: 0,
       meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
     };
@@ -133,6 +134,10 @@ export async function addFoodItemToLog(
   dailyLog.totalIron = allMeals.reduce((sum, item) => sum + (item.iron || 0), 0);
   dailyLog.totalVitaminA = allMeals.reduce((sum, item) => sum + (item.vitaminA || 0), 0);
   dailyLog.totalSodium = allMeals.reduce((sum, item) => sum + (item.sodium || 0), 0);
+  dailyLog.totalFiber = allMeals.reduce((sum, item) => sum + (item.fiber || 0), 0);
+  dailyLog.totalSugar = allMeals.reduce((sum, item) => sum + (item.sugar || 0), 0);
+  dailyLog.totalCalcium = allMeals.reduce((sum, item) => sum + (item.calcium || 0), 0);
+  dailyLog.totalVitaminC = allMeals.reduce((sum, item) => sum + (item.vitaminC || 0), 0);
 
   await setDoc(dailyLogRef, dailyLog);
 }

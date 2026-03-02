@@ -11,7 +11,10 @@ export type LoggedFoodItem = {
     iron: number;
     vitaminA: number;
     sodium: number;
-    imageUrl: string;
+    fiber: number;
+    sugar: number;
+    calcium: number;
+    vitaminC: number;
 };
   
 export type DailyLog = {
@@ -23,6 +26,10 @@ export type DailyLog = {
     totalIron: number;
     totalVitaminA: number;
     totalSodium: number;
+    totalFiber: number;
+    totalSugar: number;
+    totalCalcium: number;
+    totalVitaminC: number;
     waterIntake: number;
     meals: {
       Breakfast: LoggedFoodItem[];
@@ -57,3 +64,4 @@ export type AnalyticsSummary = {
     lowestCalorieDay: AnalyticsData | null;
     consistencyScore: number;
 };
+
