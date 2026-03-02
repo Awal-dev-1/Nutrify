@@ -21,7 +21,8 @@ export default function RecommendationsPage() {
 
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedFood, setSelectedFood] = useState<Recommendation | null>(null);
+  const [selectedFoodForModal, setSelectedFoodForModal] = useState<Recommendation | null>(null);
+  const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
 
   const fetchRecommendations = async () => {
     if (!user || !db) return;
@@ -44,13 +45,27 @@ export default function RecommendationsPage() {
     }
   };
 
-  const handleViewRecipe = (food: Recommendation) => {
-    setSelectedFood(food);
+  const handleViewRecipe = (foodId: string) => {
+    setSelectedFoodId(foodId);
     setIsRecipeModalOpen(true);
   };
 
   const handleAddToCart = (food: Recommendation) => {
-    setSelectedFood(food);
+    const foodItemForModal = {
+        foodName: food.name,
+        estimatedWeightGrams: 100, // Default to 100g, user can adjust
+        calories: food.calories,
+        macronutrientBreakdown: {
+            protein: food.protein,
+            carbohydrates: food.carbs,
+            fat: food.fat,
+        },
+        micronutrientBreakdown: {}, // Not needed for the 'add' modal
+        detailedRecipe: { ingredients: [], instructions: [] }, // Not needed
+        foodHistory: '', // Not needed
+        healthAnalysis: '', // Not needed
+    }
+    setSelectedFoodForModal(foodItemForModal as any);
     setIsAddModalOpen(true);
   };
 
@@ -113,9 +128,9 @@ export default function RecommendationsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {data.recommendations.map((rec) => (
             <RecommendationCard
-              key={rec.id}
+              key={rec.foodId}
               recommendation={rec}
-              onViewRecipe={() => handleViewRecipe(rec)}
+              onViewRecipe={() => handleViewRecipe(rec.foodId)}
               onAddToCart={() => handleAddToCart(rec)}
             />
           ))}
@@ -149,17 +164,13 @@ export default function RecommendationsPage() {
       <RecipeDetailModal
         isOpen={isRecipeModalOpen}
         onClose={() => setIsRecipeModalOpen(false)}
-        food={selectedFood}
-        onAddToCart={(food) => {
-          setIsRecipeModalOpen(false);
-          handleAddToCart(food);
-        }}
+        foodId={selectedFoodId}
       />
       
       <FoodConfirmationModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        foodItem={selectedFood}
+        foodItem={selectedFoodForModal}
       />
     </div>
   );

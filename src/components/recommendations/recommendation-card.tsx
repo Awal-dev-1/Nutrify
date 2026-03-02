@@ -26,11 +26,11 @@ export function RecommendationCard({ recommendation, onViewRecipe, onAddToCart }
       className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col border-2"
     >
       <CardHeader>
-        <CardTitle>{recommendation.foodName}</CardTitle>
-        <CardDescription>{recommendation.calories.toFixed(0)} kcal per serving</CardDescription>
+        <CardTitle>{recommendation.name}</CardTitle>
+        <CardDescription>{recommendation.calories.toFixed(0)} kcal per 100g</CardDescription>
         <div className="flex flex-wrap gap-2 pt-1">
             <Badge variant="outline">
-                {recommendation.macronutrientBreakdown.protein.toFixed(0)}g Protein
+                {recommendation.protein.toFixed(0)}g Protein
             </Badge>
         </div>
       </CardHeader>

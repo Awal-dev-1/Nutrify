@@ -11,15 +11,31 @@ import {
   serverTimestamp,
   type Firestore,
 } from 'firebase/firestore';
-import { format } from 'date-fns';
 import type { UserProfile } from '@/firebase';
-import type { DailyLog } from '@/types/analytics';
-import type { FoodItem } from '@/types/food';
+import {
+  generateFoodRecommendations,
+  type GenerateFoodRecommendationsInput,
+} from '@/ai/flows/generate-food-recommendations';
 
-export interface Recommendation extends FoodItem {
+// This type represents a food item as stored in the Firestore `foodItems` collection.
+interface DbFoodItem {
   id: string;
+  name: string;
+  caloriesPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  tags?: string[];
+}
+
+export interface Recommendation {
+  foodId: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
   reason: string;
-  matchScore: number;
 }
 
 export interface RecommendationResult {
@@ -27,84 +43,86 @@ export interface RecommendationResult {
   recommendations: Recommendation[];
 }
 
-let allFoods: (FoodItem & { id: string })[] = []; // In-memory cache
+let allFoodsCache: DbFoodItem[] = []; // In-memory cache
 
-async function getCachedFoods(db: Firestore): Promise<(FoodItem & { id: string })[]> {
-  if (allFoods.length === 0) {
-    const foodsQuery = query(collection(db, 'foodItems'), limit(100));
+async function getCachedFoods(db: Firestore): Promise<DbFoodItem[]> {
+  if (allFoodsCache.length === 0) {
+    const foodsQuery = query(collection(db, 'foodItems'), limit(200));
     const foodsSnap = await getDocs(foodsQuery);
-    allFoods = foodsSnap.docs.map(doc => ({ id: doc.id, ...(doc.data() as FoodItem) }));
+    allFoodsCache = foodsSnap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name,
+        caloriesPer100g: data.caloriesPer100g || 0,
+        proteinPer100g: data.proteinPer100g || 0,
+        carbsPer100g: data.carbsPer100g || 0,
+        fatPer100g: data.fatPer100g || 0,
+        tags: data.tags || [],
+      };
+    });
   }
-  return allFoods;
+  return allFoodsCache;
 }
 
 export async function generateRecommendations(
   db: Firestore,
   userId: string
 ): Promise<RecommendationResult> {
+  // Step 1: Fetch user data and food data
   const userRef = doc(db, 'users', userId);
-  const todayKey = format(new Date(), 'yyyy-MM-dd');
-  const dailyLogRef = doc(db, 'users', userId, 'dailyLogs', todayKey);
-
-  const [userSnap, dailyLogSnap, foods] = await Promise.all([
-    getDoc(userRef),
-    getDoc(dailyLogRef),
-    getCachedFoods(db),
-  ]);
+  const userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
     throw new Error('User profile not found. Please complete onboarding.');
   }
   const userProfile = userSnap.data() as UserProfile;
-  const dailyLog = dailyLogSnap.exists() ? (dailyLogSnap.data() as DailyLog) : null;
+  const primaryGoal = userProfile.health?.primaryGoal;
+  const dietaryPreferences = userProfile.health?.dietaryPreferences;
+  const goals = userProfile.goals;
 
-  const primaryGoal = userProfile.health?.primaryGoal || 'maintain-weight';
-  const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2200;
-  const currentCalories = dailyLog?.totalCalories || 0;
-  const calorieRemaining = calorieGoal - currentCalories;
+  if (!primaryGoal || !goals?.dailyCalorieGoal) {
+    throw new Error('Please set your goals to receive personalized recommendations.');
+  }
 
-  const scoredFoods: Recommendation[] = foods.map(food => {
-    let score = 0;
-    let reason = 'A balanced and nutritious option.';
-    const protein = food.macronutrientBreakdown.protein;
-    const fat = food.macronutrientBreakdown.fat;
+  const allFoods = await getCachedFoods(db);
+  if (allFoods.length === 0) {
+    throw new Error('No foods available in the database to make a recommendation.');
+  }
 
-    if (primaryGoal === 'lose-weight') {
-      if (food.calories < 400) score += 30;
-      if (protein > 20) score += 20;
-      if (fat < 15) score += 10;
-      if (score > 30) reason = 'High in protein and low in calories for weight loss.';
-    } else if (primaryGoal === 'gain-weight') {
-      if (food.calories > 500) score += 30;
-      if (protein > 25) score += 20;
-      if (score > 30) reason = 'A high-energy meal to support weight gain.';
-    } else {
-      score += 20;
-      reason = 'A balanced choice to help maintain your weight.'
-    }
+  // Step 2: Prepare input for the AI flow
+  const flowInput: GenerateFoodRecommendationsInput = {
+    userProfile: {
+      primaryGoal: primaryGoal,
+      dietaryPreferences: dietaryPreferences || [],
+    },
+    userGoals: {
+      dailyCalorieGoal: goals.dailyCalorieGoal,
+    },
+    availableFoods: allFoods.map(food => ({
+        id: food.id,
+        name: food.name,
+        calories: food.caloriesPer100g,
+        protein: food.proteinPer100g,
+        carbs: food.carbsPer100g,
+        fat: food.fatPer100g,
+        tags: food.tags || []
+    }))
+  };
 
-    if (calorieRemaining > 0 && food.calories > calorieRemaining * 1.2) {
-      score -= 50;
-    } else if (calorieRemaining > 0 && food.calories < calorieRemaining * 0.8) {
-      score += 15;
-    }
+  // Step 3: Call the AI flow
+  const aiResult = await generateFoodRecommendations(flowInput);
 
-    return { ...food, reason, matchScore: score };
-  });
-
-  const topRecommendations = scoredFoods
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 5);
-
-  const recommendationsToStore = topRecommendations.map(r => ({
-    foodId: r.id,
-    name: r.foodName,
+  // Step 4: Save the result to user's history
+  const recommendationsToStore = aiResult.recommendations.map(r => ({
+    foodId: r.foodId,
+    name: r.name,
     calories: r.calories,
-    protein: r.macronutrientBreakdown.protein,
-    carbs: r.macronutrientBreakdown.carbohydrates,
-    fat: r.macronutrientBreakdown.fat,
+    protein: r.protein,
+    carbs: r.carbs,
+    fat: r.fat,
     reason: r.reason,
-    score: r.matchScore,
+    score: 0, // Score is an internal concept for the AI, not stored.
   }));
 
   const recommendationsCollectionRef = collection(db, 'users', userId, 'generatedRecommendations');
@@ -114,8 +132,9 @@ export async function generateRecommendations(
     recommendations: recommendationsToStore,
   });
 
+  // Step 5: Format the output for the frontend
   return {
     goal: primaryGoal,
-    recommendations: topRecommendations,
+    recommendations: aiResult.recommendations,
   };
 }
