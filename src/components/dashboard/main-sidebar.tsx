@@ -9,6 +9,7 @@ import {
   Calendar,
   HeartPulse,
   LayoutGrid,
+  ScanLine,
   Search,
   Settings,
   Target,
@@ -42,6 +43,7 @@ const insightLinks = [
 
 const aiLinks = [
   { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
+  { href: '/dashboard/recognize', label: 'AI Recognition', icon: ScanLine },
 ]
 
 export function MainSidebar() {
