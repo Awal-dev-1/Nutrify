@@ -1,4 +1,3 @@
-
 "use client";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -18,7 +17,7 @@ export default function LoginPage() {
 
     if (user && userProfile) {
       if (userProfile.onboardingCompleted) {
-        router.push("/dashboard/tracker");
+        router.push("/dashboard/overview");
       } else {
         router.push("/onboarding");
       }

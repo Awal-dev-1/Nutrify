@@ -29,6 +29,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUser } from '@/firebase'
 
 const mainLinks = [
+  { href: '/dashboard/overview', label: 'Overview', icon: LayoutGrid },
   { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
   { href: '/dashboard/search', label: 'AI Food Search', icon: Search },
   { href: '/dashboard/goals', label: 'Goals', icon: Target },
