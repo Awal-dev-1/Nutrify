@@ -27,7 +27,8 @@ import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-
 import type { FoodItem } from '@/types/food';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 
-type Status = 'idle' | 'preview' | 'uploading' | 'processing' | 'results' | 'error';
+// The 'uploading' state is removed for a more direct user experience.
+type Status = 'idle' | 'preview' | 'processing' | 'results' | 'error';
 
 // Helper to resize image client-side for faster processing
 const resizeImage = (file: File, maxWidth: number): Promise<{ file: File; dataUri: string }> => {
@@ -142,12 +143,11 @@ export default function AiRecognitionPage() {
   const handleAnalyze = async () => {
     if (!imageFile || !user || !scanId || !db || !app) return;
     
-    setStatus('uploading');
+    setStatus('processing');
     setError(null);
 
     try {
       const downloadURL = await uploadFoodImage(app, user.uid, scanId, imageFile);
-      setStatus('processing');
       await createScanDocument(db, user.uid, scanId, downloadURL);
       await runFoodRecognition(db, user.uid, scanId, downloadURL, userProfile?.health?.primaryGoal);
     } catch (e: any) {
@@ -259,7 +259,6 @@ export default function AiRecognitionPage() {
             </div>
         );
 
-      case 'uploading':
       case 'processing':
         return (
           <div className="min-h-[400px] flex flex-col items-center justify-center text-center">
@@ -268,10 +267,10 @@ export default function AiRecognitionPage() {
               <Loader2 className="h-16 w-16 animate-spin text-primary relative" />
             </div>
             <p className="mt-6 font-semibold text-lg">
-              {status === 'uploading' ? 'Uploading image...' : 'AI is analyzing your food...'}
+              AI is analyzing your food...
             </p>
             <p className="text-muted-foreground">This may take a few moments.</p>
-            <Progress value={status === 'uploading' ? 20 : 50} className="w-64 mt-6" />
+            <Progress value={50} className="w-64 mt-6" />
           </div>
         );
 
