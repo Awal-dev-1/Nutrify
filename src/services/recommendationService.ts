@@ -5,7 +5,7 @@ import {
   doc,
   getDoc,
   addDoc,
-  query,
+  setDoc,
   serverTimestamp,
   type Firestore,
 } from 'firebase/firestore';
@@ -14,18 +14,7 @@ import {
   generateFoodRecommendations,
   type GenerateFoodRecommendationsInput,
 } from '@/ai/flows/generate-food-recommendations';
-import { mockFoods } from '@/lib/data';
-
-// This type represents a food item as stored in the Firestore `foodItems` collection.
-interface DbFoodItem {
-  id: string;
-  name: string;
-  caloriesPer100g: number;
-  proteinPer100g: number;
-  carbsPer100g: number;
-  fatPer100g: number;
-  tags?: string[];
-}
+import { searchFoods, type FoodItem } from '@/ai/flows/search-foods-flow';
 
 export interface Recommendation {
   foodId: string;
@@ -42,28 +31,25 @@ export interface RecommendationResult {
   recommendations: Recommendation[];
 }
 
-let allFoodsCache: DbFoodItem[] = []; // In-memory cache
-
-async function getCachedFoods(db: Firestore): Promise<DbFoodItem[]> {
-  if (allFoodsCache.length === 0) {
-    allFoodsCache = mockFoods.map(food => ({
-      id: food.id,
-      name: food.name,
-      caloriesPer100g: food.calories,
-      proteinPer100g: food.protein,
-      carbsPer100g: food.carbs,
-      fatPer100g: food.fat,
-      tags: food.tags,
-    }));
-  }
-  return allFoodsCache;
+const getSearchQueriesForGoal = (goal: string): string[] => {
+    switch (goal) {
+        case 'lose-weight':
+            return ["low calorie high protein ghanaian lunch", "healthy breakfast for weight loss", "light dinner ideas"];
+        case 'gain-weight':
+            return ["high calorie ghanaian dinner", "protein shake for muscle gain", "energy dense snacks"];
+        case 'eat-healthier':
+            return ["balanced ghanaian meal with vegetables", "quinoa salad with chicken", "omega-3 rich fish recipe"];
+        case 'maintain-weight':
+        default:
+            return ["typical ghanaian lunch", "healthy pasta recipe", "balanced breakfast bowl"];
+    }
 }
 
 export async function generateRecommendations(
   db: Firestore,
   userId: string
 ): Promise<RecommendationResult> {
-  // Step 1: Fetch user data and food data
+  // Step 1: Fetch user data
   const userRef = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
 
@@ -79,12 +65,31 @@ export async function generateRecommendations(
     throw new Error('Please set your goals to receive personalized recommendations.');
   }
 
-  const allFoods = await getCachedFoods(db);
-  if (allFoods.length === 0) {
-    throw new Error('No foods available in the database to make a recommendation.');
+  // Step 1.5: Use AI to generate a list of candidate foods
+  const searchQueries = getSearchQueriesForGoal(primaryGoal);
+  const foodPromises = searchQueries.map(query => searchFoods({ query, userGoal: primaryGoal }));
+  const searchResults = await Promise.all(foodPromises);
+  
+  const foodMap = new Map<string, FoodItem>();
+  searchResults.flatMap(result => result.foodItems).forEach(food => {
+      if (!foodMap.has(food.foodName)) {
+          foodMap.set(food.foodName, food);
+      }
+  });
+  const candidateFoods = Array.from(foodMap.values());
+
+  // Asynchronously populate the foodItems collection for recipe lookups later
+  candidateFoods.forEach(food => {
+      const foodRef = doc(db, 'foodItems', food.foodName);
+      // This populates our DB for the "View Recipe" feature. We don't await this.
+      setDoc(foodRef, food, { merge: true });
+  });
+
+  if (candidateFoods.length === 0) {
+    throw new Error('AI was unable to generate any food suggestions. Please try again.');
   }
 
-  // Step 2: Prepare input for the AI flow
+  // Step 2: Prepare input for the AI recommendation flow
   const flowInput: GenerateFoodRecommendationsInput = {
     userProfile: {
       primaryGoal: primaryGoal,
@@ -93,18 +98,18 @@ export async function generateRecommendations(
     userGoals: {
       dailyCalorieGoal: goals.dailyCalorieGoal,
     },
-    availableFoods: allFoods.map(food => ({
-        id: food.id,
-        name: food.name,
-        calories: food.caloriesPer100g,
-        protein: food.proteinPer100g,
-        carbs: food.carbsPer100g,
-        fat: food.fatPer100g,
+    availableFoods: candidateFoods.map(food => ({
+        id: food.foodName, // Use the name as the ID
+        name: food.foodName,
+        calories: food.calories,
+        protein: food.macronutrientBreakdown.protein,
+        carbs: food.macronutrientBreakdown.carbohydrates,
+        fat: food.macronutrientBreakdown.fat,
         tags: food.tags || []
     }))
   };
 
-  // Step 3: Call the AI flow
+  // Step 3: Call the AI flow to get ranked recommendations
   const aiResult = await generateFoodRecommendations(flowInput);
 
   // Step 4: Save the result to user's history

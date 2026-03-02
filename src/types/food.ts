@@ -24,6 +24,7 @@ export const FoodItemSchema = z.object({
   }).describe("A detailed recipe for the identified food item."),
   foodHistory: z.string().describe("A short, interesting, and verifiable history about the food's origin or cultural significance."),
   healthAnalysis: z.string().describe("Personalized health analysis based on the user's goal."),
+  tags: z.array(z.string()).optional().describe("An array of descriptive tags for the food, including dietary tags like 'Vegan', 'Halal', 'Gluten-Free'."),
 });
 
 export type FoodItem = z.infer<typeof FoodItemSchema>;

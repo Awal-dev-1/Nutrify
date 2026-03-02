@@ -45,6 +45,7 @@ CRITICAL INSTRUCTIONS:
     -   \`ingredients\`: List every ingredient with precise measurements (e.g., "1 cup (240ml) water", "150g chicken breast").
     -   \`instructions\`: Provide clear, step-by-step instructions for preparation.
 4.  **Nutrient Data per 100g**: All calorie, macronutrient, and micronutrient data MUST be for a 100g portion of the food.
+5.  **Dietary Tags**: Generate an array of relevant dietary tags (e.g., "Vegan", "Gluten-Free", "Halal", "Keto-Friendly") based on the ingredients.
 
 For each food item that EXACTLY matches the query, you must provide:
 - foodName: The specific name of the identified food.
@@ -58,6 +59,7 @@ For each food item that EXACTLY matches the query, you must provide:
   - If the goal is "muscle-gain", analyze protein and calorie content for muscle synthesis.
   - If the goal is "maintenance", analyze if it is a balanced, nutrient-dense choice.
   - If no goal is specified, provide a general health tip.
+- tags: An array of relevant dietary tags.
 
 If 'isFoodQuery' is false, you must return an empty 'foodItems' array.
 
