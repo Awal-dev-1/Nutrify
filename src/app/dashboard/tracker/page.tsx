@@ -54,7 +54,14 @@ import { AddFoodModal } from "@/components/tracker/add-food-modal";
 import { EditFoodModal } from "@/components/tracker/edit-food-modal";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
+import {
+  useDoc,
+  useUser,
+  useFirestore,
+  useMemoFirebase,
+  errorEmitter,
+  FirestorePermissionError,
+} from "@/firebase";
 import { doc, setDoc, collection } from "firebase/firestore";
 import { format, subDays, addDays } from "date-fns";
 import type { DailyLog, LoggedFoodItem } from "@/types/analytics";
@@ -103,7 +110,7 @@ export default function DailyTrackerPage() {
     };
   }, [dailyLog]);
 
-  const updateDailyLog = async (updatedMeals: Record<MealType, LoggedFoodItem[]>, water: number) => {
+  const updateDailyLog = (updatedMeals: Record<MealType, LoggedFoodItem[]>, water: number) => {
     if (!dailyLogRef) return;
     
     const allMeals = Object.values(updatedMeals).flat();
@@ -133,7 +140,13 @@ export default function DailyTrackerPage() {
       ...totals
     };
 
-    await setDoc(dailyLogRef, newLog, { merge: true });
+    setDoc(dailyLogRef, newLog, { merge: true }).catch(error => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: dailyLogRef.path,
+          operation: 'write',
+          requestResourceData: newLog
+      }));
+    });
   };
   
   const handleAddFood = (foodData: AiFoodItem, quantity: number, mealType: MealType) => {
@@ -252,7 +265,13 @@ export default function DailyTrackerPage() {
             totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
             totalSugar: 0, totalCalcium: 0, totalVitaminC: 0
         };
-        setDoc(dailyLogRef, emptyLog, { merge: false }); // Overwrite completely
+        setDoc(dailyLogRef, emptyLog, { merge: false }).catch(error => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: dailyLogRef.path,
+                operation: 'write',
+                requestResourceData: emptyLog
+            }));
+        });
     }
     toast({
       title: "Day Cleared",
@@ -717,5 +736,3 @@ const MicroStat: FC<{label:string, value:number, unit:string}> = ({ label, value
     <p className="text-base font-bold">{Math.round(value)}{unit}</p>
   </div>
 );
-
-    
