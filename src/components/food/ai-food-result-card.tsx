@@ -14,7 +14,7 @@ export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (i
         <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
         <div className="text-3xl font-extrabold text-primary pt-2">
             {item.calories.toFixed(0)}{' '}
-            <span className="text-lg font-medium text-muted-foreground">kcal (estimated)</span>
+            <span className="text-lg font-medium text-muted-foreground">kcal (for ~{item.estimatedWeightGrams}g)</span>
         </div>
       </CardHeader>
       <CardContent className="p-4 md:p-6">
@@ -45,6 +45,7 @@ export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (i
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Macronutrients</CardTitle>
+                        <CardDescription>For the estimated {item.estimatedWeightGrams}g portion</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-3 gap-2 text-center">
                         <div className="space-y-1">
@@ -67,6 +68,7 @@ export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (i
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Micronutrients</CardTitle>
+                        <CardDescription>For the estimated {item.estimatedWeightGrams}g portion</CardDescription>
                     </CardHeader>
                     <CardContent className="text-sm space-y-2">
                         <ul className="space-y-1 max-h-48 overflow-y-auto">

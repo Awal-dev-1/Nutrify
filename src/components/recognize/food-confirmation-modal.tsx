@@ -42,19 +42,45 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
   const router = useRouter();
 
   useEffect(() => {
-    // Reset state when modal opens
-    if (isOpen) {
-      setQuantity(100);
+    // Reset state when modal opens or food item changes
+    if (isOpen && foodItem) {
+      setQuantity(foodItem.estimatedWeightGrams || 100);
       setMealType('Lunch');
       setIsAdding(false);
     }
-  }, [isOpen]);
+  }, [isOpen, foodItem]);
 
   const handleAddToTracker = async () => {
     if (!foodItem || !user || !db) return;
     setIsAdding(true);
     try {
-      await addFoodToLog(db, user.uid, mealType, foodItem, quantity);
+      // The addFoodToLog service expects nutrients per 100g.
+      // We need to normalize the data from our portion-based AI result
+      // back to a 100g-equivalent FoodItem.
+      const per100gRatio = 100 / (foodItem.estimatedWeightGrams || 100);
+      const foodDataForService: FoodItem = {
+          ...foodItem,
+          // We don't need to pass estimatedWeightGrams to the service
+          estimatedWeightGrams: 100,
+          calories: foodItem.calories * per100gRatio,
+          macronutrientBreakdown: {
+              protein: foodItem.macronutrientBreakdown.protein * per100gRatio,
+              carbohydrates: foodItem.macronutrientBreakdown.carbohydrates * per100gRatio,
+              fat: foodItem.macronutrientBreakdown.fat * per100gRatio,
+          },
+          micronutrientBreakdown: {
+              fiber: (foodItem.micronutrientBreakdown?.fiber || 0) * per100gRatio,
+              sugar: (foodItem.micronutrientBreakdown?.sugar || 0) * per100gRatio,
+              iron: (foodItem.micronutrientBreakdown?.iron || 0) * per100gRatio,
+              calcium: (foodItem.micronutrientBreakdown?.calcium || 0) * per100gRatio,
+              vitaminA: (foodItem.micronutrientBreakdown?.vitaminA || 0) * per100gRatio,
+              vitaminC: (foodItem.micronutrientBreakdown?.vitaminC || 0) * per100gRatio,
+              sodium: (foodItem.micronutrientBreakdown?.sodium || 0) * per100gRatio,
+          }
+      };
+
+      await addFoodToLog(db, user.uid, mealType, foodDataForService, quantity);
+      
       toast({
         title: 'Success!',
         description: `${foodItem.foodName} has been added to your tracker.`,
@@ -74,10 +100,10 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
   };
   
   const calculatedNutrients = foodItem ? {
-      calories: foodItem.calories * (quantity / 100),
-      protein: foodItem.macronutrientBreakdown.protein * (quantity / 100),
-      carbs: foodItem.macronutrientBreakdown.carbohydrates * (quantity / 100),
-      fat: foodItem.macronutrientBreakdown.fat * (quantity / 100),
+      calories: (foodItem.calories / (foodItem.estimatedWeightGrams || 1)) * quantity,
+      protein: (foodItem.macronutrientBreakdown.protein / (foodItem.estimatedWeightGrams || 1)) * quantity,
+      carbs: (foodItem.macronutrientBreakdown.carbohydrates / (foodItem.estimatedWeightGrams || 1)) * quantity,
+      fat: (foodItem.macronutrientBreakdown.fat / (foodItem.estimatedWeightGrams || 1)) * quantity,
   } : null;
 
   return (
@@ -125,7 +151,7 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
                   id="quantity"
                   type="number"
                   value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  onChange={(e) => setQuantity(Number(e.target.value) || 0)}
                 />
               </div>
               <div className="space-y-2">
