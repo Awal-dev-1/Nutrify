@@ -1,8 +1,6 @@
 "use client"
 
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { healthQuotes } from '@/lib/data'
-import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { useUser } from '@/firebase'
 import { logout } from '@/services/authService'
@@ -12,14 +10,9 @@ import { Button } from '../ui/button'
 import { LogOut } from 'lucide-react'
 
 export function DashboardHeader() {
-  const { user, userProfile } = useUser();
+  const { userProfile } = useUser();
   const auth = useAuth();
   const router = useRouter();
-  const [quote, setQuote] = useState("")
-
-  useEffect(() => {
-    setQuote(healthQuotes[Math.floor(Math.random() * healthQuotes.length)])
-  }, [])
 
   const handleLogout = async () => {
     await logout(auth);
@@ -36,9 +29,6 @@ export function DashboardHeader() {
         <p className="text-sm text-muted-foreground">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
         </p>
-      </div>
-      <div className="ml-auto hidden md:block">
-        <p className="text-sm italic text-muted-foreground">{quote}</p>
       </div>
        <Button variant="ghost" size="icon" onClick={handleLogout} className="ml-auto">
           <LogOut className="h-5 w-5" />
