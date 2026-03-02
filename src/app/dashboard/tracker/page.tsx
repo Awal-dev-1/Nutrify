@@ -284,6 +284,7 @@ export default function DailyTrackerPage() {
             <div className="lg:col-span-2 space-y-6">
                 <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
                 <MacroPieChart totals={dailyTotals} />
+                <MicroNutrientGrid totals={dailyTotals} />
                 <MealSections 
                     meals={meals} 
                     onAddFoodClick={openAddModal} 
@@ -293,7 +294,6 @@ export default function DailyTrackerPage() {
             </div>
             <div className="lg:col-span-1 space-y-6 md:space-y-8">
                 <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
-                <MicroNutrientGrid totals={dailyTotals} />
             </div>
           </div>
         </>
