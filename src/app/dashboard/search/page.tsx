@@ -357,7 +357,7 @@ function PortionControlCard({
             <div className="space-y-4">
               <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
                 <h4 className="font-semibold text-sm text-primary">
-                  Total Calories for {portion}g
+                  Nutrition for {portion}g
                 </h4>
                 <div className="flex items-baseline gap-2">
                   <p className="font-bold text-3xl text-foreground">
@@ -509,4 +509,5 @@ function PortionControlCard({
         </div>
       </CardContent>
     </Card>
-    
+  );
+}
