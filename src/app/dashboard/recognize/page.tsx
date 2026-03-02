@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
-import { PredictionCard } from '@/components/recognize/prediction-card';
+import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
@@ -16,7 +16,7 @@ import type { AIPrediction } from '@/types/ai';
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
 export default function RecognizePage() {
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
   const db = useFirestore();
 
   const [file, setFile] = useState<File | null>(null);
@@ -25,6 +25,8 @@ export default function RecognizePage() {
   const [error, setError] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
+  const [viewedPrediction, setViewedPrediction] = useState<AIPrediction | null>(null);
+
 
   // Effect to handle file selection and create a preview URL
   useEffect(() => {
@@ -47,10 +49,12 @@ export default function RecognizePage() {
     setStatus('analyzing');
     setError(null);
     setPredictions(null);
+    setViewedPrediction(null);
 
     try {
       const scanResults = await runAiScan(db, user, file);
       setPredictions(scanResults);
+      setViewedPrediction(scanResults.length > 0 ? scanResults[0] : null);
       setStatus('completed');
     } catch (err: any) {
       console.error('AI Scan failed:', err);
@@ -66,6 +70,8 @@ export default function RecognizePage() {
     setStatus('idle');
     setError(null);
     setPredictions(null);
+    setViewedPrediction(null);
+    setSelectedFood(null);
   };
 
   const renderContent = () => {
@@ -111,7 +117,7 @@ export default function RecognizePage() {
         );
       
       case 'completed':
-        if (!predictions || predictions.length === 0) {
+        if (!predictions || predictions.length === 0 || !viewedPrediction) {
           return (
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -125,19 +131,43 @@ export default function RecognizePage() {
             </Alert>
           );
         }
+
+        const otherPredictions = predictions.filter(
+          (p) => p.foodName !== viewedPrediction.foodName
+        );
+
         return (
-          <div className="space-y-4 animate-in fade-in-50">
-            <h3 className="text-lg font-semibold">Here's what the AI found:</h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {predictions.map((pred, index) => (
-                <PredictionCard 
-                  key={index} 
-                  prediction={pred} 
-                  onSelect={() => setSelectedFood(pred)} 
-                />
-              ))}
-            </div>
-             <div className="text-center pt-4">
+          <div className="w-full max-w-4xl mx-auto space-y-6 animate-in fade-in-50">
+            <AiFoodResultCard
+              item={viewedPrediction}
+              onAdd={setSelectedFood}
+              userGoal={userProfile?.health?.primaryGoal}
+            />
+
+            {otherPredictions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5 text-yellow-500" />
+                    Not quite right?
+                  </CardTitle>
+                  <CardDescription>Here are other suggestions from the AI.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  {otherPredictions.map((pred) => (
+                    <Button
+                      key={pred.foodName}
+                      variant="outline"
+                      onClick={() => setViewedPrediction(pred)}
+                    >
+                      {pred.foodName} ({(pred.confidence * 100).toFixed(0)}%)
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="text-center pt-4">
                 <Button variant="outline" onClick={resetState}>
                     <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
                 </Button>
