@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,42 +10,28 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, PlusCircle, ArrowRight } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Lightbulb, PlusCircle, BookOpen } from 'lucide-react';
 import type { Recommendation } from '@/services/recommendationService';
 
 interface RecommendationCardProps {
   recommendation: Recommendation;
+  onViewRecipe: () => void;
+  onAddToCart: () => void;
 }
 
-export function RecommendationCard({ recommendation }: RecommendationCardProps) {
-  const { toast } = useToast();
-  const router = useRouter();
-
-  const handleQuickAdd = (e: React.MouseEvent) => {
-    e.stopPropagation(); 
-    toast({
-      title: 'Added to Tracker!',
-      description: `${recommendation.name} has been added to your lunch.`,
-    });
-  };
-
-  const handleSelect = () => {
-    router.push(`/dashboard/food/${recommendation.id}`);
-  };
-
+export function RecommendationCard({ recommendation, onViewRecipe, onAddToCart }: RecommendationCardProps) {
+  
   return (
     <Card
-      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer h-full flex flex-col border-2"
-      onClick={handleSelect}
+      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col border-2"
     >
       <CardHeader>
-        <CardTitle>{recommendation.name}</CardTitle>
-        <CardDescription>{recommendation.calories} kcal per 100g</CardDescription>
+        <CardTitle>{recommendation.foodName}</CardTitle>
+        <CardDescription>{recommendation.calories.toFixed(0)} kcal per serving</CardDescription>
         <div className="flex flex-wrap gap-2 pt-1">
-          {recommendation.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="outline">{tag}</Badge>
-          ))}
+            <Badge variant="outline">
+                {recommendation.macronutrientBreakdown.protein.toFixed(0)}g Protein
+            </Badge>
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -56,11 +41,11 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
         </div>
       </CardContent>
       <CardFooter className="flex-col sm:flex-row gap-2">
-        <Button className="w-full" onClick={handleQuickAdd}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Quick Add
+        <Button variant="secondary" className="w-full" onClick={onViewRecipe}>
+           <BookOpen className="mr-2 h-4 w-4" /> View Recipe
         </Button>
-         <Button variant="secondary" className="w-full" onClick={handleSelect}>
-           Details <ArrowRight className="ml-2 h-4 w-4" />
+        <Button className="w-full" onClick={onAddToCart}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add to Tracker
         </Button>
       </CardFooter>
     </Card>
