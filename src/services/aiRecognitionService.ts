@@ -9,7 +9,7 @@ import {
 import { doc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import imageCompression from 'browser-image-compression';
-import { recognizeFood } from '@/ai/flows/recognize-food-flow';
+import { recognizeFood, type RecognizeFoodOutput } from '@/ai/flows/recognize-food-flow';
 import type { AIPrediction } from '@/types/ai';
 import type { User } from 'firebase/auth';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -74,7 +74,7 @@ export const runAiScan = async (
   db: Firestore,
   user: User,
   file: File
-): Promise<AIPrediction[]> => {
+): Promise<RecognizeFoodOutput> => {
   const compressedFile = await compressImage(file);
 
   const reader = new FileReader();
@@ -86,16 +86,25 @@ export const runAiScan = async (
   const photoDataUri = await dataUriPromise;
 
   const aiResult = await recognizeFood({ photoDataUri });
-  const rawPredictions = aiResult.predictions;
 
-  const filteredPredictions = rawPredictions
-    .filter((p) => p.confidence >= 0.6)
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, 3);
+  // Only filter and save if it's food and has predictions
+  if (aiResult.isFood && aiResult.predictions.length > 0) {
+    const rawPredictions = aiResult.predictions;
 
-  if (filteredPredictions.length > 0) {
-    saveScanHistory(db, user.uid, compressedFile, filteredPredictions);
+    const filteredPredictions = rawPredictions
+      .filter((p) => p.confidence >= 0.6)
+      .sort((a, b) => b.confidence - a.confidence)
+      .slice(0, 3);
+
+    // Save history only if there are predictions worth saving
+    if (filteredPredictions.length > 0) {
+      saveScanHistory(db, user.uid, compressedFile, filteredPredictions);
+    }
+
+    // Return the filtered predictions within the original structure
+    return { ...aiResult, predictions: filteredPredictions };
   }
 
-  return filteredPredictions;
+  // If not food or no predictions, return the original result from the AI
+  return aiResult;
 };

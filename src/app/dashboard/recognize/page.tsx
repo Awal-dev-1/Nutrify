@@ -121,8 +121,19 @@ export default function RecognizePage() {
 
     try {
       const scanResults = await runAiScan(db, user, file);
-      setPredictions(scanResults);
-      setViewedPrediction(scanResults.length > 0 ? scanResults[0] : null);
+
+      if (!scanResults.isFood) {
+        toast({
+          variant: "destructive",
+          title: "Not a food item",
+          description: "This does not appear to be a food item. Our AI is only meant for food items.",
+        });
+        resetState();
+        return;
+      }
+
+      setPredictions(scanResults.predictions);
+      setViewedPrediction(scanResults.predictions.length > 0 ? scanResults.predictions[0] : null);
       setStatus('completed');
     } catch (err: any) {
       console.error('AI Scan failed:', err);
