@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { updateUserDocument } from '@/services/userService';
@@ -421,11 +422,11 @@ export default function SettingsPage() {
                     Nutrify uses your data to provide personalized nutrition insights. Your data is encrypted and never sold.
                     </p>
                     <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                        View Privacy Policy
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                        <Link href="/privacy-policy">View Privacy Policy</Link>
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                        View Terms & Conditions
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                        <Link href="/terms-and-conditions">View Terms & Conditions</Link>
                     </Button>
                     <Button variant="secondary" className="w-full justify-start">
                         <Download className="mr-2 h-4 w-4" />
