@@ -344,45 +344,17 @@ function PortionControlCard({
       <CardHeader>
         <CardTitle>{foodItem.foodName}</CardTitle>
         <CardDescription>
-          Base nutrition values per 100g. Adjust the portion to see your intake.
+          Adjust the portion size in grams to see the calculated nutritional values for your meal.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-6">
-        {/* Left side: Base and Calculated Nutrition */}
+        {/* Left side: Calculated Nutrition & Details */}
         <div className="space-y-6">
-          {/* Base Nutrition */}
-          <div className="p-4 rounded-lg border">
-            <h4 className="font-semibold text-sm mb-2">Nutrition per 100g</h4>
-            <div className="flex justify-around text-center text-xs">
-              <div>
-                <p className="font-bold">{foodItem.calories.toFixed(0)}</p>
-                <p>kcal</p>
-              </div>
-              <div>
-                <p className="font-bold">
-                  {foodItem.macronutrientBreakdown.protein.toFixed(1)}g
-                </p>
-                <p>Protein</p>
-              </div>
-              <div>
-                <p className="font-bold">
-                  {foodItem.macronutrientBreakdown.carbohydrates.toFixed(1)}g
-                </p>
-                <p>Carbs</p>
-              </div>
-              <div>
-                <p className="font-bold">
-                  {foodItem.macronutrientBreakdown.fat.toFixed(1)}g
-                </p>
-                <p>Fat</p>
-              </div>
-            </div>
-          </div>
           {/* Calculated Nutrition */}
           {calculatedNutrients && (
             <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
               <h4 className="font-semibold text-sm mb-2 text-primary">
-                Your Portion ({portion}g)
+                Nutrition for {portion}g
               </h4>
               <div className="flex justify-around text-center text-sm">
                 <div>
@@ -416,6 +388,16 @@ function PortionControlCard({
               </div>
             </div>
           )}
+           {/* AI Details */}
+          <Card>
+              <CardHeader className="p-4">
+                  <CardTitle className="text-base">AI Generated Details</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 text-sm space-y-2">
+                   <p><strong>Health Analysis:</strong> {foodItem.healthAnalysis}</p>
+                   <p><strong>Food History:</strong> {foodItem.foodHistory}</p>
+              </CardContent>
+          </Card>
         </div>
         {/* Right side: Portion Controls */}
         <div className="space-y-4">
