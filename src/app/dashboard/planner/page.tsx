@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { searchFoods } from '@/ai/flows/search-foods-flow';
 import type { FoodItem } from '@/types/food';
 import type { PlannedMeal } from '@/types/planner';
 import {
@@ -12,6 +11,7 @@ import {
   updatePlannedMeal,
   deletePlannedMeal,
   clearPlan,
+  addGeneratedMealToPlan,
 } from '@/services/plannerService';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,9 +19,11 @@ import { DayPlanner } from '@/components/planner/day-planner';
 import { WeekPlanner } from '@/components/planner/week-planner';
 import { PlannerControls } from '@/components/planner/planner-controls';
 import { Loader2 } from 'lucide-react';
+import { getAnalyticsData } from '@/services/analyticsService';
+import { generatePersonalizedMealPlan } from '@/ai/flows/generate-personalized-meal-plan';
 
 export default function MealPlannerPage() {
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
 
@@ -54,26 +56,21 @@ export default function MealPlannerPage() {
     }, {} as Record<string, { calories: number; protein: number; carbs: number; fat: number }>);
   }, [plannedMeals]);
 
-  const handleAddMeal = async (
+  const handleAddMeal = (
     food: FoodItem,
     quantity: number,
     mealType: string,
     day: string
   ) => {
     if (!user || !db) return;
-    try {
-      await addPlannedMeal(db, user.uid, day, mealType, food, quantity);
-      toast({
-        title: 'Meal Added',
-        description: `${food.foodName} has been added to your ${day} plan.`,
-      });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not add meal.' });
-    }
+    addPlannedMeal(db, user.uid, day, mealType, food, quantity);
+    toast({
+      title: 'Meal Added',
+      description: `${food.foodName} has been added to your ${day} plan.`,
+    });
   };
 
-  const handleUpdateMeal = async (id: string, newQuantity: number) => {
+  const handleUpdateMeal = (id: string, newQuantity: number) => {
     if (!user || !db || !plannedMeals) return;
 
     const originalMeal = plannedMeals.find((meal) => meal.id === id);
@@ -88,87 +85,110 @@ export default function MealPlannerPage() {
       fat: originalMeal.fat * ratio,
     };
 
-    try {
-      await updatePlannedMeal(db, user.uid, id, updates);
-      toast({
-        title: 'Meal Updated',
-        description: `The portion size has been updated.`,
-      });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not update meal.' });
-    }
+    updatePlannedMeal(db, user.uid, id, updates);
+    toast({
+      title: 'Meal Updated',
+      description: `The portion size has been updated.`,
+    });
   };
 
-  const handleRemoveMeal = async (id: string) => {
+  const handleRemoveMeal = (id: string) => {
     if (!user || !db) return;
-    try {
-      await deletePlannedMeal(db, user.uid, id);
-      toast({
-        variant: 'destructive',
-        title: 'Meal Removed',
-        description: `The meal has been removed from your plan.`,
-      });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not remove meal.' });
-    }
+    deletePlannedMeal(db, user.uid, id);
+    toast({
+      variant: 'destructive',
+      title: 'Meal Removed',
+      description: `The meal has been removed from your plan.`,
+    });
   };
 
   const handleGeneratePlan = async () => {
-    if (!user || !db) return;
+    if (!user || !db || !userProfile) {
+      toast({
+        variant: 'destructive',
+        title: 'User Profile Not Loaded',
+        description: 'Please wait for your profile to load and try again.',
+      });
+      return;
+    }
 
     setIsGenerating(true);
-    await clearPlan(db, user.uid);
+    await clearPlan(db, user.uid); // This is good, clear the old plan first.
 
     try {
-      const foodQueries = ['jollof rice', 'oatmeal porridge', 'grilled tilapia salad'];
-      const foodResults = await Promise.all(foodQueries.map((q) => searchFoods({ query: q })));
-      const foods = foodResults.map((r) => r.foodItems[0]).filter(Boolean);
+      // 1. Get analytics data for recent intake
+      const analytics = await getAnalyticsData(db, user.uid, '7d');
 
-      if (foods.length < 3) throw new Error('Could not get enough food items from AI.');
+      // 2. Prepare input for the meal plan flow
+      const flowInput = {
+        personalDetails: {
+          gender: (userProfile.profile?.gender.toLowerCase() || 'other') as 'male' | 'female' | 'other',
+          age: userProfile.profile?.age || 30,
+          heightCm: userProfile.profile?.heightCm || 170,
+          weightKg: userProfile.profile?.weightKg || 70,
+          activityLevel: (userProfile.profile?.activityLevel.replace('-', ' ') || 'moderate') as 'low' | 'moderate' | 'active' | 'very active',
+        },
+        dietaryGoals: {
+          goal: (userProfile.health?.primaryGoal.replace('-', ' ') || 'maintain weight') as 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier',
+          targetCalories: userProfile.goals?.dailyCalorieGoal,
+          targetMacros: {
+            protein: userProfile.goals?.proteinPercentageGoal || 30,
+            carbs: userProfile.goals?.carbsPercentageGoal || 40,
+            fat: userProfile.goals?.fatPercentageGoal || 30,
+          },
+          targetMicros: {
+            iron: userProfile.goals?.ironTargetMg,
+            vitaminA: userProfile.goals?.vitaminATargetMcg,
+          },
+        },
+        dietaryPreferences: userProfile.health?.dietaryPreferences || [],
+        recentNutrientIntake: {
+          averageDailyCalories: analytics.summary.averageCalories,
+          averageDailyProtein: analytics.summary.averageProtein,
+          averageDailyCarbs: analytics.summary.averageCarbs,
+          averageDailyFat: analytics.summary.averageFat,
+          averageDailyIron: analytics.summary.averageIron,
+          averageDailyVitaminA: analytics.summary.averageVitaminA,
+        },
+      };
 
-      const [lunchFood, breakfastFood, dinnerFood] = foods;
-      const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      const mealPlanPromises: Promise<void>[] = [];
+      // 3. Call the AI flow
+      const result = await generatePersonalizedMealPlan(flowInput);
 
-      daysOfWeek.forEach((day) => {
-        mealPlanPromises.push(addPlannedMeal(db, user.uid, day, 'Breakfast', breakfastFood, 150));
-        mealPlanPromises.push(addPlannedMeal(db, user.uid, day, 'Lunch', lunchFood, 300));
-        mealPlanPromises.push(addPlannedMeal(db, user.uid, day, 'Dinner', dinnerFood, 250));
+      // 4. Add the generated plan to Firestore
+      result.weeklyMealPlan.forEach(dailyPlan => {
+        dailyPlan.meals.forEach(mealSlot => {
+          mealSlot.items.forEach(item => {
+            addGeneratedMealToPlan(db, user.uid, dailyPlan.day, mealSlot.mealType, item);
+          });
+        });
       });
-
-      await Promise.all(mealPlanPromises);
-
+      
       toast({
         title: 'Plan Generated!',
-        description: 'A suggested meal plan has been created for you.',
+        description: 'A new weekly meal plan has been created for you.',
       });
-    } catch (error) {
+
+    } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Failed to generate plan',
-        description: 'The AI could not generate a meal plan. Please try again.',
+        description: error.message || 'The AI could not generate a meal plan. Please try again.',
       });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleClearPlan = async () => {
+  const handleClearPlan = () => {
     if (!user || !db) return;
-    try {
-      await clearPlan(db, user.uid);
-      toast({
-        variant: 'destructive',
-        title: 'Plan Cleared',
-        description: `Your meal plan has been reset.`,
-      });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not clear plan.' });
-    }
+    clearPlan(db, user.uid);
+    toast({
+      variant: 'destructive',
+      title: 'Plan Cleared',
+      description: `Your meal plan has been reset.`,
+    });
   };
 
   if (isLoading) {
@@ -224,5 +244,3 @@ export default function MealPlannerPage() {
     </div>
   );
 }
-
-    

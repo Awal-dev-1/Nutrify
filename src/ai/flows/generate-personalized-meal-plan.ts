@@ -12,7 +12,8 @@ import { z } from 'genkit';
 
 const MealItemSchema = z.object({
   foodName: z.string().describe('Name of the food item.'),
-  calories: z.number().describe('Calories for this food item.'),
+  quantityGrams: z.number().describe('The recommended quantity of this food item in grams.'),
+  calories: z.number().describe('Calories for this food item at the recommended quantity.'),
   proteinGrams: z.number().optional().describe('Protein in grams for this food item.'),
   carbsGrams: z.number().optional().describe('Carbohydrates in grams for this food item.'),
   fatGrams: z.number().optional().describe('Fat in grams for this food item.'),
@@ -32,11 +33,11 @@ const DailyMealPlanSchema = z.object({
 
 const GeneratePersonalizedMealPlanInputSchema = z.object({
   personalDetails: z.object({
-    gender: z.enum(['male', 'female', 'other']).describe('User\'s gender.'),
-    age: z.number().min(0).max(120).describe('User\'s age in years.'),
-    heightCm: z.number().min(50).max(250).describe('User\'s height in centimeters.'),
-    weightKg: z.number().min(20).max(300).describe('User\'s weight in kilograms.'),
-    activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe('User\'s physical activity level.'),
+    gender: z.enum(['male', 'female', 'other']).describe("User's gender."),
+    age: z.number().min(0).max(120).describe("User's age in years."),
+    heightCm: z.number().min(50).max(250).describe("User's height in centimeters."),
+    weightKg: z.number().min(20).max(300).describe("User's weight in kilograms."),
+    activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe("User's physical activity level."),
   }).describe('Personal details of the user.'),
   dietaryGoals: z.object({
     goal: z.enum(['lose weight', 'maintain weight', 'gain weight', 'eat healthier']).describe('Overall dietary goal.'),
@@ -50,18 +51,18 @@ const GeneratePersonalizedMealPlanInputSchema = z.object({
       iron: z.number().min(0).optional().describe('Optional: Target daily Iron intake in mg.'),
       vitaminA: z.number().min(0).optional().describe('Optional: Target daily Vitamin A intake in mcg.'),
     }).optional().describe('Optional: Target daily micronutrient intake.'),
-  }).describe('User\'s dietary goals.'),
-  dietaryPreferences: z.array(z.string()).describe('List of user\'s dietary preferences (e.g., Vegan, Halal).'),
+  }).describe("User's dietary goals."),
+  dietaryPreferences: z.array(z.string()).describe("List of user's dietary preferences (e.g., Vegan, Halal)."),
   recentNutrientIntake: z.object({
     averageDailyCalories: z.number().describe('Average daily calorie intake.'),
     averageDailyProtein: z.number().describe('Average daily protein intake in grams.'),
     averageDailyCarbs: z.number().describe('Average daily carbohydrate intake in grams.'),
-    averageDailyFat: z.number().describe('Average daily fat intake in grams.'),
+    averageDailyFat: z.number().describe('Average daily fat in grams.'),
     averageDailyIron: z.number().describe('Average daily Iron intake in mg.'),
     averageDailyVitaminA: z.number().describe('Average daily Vitamin A intake in mcg.'),
     recentDeficiencies: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient deficiencies.'),
     recentExcesses: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient excesses.'),
-  }).describe('User\'s recent average daily nutrient intake.'),
+  }).describe("User's recent average daily nutrient intake."),
 });
 export type GeneratePersonalizedMealPlanInput = z.infer<typeof GeneratePersonalizedMealPlanInputSchema>;
 
@@ -125,14 +126,14 @@ Recent Excesses Noted: {{#each recentNutrientIntake.recentExcesses}}{{{this}}}{{
 --- Instructions for Meal Plan Generation ---
 1.  Generate a meal plan for 7 days (Monday to Sunday).
 2.  For each day, include meals for 'Breakfast', 'Lunch', 'Dinner', and 'Snacks'.
-3.  Each meal should list specific food items, their estimated calories, and optionally protein, carbs, and fat in grams.
-4.  Ensure the plan aligns with the user's `Overall Goal` and any specified `Target Daily Calories`, `Target Macronutrient Distribution`, and `Target Micronutrients`.
-5.  Incorporate `Dietary Preferences`. For example, if 'Vegan' is selected, all meals must be vegan.
-6.  Address any `Recent Deficiencies` by recommending foods rich in those nutrients. Avoid foods causing `Recent Excesses`.
+3.  Each meal should list specific food items, their recommended quantity in grams, their estimated calories, and optionally protein, carbs, and fat in grams.
+4.  Ensure the plan aligns with the user's \`Overall Goal\` and any specified \`Target Daily Calories\`, \`Target Macronutrient Distribution\`, and \`Target Micronutrients\`.
+5.  Incorporate \`Dietary Preferences\`. For example, if 'Vegan' is selected, all meals must be vegan.
+6.  Address any \`Recent Deficiencies\` by recommending foods rich in those nutrients. Avoid foods causing \`Recent Excesses\`.
 7.  Prioritize healthy, whole foods.
 8.  Include a variety of Ghanaian foods and dishes where appropriate and culturally relevant, while still meeting nutritional requirements.
 9.  The daily total calories should be consistent with the user's goals and details, distributed across the meals.
-10. Provide a concise `planSummary` explaining how the meal plan meets the user's specific needs and goals.
+10. Provide a concise \`planSummary\` explaining how the meal plan meets the user's specific needs and goals.
 
 Generate the output in JSON format according to the provided schema.`,
 });

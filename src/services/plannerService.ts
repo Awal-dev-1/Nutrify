@@ -51,6 +51,44 @@ export const addPlannedMeal = (
   });
 };
 
+export const addGeneratedMealToPlan = (
+  db: Firestore,
+  userId: string,
+  day: string,
+  mealType: string,
+  mealItem: {
+    foodName: string;
+    quantityGrams: number;
+    calories: number;
+    proteinGrams?: number;
+    carbsGrams?: number;
+    fatGrams?: number;
+  }
+) => {
+  const plannedMealsColRef = collection(db, 'users', userId, 'plannedMeals');
+  
+  const newPlannedMeal = {
+    foodId: mealItem.foodName,
+    foodName: mealItem.foodName,
+    day,
+    mealType,
+    quantity: mealItem.quantityGrams,
+    calories: mealItem.calories,
+    protein: mealItem.proteinGrams || 0,
+    carbs: mealItem.carbsGrams || 0,
+    fat: mealItem.fatGrams || 0,
+    createdAt: serverTimestamp(),
+  };
+
+  addDoc(plannedMealsColRef, newPlannedMeal).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: plannedMealsColRef.path,
+      operation: 'create',
+      requestResourceData: newPlannedMeal,
+    }));
+  });
+};
+
 // Update a planned meal's quantity and nutrients
 export const updatePlannedMeal = (
   db: Firestore,
@@ -86,22 +124,29 @@ export const deletePlannedMeal = (db: Firestore, userId: string, mealId: string)
 };
 
 // Clear all planned meals for a user
-export const clearPlan = async (db: Firestore, userId: string) => {
+export const clearPlan = (db: Firestore, userId: string) => {
   const plannedMealsColRef = collection(db, 'users', userId, 'plannedMeals');
   const q = query(plannedMealsColRef);
-  const querySnapshot = await getDocs(q);
   
-  if (querySnapshot.empty) return;
+  // Non-blocking clear
+  getDocs(q).then(querySnapshot => {
+    if (querySnapshot.empty) return;
 
-  const batch = writeBatch(db);
-  querySnapshot.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-  
-  batch.commit().catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
+    const batch = writeBatch(db);
+    querySnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    
+    batch.commit().catch(error => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: plannedMealsColRef.path,
+        operation: 'delete', // Batch delete is a series of deletes
+      }));
+    });
+  }).catch(error => {
+     errorEmitter.emit('permission-error', new FirestorePermissionError({
       path: plannedMealsColRef.path,
-      operation: 'delete', // Batch delete is a series of deletes
+      operation: 'list',
     }));
   });
 };
