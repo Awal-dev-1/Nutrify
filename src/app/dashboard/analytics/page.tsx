@@ -251,19 +251,40 @@ const AnalyticsPage = () => {
         </Card>
          <Card>
             <CardHeader>
-                <CardTitle>Micronutrient Trends</CardTitle>
-                <CardDescription>Daily iron and Vitamin A intake.</CardDescription>
+                <CardTitle>Mineral & Salt Trends</CardTitle>
+                <CardDescription>Daily iron, sodium, and calcium intake.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'MMM d')} fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis yAxisId="left" unit="mg" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis unit="mg" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')} />
+                        <Legend />
+                        <Line type="monotone" dataKey="iron" name="Iron (mg)" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="sodium" name="Sodium (mg)" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="calcium" name="Calcium (mg)" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                    </LineChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Fiber, Sugar & Vitamin A Trends</CardTitle>
+                <CardDescription>Daily fiber, sugar, and Vitamin A intake.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'MMM d')} fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis yAxisId="left" unit="g" fontSize={12} tickLine={false} axisLine={false} />
                         <YAxis yAxisId="right" orientation="right" unit="µg" fontSize={12} tickLine={false} axisLine={false} />
                         <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')} />
                         <Legend />
-                        <Line yAxisId="left" type="monotone" dataKey="iron" name="Iron (mg)" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
+                        <Line yAxisId="left" type="monotone" dataKey="fiber" name="Fiber (g)" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                        <Line yAxisId="left" type="monotone" dataKey="sugar" name="Sugar (g)" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
                         <Line yAxisId="right" type="monotone" dataKey="vitaminA" name="Vitamin A (µg)" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
                     </LineChart>
                 </ResponsiveContainer>
@@ -376,6 +397,7 @@ const AnalyticsSkeleton = () => (
      <div className="grid lg:grid-cols-2 gap-4">
         <Skeleton className="h-80" />
         <Skeleton className="h-80" />
+        <Skeleton className="h-80" />
     </div>
      <div className="grid lg:grid-cols-3 gap-4">
         <Skeleton className="h-60" />
@@ -386,3 +408,5 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
+
+    

@@ -28,6 +28,9 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
       averageIron: 0,
       averageVitaminA: 0,
       averageSodium: 0,
+      averageFiber: 0,
+      averageSugar: 0,
+      averageCalcium: 0,
       goalAchievementRate: 0,
       highestCalorieDay: null,
       lowestCalorieDay: null,
@@ -44,12 +47,15 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
       acc.iron += day.iron || 0;
       acc.vitaminA += day.vitaminA || 0;
       acc.sodium += day.sodium || 0;
+      acc.fiber += day.fiber || 0;
+      acc.sugar += day.sugar || 0;
+      acc.calcium += day.calcium || 0;
       if (day.calories > 0 && day.calories <= goal) {
         acc.daysGoalMet++;
       }
       return acc;
     },
-    { calories: 0, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0, sodium: 0, daysGoalMet: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0, sodium: 0, fiber: 0, sugar: 0, calcium: 0, daysGoalMet: 0 }
   );
 
   const nonZeroDays = data.filter(d => d.calories > 0);
@@ -68,6 +74,9 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
     averageIron: total.iron / data.length,
     averageVitaminA: total.vitaminA / data.length,
     averageSodium: total.sodium / data.length,
+    averageFiber: total.fiber / data.length,
+    averageSugar: total.sugar / data.length,
+    averageCalcium: total.calcium / data.length,
     goalAchievementRate: (total.daysGoalMet / data.length) * 100,
     highestCalorieDay,
     lowestCalorieDay,
@@ -164,6 +173,9 @@ export async function getAnalyticsData(
       iron: log?.totalIron || 0,
       vitaminA: log?.totalVitaminA || 0,
       sodium: log?.totalSodium || 0,
+      fiber: log?.totalFiber || 0,
+      sugar: log?.totalSugar || 0,
+      calcium: log?.totalCalcium || 0,
     });
   }
 
@@ -189,3 +201,5 @@ export async function getAnalyticsData(
     goals,
   };
 }
+
+    

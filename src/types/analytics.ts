@@ -1,4 +1,5 @@
 
+
 export type LoggedFoodItem = {
     logId: string;
     foodId: string;
@@ -49,6 +50,9 @@ export type AnalyticsData = {
     iron: number;
     vitaminA: number;
     sodium: number;
+    fiber: number;
+    sugar: number;
+    calcium: number;
 };
   
 export type AnalyticsSummary = {
@@ -59,9 +63,13 @@ export type AnalyticsSummary = {
     averageIron: number;
     averageVitaminA: number;
     averageSodium: number;
+    averageFiber: number;
+    averageSugar: number;
+    averageCalcium: number;
     goalAchievementRate: number;
     highestCalorieDay: AnalyticsData | null;
     lowestCalorieDay: AnalyticsData | null;
     consistencyScore: number;
 };
 
+    
