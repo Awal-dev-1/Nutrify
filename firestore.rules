@@ -35,62 +35,48 @@ service cloud.firestore {
     // Helper Functions
     // -------------------------------------------------------------------------
 
-    /**
-     * Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the authenticated user is the owner of the document based on the path.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * Checks if the document exists and the user is the owner.
-     * Used for state-changing operations like update and delete.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
+    // Validates that critical, immutable fields are not changed during an update.
+    function areImmutableFieldsUnchanged() {
+      return request.resource.data.id == resource.data.id
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.createdAt == resource.data.createdAt;
     }
 
-    /**
-     * Validates that the core identifying fields of a new user profile
-     * match the user's authentication context.
-     * In Prototyping Mode, we only validate authorization-critical fields.
-     */
-    function isValidUserProfileCreate(userId) {
-      let data = request.resource.data;
-      return data.id == userId && data.email == request.auth.token.email;
-    }
+    // Performs basic validation on the data being written in an update.
+    function isValidUserUpdate() {
+        let data = request.resource.data;
+        let profile = data.get('profile', {});
+        let goals = data.get('goals', {});
 
-    /**
-     * Ensures critical, immutable fields of a user profile are not changed on update.
-     */
-    function isUserProfileImmutable() {
-      let data = request.resource.data;
-      return data.id == resource.data.id && data.email == resource.data.email;
+        // Validate name exists and is a non-empty string.
+        let isNameValid = data.name is string && data.name.size() > 1;
+        
+        // Validate age if it's being updated.
+        let isAgeValid = !profile.keys().hasAny(['age']) || (profile.age is number && profile.age > 0);
+
+        // Validate calorie goal if it's being updated.
+        let isCalorieGoalValid = !goals.keys().hasAny(['dailyCalorieGoal']) || (goals.dailyCalorieGoal is number && goals.dailyCalorieGoal > 0);
+        
+        return isNameValid && isAgeValid && isCalorieGoalValid;
     }
 
     // -------------------------------------------------------------------------
     // Collection Rules
     // -------------------------------------------------------------------------
 
-    /**
-     * @description Manages user profiles. Users can create, read, and update their
-     *              own profile, but cannot read other users' profiles or list the
-     *              collection to prevent user enumeration.
-     * @path /users/{userId}
-     */
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get, delete: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && isValidUserProfileCreate(userId);
-      allow update: if isExistingOwner(userId) && isUserProfileImmutable();
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && isValidUserUpdate();
 
       /**
        * @description Manages a user's private daily nutrition logs. Users have full
@@ -127,11 +113,7 @@ service cloud.firestore {
      * @path /foodItems/{foodItemId}
      */
     match /foodItems/{foodItemId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      // Allow create/update so the client can cache AI-generated food details
-      // for the "View Recipe" feature. Deletes are disallowed to prevent data loss.
-      allow create, update: if isSignedIn();
+      allow get, list, create, update: if isSignedIn();
       allow delete: if false;
     }
   }
