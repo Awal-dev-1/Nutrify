@@ -25,6 +25,9 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
       averageProtein: 0,
       averageCarbs: 0,
       averageFat: 0,
+      averageIron: 0,
+      averageVitaminA: 0,
+      averageSodium: 0,
       goalAchievementRate: 0,
       highestCalorieDay: null,
       lowestCalorieDay: null,
@@ -38,12 +41,15 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
       acc.protein += day.protein;
       acc.carbs += day.carbs;
       acc.fat += day.fat;
+      acc.iron += day.iron || 0;
+      acc.vitaminA += day.vitaminA || 0;
+      acc.sodium += day.sodium || 0;
       if (day.calories > 0 && day.calories <= goal) {
         acc.daysGoalMet++;
       }
       return acc;
     },
-    { calories: 0, protein: 0, carbs: 0, fat: 0, daysGoalMet: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0, sodium: 0, daysGoalMet: 0 }
   );
 
   const nonZeroDays = data.filter(d => d.calories > 0);
@@ -59,6 +65,9 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
     averageProtein: total.protein / data.length,
     averageCarbs: total.carbs / data.length,
     averageFat: total.fat / data.length,
+    averageIron: total.iron / data.length,
+    averageVitaminA: total.vitaminA / data.length,
+    averageSodium: total.sodium / data.length,
     goalAchievementRate: (total.daysGoalMet / data.length) * 100,
     highestCalorieDay,
     lowestCalorieDay,
@@ -69,7 +78,7 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
 /**
  * Generates simple rule-based insights from the summary data.
  */
-function generateInsights(summary: AnalyticsSummary, goal: number, period: number): string[] {
+function generateInsights(summary: AnalyticsSummary, goals: any, period: number): string[] {
   const insights: string[] = [];
 
   if (summary.goalAchievementRate >= 80) {
@@ -80,10 +89,14 @@ function generateInsights(summary: AnalyticsSummary, goal: number, period: numbe
     insights.push(`Let's focus on consistency. You met your calorie goal ${summary.goalAchievementRate.toFixed(0)}% of the time.`);
   }
 
-  if (summary.averageCalories > goal * 1.1) {
+  if (summary.averageCalories > goals.calories * 1.1) {
     insights.push(`Your average calorie intake of ${summary.averageCalories.toFixed(0)} kcal is a bit above your goal.`);
-  } else if (summary.averageCalories < goal * 0.9) {
+  } else if (summary.averageCalories < goals.calories * 0.9) {
     insights.push(`Your average calorie intake of ${summary.averageCalories.toFixed(0)} kcal is slightly below your goal. Make sure you're eating enough!`);
+  }
+
+  if (summary.averageIron < goals.iron * 0.7) {
+    insights.push(`You seem to be low on Iron. Consider iron-rich foods like spinach or lentils.`);
   }
 
   if (summary.consistencyScore >= 85) {
@@ -117,6 +130,9 @@ export async function getAnalyticsData(
   const proteinGoal = (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4;
   const carbsGoal = (calorieGoal * ((userProfile.goals?.carbsPercentageGoal || 40) / 100)) / 4;
   const fatGoal = (calorieGoal * ((userProfile.goals?.fatPercentageGoal || 30) / 100)) / 9;
+  const ironGoal = userProfile.goals?.ironTargetMg || 18;
+  const vitaminAGoal = userProfile.goals?.vitaminATargetMcg || 900;
+  const sodiumGoal = 2300; // General recommendation
 
 
   // 2. Fetch daily logs for the period
@@ -145,23 +161,31 @@ export async function getAnalyticsData(
       protein: log?.totalProtein || 0,
       carbs: log?.totalCarbs || 0,
       fat: log?.totalFat || 0,
+      iron: log?.totalIron || 0,
+      vitaminA: log?.totalVitaminA || 0,
+      sodium: log?.totalSodium || 0,
     });
   }
 
+  const goals = {
+    calories: calorieGoal,
+    protein: proteinGoal,
+    carbs: carbsGoal,
+    fat: fatGoal,
+    iron: ironGoal,
+    vitaminA: vitaminAGoal,
+    sodium: sodiumGoal,
+  };
+
   // 4. Calculate summary and insights
   const summary = calculateSummary(chartData, calorieGoal);
-  const insights = generateInsights(summary, calorieGoal, days);
+  const insights = generateInsights(summary, goals, days);
 
   // 5. Return structured data
   return {
     chartData,
     summary,
     insights,
-    goals: {
-        calories: calorieGoal,
-        protein: proteinGoal,
-        carbs: carbsGoal,
-        fat: fatGoal,
-    }
+    goals,
   };
 }

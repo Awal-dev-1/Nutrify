@@ -8,6 +8,9 @@ export type LoggedFoodItem = {
     protein: number;
     carbs: number;
     fat: number;
+    iron: number;
+    vitaminA: number;
+    sodium: number;
     imageUrl: string;
 };
   
@@ -17,6 +20,9 @@ export type DailyLog = {
     totalProtein: number;
     totalCarbs: number;
     totalFat: number;
+    totalIron: number;
+    totalVitaminA: number;
+    totalSodium: number;
     waterIntake: number;
     meals: {
       Breakfast: LoggedFoodItem[];
@@ -33,6 +39,9 @@ export type AnalyticsData = {
     protein: number;
     carbs: number;
     fat: number;
+    iron: number;
+    vitaminA: number;
+    sodium: number;
 };
   
 export type AnalyticsSummary = {
@@ -40,6 +49,9 @@ export type AnalyticsSummary = {
     averageProtein: number;
     averageCarbs: number;
     averageFat: number;
+    averageIron: number;
+    averageVitaminA: number;
+    averageSodium: number;
     goalAchievementRate: number;
     highestCalorieDay: AnalyticsData | null;
     lowestCalorieDay: AnalyticsData | null;

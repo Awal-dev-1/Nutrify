@@ -34,7 +34,7 @@ const searchFoodsPrompt = ai.definePrompt({
   name: 'searchFoodsV3Prompt',
   input: { schema: SearchFoodsInputSchema },
   output: { schema: SearchFoodsOutputSchema },
-  prompt: `You are a world-class nutritional expert and food historian. Your task is to provide highly accurate and specific information about the food requested by the user.
+  prompt: `You are a world-class nutritional expert and food historian. Your task is to provide highly accurate and specific nutritional information for the food requested by the user, per 100g portion.
 
 User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
@@ -44,12 +44,13 @@ CRITICAL INSTRUCTIONS:
 3.  **Detailed Recipe Generation**: For the \`detailedRecipe\` field, you must provide a complete, practical recipe.
     -   \`ingredients\`: List every ingredient with precise measurements (e.g., "1 cup (240ml) water", "150g chicken breast").
     -   \`instructions\`: Provide clear, step-by-step instructions for preparation.
+4.  **Nutrient Data per 100g**: All calorie, macronutrient, and micronutrient data MUST be for a 100g portion of the food.
 
 For each food item that EXACTLY matches the query, you must provide:
 - foodName: The specific name of the identified food.
-- calories: An estimated calorie count for a standard portion.
-- macronutrientBreakdown: A breakdown of protein, carbohydrates, and fat in grams.
-- micronutrientBreakdown: A comprehensive list of key vitamins and minerals with amounts and units (e.g., "Iron: 10mg", "Vitamin C: 500IU", "2.4mcg").
+- calories: Estimated calorie count per 100g.
+- macronutrientBreakdown: An object with protein, carbohydrates, and fat in grams per 100g.
+- micronutrientBreakdown: An object containing key vitamins and minerals per 100g (e.g., Iron in mg, Vitamin A in mcg, Sodium in mg, Fiber in g).
 - detailedRecipe: A complete recipe as described in the critical instructions.
 - foodHistory: A short, interesting, and verifiable fact or history about the food.
 - healthAnalysis: A personalized analysis based on the user's goal. Explain if the food is beneficial or detrimental for their specific goal and why.

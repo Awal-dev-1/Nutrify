@@ -39,6 +39,9 @@ import {
   AlertCircle,
   Wheat,
   Droplets,
+  Shield,
+  Eye,
+  Wind,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -54,7 +57,7 @@ const AnalyticsPage = () => {
     chartData: AnalyticsData[];
     summary: AnalyticsSummary;
     insights: string[];
-    goals: { calories: number; protein: number; carbs: number; fat: number };
+    goals: { calories: number; protein: number; carbs: number; fat: number; iron: number; vitaminA: number; sodium: number; };
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -206,6 +209,30 @@ const AnalyticsPage = () => {
         />
       </div>
 
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Avg. Daily Iron"
+          value={summary.averageIron.toFixed(1)}
+          unit="mg"
+          icon={<Shield />}
+          change={((summary.averageIron - goals.iron) / goals.iron) * 100}
+        />
+        <StatCard
+          title="Avg. Daily Vitamin A"
+          value={summary.averageVitaminA.toFixed(0)}
+          unit="µg"
+          icon={<Eye />}
+          change={((summary.averageVitaminA - goals.vitaminA) / goals.vitaminA) * 100}
+        />
+        <StatCard
+          title="Avg. Daily Sodium"
+          value={summary.averageSodium.toFixed(0)}
+          unit="mg"
+          icon={<Wind />}
+          change={((summary.averageSodium - goals.sodium) / goals.sodium) * 100}
+        />
+      </div>
+
       {/* Main Chart */}
       <Card>
         <CardHeader>
@@ -277,6 +304,39 @@ const AnalyticsPage = () => {
                     <Line type="monotone" dataKey="protein" name="Protein" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="carbs" name="Carbs" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="fat" name="Fat" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>Micronutrient Trends</CardTitle>
+            <CardDescription>Your daily iron and Vitamin A intake over the selected period.</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                        dataKey="date"
+                        tickFormatter={(str) => format(new Date(str), 'MMM d')}
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                    />
+                    <YAxis yAxisId="left" unit="mg" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="right" orientation="right" unit="µg" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: 'hsl(var(--background))',
+                            border: '1px solid hsl(var(--border))',
+                        }}
+                        labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')}
+                    />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="iron" name="Iron (mg)" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
+                    <Line yAxisId="right" type="monotone" dataKey="vitaminA" name="Vitamin A (µg)" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
                 </LineChart>
             </ResponsiveContainer>
         </CardContent>
@@ -375,6 +435,13 @@ const AnalyticsSkeleton = () => (
       <Skeleton className="h-28" />
       <Skeleton className="h-28" />
     </div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
+       <Skeleton className="h-28" />
+    </div>
+    <Skeleton className="h-[420px]" />
     <Skeleton className="h-[420px]" />
     <Skeleton className="h-[420px]" />
      <div className="grid gap-4 md:grid-cols-2">

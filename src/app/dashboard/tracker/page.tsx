@@ -102,6 +102,9 @@ export default function DailyTrackerPage() {
       totalProtein: 0, 
       totalCarbs: 0, 
       totalFat: 0,
+      totalIron: 0,
+      totalVitaminA: 0,
+      totalSodium: 0,
       waterIntake: 0,
     };
   }, [dailyLog]);
@@ -114,8 +117,11 @@ export default function DailyTrackerPage() {
         acc.totalProtein += item.protein;
         acc.totalCarbs += item.carbs;
         acc.totalFat += item.fat;
+        acc.totalIron += item.iron || 0;
+        acc.totalVitaminA += item.vitaminA || 0;
+        acc.totalSodium += item.sodium || 0;
         return acc;
-    }, { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 });
+    }, { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalIron: 0, totalVitaminA: 0, totalSodium: 0 });
 
     const newLog: DailyLog = {
       date: dateKey,
@@ -135,10 +141,13 @@ export default function DailyTrackerPage() {
       foodId: foodData.foodName, // Using name as ID for AI-sourced items
       name: foodData.foodName,
       quantity,
-      calories: foodData.calories * ratio,
-      protein: foodData.macronutrientBreakdown.protein * ratio,
-      carbs: foodData.macronutrientBreakdown.carbohydrates * ratio,
-      fat: foodData.macronutrientBreakdown.fat * ratio,
+      calories: (foodData.calories || 0) * ratio,
+      protein: (foodData.macronutrientBreakdown.protein || 0) * ratio,
+      carbs: (foodData.macronutrientBreakdown.carbohydrates || 0) * ratio,
+      fat: (foodData.macronutrientBreakdown.fat || 0) * ratio,
+      iron: (foodData.micronutrientBreakdown?.iron || 0) * ratio,
+      vitaminA: (foodData.micronutrientBreakdown?.vitaminA || 0) * ratio,
+      sodium: (foodData.micronutrientBreakdown?.sodium || 0) * ratio,
       imageUrl: `https://picsum.photos/seed/${encodeURIComponent(foodData.foodName)}/100/100`,
     };
     
@@ -171,6 +180,9 @@ export default function DailyTrackerPage() {
                     protein: originalItem.protein * ratio,
                     carbs: originalItem.carbs * ratio,
                     fat: originalItem.fat * ratio,
+                    iron: (originalItem.iron || 0) * ratio,
+                    vitaminA: (originalItem.vitaminA || 0) * ratio,
+                    sodium: (originalItem.sodium || 0) * ratio,
                 };
             }
             break;
@@ -226,7 +238,8 @@ export default function DailyTrackerPage() {
             date: dateKey,
             meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
             waterIntake: 0,
-            totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0
+            totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
+            totalIron: 0, totalVitaminA: 0, totalSodium: 0,
         };
         setDoc(dailyLogRef, emptyLog, { merge: false }); // Overwrite completely
     }
