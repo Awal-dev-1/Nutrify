@@ -76,7 +76,6 @@ const AnalyticsPage = () => {
           setData(result);
         })
         .catch((err) => {
-          console.error('Failed to get analytics data:', err);
           setError(err.message || 'Could not load analytics data.');
         })
         .finally(() => {
@@ -408,5 +407,3 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
-
-    

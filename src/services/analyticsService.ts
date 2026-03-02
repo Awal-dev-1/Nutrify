@@ -14,6 +14,8 @@ import {
 import { format, subDays } from 'date-fns';
 import type { UserProfile } from '@/firebase';
 import type { DailyLog, AnalyticsData, AnalyticsSummary } from '@/types/analytics';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
  * Calculates summary metrics from a given array of analytics data.
@@ -130,7 +132,17 @@ export async function getAnalyticsData(
 
   // 1. Fetch user goals
   const userDocRef = doc(db, 'users', userId);
-  const userDocSnap = await getDoc(userDocRef);
+  let userDocSnap;
+  try {
+    userDocSnap = await getDoc(userDocRef);
+  } catch (error) {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: userDocRef.path,
+      operation: 'get',
+    }));
+    throw error;
+  }
+  
   if (!userDocSnap.exists()) {
     throw new Error('User profile not found.');
   }
@@ -150,7 +162,17 @@ export async function getAnalyticsData(
     where('__name__', '>=', startDate),
     orderBy('__name__', 'asc')
   );
-  const querySnapshot = await getDocs(logsQuery);
+  let querySnapshot;
+  try {
+    querySnapshot = await getDocs(logsQuery);
+  } catch (error) {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: `users/${userId}/dailyLogs`,
+      operation: 'list',
+    }));
+    throw error;
+  }
+
   const logsByDate = new Map<string, DailyLog>();
   querySnapshot.forEach((doc) => {
     logsByDate.set(doc.id, doc.data() as DailyLog);
@@ -201,5 +223,3 @@ export async function getAnalyticsData(
     goals,
   };
 }
-
-    

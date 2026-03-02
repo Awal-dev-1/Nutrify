@@ -45,7 +45,6 @@ const OverviewPage = () => {
         .then(data => {
           setWeeklyData(data.chartData);
         })
-        .catch(console.error)
         .finally(() => setIsWeeklyLoading(false));
     }
   }, [user, db]);
