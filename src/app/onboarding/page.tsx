@@ -40,7 +40,7 @@ export default function OnboardingPage() {
     setStep((prev) => prev - 1);
   };
 
-  const handleFinish = async () => {
+  const handleFinish = () => {
     if (!user || !db) {
         toast({
             variant: "destructive",
@@ -50,22 +50,16 @@ export default function OnboardingPage() {
         return;
     };
     setStep(totalSteps + 1); // Loading step
-    try {
-        await completeOnboarding(db, user.uid, formData as any);
-        toast({
-            title: "Profile Created!",
-            description: "Welcome to Nutrify! Your personalized dashboard is ready."
-        });
-        router.push("/dashboard/overview");
-    } catch (error) {
-        console.error("Failed to complete onboarding:", error);
-        toast({
-            variant: "destructive",
-            title: "Onboarding Failed",
-            description: "There was a problem creating your profile. Please try again."
-        });
-        setStep(step - 1); // Go back to summary step
-    }
+    
+    // Non-blocking call
+    completeOnboarding(db, user.uid, formData as any);
+    
+    // Optimistic UI updates
+    toast({
+        title: "Profile Created!",
+        description: "Welcome to Nutrify! Your personalized dashboard is ready."
+    });
+    router.push("/dashboard/overview");
   };
 
   const stepsComponents = [

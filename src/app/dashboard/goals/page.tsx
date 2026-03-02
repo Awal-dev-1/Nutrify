@@ -137,32 +137,26 @@ export default function GoalsPage() {
     })
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!user || !db) return;
     setIsSaving(true);
-    try {
-      const newGoals: UserGoals = {
-        dailyCalorieGoal: calories,
-        proteinPercentageGoal: macros.protein,
-        carbsPercentageGoal: macros.carbs,
-        fatPercentageGoal: macros.fat,
-      };
-      await updateUserGoals(db, user.uid, newGoals);
-      setInitialState({calories, macros});
-      toast({
-        title: 'Goals Saved!',
-        description: 'Your nutritional targets have been updated.',
-      });
-    } catch (err) {
-      console.error(err);
-      toast({
-        variant: 'destructive',
-        title: 'Save Failed',
-        description: 'Could not update your goals. Please try again.',
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    
+    const newGoals: UserGoals = {
+      dailyCalorieGoal: calories,
+      proteinPercentageGoal: macros.protein,
+      carbsPercentageGoal: macros.carbs,
+      fatPercentageGoal: macros.fat,
+    };
+    
+    updateUserGoals(db, user.uid, newGoals);
+    
+    setInitialState({calories, macros});
+    toast({
+      title: 'Goals Saved!',
+      description: 'Your nutritional targets have been updated.',
+    });
+    
+    setIsSaving(false);
   };
 
   const hasChanges = useMemo(() => {
@@ -301,7 +295,7 @@ export default function GoalsPage() {
             <RefreshCw className="mr-2 h-4 w-4" /> Reset to Recommended
         </Button>
         <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg">
-            {isSaving ? <Save className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
             Save Goals
         </Button>
       </CardFooter>
@@ -351,29 +345,3 @@ const GoalsSkeleton = () => (
         </div>
     </div>
 )
-```</content>
-  </change>
-  <change>
-    <file>src/services/goalsService.ts</file>
-    <content><![CDATA['use client';
-
-import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
-
-export interface UserGoals {
-  dailyCalorieGoal: number;
-  proteinPercentageGoal: number;
-  carbsPercentageGoal: number;
-  fatPercentageGoal: number;
-}
-
-export const updateUserGoals = async (
-  db: Firestore,
-  userId: string,
-  newGoals: UserGoals
-) => {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    goals: newGoals,
-    updatedAt: serverTimestamp()
-  });
-};

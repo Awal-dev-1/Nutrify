@@ -81,8 +81,12 @@ export default function SettingsPage() {
     if (!user || !db || !auth.currentUser) return;
     setIsSaving(true);
     try {
-      await updateUserDocument(db, user.uid, { name: displayName });
+      // The auth update can fail and should be awaited
       await updateProfile(auth.currentUser, { displayName });
+
+      // The Firestore update is non-blocking
+      updateUserDocument(db, user.uid, { name: displayName });
+      
       toast({ title: 'Profile Saved!', description: 'Your display name has been updated.' });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error', description: error.message });
@@ -91,37 +95,27 @@ export default function SettingsPage() {
     }
   };
 
-  const handlePreferencesSave = async () => {
+  const handlePreferencesSave = () => {
     if (!user || !db) return;
     setIsSaving(true);
-    try {
-        const prefs = {
-            'preferences.languagePreference': language,
-            'preferences.unitPreference': units,
-        };
-        await updateUserDocument(db, user.uid, prefs);
-        toast({ title: 'Preferences Saved!' });
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Error saving preferences', description: error.message });
-    } finally {
-        setIsSaving(false);
-    }
+    const prefs = {
+        'preferences.languagePreference': language,
+        'preferences.unitPreference': units,
+    };
+    updateUserDocument(db, user.uid, prefs);
+    toast({ title: 'Preferences Saved!' });
+    setIsSaving(false);
   };
 
-  const handleNotificationsSave = async () => {
+  const handleNotificationsSave = () => {
     if (!user || !db) return;
     setIsSaving(true);
-    try {
-        const prefs = {
-            'preferences.reminderEnabled': dailyReminder,
-        };
-        await updateUserDocument(db, user.uid, prefs);
-        toast({ title: 'Notification Preferences Saved!' });
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Error saving notifications', description: error.message });
-    } finally {
-        setIsSaving(false);
-    }
+    const prefs = {
+        'preferences.reminderEnabled': dailyReminder,
+    };
+    updateUserDocument(db, user.uid, prefs);
+    toast({ title: 'Notification Preferences Saved!' });
+    setIsSaving(false);
   };
 
   const handlePasswordReset = async () => {
