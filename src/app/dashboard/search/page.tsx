@@ -334,6 +334,9 @@ function PortionControlCard({
       protein: (foodItem.macronutrientBreakdown.protein || 0) * ratio,
       carbs: (foodItem.macronutrientBreakdown.carbohydrates || 0) * ratio,
       fat: (foodItem.macronutrientBreakdown.fat || 0) * ratio,
+      micros: Object.fromEntries(
+        Object.entries(foodItem.micronutrientBreakdown || {}).map(([key, value]) => [key, (value || 0) * ratio])
+      ),
     };
   }, [foodItem, portion]);
 
@@ -350,41 +353,86 @@ function PortionControlCard({
       <CardContent className="grid md:grid-cols-2 gap-6">
         {/* Left side: Calculated Nutrition & Details */}
         <div className="space-y-6">
-          {/* Calculated Nutrition */}
           {calculatedNutrients && (
-            <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
-              <h4 className="font-semibold text-sm mb-2 text-primary">
-                Nutrition for {portion}g
-              </h4>
-              <div className="flex justify-around text-center text-sm">
-                <div>
-                  <Flame className="mx-auto h-4 w-4 text-orange-500" />
-                  <p className="font-bold">
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
+                <h4 className="font-semibold text-sm text-primary">
+                  Total Calories for {portion}g
+                </h4>
+                <div className="flex items-baseline gap-2">
+                  <p className="font-bold text-3xl text-foreground">
                     {calculatedNutrients.calories.toFixed(0)}
                   </p>
-                  <p className="text-xs">kcal</p>
+                  <p className="text-lg text-muted-foreground">kcal</p>
                 </div>
-                <div>
-                  <Beef className="mx-auto h-4 w-4 text-red-500" />
-                  <p className="font-bold">
-                    {calculatedNutrients.protein.toFixed(1)}g
-                  </p>
-                  <p className="text-xs">Protein</p>
-                </div>
-                <div>
-                  <Wheat className="mx-auto h-4 w-4 text-yellow-600" />
-                  <p className="font-bold">
-                    {calculatedNutrients.carbs.toFixed(1)}g
-                  </p>
-                  <p className="text-xs">Carbs</p>
-                </div>
-                <div>
-                  <Droplets className="mx-auto h-4 w-4 text-blue-500" />
-                  <p className="font-bold">
-                    {calculatedNutrients.fat.toFixed(1)}g
-                  </p>
-                  <p className="text-xs">Fat</p>
-                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-base">Macronutrients</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0 grid grid-cols-3 gap-1 text-center">
+                    <div className="space-y-1">
+                      <Beef className="mx-auto h-4 w-4 text-red-500" />
+                      <p className="font-bold text-base">
+                        {calculatedNutrients.protein.toFixed(1)}g
+                      </p>
+                      <p className="text-xs text-muted-foreground">Protein</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Wheat className="mx-auto h-4 w-4 text-yellow-600" />
+                      <p className="font-bold text-base">
+                        {calculatedNutrients.carbs.toFixed(1)}g
+                      </p>
+                      <p className="text-xs text-muted-foreground">Carbs</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Droplets className="mx-auto h-4 w-4 text-blue-500" />
+                      <p className="font-bold text-base">
+                        {calculatedNutrients.fat.toFixed(1)}g
+                      </p>
+                      <p className="text-xs text-muted-foreground">Fat</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-base">Micronutrients</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <ul className="text-sm space-y-1">
+                      {Object.entries(calculatedNutrients.micros)
+                        .filter(([, value]) => value && (value as number) > 0)
+                        .map(([key, value]) => {
+                          const keyToLabel: Record<string, string> = {
+                            fiber: 'Fiber',
+                            sugar: 'Sugar',
+                            iron: 'Iron',
+                            calcium: 'Calcium',
+                            vitaminA: 'Vit. A',
+                            vitaminC: 'Vit. C',
+                            sodium: 'Sodium',
+                          };
+                          const keyToUnit: Record<string, string> = {
+                            fiber: 'g',
+                            sugar: 'g',
+                            iron: 'mg',
+                            calcium: 'mg',
+                            vitaminA: 'µg',
+                            vitaminC: 'mg',
+                            sodium: 'mg',
+                          };
+                          if (!keyToLabel[key]) return null;
+                          return (
+                            <li key={key} className="flex justify-between text-xs">
+                              <span className="capitalize text-muted-foreground">{keyToLabel[key]}</span>
+                              <span className="font-medium">{(value as number).toFixed(1)}{keyToUnit[key]}</span>
+                            </li>
+                          );
+                      })}
+                    </ul>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
@@ -461,5 +509,4 @@ function PortionControlCard({
         </div>
       </CardContent>
     </Card>
-  );
-}
+    
