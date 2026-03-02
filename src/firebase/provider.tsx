@@ -3,7 +3,7 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, onSnapshot } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 
 export interface UserProfile {
@@ -80,6 +80,13 @@ export interface UserHookResult {
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
+interface FirebaseProviderProps {
+    children: ReactNode;
+    firebaseApp?: FirebaseApp;
+    firestore?: Firestore;
+    auth?: Auth;
+}
+
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   children,
   firebaseApp,
@@ -103,17 +110,35 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;
     }
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (firebaseUser) => {
-        setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
-      },
-      (error) => {
-        console.error("FirebaseProvider: onAuthStateChanged error:", error);
-        setUserAuthState({ user: null, isUserLoading: false, userError: error });
+    
+    let unsubscribe: (() => void) | undefined;
+
+    const setupAuth = async () => {
+      try {
+        await setPersistence(auth, browserSessionPersistence);
+        unsubscribe = onAuthStateChanged(
+          auth,
+          (firebaseUser) => {
+            setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+          },
+          (error) => {
+            console.error("FirebaseProvider: onAuthStateChanged error:", error);
+            setUserAuthState({ user: null, isUserLoading: false, userError: error });
+          }
+        );
+      } catch (error) {
+        console.error("FirebaseProvider: setPersistence error:", error);
+        setUserAuthState({ user: null, isUserLoading: false, userError: error as Error });
       }
-    );
-    return () => unsubscribe();
+    };
+
+    setupAuth();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [auth]);
 
   const { user, isUserLoading } = userAuthState;
