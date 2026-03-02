@@ -20,12 +20,16 @@ import { signup } from "@/services/authService";
 import { useAuth, useFirestore, useToast } from "@/hooks";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   confirmPassword: z.string(),
+  terms: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the Terms and Conditions." }),
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -45,6 +49,7 @@ export function SignUpForm() {
       email: "",
       password: "",
       confirmPassword: "",
+      terms: false,
     },
   });
 
@@ -128,6 +133,33 @@ export function SignUpForm() {
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="terms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      I agree to the{" "}
+                      <Link
+                        href="/terms-and-conditions"
+                        className="font-medium text-primary underline-offset-4 hover:underline"
+                        target="_blank"
+                      >
+                        Terms and Conditions
+                      </Link>
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />
