@@ -6,6 +6,7 @@ import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar"
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useTheme } from 'next-themes';
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,14 @@ export default function DashboardLayout({
 }) {
   const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
   const router = useRouter();
+  const { setTheme } = useTheme();
+
+  // Effect to set theme from user profile
+  useEffect(() => {
+    if (userProfile?.preferences?.themePreference) {
+      setTheme(userProfile.preferences.themePreference);
+    }
+  }, [userProfile, setTheme]);
 
   useEffect(() => {
     if (isUserLoading || isProfileLoading) {

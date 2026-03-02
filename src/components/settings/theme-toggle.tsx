@@ -5,21 +5,33 @@ import { Sun, Moon, Laptop } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
 import { Skeleton } from "../ui/skeleton"
+import { useUser, useFirestore } from "@/firebase"
+import { updateUserDocument } from "@/services/userService"
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const { user } = useUser()
+  const db = useFirestore()
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme)
+    if (user && db) {
+      // This is a fire-and-forget operation, no need to show loading states to the user.
+      updateUserDocument(db, user.uid, { 'preferences.themePreference': newTheme }).catch(console.error);
+    }
+  }
 
   if (!mounted) {
     return <Skeleton className="w-full sm:w-[280px] h-10" />
   }
 
   return (
-    <Tabs defaultValue={theme} onValueChange={setTheme} className="w-full sm:w-[280px]">
+    <Tabs defaultValue={theme} onValueChange={handleThemeChange} className="w-full sm:w-[280px]">
         <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="light" className="gap-2">
                 <Sun className="h-4 w-4" /> Light

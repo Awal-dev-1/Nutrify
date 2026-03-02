@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { updateUserDocument } from '@/services/userService';
 import { logout, resetPassword, deleteUserAccount } from '@/services/authService';
@@ -57,7 +56,6 @@ export default function SettingsPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const { setTheme } = useTheme();
 
   // State for form fields
   const [displayName, setDisplayName] = useState('');
