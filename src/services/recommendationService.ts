@@ -4,8 +4,6 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
-  limit,
   addDoc,
   query,
   serverTimestamp,
@@ -16,6 +14,7 @@ import {
   generateFoodRecommendations,
   type GenerateFoodRecommendationsInput,
 } from '@/ai/flows/generate-food-recommendations';
+import { mockFoods } from '@/lib/data';
 
 // This type represents a food item as stored in the Firestore `foodItems` collection.
 interface DbFoodItem {
@@ -47,20 +46,15 @@ let allFoodsCache: DbFoodItem[] = []; // In-memory cache
 
 async function getCachedFoods(db: Firestore): Promise<DbFoodItem[]> {
   if (allFoodsCache.length === 0) {
-    const foodsQuery = query(collection(db, 'foodItems'), limit(200));
-    const foodsSnap = await getDocs(foodsQuery);
-    allFoodsCache = foodsSnap.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name,
-        caloriesPer100g: data.caloriesPer100g || 0,
-        proteinPer100g: data.proteinPer100g || 0,
-        carbsPer100g: data.carbsPer100g || 0,
-        fatPer100g: data.fatPer100g || 0,
-        tags: data.tags || [],
-      };
-    });
+    allFoodsCache = mockFoods.map(food => ({
+      id: food.id,
+      name: food.name,
+      caloriesPer100g: food.calories,
+      proteinPer100g: food.protein,
+      carbsPer100g: food.carbs,
+      fatPer100g: food.fat,
+      tags: food.tags,
+    }));
   }
   return allFoodsCache;
 }
