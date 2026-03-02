@@ -41,7 +41,6 @@ const insightLinks = [
 ]
 
 const aiLinks = [
-  { href: '/dashboard/recognize', label: 'AI Recognition', icon: Bot },
   { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
 ]
 

@@ -305,29 +305,6 @@
         }
       },
       "required": ["createdAt", "basedOnGoal", "recommendations"]
-    },
-    "AiScan": {
-      "title": "AiScan",
-      "type": "object",
-      "description": "Represents an AI food recognition scan, tracking its status and results.",
-      "properties": {
-        "imageUrl": { "type": "string", "format": "uri" },
-        "status": { "type": "string", "enum": ["processing", "completed", "failed"] },
-        "predictions": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "confidence": { "type": "number" }
-            },
-            "required": ["name", "confidence"]
-          }
-        },
-        "selectedFoodId": { "type": ["string", "null"] },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["imageUrl", "status", "createdAt"]
     }
   },
   "auth": {
@@ -407,20 +384,6 @@
               "name": "recommendationId",
               "description": "The unique ID for this set of recommendations."
             }
-          ]
-        }
-      },
-       {
-        "path": "/users/{userId}/aiScans/{scanId}",
-        "definition": {
-          "entityName": "AiScan",
-          "schema": {
-            "$ref": "#/backend/entities/AiScan"
-          },
-          "description": "Stores the state and results of an AI food recognition scan.",
-          "params": [
-            { "name": "userId", "description": "The user's ID." },
-            { "name": "scanId", "description": "The unique ID for the scan." }
           ]
         }
       }
