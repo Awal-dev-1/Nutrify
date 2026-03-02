@@ -79,7 +79,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                <AddFoodModal
                 isOpen={isAddModalOpen}
                 onClose={() => setAddModalOpen(false)}
-                onAddFood={handleAddFood}
+                onAddFood={handleAddFood as any}
                 mealType={target?.mealType as any}
                 />
           </EmptyState>
@@ -325,7 +325,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
       <AddFoodModal
         isOpen={isAddModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onAddFood={handleAddFood}
+        onAddFood={handleAddFood as any}
         mealType={target?.mealType as any}
       />
       

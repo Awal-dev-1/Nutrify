@@ -18,7 +18,7 @@ interface EditFoodModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (logId: string, newQuantity: number) => void;
-  loggedFood: LoggedFoodItem | null;
+  loggedFood: Omit<LoggedFoodItem, 'imageUrl' | 'carbs' | 'fat' | 'protein' | 'name' | 'iron' | 'vitaminA' | 'sodium'> | null;
 }
 
 export function EditFoodModal({
@@ -44,8 +44,8 @@ export function EditFoodModal({
 
   if (!loggedFood) return null;
   
-  const caloriesPerGram = loggedFood.quantity > 0 ? loggedFood.calories / loggedFood.quantity : 0;
-  const calculatedCalories = caloriesPerGram * quantity;
+  // Note: We can't calculate calories here as this component doesn't have access to the full food item details.
+  // This is a simplification for the planner context. A full implementation might fetch food details.
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -53,18 +53,10 @@ export function EditFoodModal({
         <DialogHeader>
           <DialogTitle>Edit Portion</DialogTitle>
           <DialogDescription>
-            Update the quantity for {loggedFood.name}.
+            Update the quantity for this meal item.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
-          <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-            <div className="flex-grow">
-              <p className="font-semibold">{loggedFood.name}</p>
-              <p className="text-sm text-muted-foreground">
-                Original: {loggedFood.quantity}g ({Math.round(loggedFood.calories)} kcal)
-              </p>
-            </div>
-          </div>
           <div className="space-y-2">
             <label htmlFor="quantity" className="text-sm font-medium">
               New Quantity (grams)
@@ -75,9 +67,6 @@ export function EditFoodModal({
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
             />
-             <p className="text-sm text-muted-foreground text-right">
-                Estimated calories: {Math.round(calculatedCalories)}
-              </p>
           </div>
         </div>
         <DialogFooter>
