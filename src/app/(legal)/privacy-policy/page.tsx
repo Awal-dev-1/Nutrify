@@ -3,7 +3,6 @@ const PrivacyPolicyPage = () => {
       <div className="space-y-6">
         <h1 className="text-3xl font-bold tracking-tight border-b pb-4">Privacy Policy</h1>
         <div className="text-muted-foreground">
-            <p>Effective Date: July 26, 2024</p>
             <p><strong>Platform Name:</strong> Nutrify</p>
         </div>
   
