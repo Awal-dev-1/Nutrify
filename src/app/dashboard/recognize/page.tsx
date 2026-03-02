@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -11,8 +10,8 @@ import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X } from 'lucide-r
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { PredictionCard } from '@/components/recognize/prediction-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
-import { uploadImageAndCreateScan } from '@/services/aiRecognitionService';
-import type { AIScan, AIPrediction } from '@/types/ai';
+import { runAiScan } from '@/services/aiRecognitionService';
+import type { AIPrediction } from '@/types/ai';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
@@ -24,15 +23,8 @@ export default function RecognizePage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [scanId, setScanId] = useState<string | null>(null);
+  const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
-
-  // Real-time listener for the scan document
-  const scanDocRef = useMemoFirebase(
-    () => (user && scanId ? doc(db, 'users', user.uid, 'aiScans', scanId) : null),
-    [user, db, scanId]
-  );
-  const { data: scanData, isLoading: isScanLoading } = useDoc<AIScan>(scanDocRef);
 
   // Effect to handle file selection and create a preview URL
   useEffect(() => {
@@ -43,20 +35,7 @@ export default function RecognizePage() {
     }
     setPreview(null);
   }, [file]);
-
-  // Effect to react to changes from the Firestore listener
-  useEffect(() => {
-    if (scanData) {
-      if (scanData.status === 'completed') {
-        setStatus('completed');
-        setError(null);
-      } else if (scanData.status === 'failed') {
-        setStatus('failed');
-        setError(scanData.error || 'An unknown error occurred during analysis.');
-      }
-    }
-  }, [scanData]);
-
+  
   const handleFileSelect = (selectedFile: File) => {
     resetState();
     setFile(selectedFile);
@@ -67,14 +46,17 @@ export default function RecognizePage() {
 
     setStatus('analyzing');
     setError(null);
+    setPredictions(null);
 
     try {
-      const newScanId = await uploadImageAndCreateScan(db, file, user.uid);
-      setScanId(newScanId);
+      const scanResults = await runAiScan(db, user, file);
+      setPredictions(scanResults);
+      setStatus('completed');
     } catch (err: any) {
-      console.error(err);
+      console.error('AI Scan failed:', err);
+      const errorMessage = err.message || 'An unknown error occurred during AI analysis.';
       setStatus('failed');
-      setError('Failed to start the analysis process. Please check your connection and try again.');
+      setError(errorMessage);
     }
   };
 
@@ -83,7 +65,7 @@ export default function RecognizePage() {
     setPreview(null);
     setStatus('idle');
     setError(null);
-    setScanId(null);
+    setPredictions(null);
   };
 
   const renderContent = () => {
@@ -129,7 +111,7 @@ export default function RecognizePage() {
         );
       
       case 'completed':
-        if (!scanData?.predictions || scanData.predictions.length === 0) {
+        if (!predictions || predictions.length === 0) {
           return (
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -147,7 +129,7 @@ export default function RecognizePage() {
           <div className="space-y-4 animate-in fade-in-50">
             <h3 className="text-lg font-semibold">Here's what the AI found:</h3>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {scanData.predictions.map((pred, index) => (
+              {predictions.map((pred, index) => (
                 <PredictionCard 
                   key={index} 
                   prediction={pred} 

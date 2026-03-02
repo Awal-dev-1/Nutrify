@@ -4,3 +4,4 @@ config();
 
 import '@/ai/flows/generate-personalized-meal-plan.ts';
 import '@/ai/flows/search-foods-flow.ts';
+import '@/ai/flows/recognize-food-flow.ts';

@@ -111,15 +111,12 @@ service cloud.firestore {
       }
 
       /**
-       * @description Manages AI food recognition scans. Users can create their own
-       *              scan documents and read them to get results. Only a trusted
-       *              backend process can update a scan with predictions.
+       * @description Manages AI food recognition scans. Users can create and read their own
+       *              scan documents.
        * @path /users/{userId}/aiScans/{scanId}
        */
       match /aiScans/{scanId} {
-        allow create: if isOwner(userId);
-        allow read: if isOwner(userId);
-        allow update, delete: if false;
+        allow read, write: if isOwner(userId);
       }
     }
 
