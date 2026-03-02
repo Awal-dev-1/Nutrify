@@ -13,8 +13,11 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Flame, Beef, Wheat, Droplets, PlusCircle, ScanLine, Search, Target, Lightbulb, ArrowRight } from 'lucide-react';
+import { Flame, Beef, Wheat, Droplets, PlusCircle, Search, Target, Lightbulb, ArrowRight, BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { generateDailyRecommendations, type GenerateDailyRecommendationsOutput } from '@/ai/flows/generate-daily-recommendations';
+import { AiCoachCard } from '@/components/overview/ai-coach-card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const OverviewPage = () => {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -22,6 +25,9 @@ const OverviewPage = () => {
 
   const [weeklyData, setWeeklyData] = useState<AnalyticsData[] | null>(null);
   const [isWeeklyLoading, setIsWeeklyLoading] = useState(true);
+  const [coachData, setCoachData] = useState<GenerateDailyRecommendationsOutput | null>(null);
+  const [isCoachLoading, setIsCoachLoading] = useState(false);
+  const [coachError, setCoachError] = useState<string | null>(null);
 
   // Fetch today's log
   const todayKey = format(new Date(), 'yyyy-MM-dd');
@@ -67,6 +73,38 @@ const OverviewPage = () => {
   
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
   const calorieRemaining = derivedGoals.calories - todayTotals.totalCalories;
+
+  const handleGetCoachPlan = async () => {
+    if (!userProfile || !dailyLog) {
+        setCoachError("Please log at least one meal today to get a coaching plan.");
+        return;
+    }
+
+    if (!userProfile.goals || !userProfile.health) {
+        setCoachError("Please complete your profile and set your goals first.");
+        return;
+    }
+
+    setIsCoachLoading(true);
+    setCoachError(null);
+    setCoachData(null);
+
+    try {
+        const input = {
+            calorieTarget: userProfile.goals.dailyCalorieGoal,
+            caloriesConsumed: dailyLog.totalCalories,
+            primaryGoal: userProfile.health.primaryGoal,
+            dietaryPreferences: userProfile.health.dietaryPreferences || [],
+        };
+        const result = await generateDailyRecommendations(input);
+        setCoachData(result);
+    } catch (err: any) {
+        console.error(err);
+        setCoachError(err.message || "Failed to get recommendations from the AI coach.");
+    } finally {
+        setIsCoachLoading(false);
+    }
+  };
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -183,6 +221,38 @@ const OverviewPage = () => {
             </Card>
         </div>
       </div>
+
+        {/* AI Daily Coach Section */}
+        <div className="mt-6">
+            {isCoachLoading ? (
+                <Card>
+                    <CardContent className="p-8 flex flex-col items-center justify-center text-center space-y-2">
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                        <p className="text-sm font-semibold">Your coach is thinking...</p>
+                        <p className="text-xs text-muted-foreground">This may take a moment.</p>
+                    </CardContent>
+                </Card>
+            ) : coachError ? (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>AI Coach Error</AlertTitle>
+                    <AlertDescription>{coachError}</AlertDescription>
+                </Alert>
+            ) : coachData ? (
+                <AiCoachCard data={coachData} />
+            ) : (
+                <Card className="border-2 border-dashed">
+                    <CardContent className="p-6 text-center">
+                        <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary/10 mb-4">
+                            <BrainCircuit className="h-6 w-6 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Need some guidance?</h3>
+                        <p className="text-muted-foreground text-sm mt-1 mb-4">Get personalized tips, meal ideas, and recipes for the rest of your day.</p>
+                        <Button onClick={handleGetCoachPlan}>Ask AI Coach</Button>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
     </div>
   );
 };
