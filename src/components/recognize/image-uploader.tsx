@@ -11,7 +11,7 @@ interface ImageUploaderProps {
   disabled?: boolean;
 }
 
-const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_MB = 10;
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export function ImageUploader({ onFileSelect, disabled }: ImageUploaderProps) {
