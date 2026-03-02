@@ -5,10 +5,20 @@ import { format } from 'date-fns';
 import type { DailyLog, LoggedFoodItem } from '@/types/analytics';
 import type { FoodItem as AiFoodItem } from '@/types/food';
 import type { Food } from '@/lib/data';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-/**
- * Adds a food item (from AI search) to a daily log for a specific user.
- */
+
+const updateLog = (dailyLogRef: any, dailyLog: DailyLog) => {
+    setDoc(dailyLogRef, dailyLog).catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: dailyLogRef.path,
+            operation: 'write',
+            requestResourceData: dailyLog
+        }));
+    });
+}
+
 export async function addFoodToLog(
   db: Firestore,
   userId: string,
@@ -71,12 +81,9 @@ export async function addFoodToLog(
   dailyLog.totalCalcium = allMeals.reduce((sum, item) => sum + (item.calcium || 0), 0);
   dailyLog.totalVitaminC = allMeals.reduce((sum, item) => sum + (item.vitaminC || 0), 0);
 
-  await setDoc(dailyLogRef, dailyLog);
+  updateLog(dailyLogRef, dailyLog);
 }
 
-/**
- * Adds a confirmed food item from the database to a daily log.
- */
 export async function addFoodItemToLog(
   db: Firestore,
   userId: string,
@@ -92,7 +99,7 @@ export async function addFoodItemToLog(
 
   const newLogItem: LoggedFoodItem = {
     logId: doc(collection(db, 'temp')).id,
-    foodId: foodItem.id, // Use the real foodId
+    foodId: foodItem.id,
     name: foodItem.name,
     quantity,
     calories: foodItem.calories * ratio,
@@ -139,5 +146,5 @@ export async function addFoodItemToLog(
   dailyLog.totalCalcium = allMeals.reduce((sum, item) => sum + (item.calcium || 0), 0);
   dailyLog.totalVitaminC = allMeals.reduce((sum, item) => sum + (item.vitaminC || 0), 0);
 
-  await setDoc(dailyLogRef, dailyLog);
+  updateLog(dailyLogRef, dailyLog);
 }

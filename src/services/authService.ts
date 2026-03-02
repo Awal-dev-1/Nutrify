@@ -10,6 +10,8 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, Firestore, deleteDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 // 1. Sign Up
 export const signup = async (
@@ -22,17 +24,23 @@ export const signup = async (
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
-  // Update profile display name in Firebase Auth
   await updateProfile(user, { displayName: name });
 
-  // Create user document in Firestore
   const userRef = doc(db, 'users', user.uid);
-  await setDoc(userRef, {
+  const userProfileData = {
     id: user.uid,
     name,
     email,
     onboardingCompleted: false,
     createdAt: serverTimestamp(),
+  };
+
+  setDoc(userRef, userProfileData).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: userRef.path,
+      operation: 'create',
+      requestResourceData: userProfileData,
+    }));
   });
 
   return user;
@@ -61,14 +69,16 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
     throw new Error("No user is currently signed in to delete.");
   }
 
-  // First, delete the user's document in Firestore.
   const userDocRef = doc(db, "users", user.uid);
-  await deleteDoc(userDocRef);
+  
+  // Non-blocking delete with contextual error
+  deleteDoc(userDocRef).catch(error => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'delete'
+      }));
+  });
 
-  // Note: This client-side implementation does NOT delete subcollections
-  // (like dailyLogs, aiScans, etc.). A secure, production-grade implementation
-  // would use a Cloud Function to recursively delete all user data.
-
-  // Finally, delete the user from Firebase Authentication.
+  // This is an auth operation, which can be awaited as it might have its own UI flow.
   await deleteUser(user);
 };

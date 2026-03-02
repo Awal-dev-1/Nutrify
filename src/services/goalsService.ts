@@ -1,6 +1,8 @@
 'use client';
 
 import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export interface UserGoals {
   dailyCalorieGoal: number;
@@ -9,14 +11,25 @@ export interface UserGoals {
   fatPercentageGoal: number;
 }
 
-export const updateUserGoals = async (
+export const updateUserGoals = (
   db: Firestore,
   userId: string,
   newGoals: UserGoals
 ) => {
   const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
+  const dataToUpdate = {
     goals: newGoals,
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
+  };
+
+  updateDoc(userRef, dataToUpdate).catch((error) => {
+    errorEmitter.emit(
+      'permission-error',
+      new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'update',
+        requestResourceData: dataToUpdate,
+      })
+    );
   });
 };

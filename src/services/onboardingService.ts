@@ -1,5 +1,7 @@
 'use client';
 import { doc, updateDoc, serverTimestamp, Firestore } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface OnboardingData {
   gender: 'male' | 'female' | 'other';
@@ -54,7 +56,7 @@ const calculateGoals = (data: OnboardingData) => {
     return goals;
 }
 
-export const completeOnboarding = async (
+export const completeOnboarding = (
   db: Firestore,
   userId: string,
   onboardingData: OnboardingData
@@ -84,5 +86,12 @@ export const completeOnboarding = async (
     updatedAt: serverTimestamp(),
   };
 
-  await updateDoc(userRef, userDataToUpdate);
+  updateDoc(userRef, userDataToUpdate)
+    .catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'update',
+            requestResourceData: userDataToUpdate
+        }));
+    });
 };

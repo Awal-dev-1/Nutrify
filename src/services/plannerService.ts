@@ -13,9 +13,11 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 import type { FoodItem } from '@/types/food';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 // Add a meal to the planner
-export const addPlannedMeal = async (
+export const addPlannedMeal = (
   db: Firestore,
   userId: string,
   day: string,
@@ -40,11 +42,17 @@ export const addPlannedMeal = async (
     createdAt: serverTimestamp(),
   };
 
-  await addDoc(plannedMealsColRef, newPlannedMeal);
+  addDoc(plannedMealsColRef, newPlannedMeal).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: plannedMealsColRef.path,
+      operation: 'create',
+      requestResourceData: newPlannedMeal,
+    }));
+  });
 };
 
 // Update a planned meal's quantity and nutrients
-export const updatePlannedMeal = async (
+export const updatePlannedMeal = (
   db: Firestore,
   userId: string,
   mealId: string,
@@ -57,13 +65,24 @@ export const updatePlannedMeal = async (
   }
 ) => {
   const mealDocRef = doc(db, 'users', userId, 'plannedMeals', mealId);
-  await updateDoc(mealDocRef, updates);
+  updateDoc(mealDocRef, updates).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: mealDocRef.path,
+      operation: 'update',
+      requestResourceData: updates,
+    }));
+  });
 };
 
 // Delete a planned meal
-export const deletePlannedMeal = async (db: Firestore, userId: string, mealId: string) => {
-  const mealDoc = doc(db, 'users', userId, 'plannedMeals', mealId);
-  await deleteDoc(mealDoc);
+export const deletePlannedMeal = (db: Firestore, userId: string, mealId: string) => {
+  const mealDocRef = doc(db, 'users', userId, 'plannedMeals', mealId);
+  deleteDoc(mealDocRef).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: mealDocRef.path,
+      operation: 'delete',
+    }));
+  });
 };
 
 // Clear all planned meals for a user
@@ -79,7 +98,10 @@ export const clearPlan = async (db: Firestore, userId: string) => {
     batch.delete(doc.ref);
   });
   
-  await batch.commit();
+  batch.commit().catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: plannedMealsColRef.path,
+      operation: 'delete', // Batch delete is a series of deletes
+    }));
+  });
 };
-
-    

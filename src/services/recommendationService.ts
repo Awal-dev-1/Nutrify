@@ -15,6 +15,8 @@ import {
   type GenerateFoodRecommendationsInput,
 } from '@/ai/flows/generate-food-recommendations';
 import { searchFoods, type FoodItem } from '@/ai/flows/search-foods-flow';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export interface Recommendation {
   foodId: string;
@@ -56,7 +58,6 @@ export async function generateRecommendations(
   db: Firestore,
   userId: string
 ): Promise<RecommendationResult> {
-  // Step 1: Fetch user data
   const userRef = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
 
@@ -72,7 +73,6 @@ export async function generateRecommendations(
     throw new Error('Please set your goals to receive personalized recommendations.');
   }
 
-  // Step 1.5: Use AI to generate a list of candidate foods
   const searchQueries = getSearchQueriesForGoal(primaryGoal);
   const foodPromises = searchQueries.map(query => searchFoods({ query, userGoal: primaryGoal }));
   const searchResults = await Promise.all(foodPromises);
@@ -85,18 +85,21 @@ export async function generateRecommendations(
   });
   const candidateFoods = Array.from(foodMap.values());
 
-  // Asynchronously populate the foodItems collection for recipe lookups later
   candidateFoods.forEach(food => {
       const foodRef = doc(db, 'foodItems', food.foodName);
-      // This populates our DB for the "View Recipe" feature. We don't await this.
-      setDoc(foodRef, food, { merge: true });
+      setDoc(foodRef, food, { merge: true }).catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: foodRef.path,
+            operation: 'write',
+            requestResourceData: food,
+        }));
+      });
   });
 
   if (candidateFoods.length === 0) {
     throw new Error('AI was unable to generate any food suggestions. Please try again.');
   }
 
-  // Step 2: Prepare input for the AI recommendation flow
   const flowInput: GenerateFoodRecommendationsInput = {
     userProfile: {
       primaryGoal: primaryGoal,
@@ -109,7 +112,7 @@ export async function generateRecommendations(
       fatPercentageGoal: goals.fatPercentageGoal,
     },
     availableFoods: candidateFoods.map(food => ({
-        id: food.foodName, // Use the name as the ID
+        id: food.foodName,
         name: food.foodName,
         calories: food.calories,
         protein: food.macronutrientBreakdown.protein,
@@ -123,31 +126,34 @@ export async function generateRecommendations(
     }))
   };
 
-  // Step 3: Call the AI flow to get ranked recommendations
   const aiResult = await generateFoodRecommendations(flowInput);
 
-  // Step 4: Save the result to user's history
-  const recommendationsToStore = aiResult.recommendations.map(r => ({
-    foodId: r.foodId,
-    name: r.name,
-    calories: r.calories,
-    protein: r.protein,
-    carbs: r.carbs,
-    fat: r.fat,
-    micronutrients: r.micronutrients,
-    reason: r.reason,
-    score: 0, // Score is an internal concept for the AI, not stored.
-  }));
-
-  const recommendationsCollectionRef = collection(db, 'users', userId, 'generatedRecommendations');
-  await addDoc(recommendationsCollectionRef, {
+  const recommendationsToStore = {
     createdAt: serverTimestamp(),
     basedOnGoal: primaryGoal,
-    recommendations: recommendationsToStore,
+    recommendations: aiResult.recommendations.map(r => ({
+        foodId: r.foodId,
+        name: r.name,
+        calories: r.calories,
+        protein: r.protein,
+        carbs: r.carbs,
+        fat: r.fat,
+        micronutrients: r.micronutrients,
+        reason: r.reason,
+        score: 0,
+    })),
     insightTips: aiResult.insightTips,
+  };
+
+  const recommendationsCollectionRef = collection(db, 'users', userId, 'generatedRecommendations');
+  addDoc(recommendationsCollectionRef, recommendationsToStore).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: recommendationsCollectionRef.path,
+        operation: 'create',
+        requestResourceData: recommendationsToStore
+    }));
   });
 
-  // Step 5: Format the output for the frontend
   return {
     goal: primaryGoal,
     recommendations: aiResult.recommendations,
