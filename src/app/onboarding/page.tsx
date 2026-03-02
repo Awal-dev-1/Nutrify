@@ -211,8 +211,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-// Helper function for conditional classes
-const cn = (...classes: (string | boolean | undefined)[]) => {
-  return classes.filter(Boolean).join(' ');
-};

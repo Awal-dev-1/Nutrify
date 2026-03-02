@@ -12,7 +12,7 @@ import { Button } from '../ui/button'
 import { LogOut } from 'lucide-react'
 
 export function DashboardHeader() {
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
   const auth = useAuth();
   const router = useRouter();
   const [quote, setQuote] = useState("")
@@ -27,11 +27,11 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="flex flex-col">
-        <h1 className="text-2xl font-semibold">
-          Good Morning, {user?.displayName || 'User'}!
+        <h1 className="text-xl font-semibold">
+          Good Morning, {userProfile?.name || 'User'}!
         </h1>
         <p className="text-sm text-muted-foreground">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
@@ -40,7 +40,7 @@ export function DashboardHeader() {
       <div className="ml-auto hidden md:block">
         <p className="text-sm italic text-muted-foreground">{quote}</p>
       </div>
-       <Button variant="ghost" size="icon" onClick={handleLogout} className="ml-4">
+       <Button variant="ghost" size="icon" onClick={handleLogout} className="ml-auto">
           <LogOut className="h-5 w-5" />
           <span className="sr-only">Logout</span>
         </Button>
