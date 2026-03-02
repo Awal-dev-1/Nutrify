@@ -93,8 +93,8 @@ const OverviewPage = () => {
         const input = {
             calorieTarget: userProfile.goals.dailyCalorieGoal,
             caloriesConsumed: dailyLog.totalCalories,
-            primaryGoal: userProfile.health.primaryGoal,
-            dietaryPreferences: userProfile.health.dietaryPreferences || [],
+            goals: userProfile.health.primaryGoal,
+            preferences: userProfile.health.dietaryPreferences || [],
         };
         const result = await generateDailyRecommendations(input);
         setCoachData(result);

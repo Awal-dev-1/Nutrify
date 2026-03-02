@@ -13,8 +13,8 @@ import { z } from 'zod';
 const GenerateDailyRecommendationsInputSchema = z.object({
   calorieTarget: z.number().describe("User's daily calorie goal in kcal."),
   caloriesConsumed: z.number().describe('Calories the user has already consumed today.'),
-  primaryGoal: z.string().describe('User\'s primary health goal (e.g., "Lose Weight").'),
-  dietaryPreferences: z.array(z.string()).describe('List of user\'s dietary preferences (e.g., "Vegan").'),
+  goals: z.string().describe('User\'s primary health goal (e.g., "Lose Weight").'),
+  preferences: z.array(z.string()).describe('List of user\'s dietary preferences (e.g., "Vegan").'),
 });
 export type GenerateDailyRecommendationsInput = z.infer<typeof GenerateDailyRecommendationsInputSchema>;
 
@@ -58,8 +58,8 @@ const generateDailyRecommendationsPrompt = ai.definePrompt({
 Analyze the user's data below:
 - Calorie Goal: {{{calorieTarget}}} kcal
 - Consumed So Far: {{{caloriesConsumed}}} kcal
-- Primary Goal: {{{primaryGoal}}}
-- Dietary Preferences: {{#if dietaryPreferences.length}}{{#each dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+- Primary Goal: {{{goals}}}
+- Dietary Preferences: {{#if preferences.length}}{{#each preferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
 
 Your task is to generate a set of recommendations to help the user achieve their goals for the rest of the day.
 
