@@ -3,6 +3,13 @@
 
 import { useState, useMemo, type FC } from "react";
 import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -276,7 +283,7 @@ export default function DailyTrackerPage() {
           <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
             <div className="lg:col-span-2 space-y-6">
                 <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
-                <MacroProgressBars totals={dailyTotals} goals={derivedGoals} />
+                <MacroPieChart totals={dailyTotals} />
                 <MealSections 
                     meals={meals} 
                     onAddFoodClick={openAddModal} 
@@ -426,28 +433,65 @@ const CalorieSummaryCard: FC<{ totals: DailyLog; goal: number }> = ({ totals, go
   );
 };
 
-const MacroProgressBars: FC<{ totals: DailyLog; goals: any }> = ({ totals, goals }) => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Macronutrient Goals</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <MacroBar label="Protein" value={totals.totalProtein} goal={goals.protein} unit="g" colorClass="[&>div]:bg-red-500" />
-        <MacroBar label="Carbs" value={totals.totalCarbs} goal={goals.carbs} unit="g" colorClass="[&>div]:bg-yellow-600" />
-        <MacroBar label="Fat" value={totals.totalFat} goal={goals.fat} unit="g" colorClass="[&>div]:bg-blue-500" />
-      </CardContent>
-    </Card>
-);
+const MacroPieChart: FC<{ totals: DailyLog }> = ({ totals }) => {
+    const proteinCalories = totals.totalProtein * 4;
+    const carbsCalories = totals.totalCarbs * 4;
+    const fatCalories = totals.totalFat * 9;
+    const totalMacroCalories = proteinCalories + carbsCalories + fatCalories;
 
-const MacroBar: FC<{label: string, value: number, goal: number, unit: string, colorClass: string}> = ({label, value, goal, unit, colorClass}) => (
-    <div className="space-y-1.5">
-        <div className="flex justify-between text-sm">
-            <span className="font-medium">{label}</span>
-            <span className="text-muted-foreground">{value.toFixed(0)} / {goal.toFixed(0)} {unit}</span>
-        </div>
-        <Progress value={(value/goal)*100} className={cn("h-2", colorClass)} />
-    </div>
-)
+    if (totalMacroCalories === 0) {
+        return (
+             <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Macronutrient Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-48">
+                    <p className="text-sm text-muted-foreground">Log a meal to see your macro split.</p>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    const data = [
+        { name: 'Protein', value: proteinCalories, color: 'hsl(var(--chart-2))' },
+        { name: 'Carbs', value: carbsCalories, color: 'hsl(var(--chart-3))' },
+        { name: 'Fat', value: fatCalories, color: 'hsl(var(--chart-4))' },
+    ];
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Macronutrient Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: 'hsl(var(--background))',
+                                border: '1px solid hsl(var(--border))',
+                            }}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+};
 
 const MealSections: FC<{
   meals: Record<MealType, LoggedFoodItem[]>; 
@@ -673,3 +717,5 @@ const MicroStat: FC<{label:string, value:number, unit:string}> = ({ label, value
     <p className="text-base font-bold">{Math.round(value)}{unit}</p>
   </div>
 );
+
+    
