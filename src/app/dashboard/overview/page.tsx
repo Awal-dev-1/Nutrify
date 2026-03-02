@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, type FC } from 'react';
 import Link from 'next/link';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
@@ -69,7 +69,22 @@ const OverviewPage = () => {
     fat: (userGoals.dailyCalorieGoal * (userGoals.fatPercentageGoal / 100)) / 9,
   };
 
-  const todayTotals = dailyLog || { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 };
+  const todayTotals: DailyLog = dailyLog || { 
+    date: todayKey,
+    totalCalories: 0, 
+    totalProtein: 0, 
+    totalCarbs: 0, 
+    totalFat: 0,
+    totalIron: 0, 
+    totalVitaminA: 0, 
+    totalSodium: 0, 
+    totalFiber: 0,
+    totalSugar: 0, 
+    totalCalcium: 0, 
+    totalVitaminC: 0,
+    waterIntake: 0,
+    meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
+  };
   
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
   const calorieRemaining = derivedGoals.calories - todayTotals.totalCalories;
@@ -146,6 +161,8 @@ const OverviewPage = () => {
               </div>
             </CardContent>
           </Card>
+
+          <MicroNutrientGrid totals={todayTotals} />
           
           {/* Weekly Trend */}
           <Card>
@@ -311,6 +328,17 @@ const DashboardSkeleton = () => (
           <CardContent className="space-y-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div><div className="grid grid-cols-3 gap-4 pt-6 border-t"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></CardContent>
         </Card>
         <Card>
+          <CardHeader><Skeleton className="h-5 w-40" /></CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+          </CardContent>
+        </Card>
+        <Card>
           <CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader>
           <CardContent><Skeleton className="h-[250px] w-full" /></CardContent>
         </Card>
@@ -331,6 +359,29 @@ const DashboardSkeleton = () => (
       </div>
     </div>
   </div>
+);
+
+const MicroStat: FC<{label:string, value:number, unit:string}> = ({ label, value, unit }) => (
+  <div className="p-2 bg-muted/50 rounded-lg text-center">
+    <p className="text-xs text-muted-foreground">{label}</p>
+    <p className="text-base font-bold">{Math.round(value)}{unit}</p>
+  </div>
+);
+
+const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-base">Micronutrient Overview</CardTitle>
+    </CardHeader>
+    <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <MicroStat label="Fiber" value={totals.totalFiber} unit="g" />
+      <MicroStat label="Sugar" value={totals.totalSugar} unit="g" />
+      <MicroStat label="Sodium" value={totals.totalSodium} unit="mg" />
+      <MicroStat label="Calcium" value={totals.totalCalcium} unit="mg" />
+      <MicroStat label="Iron" value={totals.totalIron} unit="mg" />
+      <MicroStat label="Vit. A" value={totals.totalVitaminA} unit="µg" />
+    </CardContent>
+  </Card>
 );
 
 export default OverviewPage;
