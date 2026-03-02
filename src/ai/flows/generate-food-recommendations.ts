@@ -28,7 +28,7 @@ const RecommendationItemSchema = z.object({
   reason: z.string().describe("A concise explanation for why this food was recommended based on the user's goal."),
 });
 
-export const GenerateFoodRecommendationsInputSchema = z.object({
+const GenerateFoodRecommendationsInputSchema = z.object({
   userProfile: z.object({
     primaryGoal: z.string().describe("User's primary health goal (e.g., 'lose-weight', 'gain-weight', 'maintain-weight')."),
     dietaryPreferences: z.array(z.string()).describe("An array of dietary restrictions or preferences (e.g., 'Vegan', 'Halal')."),
@@ -40,7 +40,7 @@ export const GenerateFoodRecommendationsInputSchema = z.object({
 });
 export type GenerateFoodRecommendationsInput = z.infer<typeof GenerateFoodRecommendationsInputSchema>;
 
-export const GenerateFoodRecommendationsOutputSchema = z.object({
+const GenerateFoodRecommendationsOutputSchema = z.object({
   recommendations: z.array(RecommendationItemSchema).describe("A list of 3-5 recommended food items, sorted by score."),
 });
 export type GenerateFoodRecommendationsOutput = z.infer<typeof GenerateFoodRecommendationsOutputSchema>;
