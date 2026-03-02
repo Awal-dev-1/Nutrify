@@ -24,6 +24,8 @@ const compressImage = async (file: File): Promise<File> => {
     return compressedFile;
   } catch (error) {
     console.error('Image compression failed:', error);
+    // If compression fails, return the original file but warn.
+    // This might still cause the size limit error, but it's better than crashing.
     return file;
   }
 };
@@ -35,17 +37,17 @@ const compressImage = async (file: File): Promise<File> => {
 const saveScanHistory = async (
   db: Firestore,
   userId: string,
-  file: File,
+  imageFile: File, // Changed from `file` to `imageFile` for clarity
   predictions: AIPrediction[]
 ): Promise<void> => {
   try {
     const scanId = uuidv4();
     const storage = getStorage();
 
-    const compressedFile = await compressImage(file);
+    // The image is already compressed from the calling function.
     const storagePath = `ai-recognition/${userId}/${scanId}.jpg`;
     const storageRef = ref(storage, storagePath);
-    const uploadResult = await uploadBytes(storageRef, compressedFile);
+    const uploadResult = await uploadBytes(storageRef, imageFile);
     const imageUrl = await getDownloadURL(uploadResult.ref);
 
     const scanDocRef = doc(db, 'users', userId, 'aiScans', scanId);
@@ -77,30 +79,34 @@ export const runAiScan = async (
   user: User,
   file: File
 ): Promise<AIPrediction[]> => {
-  // 1. Convert file to data URI for the AI flow
+  // 1. Compress the image before doing anything else to reduce payload size.
+  const compressedFile = await compressImage(file);
+
+  // 2. Convert the compressed file to a data URI for the AI flow
   const reader = new FileReader();
   const dataUriPromise = new Promise<string>((resolve, reject) => {
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(compressedFile);
   const photoDataUri = await dataUriPromise;
 
-  // 2. Call the AI flow to get predictions
+  // 3. Call the AI flow to get predictions
   const aiResult = await recognizeFood({ photoDataUri });
   const rawPredictions = aiResult.predictions;
 
-  // 3. Filter and sort predictions
+  // 4. Filter and sort predictions
   const filteredPredictions = rawPredictions
     .filter((p) => p.confidence >= 0.6)
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, 3);
 
-  // 4. Asynchronously save the scan history without blocking the UI
+  // 5. Asynchronously save the scan history without blocking the UI.
+  //    Pass the compressed file to avoid re-compression.
   if (filteredPredictions.length > 0) {
-    saveScanHistory(db, user.uid, file, filteredPredictions);
+    saveScanHistory(db, user.uid, compressedFile, filteredPredictions);
   }
 
-  // 5. Return the predictions to the frontend immediately
+  // 6. Return the predictions to the frontend immediately
   return filteredPredictions;
 };
