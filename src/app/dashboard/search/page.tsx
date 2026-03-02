@@ -122,9 +122,20 @@ export default function SearchPage() {
       const userGoal = userProfile?.health?.primaryGoal;
       const response = await searchFoods({ query, userGoal });
 
-      if (!response.isFoodQuery || response.foodItems.length === 0) {
+      if (!response.isFoodQuery) {
+        toast({
+          variant: 'destructive',
+          title: 'Not a food item',
+          description:
+            'The AI can only provide nutritional analysis for food items.',
+        });
+        setHasSearched(false); // Reset to show the empty state
+        return;
+      }
+
+      if (response.foodItems.length === 0) {
         throw new Error(
-          "I couldn't find any information for that food. Please try rephrasing your search."
+          "The AI couldn't find any nutritional information for that. Please try rephrasing your search."
         );
       }
 
@@ -138,6 +149,7 @@ export default function SearchPage() {
       setLoading(false);
     }
   };
+
 
   // Form submission handler
   const onFormSubmit = (e: React.FormEvent) => {
