@@ -276,6 +276,24 @@
       },
       "required": ["date", "totalCalories", "totalProtein", "totalCarbs", "totalFat"]
     },
+    "PlannedMeal": {
+      "title": "PlannedMeal",
+      "type": "object",
+      "description": "Represents a single food item planned for a specific meal on a specific day.",
+      "properties": {
+        "foodId": { "type": "string", "description": "Name of the food, used as an ID since we use AI search." },
+        "foodName": { "type": "string" },
+        "day": { "type": "string", "description": "Day of the week, e.g., 'Monday'." },
+        "mealType": { "type": "string", "description": "e.g., 'Breakfast', 'Lunch'." },
+        "quantity": { "type": "number", "description": "in grams" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["foodId", "foodName", "day", "mealType", "quantity", "calories", "protein", "carbs", "fat", "createdAt"]
+    },
     "RecommendationItem": {
       "title": "RecommendationItem",
       "type": "object",
@@ -463,8 +481,30 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/plannedMeals/{mealId}",
+        "definition": {
+          "entityName": "PlannedMeal",
+          "schema": {
+            "$ref": "#/backend/entities/PlannedMeal"
+          },
+          "description": "Stores individual meals planned by a user. The document ID is the unique ID for the planned meal.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's ID."
+            },
+            {
+              "name": "mealId",
+              "description": "The unique ID for the planned meal."
+            }
+          ]
+        }
       }
     ],
     "reasoning": "The recommended Firestore structure prioritizes security, scalability, and query performance. Storing user-specific data under `/users/{userId}` ensures strong ownership and simplifies security rules. The new `/users/{userId}/dailyLogs/{date}` collection is specifically designed for analytics performance. By storing pre-aggregated daily totals in a single document per day (identified by date), the application can fetch analytics data for a date range (e.g., 7 or 30 days) with a single, efficient query, rather than needing to read and aggregate hundreds of individual food log documents on the client. This dramatically improves performance and reduces cost at scale."
   }
 }
+
+    

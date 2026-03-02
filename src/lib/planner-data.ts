@@ -6,6 +6,7 @@ export type PlannedMeal = {
   quantity: number; // in grams
 };
 
+// This mock data is no longer used by the planner page but is kept for reference.
 export const mockPlannerData: PlannedMeal[] = [
   {
     id: 'plan-1',
@@ -44,3 +45,5 @@ export const mockUserGoals = {
     carbs: 250,
     fat: 70
 }
+
+    

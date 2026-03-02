@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Trash2, Save, Loader2 } from 'lucide-react';
 import {
@@ -19,23 +18,11 @@ import { useToast } from '@/hooks/use-toast';
 interface PlannerControlsProps {
   onGenerate: () => void;
   onClear: () => void;
+  isGenerating?: boolean;
 }
 
-export function PlannerControls({ onGenerate, onClear }: PlannerControlsProps) {
+export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerControlsProps) {
   const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleGenerate = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      onGenerate();
-      toast({
-        title: 'Plan Generated!',
-        description: 'A suggested meal plan has been created for you.',
-      });
-      setIsGenerating(false);
-    }, 1500);
-  };
   
   const handleSave = () => {
       toast({
@@ -49,7 +36,7 @@ export function PlannerControls({ onGenerate, onClear }: PlannerControlsProps) {
       {/* Generate Button */}
       <Button 
         variant="default" 
-        onClick={handleGenerate} 
+        onClick={onGenerate} 
         disabled={isGenerating}
         className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm"
       >
@@ -113,3 +100,5 @@ export function PlannerControls({ onGenerate, onClear }: PlannerControlsProps) {
     </div>
   );
 }
+
+    

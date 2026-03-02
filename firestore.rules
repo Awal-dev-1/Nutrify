@@ -104,6 +104,14 @@ service cloud.firestore {
       match /aiScans/{scanId} {
         allow read, write: if isOwner(userId);
       }
+
+      /**
+       * @description Manages a user's private meal plans.
+       * @path /users/{userId}/plannedMeals/{mealId}
+       */
+      match /plannedMeals/{mealId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     /**
@@ -118,3 +126,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import Image from 'next/image';
-import { mockFoods, type Food } from '@/lib/data';
-import type { PlannedMeal } from '@/lib/planner-data';
+import { useState } from 'react';
+import type { PlannedMeal } from '@/types/planner';
+import type { FoodItem } from '@/types/food';
+
 import { Button } from '@/components/ui/button';
 import { AddFoodModal } from '@/components/tracker/add-food-modal';
 import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 import { EmptyState } from '../shared/empty-state';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Apple, Beef, Wheat, Droplets, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -28,13 +28,14 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '../ui/progress';
-import { mockUserGoals } from '@/lib/planner-data';
 import { subDays, addDays, format } from 'date-fns';
+import { Badge } from '../ui/badge';
+import { useUser } from '@/firebase';
 
 interface DayPlannerProps {
-  plannedMeals: PlannedMeal[];
+  plannedMeals: (PlannedMeal & { id: string })[];
   summary: Record<string, any>;
-  onAddMeal: (food: Food, quantity: number, mealType: string, day: string) => void;
+  onAddMeal: (food: FoodItem, quantity: number, mealType: string, day: string) => void;
   onUpdateMeal: (id: string, newQuantity: number) => void;
   onRemoveMeal: (id: string) => void;
 }
@@ -42,26 +43,30 @@ interface DayPlannerProps {
 export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: DayPlannerProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<PlannedMeal | null>(null);
+  const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
   const [mealToAdd, setMealToAdd] = useState<string | null>(null);
+  const { userProfile } = useUser();
   
   const currentDayKey = format(currentDate, 'EEEE');
+  const userGoals = userProfile?.goals || { dailyCalorieGoal: 2200, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
+  const derivedGoals = {
+    calories: userGoals.dailyCalorieGoal,
+    protein: (userGoals.dailyCalorieGoal * (userGoals.proteinPercentageGoal / 100)) / 4,
+    carbs: (userGoals.dailyCalorieGoal * (userGoals.carbsPercentageGoal / 100)) / 4,
+    fat: (userGoals.dailyCalorieGoal * (userGoals.fatPercentageGoal / 100)) / 9,
+  };
 
-  const foodDetailsMap = mockFoods.reduce((acc, food) => {
-    acc[food.id] = food;
-    return acc;
-  }, {} as Record<string, Food>);
 
   const handleAddClick = (mealType: string) => {
     setMealToAdd(mealType);
     setAddModalOpen(true);
   };
   
-  const handleEditClick = (meal: PlannedMeal) => {
+  const handleEditClick = (meal: PlannedMeal & { id: string }) => {
     setEditingMeal(meal);
   };
 
-  const handleAddFood = (food: Food, quantity: number, mealType: string) => {
+  const handleAddFood = (food: FoodItem, quantity: number, mealType: string) => {
     if (mealToAdd) {
       onAddMeal(food, quantity, mealToAdd, currentDayKey);
     }
@@ -81,10 +86,10 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
     }
   };
 
-  const calorieProgress = (dailyTotals.calories / mockUserGoals.calories) * 100;
-  const proteinProgress = (dailyTotals.protein / mockUserGoals.protein) * 100;
-  const carbsProgress = (dailyTotals.carbs / mockUserGoals.carbs) * 100;
-  const fatProgress = (dailyTotals.fat / mockUserGoals.fat) * 100;
+  const calorieProgress = (dailyTotals.calories / derivedGoals.calories) * 100;
+  const proteinProgress = (dailyTotals.protein / derivedGoals.protein) * 100;
+  const carbsProgress = (dailyTotals.carbs / derivedGoals.carbs) * 100;
+  const fatProgress = (dailyTotals.fat / derivedGoals.fat) * 100;
 
   return (
     <div className="space-y-6">
@@ -122,7 +127,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
           <div className="space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Calories</span>
-              <span className="font-medium">{Math.round(dailyTotals.calories)} / {mockUserGoals.calories} kcal</span>
+              <span className="font-medium">{Math.round(dailyTotals.calories)} / {derivedGoals.calories} kcal</span>
             </div>
             <Progress value={calorieProgress} className="h-2" />
           </div>
@@ -136,7 +141,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-medium">{Math.round(dailyTotals.protein)}g</span>
-                <span className="text-xs text-muted-foreground">/ {mockUserGoals.protein}g</span>
+                <span className="text-xs text-muted-foreground">/ {Math.round(derivedGoals.protein)}g</span>
               </div>
               <Progress value={proteinProgress} className="h-1.5" />
             </div>
@@ -147,7 +152,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-medium">{Math.round(dailyTotals.carbs)}g</span>
-                <span className="text-xs text-muted-foreground">/ {mockUserGoals.carbs}g</span>
+                <span className="text-xs text-muted-foreground">/ {Math.round(derivedGoals.carbs)}g</span>
               </div>
               <Progress value={carbsProgress} className="h-1.5" />
             </div>
@@ -158,7 +163,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-medium">{Math.round(dailyTotals.fat)}g</span>
-                <span className="text-xs text-muted-foreground">/ {mockUserGoals.fat}g</span>
+                <span className="text-xs text-muted-foreground">/ {Math.round(derivedGoals.fat)}g</span>
               </div>
               <Progress value={fatProgress} className="h-1.5" />
             </div>
@@ -190,10 +195,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
           <Accordion type="multiple" defaultValue={mealTypes} className="space-y-3">
             {mealTypes.map((mealType) => {
               const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
-              const totalCalories = mealsForType.reduce((acc, meal) => {
-                const food = foodDetailsMap[meal.foodId];
-                return acc + (food ? (food.calories * meal.quantity / 100) : 0);
-              }, 0);
+              const totalCalories = mealsForType.reduce((acc, meal) => acc + meal.calories, 0);
 
               return (
                 <Card key={mealType} className="overflow-hidden">
@@ -221,17 +223,14 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                     <AccordionContent className="pb-0">
                       <div className="divide-y">
                         {mealsForType.length > 0 ? (
-                          mealsForType.map(meal => {
-                            const food = foodDetailsMap[meal.foodId];
-                            if (!food) return null;
-                            return (
+                          mealsForType.map(meal => (
                               <div key={meal.id} className="flex items-center gap-3 p-3 hover:bg-muted/30 transition-colors group">
                                 <div className="flex-grow min-w-0">
-                                  <p className="font-medium truncate">{food.name}</p>
+                                  <p className="font-medium truncate">{meal.foodName}</p>
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <span>{meal.quantity}g</span>
                                     <span>•</span>
-                                    <span>{Math.round(food.calories * meal.quantity / 100)} kcal</span>
+                                    <span>{Math.round(meal.calories)} kcal</span>
                                   </div>
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -246,7 +245,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                       <AlertDialogHeader>
-                                        <AlertDialogTitle>Remove {food.name}?</AlertDialogTitle>
+                                        <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
                                         <AlertDialogDescription>
                                           This will remove this item from your {mealType.toLowerCase()} meal.
                                         </AlertDialogDescription>
@@ -262,7 +261,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                 </div>
                               </div>
                             )
-                          })
+                          )
                         ) : (
                           <div className="p-8 text-center">
                             <Utensils className="h-8 w-8 mx-auto mb-3 text-muted-foreground/50" />
@@ -272,7 +271,6 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                           </div>
                         )}
                         
-                        {/* Add Food Button */}
                         <div className="p-2">
                           <Button 
                             size="sm" 
@@ -296,7 +294,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
       <AddFoodModal
         isOpen={isAddModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onAddFood={handleAddFood as any}
+        onAddFood={handleAddFood}
         mealType={mealToAdd as any}
       />
       
@@ -307,25 +305,10 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
           onUpdateMeal(id, qty);
           setEditingMeal(null);
         }}
-        loggedFood={{
-          logId: editingMeal?.id || "",
-          foodId: editingMeal?.foodId || "",
-          mealType: editingMeal?.mealType as any,
-          quantity: editingMeal?.quantity || 0
-        }}
+        loggedFood={editingMeal ? { logId: editingMeal.id, quantity: editingMeal.quantity } : null}
       />
     </div>
   );
 }
 
-// Helper component for badges (add this if you don't have it imported)
-const Badge = ({ children, variant, className }: any) => {
-  const variantClasses = {
-    secondary: "bg-secondary text-secondary-foreground"
-  };
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${variantClasses[variant]} ${className}`}>
-      {children}
-    </span>
-  );
-};
+    

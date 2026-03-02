@@ -1,17 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import { mockFoods, type Food } from '@/lib/data';
-import type { PlannedMeal } from '@/lib/planner-data';
+import type { PlannedMeal } from '@/types/planner';
+import type { FoodItem } from '@/types/food';
+
 import { Button } from '@/components/ui/button';
 import { AddFoodModal } from '@/components/tracker/add-food-modal';
 import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 import { EmptyState } from '../shared/empty-state';
-import { Plus, Trash2, Pencil, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Pencil } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,33 +37,28 @@ const getMealIcon = (mealType: string) => {
 };
 
 interface WeekPlannerProps {
-    plannedMeals: PlannedMeal[];
+    plannedMeals: (PlannedMeal & { id: string })[];
     summary: Record<string, {calories: number}>;
-    onAddMeal: (food: Food, quantity: number, mealType: string, day: string) => void;
+    onAddMeal: (food: FoodItem, quantity: number, mealType: string, day: string) => void;
     onUpdateMeal: (id: string, newQuantity: number) => void;
     onRemoveMeal: (id: string) => void;
 }
 
 export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: WeekPlannerProps) {
   const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<PlannedMeal | null>(null);
+  const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
   const [target, setTarget] = useState<{ day: string; mealType: string } | null>(null);
-  
-  const foodDetailsMap = mockFoods.reduce((acc, food) => {
-    acc[food.id] = food;
-    return acc;
-    }, {} as Record<string, Food>);
 
   const handleAddClick = (day: string, mealType: string) => {
     setTarget({ day, mealType });
     setAddModalOpen(true);
   };
   
-  const handleEditClick = (meal: PlannedMeal) => {
+  const handleEditClick = (meal: PlannedMeal & { id: string }) => {
     setEditingMeal(meal);
   };
 
-  const handleAddFood = (food: Food, quantity: number, mealType: string) => {
+  const handleAddFood = (food: FoodItem, quantity: number, mealType: string) => {
     if (target) {
       onAddMeal(food, quantity, target.mealType, target.day);
     }
@@ -79,7 +73,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                <AddFoodModal
                 isOpen={isAddModalOpen}
                 onClose={() => setAddModalOpen(false)}
-                onAddFood={handleAddFood as any}
+                onAddFood={handleAddFood}
                 mealType={target?.mealType as any}
                 />
           </EmptyState>
@@ -152,13 +146,11 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                       </div>
                       <div className="pl-6 space-y-2">
                         {mealsForCell.map(meal => {
-                          const food = foodDetailsMap[meal.foodId];
-                          if (!food) return null;
                           return (
                             <div key={meal.id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/30">
                               <div className="flex-grow min-w-0">
-                                <p className="font-medium truncate">{food.name}</p>
-                                <p className="text-xs text-muted-foreground">{meal.quantity}g · {Math.round(food.calories * meal.quantity / 100)} kcal</p>
+                                <p className="font-medium truncate">{meal.foodName}</p>
+                                <p className="text-xs text-muted-foreground">{meal.quantity}g · {Math.round(meal.calories)} kcal</p>
                               </div>
                               <div className="flex gap-1">
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditClick(meal)}>
@@ -172,7 +164,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>Remove {food.name}?</AlertDialogTitle>
+                                      <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
                                       <AlertDialogDescription>
                                         This will remove this item from your {mealType.toLowerCase()} on {day}.
                                       </AlertDialogDescription>
@@ -253,13 +245,11 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                         <div className="space-y-1.5">
                           {mealsForCell.length > 0 ? (
                             mealsForCell.map(meal => {
-                              const food = foodDetailsMap[meal.foodId];
-                              if (!food) return null;
                               return (
                                 <div key={meal.id} className="group relative text-xs p-1.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors">
                                   <div className="flex items-center gap-1.5">
                                     <div className="flex-grow min-w-0">
-                                      <p className="font-medium truncate">{food.name}</p>
+                                      <p className="font-medium truncate">{meal.foodName}</p>
                                       <p className="text-[10px] text-muted-foreground">{meal.quantity}g</p>
                                     </div>
                                   </div>
@@ -277,7 +267,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
                                         <AlertDialogHeader>
-                                          <AlertDialogTitle>Remove {food.name}?</AlertDialogTitle>
+                                          <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
                                           <AlertDialogDescription>
                                             This will remove this item from your {mealType.toLowerCase()} on {day}.
                                           </AlertDialogDescription>
@@ -325,7 +315,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
       <AddFoodModal
         isOpen={isAddModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onAddFood={handleAddFood as any}
+        onAddFood={handleAddFood}
         mealType={target?.mealType as any}
       />
       
@@ -336,13 +326,10 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
           onUpdateMeal(id, qty);
           setEditingMeal(null);
         }}
-        loggedFood={{
-          logId: editingMeal?.id || "",
-          foodId: editingMeal?.foodId || "",
-          mealType: editingMeal?.mealType as any,
-          quantity: editingMeal?.quantity || 0
-        }}
+        loggedFood={editingMeal ? { logId: editingMeal.id, quantity: editingMeal.quantity } : null}
       />
     </>
   );
 }
+
+    
