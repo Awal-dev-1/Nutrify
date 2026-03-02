@@ -1,23 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
+import { useToast } from '@/hooks/use-toast';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
 export default function RecognizePage() {
   const { user, userProfile } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -27,21 +29,87 @@ export default function RecognizePage() {
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
   const [viewedPrediction, setViewedPrediction] = useState<AIPrediction | null>(null);
 
+  // New state and refs for camera
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
 
   // Effect to handle file selection and create a preview URL
   useEffect(() => {
     if (file) {
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
+      setIsCameraOpen(false); // Close camera when a file is selected/captured
       return () => URL.revokeObjectURL(objectUrl);
     }
     setPreview(null);
   }, [file]);
   
+  // Effect to manage camera stream
+  useEffect(() => {
+    if (!isCameraOpen) {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+        }
+        return;
+    }
+
+    const getCameraStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        setIsCameraOpen(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this app.',
+        });
+      }
+    };
+
+    getCameraStream();
+
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isCameraOpen, toast]);
+
+  
   const handleFileSelect = (selectedFile: File) => {
     resetState();
     setFile(selectedFile);
   };
+
+  const handleCapture = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const capturedFile = new File([blob], "capture.jpg", { type: "image/jpeg" });
+          handleFileSelect(capturedFile);
+        }
+      }, 'image/jpeg', 0.95);
+    }
+  };
+
 
   const handleAnalyze = async () => {
     if (!file || !user || !db) return;
@@ -72,14 +140,42 @@ export default function RecognizePage() {
     setPredictions(null);
     setViewedPrediction(null);
     setSelectedFood(null);
+    setIsCameraOpen(false);
   };
 
   const renderContent = () => {
     switch (status) {
       case 'idle':
-        return (
-          <div className='w-full lg:w-3/4 mx-auto'>
-            {preview ? (
+        if (isCameraOpen) {
+          return (
+            <div className="w-full max-w-2xl mx-auto space-y-4">
+              <Card className="overflow-hidden">
+                <CardContent className="p-0 relative">
+                  <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay muted playsInline />
+                  {hasCameraPermission === false && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-4 text-center">
+                        <VideoOff className="h-10 w-10 mb-2" />
+                        <p className="font-semibold">Camera Access Denied</p>
+                        <p className="text-sm">Please enable camera permissions in your browser settings.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <div className="flex justify-center gap-4">
+                <Button size="lg" onClick={handleCapture} disabled={hasCameraPermission !== true}>
+                  <Camera className="mr-2 h-4 w-4" /> Capture Photo
+                </Button>
+                <Button size="lg" variant="ghost" onClick={() => setIsCameraOpen(false)}>
+                  <X className="mr-2 h-4 w-4" /> Cancel
+                </Button>
+              </div>
+            </div>
+          );
+        }
+
+        if (preview) {
+          return (
+            <div className='w-full lg:w-3/4 mx-auto'>
               <div className="space-y-4 text-center">
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
@@ -101,8 +197,29 @@ export default function RecognizePage() {
                     </Button>
                 </div>
               </div>
-            ) : (
-              <ImageUploader onFileSelect={handleFileSelect} />
+            </div>
+          );
+        }
+
+        return (
+          <div className='w-full lg:w-3/4 mx-auto space-y-4'>
+            <ImageUploader onFileSelect={handleFileSelect} />
+            <div className="relative flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+            <Button variant="secondary" className="w-full" onClick={() => setIsCameraOpen(true)} disabled={hasCameraPermission === false}>
+                <Camera className="mr-2 h-4 w-4" /> Use Camera
+            </Button>
+            {hasCameraPermission === false && (
+                <Alert variant="destructive" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Camera Disabled</AlertTitle>
+                    <AlertDescription>
+                        You have previously denied camera access. Please enable it in your browser settings to use this feature.
+                    </AlertDescription>
+                </Alert>
             )}
           </div>
         );
@@ -202,13 +319,15 @@ export default function RecognizePage() {
           AI Food Recognition
         </h1>
         <p className="text-muted-foreground mt-1">
-          Upload a food image and let our AI do the work.
+          Upload a food image or use your camera and let our AI do the work.
         </p>
       </div>
 
       <div className="min-h-[400px] flex items-center justify-center">
         {renderContent()}
       </div>
+      
+      <canvas ref={canvasRef} className="hidden" />
 
       <FoodConfirmationModal
         isOpen={!!selectedFood}
