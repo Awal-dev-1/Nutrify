@@ -23,12 +23,19 @@ export interface Recommendation {
   protein: number;
   carbs: number;
   fat: number;
+  micronutrients: {
+      fiber?: number;
+      iron?: number;
+      calcium?: number;
+      sodium?: number;
+  };
   reason: string;
 }
 
 export interface RecommendationResult {
   goal: string;
   recommendations: Recommendation[];
+  insightTips: string[];
 }
 
 const getSearchQueriesForGoal = (goal: string): string[] => {
@@ -97,6 +104,9 @@ export async function generateRecommendations(
     },
     userGoals: {
       dailyCalorieGoal: goals.dailyCalorieGoal,
+      proteinPercentageGoal: goals.proteinPercentageGoal,
+      carbsPercentageGoal: goals.carbsPercentageGoal,
+      fatPercentageGoal: goals.fatPercentageGoal,
     },
     availableFoods: candidateFoods.map(food => ({
         id: food.foodName, // Use the name as the ID
@@ -105,6 +115,10 @@ export async function generateRecommendations(
         protein: food.macronutrientBreakdown.protein,
         carbs: food.macronutrientBreakdown.carbohydrates,
         fat: food.macronutrientBreakdown.fat,
+        fiber: food.micronutrientBreakdown?.fiber,
+        iron: food.micronutrientBreakdown?.iron,
+        calcium: food.micronutrientBreakdown?.calcium,
+        sodium: food.micronutrientBreakdown?.sodium,
         tags: food.tags || []
     }))
   };
@@ -120,6 +134,7 @@ export async function generateRecommendations(
     protein: r.protein,
     carbs: r.carbs,
     fat: r.fat,
+    micronutrients: r.micronutrients,
     reason: r.reason,
     score: 0, // Score is an internal concept for the AI, not stored.
   }));
@@ -129,11 +144,13 @@ export async function generateRecommendations(
     createdAt: serverTimestamp(),
     basedOnGoal: primaryGoal,
     recommendations: recommendationsToStore,
+    insightTips: aiResult.insightTips,
   });
 
   // Step 5: Format the output for the frontend
   return {
     goal: primaryGoal,
     recommendations: aiResult.recommendations,
+    insightTips: aiResult.insightTips,
   };
 }

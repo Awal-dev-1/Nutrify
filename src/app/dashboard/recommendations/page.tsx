@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { Loader2, Sparkles, RefreshCw, Lightbulb, AlertCircle } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { RecommendationCard } from '@/components/recommendations/recommendation-card';
 import { generateRecommendations, type RecommendationResult, type Recommendation } from '@/services/recommendationService';
@@ -60,8 +60,8 @@ export default function RecommendationsPage() {
             carbohydrates: food.carbs,
             fat: food.fat,
         },
-        micronutrientBreakdown: {}, // Not needed for the 'add' modal
-        detailedRecipe: { ingredients: [], instructions: [] }, // Not needed
+        micronutrientBreakdown: food.micronutrients || {}, // Pass along micros
+        detailedRecipe: { ingredients: [], instructions: [] }, // Not needed for add modal
         foodHistory: '', // Not needed
         healthAnalysis: '', // Not needed
     }
@@ -125,6 +125,19 @@ export default function RecommendationsPage() {
         <p className="text-sm text-muted-foreground">
             Recommendations based on your goal to <span className="font-semibold text-primary">{data.goal.replace('-', ' ')}</span>.
         </p>
+
+        {data.insightTips && data.insightTips.length > 0 && (
+          <Alert>
+            <Lightbulb className="h-4 w-4" />
+            <AlertTitle>Insightful Tips</AlertTitle>
+            <AlertDescription>
+              <ul className="list-disc list-inside space-y-1">
+                {data.insightTips.map((tip, index) => <li key={index}>{tip}</li>)}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {data.recommendations.map((rec) => (
             <RecommendationCard

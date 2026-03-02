@@ -29,8 +29,14 @@ export function RecommendationCard({ recommendation, onViewRecipe, onAddToCart }
         <CardTitle>{recommendation.name}</CardTitle>
         <CardDescription>{recommendation.calories.toFixed(0)} kcal per 100g</CardDescription>
         <div className="flex flex-wrap gap-2 pt-1">
-            <Badge variant="outline">
+            <Badge variant="outline" className="border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
                 {recommendation.protein.toFixed(0)}g Protein
+            </Badge>
+             <Badge variant="outline" className="border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+                {recommendation.carbs.toFixed(0)}g Carbs
+            </Badge>
+             <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                {recommendation.fat.toFixed(0)}g Fat
             </Badge>
         </div>
       </CardHeader>
