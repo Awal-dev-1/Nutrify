@@ -80,50 +80,35 @@ service cloud.firestore {
 
       /**
        * @description Manages a user's private daily nutrition logs.
-       * @path /users/{userId}/dailyLogs
+       * A recursive wildcard `{docId=**}` is used to grant the owner
+       * full read/write access to this subcollection and any documents within it.
        */
-      match /dailyLogs/{date} {
-        // Document-level access: get, update, delete, and create (with setDoc)
-        allow get, write: if isOwner(userId);
-      }
-      match /dailyLogs {
-        // Collection-level access: list (for queries)
-        allow list: if isOwner(userId);
-      }
-      
-      /**
-       * @description Manages a user's generated recommendation history.
-       * @path /users/{userId}/generatedRecommendations
-       */
-      match /generatedRecommendations/{recommendationId} {
-        // Document-level access: get, update, delete
-        allow get, update, delete: if isOwner(userId);
-      }
-      match /generatedRecommendations {
-        // Collection-level access: list (for queries), create (for addDoc)
-        allow list, create: if isOwner(userId);
-      }
-
-      /**
-       * @description Manages AI food recognition scans.
-       * @path /users/{userId}/aiScans
-       */
-      match /aiScans/{scanId} {
-         // Document-level access: get, update, delete, and create (with setDoc)
+      match /dailyLogs/{docId=**} {
         allow read, write: if isOwner(userId);
       }
       
       /**
-       * @description Manages a user's private meal plans.
-       * @path /users/{userId}/plannedMeals
+       * @description Manages a user's generated recommendation history.
+       * A recursive wildcard is used for simplicity and robustness.
        */
-      match /plannedMeals/{mealId} {
-        // Document-level access: get, update, delete
-        allow get, update, delete: if isOwner(userId);
+      match /generatedRecommendations/{docId=**} {
+        allow read, write: if isOwner(userId);
       }
-      match /plannedMeals {
-         // Collection-level access: list (query), create (add)
-        allow list, create: if isOwner(userId);
+
+      /**
+       * @description Manages AI food recognition scans.
+       * A recursive wildcard is used for simplicity and robustness.
+       */
+      match /aiScans/{docId=**} {
+         allow read, write: if isOwner(userId);
+      }
+      
+      /**
+       * @description Manages a user's private meal plans.
+       * A recursive wildcard is used for simplicity and robustness.
+       */
+      match /plannedMeals/{docId=**} {
+        allow read, write: if isOwner(userId);
       }
     }
 
