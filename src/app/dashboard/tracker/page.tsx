@@ -8,6 +8,7 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
+  Legend,
 } from "recharts";
 import {
   Accordion,
@@ -493,7 +494,7 @@ const MacroPieChart: FC<{ totals: DailyLog }> = ({ totals }) => {
                             outerRadius={80}
                             fill="#8884d8"
                             dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                         >
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -505,6 +506,7 @@ const MacroPieChart: FC<{ totals: DailyLog }> = ({ totals }) => {
                                 border: '1px solid hsl(var(--border))',
                             }}
                         />
+                        <Legend wrapperStyle={{fontSize: '0.875rem'}}/>
                     </PieChart>
                 </ResponsiveContainer>
             </CardContent>
