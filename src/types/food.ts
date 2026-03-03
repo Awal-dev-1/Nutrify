@@ -21,9 +21,9 @@ export const FoodItemSchema = z.object({
   detailedRecipe: z.object({
     ingredients: z.array(z.string()).describe("A list of all ingredients required, with specific quantities (e.g., '1 cup flour', '200g chicken breast')."),
     instructions: z.array(z.string()).describe("A step-by-step guide to preparing the food.")
-  }).describe("A detailed recipe for the identified food item."),
-  foodHistory: z.string().describe("A short, interesting, and verifiable history about the food's origin or cultural significance."),
-  healthAnalysis: z.string().describe("Personalized health analysis based on the user's goal."),
+  }).describe("A detailed recipe for the identified food item.").optional(),
+  foodHistory: z.string().describe("A short, interesting, and verifiable history about the food's origin or cultural significance.").optional(),
+  healthAnalysis: z.string().describe("Personalized health analysis based on the user's goal.").optional(),
   isGhanaianLocal: z.boolean().describe("A boolean indicating if the food is a local Ghanaian dish or ingredient."),
   tags: z.array(z.string()).optional().describe("An array of descriptive tags for the food, including dietary tags like 'Vegan', 'Halal', 'Gluten-Free'."),
 });

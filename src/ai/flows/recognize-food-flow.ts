@@ -43,19 +43,18 @@ const recognizeFoodPrompt = ai.definePrompt({
   prompt: `You are an expert nutritionist and food recognition AI with a specialization in Ghanaian and West African foods. Your task is to analyze the food in the provided image and return a list of up to 3 potential matches with their detailed nutritional information based on the visible portion size.
 
 CRITICAL INSTRUCTIONS:
-1.  **Speed is critical. Generate your response as quickly as possible.**
+1.  **Speed is critical. Generate your response as quickly as possible. Do NOT generate detailed recipes, history, or health analysis. Focus ONLY on identification and core nutritional facts.**
 2.  **Identify if it is Food**: First, determine if the image contains a food item. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
 3.  **Analyze the Image**: If it is food, carefully analyze the image provided via the data URI.
     *   If the image contains multiple food components (e.g., banku and okra soup), identify it as a single, combined dish.
     *   If it is a single item (e.g., an apple), identify it as such.
     *   Set 'isFood' to true.
 4.  **Estimate Portion Size**: You MUST estimate the total weight of the food in grams. Consider the size of the plate, bowl, or any other reference objects in the image to make an accurate estimation. Set this value in the 'estimatedWeightGrams' field.
-5.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the complete nutritional profile (calories, macros, micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
+5.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the core nutritional profile (calories, macros, available micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
 6.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
-7.  **Generate Ancillary Details**: Provide a brief (1-2 sentences) history and health analysis. For the recipe, list ingredients and provide a single-sentence summary for the instructions.
-8.  **Identify Local Food**: You must also determine if the food identified is a local Ghanaian or other West African dish/ingredient and set the \`isGhanaianLocal\` boolean field accordingly in each prediction.
-9.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
-10. **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+7.  **Identify Local Food**: You must also determine if the food identified is a local Ghanaian or other West African dish/ingredient and set the \`isGhanaianLocal\` boolean field accordingly in each prediction.
+8.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
+9.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
 
 Image to analyze: {{media url=photoDataUri}}
 
