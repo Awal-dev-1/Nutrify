@@ -172,7 +172,7 @@ export default function RecognizePage() {
             <div className="w-full max-w-2xl mx-auto space-y-4">
               <Card className="overflow-hidden">
                 <CardContent className="p-0 relative">
-                  <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay muted playsInline />
+                  <video ref={videoRef} className="w-full h-[60vh] object-contain rounded-md bg-black" autoPlay muted playsInline />
                   {hasCameraPermission === true && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-3/4 h-3/4 border-2 border-dashed border-white/50 rounded-lg animate-pulse" />
@@ -208,7 +208,7 @@ export default function RecognizePage() {
               <div className="space-y-4 text-center">
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="w-full aspect-video relative bg-black/90">
+                    <div className="w-full h-[60vh] relative bg-black/90 rounded-md">
                       <Image
                         src={preview}
                         alt="Selected food"
