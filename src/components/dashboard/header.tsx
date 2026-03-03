@@ -8,11 +8,27 @@ import { useAuth } from '@/hooks'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import { LogOut } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export function DashboardHeader() {
   const { userProfile } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const [greeting, setGreeting] = useState("Good Morning");
+
+  useEffect(() => {
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) {
+        return "Good Morning";
+      } else if (hour < 18) {
+        return "Good Afternoon";
+      } else {
+        return "Good Evening";
+      }
+    };
+    setGreeting(getGreeting());
+  }, []);
 
   const handleLogout = async () => {
     await logout(auth);
@@ -24,7 +40,7 @@ export function DashboardHeader() {
       <SidebarTrigger className="md:hidden" />
       <div className="flex flex-col">
         <h1 className="text-base md:text-xl font-semibold">
-          Good Morning, {userProfile?.name || 'User'}!
+          {greeting}, {userProfile?.name || 'User'}!
         </h1>
         <p className="text-sm text-muted-foreground">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
