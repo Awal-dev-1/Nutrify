@@ -70,6 +70,9 @@ const recognizeFoodFlow = ai.defineFlow(
     const { output } = await recognizeFoodPrompt(input, {
       config: { temperature: 0.2 },
     });
-    return output!;
+    if (!output) {
+      throw new Error("The AI failed to analyze the image. The response was empty.");
+    }
+    return output;
   }
 );

@@ -37,7 +37,7 @@ const GeneratePersonalizedMealPlanInputSchema = z.object({
   carbsPercentageGoal: z.number().min(0).max(100).describe('Target carbohydrate percentage.'),
   fatPercentageGoal: z.number().min(0).max(100).describe('Target fat percentage.'),
   ironTargetMg: z.number().min(0).optional().describe('Optional: Target daily Iron intake in mg.'),
-  vitaminATargetMcg: z.number().min(0).optional().describe('Optional: Target daily Vitamin A intake in mcg.'),
+  vitaminATargetMcg: z.number().min(0).optional().describe('Optional: Target daily Vitamin A in mcg.'),
   
   // Dietary Preferences
   dietaryPreferences: z.array(z.string()).describe("List of user's dietary preferences (e.g., Vegan, Halal)."),
@@ -133,6 +133,9 @@ const generatePersonalizedMealPlanFlow = ai.defineFlow(
     const { output } = await generatePersonalizedMealPlanPrompt(input, {
       config: { temperature: 0.2 },
     });
-    return output!;
+    if (!output) {
+      throw new Error("The AI failed to generate a meal plan. The response was empty.");
+    }
+    return output;
   }
 );
