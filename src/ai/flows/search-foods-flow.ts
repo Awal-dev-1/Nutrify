@@ -46,9 +46,11 @@ CRITICAL INSTRUCTIONS:
 5.  **History & Analysis**: Keep \`foodHistory\` and \`healthAnalysis\` to 1-2 sentences maximum.
 6.  **Nutrient Data**: All nutrient data MUST be for a 100g portion. You MUST set the 'estimatedWeightGrams' field to 100.
 7.  **Dietary Tags**: Generate an array of relevant dietary tags.
+8.  **Ghanaian Food**: Determine if the food is a local Ghanaian dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly.
 
 For each food item that EXACTLY matches the query, you must provide:
 - foodName
+- isGhanaianLocal
 - calories
 - macronutrientBreakdown
 - micronutrientBreakdown

@@ -19,6 +19,7 @@ const AiFoodItemSchema = z.object({
   iron: z.number().optional(),
   calcium: z.number().optional(),
   sodium: z.number().optional(),
+  isGhanaianLocal: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -78,14 +79,14 @@ Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.c
 
 --- Instructions ---
 1.  **Filter Foods**: From the \`availableFoods\` list provided below, first filter out any foods that do not match the user's \`dietaryPreferences\`. Check the 'tags' array for each food. Then, exclude any single food item that has more than 70% of the user's total \`dailyCalorieGoal\`.
-2.  **Select Foods**: Based on the user's \`primaryGoal\`, select the most appropriate foods from the filtered list.
+2.  **Select Foods**: Based on the user's \`primaryGoal\`, select the most appropriate foods from the filtered list. Strongly prioritize Ghanaian local foods (\`isGhanaianLocal\` is true) when selecting.
     *   **If goal is 'lose-weight'**: Prioritize foods that are lower in calories and higher in protein.
     *   **If goal is 'gain-weight'**: Prioritize foods that are higher in calories and protein.
     *   **If goal is 'maintain-weight' or 'eat-healthier'**: Prioritize balanced, nutrient-dense foods.
 3.  **Generate Recommendations**: For each of the top 3-5 foods, create the full recommendation object.
     *   **Nutrients**: Map the food properties (name, calories, protein, carbs, fat) directly. Include a \`micronutrients\` object with values for fiber, iron, calcium, and sodium from the input data.
     *   **Reason**: Create a short, encouraging \`reason\` (1-2 sentences) explaining why it's a good choice for their goal.
-4.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal.
+4.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal and the recommendations provided.
 5.  **Final Output**: Return the top 3-5 foods from the selection. Ensure the output strictly adheres to the JSON schema. Use the original 'id' from the food item as the 'foodId' in the output.
 
 --- Available Foods ---

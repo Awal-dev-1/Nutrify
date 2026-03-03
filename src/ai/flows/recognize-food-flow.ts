@@ -53,8 +53,9 @@ CRITICAL INSTRUCTIONS:
 5.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the complete nutritional profile (calories, macros, micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
 6.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
 7.  **Generate Ancillary Details**: Provide a brief (1-2 sentences) history and health analysis. For the recipe, list ingredients and provide a single-sentence summary for the instructions.
-8.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
-9.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+8.  **Identify Ghanaian Food**: You must also determine if the food identified is a local Ghanaian dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly in each prediction.
+9.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
+10. **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
 
 Image to analyze: {{media url=photoDataUri}}
 

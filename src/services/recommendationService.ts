@@ -122,6 +122,7 @@ export async function generateRecommendations(
         iron: food.micronutrientBreakdown?.iron,
         calcium: food.micronutrientBreakdown?.calcium,
         sodium: food.micronutrientBreakdown?.sodium,
+        isGhanaianLocal: food.isGhanaianLocal,
         tags: food.tags || []
     }))
   };
