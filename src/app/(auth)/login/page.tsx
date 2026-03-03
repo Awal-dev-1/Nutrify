@@ -4,6 +4,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 
 export default function LoginPage() {
@@ -36,7 +37,7 @@ export default function LoginPage() {
   if (isUserLoading || isProfileLoading || (user && userProfile)) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Loading...</p>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
