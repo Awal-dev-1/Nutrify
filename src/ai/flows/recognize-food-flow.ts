@@ -43,17 +43,18 @@ const recognizeFoodPrompt = ai.definePrompt({
   prompt: `You are an expert nutritionist and food recognition AI. Your task is to analyze the food in the provided image and return a list of up to 3 potential matches with their detailed nutritional information based on the visible portion size.
 
 CRITICAL INSTRUCTIONS:
-1.  **Identify if it is Food**: First, determine if the image contains a food item. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **Analyze the Image**: If it is food, carefully analyze the image provided via the data URI.
+1.  **Speed is critical. Generate your response as quickly as possible.**
+2.  **Identify if it is Food**: First, determine if the image contains a food item. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
+3.  **Analyze the Image**: If it is food, carefully analyze the image provided via the data URI.
     *   If the image contains multiple food components (e.g., banku and okra soup), identify it as a single, combined dish.
     *   If it is a single item (e.g., an apple), identify it as such.
     *   Set 'isFood' to true.
-3.  **Estimate Portion Size**: You MUST estimate the total weight of the food in grams. Consider the size of the plate, bowl, or any other reference objects in the image to make an accurate estimation. Set this value in the 'estimatedWeightGrams' field.
-4.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the complete nutritional profile (calories, macros, micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
-5.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
-6.  **Generate Ancillary Details**: Also provide a brief, interesting history of the food, a detailed recipe (ingredients and instructions), and a health analysis.
-7.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
-8.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+4.  **Estimate Portion Size**: You MUST estimate the total weight of the food in grams. Consider the size of the plate, bowl, or any other reference objects in the image to make an accurate estimation. Set this value in the 'estimatedWeightGrams' field.
+5.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the complete nutritional profile (calories, macros, micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
+6.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
+7.  **Generate Ancillary Details**: Provide a brief (1-2 sentences) history and health analysis. For the recipe, list ingredients and provide a single-sentence summary for the instructions.
+8.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
+9.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
 
 Image to analyze: {{media url=photoDataUri}}
 

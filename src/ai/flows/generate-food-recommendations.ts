@@ -35,7 +35,7 @@ const RecommendationItemSchema = z.object({
       calcium: z.number().optional(),
       sodium: z.number().optional(),
   }).describe("A summary of key micronutrients per 100g."),
-  reason: z.string().describe("A concise explanation for why this food was recommended based on the user's goal."),
+  reason: z.string().describe("A concise (1-2 sentences) explanation for why this food was recommended based on the user's goal."),
 });
 
 const GenerateFoodRecommendationsInputSchema = z.object({
@@ -68,7 +68,7 @@ const generateFoodRecommendationsPrompt = ai.definePrompt({
   name: 'generateFoodRecommendationsPrompt',
   input: { schema: GenerateFoodRecommendationsInputSchema },
   output: { schema: GenerateFoodRecommendationsOutputSchema },
-  prompt: `You are an expert nutritionist for the Nutrify app. Your task is to generate personalized food recommendations for a user based on their profile, goals, and a list of available foods.
+  prompt: `You are an expert nutritionist for the Nutrify app, designed to be fast. Your task is to generate personalized food recommendations for a user based on their profile, goals, and a list of available foods.
 
 --- User Information ---
 Primary Goal: {{{userProfile.primaryGoal}}}
@@ -77,25 +77,16 @@ Daily Calorie Goal: {{{userGoals.dailyCalorieGoal}}}
 Target Macro Split (P/C/F): {{{userGoals.proteinPercentageGoal}}% / {{{userGoals.carbsPercentageGoal}}% / {{{userGoals.fatPercentageGoal}}}%
 
 --- Instructions ---
-1.  **Filter Foods**: From the \`availableFoods\` list provided below, first filter out any foods that do not match the user's \`dietaryPreferences\`. Check the 'tags' array for each food.
-2.  **Calorie Filter**: Exclude any single food item that has more than 70% of the user's total \`dailyCalorieGoal\`.
-3.  **Score Filtered Foods**: Score the remaining foods based on the user's \`primaryGoal\`.
-    *   **If goal is 'lose-weight'**: Prioritize lower-calorie, higher-protein foods. Base Score: 50. Add 30 points if calories < 400. Add 20 points if protein > 20. Add 10 points if fat < 15.
-    *   **If goal is 'gain-weight'**: Prioritize higher-calorie, higher-protein/carb foods. Base Score: 50. Add 30 points if calories > 500. Add 20 points if protein > 25.
-    *   **If goal is 'maintain-weight' or 'eat-healthier'**: Prioritize balanced, nutrient-dense foods. Give a higher score to foods with a macro split (protein/carbs/fat) that is closer to the user's target. Give a base score of 70 to all items that passed the filter.
-4.  **Generate Recommendations**: For each of the top foods, create the full recommendation object.
+1.  **Filter Foods**: From the \`availableFoods\` list provided below, first filter out any foods that do not match the user's \`dietaryPreferences\`. Check the 'tags' array for each food. Then, exclude any single food item that has more than 70% of the user's total \`dailyCalorieGoal\`.
+2.  **Select Foods**: Based on the user's \`primaryGoal\`, select the most appropriate foods from the filtered list.
+    *   **If goal is 'lose-weight'**: Prioritize foods that are lower in calories and higher in protein.
+    *   **If goal is 'gain-weight'**: Prioritize foods that are higher in calories and protein.
+    *   **If goal is 'maintain-weight' or 'eat-healthier'**: Prioritize balanced, nutrient-dense foods.
+3.  **Generate Recommendations**: For each of the top 3-5 foods, create the full recommendation object.
     *   **Nutrients**: Map the food properties (name, calories, protein, carbs, fat) directly. Include a \`micronutrients\` object with values for fiber, iron, calcium, and sodium from the input data.
-    *   **Reason**: Create a short, encouraging \`reason\` explaining why it's a good choice for their goal.
-        *   Example for 'lose-weight': "High in protein to keep you full, and lower in calories."
-        *   Example for 'gain-weight': "A high-energy meal to help you meet your calorie surplus goals."
-        *   Example for 'maintain-weight': "A balanced and nutritious option to maintain your current weight."
-5.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\`. These should be general nutritional advice related to the user's goal.
-    *   Example for 'lose-weight': "Remember to drink plenty of water, it can help you feel full."
-    *   Example for 'gain-weight': "Try to eat every 3-4 hours to keep your body fueled for growth."
-    *   Example for 'maintain-weight': "Focus on whole foods and listen to your body's hunger cues."
-6.  **Sort and Select**: Sort all scored foods by their final score in descending order.
-7.  **Add Randomness**: From the top 10 sorted foods, shuffle them slightly to ensure variety on each request.
-8.  **Final Output**: Return the top 3-5 foods from the shuffled list. If fewer than 5 foods are available after filtering, return all of them. Ensure the output strictly adheres to the JSON schema. Use the original 'id' from the food item as the 'foodId' in the output.
+    *   **Reason**: Create a short, encouraging \`reason\` (1-2 sentences) explaining why it's a good choice for their goal.
+4.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal.
+5.  **Final Output**: Return the top 3-5 foods from the selection. Ensure the output strictly adheres to the JSON schema. Use the original 'id' from the food item as the 'foodId' in the output.
 
 --- Available Foods ---
 {{{json availableFoods}}}

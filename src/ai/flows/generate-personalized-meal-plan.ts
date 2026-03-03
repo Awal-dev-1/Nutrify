@@ -68,7 +68,7 @@ const generatePersonalizedMealPlanPrompt = ai.definePrompt({
   name: 'generatePersonalizedMealPlanPrompt',
   input: { schema: GeneratePersonalizedMealPlanInputSchema },
   output: { schema: GeneratePersonalizedMealPlanOutputSchema },
-  prompt: `You are an expert nutritionist and meal planner for "Nutrify", a smart nutrition platform focused on Ghanaian users.
+  prompt: `You are an expert nutritionist and meal planner for "Nutrify", a smart nutrition platform focused on Ghanaian users. You are designed to be extremely fast. Generate the plan as quickly as possible.
 Your task is to generate a personalized weekly meal plan based on the user's details, goals, preferences, and recent nutrient intake.
 The plan should be balanced, culturally appropriate (considering Ghanaian food if possible), and help the user achieve their health goals.
 

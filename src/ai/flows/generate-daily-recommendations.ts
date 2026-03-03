@@ -35,7 +35,7 @@ const RecipeIdeaSchema = z.object({
   calories: z.number().describe('Estimated calories per serving.'),
   description: z.string().describe('A short, appealing description of the recipe.'),
   ingredients: z.array(z.string()).describe('List of ingredients for the recipe.'),
-  instructions: z.array(z.string()).describe('Step-by-step preparation instructions.'),
+  instructions: z.array(z.string()).describe('A brief, summarized list of preparation steps (2-3 steps max).'),
 });
 
 const GenerateDailyRecommendationsOutputSchema = z.object({
@@ -53,7 +53,7 @@ const generateDailyRecommendationsPrompt = ai.definePrompt({
   name: 'generateDailyRecommendationsPrompt',
   input: { schema: GenerateDailyRecommendationsInputSchema },
   output: { schema: GenerateDailyRecommendationsOutputSchema },
-  prompt: `You are a world-class nutritionist and personal motivation coach. A user needs personalized recommendations based on their daily progress and goals.
+  prompt: `You are a world-class nutritionist and personal motivation coach designed to be extremely fast. A user needs personalized recommendations based on their daily progress and goals.
 
 Analyze the user's data below:
 - Calorie Goal: {{{calorieTarget}}} kcal
@@ -65,7 +65,7 @@ Your task is to generate a set of recommendations to help the user achieve their
 
 1.  **Meal Suggestions:** Provide 3 specific meal suggestions (e.g., for breakfast, lunch, or dinner) that fit within their remaining calorie budget. For each meal, provide the mealType, name, estimated calories, protein, carbs, fat, a suggested portionSize, and a brief reason for the suggestion.
 2.  **AI Tips:** Provide 2-3 actionable, insightful tips. These should be directly related to the user's data (e.g., if they are low on protein, give a tip about protein sources).
-3.  **Recipe Ideas:** Provide 2-3 new and interesting recipe ideas that align with their goals and preferences. For each recipe, include the name, prep time, calories, a short description, a list of ingredients, and step-by-step instructions.
+3.  **Recipe Ideas:** Provide 2-3 new and interesting recipe ideas that align with their goals and preferences. For each recipe, include the name, prep time, calories, a short description, a list of ingredients, and a brief, summarized list of preparation instructions (2-3 steps max).
 
 Prioritize Ghanaian dishes if mentioned in preferences. Be encouraging and supportive in your tone.
 
