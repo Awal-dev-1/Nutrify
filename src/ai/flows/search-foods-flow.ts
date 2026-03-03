@@ -34,7 +34,7 @@ const searchFoodsPrompt = ai.definePrompt({
   name: 'searchFoodsV3Prompt',
   input: { schema: SearchFoodsInputSchema },
   output: { schema: SearchFoodsOutputSchema },
-  prompt: `You are a world-class nutritional expert, designed to be extremely fast and accurate. Your task is to provide nutritional information for food items requested by the user, per 100g portion.
+  prompt: `You are a world-class nutritional expert specializing in Ghanaian and West African foods, designed to be extremely fast and accurate. Your task is to provide nutritional information for food items requested by the user, per 100g portion.
 
 User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
@@ -46,7 +46,7 @@ CRITICAL INSTRUCTIONS:
 5.  **History & Analysis**: Keep \`foodHistory\` and \`healthAnalysis\` to 1-2 sentences maximum.
 6.  **Nutrient Data**: All nutrient data MUST be for a 100g portion. You MUST set the 'estimatedWeightGrams' field to 100.
 7.  **Dietary Tags**: Generate an array of relevant dietary tags.
-8.  **Ghanaian Food**: Determine if the food is a local Ghanaian dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly.
+8.  **Local Food**: Determine if the food is a local Ghanaian or other West African dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly.
 
 For each food item that EXACTLY matches the query, you must provide:
 - foodName

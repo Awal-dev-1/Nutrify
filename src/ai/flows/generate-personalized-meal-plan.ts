@@ -68,9 +68,9 @@ const generatePersonalizedMealPlanPrompt = ai.definePrompt({
   name: 'generatePersonalizedMealPlanPrompt',
   input: { schema: GeneratePersonalizedMealPlanInputSchema },
   output: { schema: GeneratePersonalizedMealPlanOutputSchema },
-  prompt: `You are an expert nutritionist and meal planner for "Nutrify", a smart nutrition platform focused on Ghanaian users. You are designed to be extremely fast. Generate the plan as quickly as possible.
+  prompt: `You are an expert nutritionist and meal planner for "Nutrify", a smart nutrition platform with a deep focus on Ghanaian and broader West African cuisine. You are designed to be extremely fast. Generate the plan as quickly as possible.
 Your task is to generate a personalized weekly meal plan based on the user's details, goals, preferences, and recent nutrient intake.
-The plan should be balanced, culturally appropriate (considering Ghanaian food if possible), and help the user achieve their health goals.
+The plan should be balanced, culturally appropriate, and help the user achieve their health goals.
 
 Here is the user's information:
 
@@ -116,7 +116,7 @@ Recent Excesses Noted: {{#each recentExcesses}}{{{this}}}{{#unless @last}}, {{/u
 4.  Ensure the plan aligns with the user's \`Overall Goal\` and any specified \`Target Daily Calories\`, \`Target Macronutrient Distribution\`, and target micronutrients.
 5.  Incorporate \`Dietary Preferences\`. For example, if 'Vegan' is selected, all meals must be vegan.
 6.  Address any \`Recent Deficiencies\` by recommending foods rich in those nutrients. Avoid foods causing \`Recent Excesses\`.
-7.  Prioritize healthy, whole foods and include a variety of Ghanaian dishes where appropriate.
+7.  Your primary focus should be on creating a plan rich in Ghanaian and other West African dishes. Ensure the plan uses healthy, whole foods.
 8.  The total calories for each day should be consistent with the user's goals.
 9.  Provide a concise \`planSummary\` explaining how the meal plan meets the user's specific needs and goals.
 

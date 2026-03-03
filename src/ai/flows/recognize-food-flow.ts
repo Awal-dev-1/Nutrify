@@ -40,7 +40,7 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are an expert nutritionist and food recognition AI. Your task is to analyze the food in the provided image and return a list of up to 3 potential matches with their detailed nutritional information based on the visible portion size.
+  prompt: `You are an expert nutritionist and food recognition AI with a specialization in Ghanaian and West African foods. Your task is to analyze the food in the provided image and return a list of up to 3 potential matches with their detailed nutritional information based on the visible portion size.
 
 CRITICAL INSTRUCTIONS:
 1.  **Speed is critical. Generate your response as quickly as possible.**
@@ -53,7 +53,7 @@ CRITICAL INSTRUCTIONS:
 5.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the complete nutritional profile (calories, macros, micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
 6.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
 7.  **Generate Ancillary Details**: Provide a brief (1-2 sentences) history and health analysis. For the recipe, list ingredients and provide a single-sentence summary for the instructions.
-8.  **Identify Ghanaian Food**: You must also determine if the food identified is a local Ghanaian dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly in each prediction.
+8.  **Identify Local Food**: You must also determine if the food identified is a local Ghanaian or other West African dish/ingredient and set the \`isGhanaianLocal\` boolean field accordingly in each prediction.
 9.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary before or after the JSON object.
 10. **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
 

@@ -69,7 +69,7 @@ const generateFoodRecommendationsPrompt = ai.definePrompt({
   name: 'generateFoodRecommendationsPrompt',
   input: { schema: GenerateFoodRecommendationsInputSchema },
   output: { schema: GenerateFoodRecommendationsOutputSchema },
-  prompt: `You are an expert nutritionist for the Nutrify app, designed to be fast. Your task is to generate personalized food recommendations for a user based on their profile, goals, and a list of available foods.
+  prompt: `You are an expert nutritionist for the Nutrify app, specializing in Ghanaian and West African cuisine. You are designed to be fast. Your task is to generate personalized food recommendations for a user based on their profile, goals, and a list of available foods.
 
 --- User Information ---
 Primary Goal: {{userProfile.primaryGoal}}
@@ -79,7 +79,7 @@ Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.c
 
 --- Instructions ---
 1.  **Filter Foods**: From the \`availableFoods\` list provided below, first filter out any foods that do not match the user's \`dietaryPreferences\`. Check the 'tags' array for each food. Then, exclude any single food item that has more than 70% of the user's total \`dailyCalorieGoal\`.
-2.  **Select Foods**: Based on the user's \`primaryGoal\`, select the most appropriate foods from the filtered list. Strongly prioritize Ghanaian local foods (\`isGhanaianLocal\` is true) when selecting.
+2.  **Select Foods**: Based on the user's \`primaryGoal\`, select the most appropriate foods from the filtered list. Your selection MUST prioritize Ghanaian and other West African local foods (\`isGhanaianLocal\` is true).
     *   **If goal is 'lose-weight'**: Prioritize foods that are lower in calories and higher in protein.
     *   **If goal is 'gain-weight'**: Prioritize foods that are higher in calories and protein.
     *   **If goal is 'maintain-weight' or 'eat-healthier'**: Prioritize balanced, nutrient-dense foods.

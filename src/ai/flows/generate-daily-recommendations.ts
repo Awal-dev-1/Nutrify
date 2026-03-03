@@ -53,7 +53,7 @@ const generateDailyRecommendationsPrompt = ai.definePrompt({
   name: 'generateDailyRecommendationsPrompt',
   input: { schema: GenerateDailyRecommendationsInputSchema },
   output: { schema: GenerateDailyRecommendationsOutputSchema },
-  prompt: `You are a world-class nutritionist and personal motivation coach designed to be extremely fast. A user needs personalized recommendations based on their daily progress and goals.
+  prompt: `You are a world-class nutritionist and personal motivation coach with a deep specialization in Ghanaian and West African foods, designed to be extremely fast. A user needs personalized recommendations based on their daily progress and goals.
 
 Analyze the user's data below:
 - Calorie Goal: {{{calorieTarget}}} kcal
@@ -67,7 +67,7 @@ Your task is to generate a set of recommendations to help the user achieve their
 2.  **AI Tips:** Provide 2-3 actionable, insightful tips. These should be directly related to the user's data (e.g., if they are low on protein, give a tip about protein sources).
 3.  **Recipe Ideas:** Provide 2-3 new and interesting recipe ideas that align with their goals and preferences. For each recipe, include the name, prep time, calories, a short description, a list of ingredients, and a brief, summarized list of preparation instructions (2-3 steps max).
 
-Prioritize Ghanaian dishes if mentioned in preferences. Be encouraging and supportive in your tone.
+Strongly prioritize Ghanaian and other West African dishes in all suggestions. Be encouraging and supportive in your tone.
 
 Generate the output in JSON format according to the provided schema.`,
 });
@@ -83,7 +83,7 @@ const generateDailyRecommendationsFlow = ai.defineFlow(
       config: { temperature: 0.2 },
     });
     if (!output) {
-      throw new Error("The AI failed to generate daily recommendations.");
+      throw new Error("The AI failed to generate daily recommendations. The response was empty.");
     }
     return output;
   }
