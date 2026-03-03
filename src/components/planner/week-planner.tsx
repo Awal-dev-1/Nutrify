@@ -103,13 +103,13 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                     No meals planned for this day.
                   </div>
                 </CardContent>
-                <CardFooter className="p-3 pt-0 flex gap-2">
+                <CardFooter className="p-3 pt-0 grid grid-cols-2 gap-2">
                   {mealTypes.map((mealType) => (
                     <Button 
                       key={`${day}-${mealType}-add`}
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 text-xs"
+                      className="text-xs"
                       onClick={() => handleAddClick(day, mealType)}
                     >
                       <Plus className="h-3 w-3 mr-1" /> {mealType}
@@ -147,12 +147,12 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                       <div className="pl-6 space-y-2">
                         {mealsForCell.map(meal => {
                           return (
-                            <div key={meal.id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/30">
+                            <div key={meal.id} className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm p-2 rounded-lg bg-muted/30 group">
                               <div className="flex-grow min-w-0">
                                 <p className="font-medium truncate">{meal.foodName}</p>
                                 <p className="text-xs text-muted-foreground">{meal.quantity}g · {Math.round(meal.calories)} kcal</p>
                               </div>
-                              <div className="flex gap-1">
+                              <div className="flex gap-1 self-end sm:self-center">
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditClick(meal)}>
                                   <Pencil className="h-3.5 w-3.5" />
                                 </Button>
@@ -186,13 +186,13 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                   );
                 })}
               </CardContent>
-              <CardFooter className="p-3 pt-0 flex gap-2">
+              <CardFooter className="p-3 pt-0 grid grid-cols-2 gap-2">
                 {mealTypes.map((mealType) => (
                   <Button 
                     key={mealType}
                     variant="outline" 
                     size="sm" 
-                    className="flex-1 text-xs"
+                    className="text-xs"
                     onClick={() => handleAddClick(day, mealType)}
                   >
                     <Plus className="h-3 w-3 mr-1" /> {mealType}
@@ -331,5 +331,3 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
     </>
   );
 }
-
-    
