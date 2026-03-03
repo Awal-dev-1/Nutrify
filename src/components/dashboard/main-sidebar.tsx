@@ -23,6 +23,7 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
@@ -49,6 +50,13 @@ const aiLinks = [
 export function MainSidebar() {
   const pathname = usePathname()
   const { user } = useUser();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleCloseMobileSidebar = () => {
+    if(isMobile) {
+      setOpenMobile(false);
+    }
+  }
 
   const renderLinks = (links: {href: string, label: string, icon: any}[]) => (
     <SidebarMenu className="gap-1">
@@ -59,6 +67,7 @@ export function MainSidebar() {
             isActive={pathname === link.href}
             tooltip={link.label}
             className="py-2"
+            onClick={handleCloseMobileSidebar}
           >
             <Link href={link.href}>
               <link.icon className="h-4 w-4" />
@@ -114,6 +123,7 @@ export function MainSidebar() {
                 isActive={pathname === '/dashboard/settings'}
                 tooltip="Settings"
                 className="py-2"
+                onClick={handleCloseMobileSidebar}
               >
                 <Link href="/dashboard/settings">
                   <Settings className="h-4 w-4" />
