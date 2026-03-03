@@ -40,7 +40,10 @@ User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
 CRITICAL INSTRUCTIONS:
 1.  **Food Queries Only**: Your primary function is to analyze food. First, determine if the user's query is strictly about a food item. If the query is clearly not about food (e.g., "a car," "the meaning of life," "blue sky"), you MUST set 'isFoodQuery' to false and return an empty 'foodItems' array. Do not attempt to find nutritional information for non-food items.
-2.  **Exact Match Only**: You MUST only provide information for the exact food item specified in the user's query. Do not provide information for related or similar foods. If the query is ambiguous, provide the most common interpretation.
+2.  **Handle Specific and Combined Dishes**: Your primary task is to respond to the user's query precisely.
+    *   If the user asks for a single food item (e.g., "fufu"), provide nutritional information for that item alone.
+    *   If the user asks for a combined dish (e.g., "banku with okra soup"), you must analyze the entire dish as a single meal and provide the combined nutritional information.
+    *   Do not provide information for related but unrequested items.
 3.  **Detailed Recipe Generation**: For the \`detailedRecipe\` field, you must provide a complete, practical recipe.
     -   \`ingredients\`: List every ingredient with precise measurements (e.g., "1 cup (240ml) water", "150g chicken breast").
     -   \`instructions\`: Provide clear, step-by-step instructions for preparation.

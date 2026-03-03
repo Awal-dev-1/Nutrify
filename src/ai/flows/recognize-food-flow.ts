@@ -44,7 +44,10 @@ const recognizeFoodPrompt = ai.definePrompt({
 
 CRITICAL INSTRUCTIONS:
 1.  **Identify if it is Food**: First, determine if the image contains a food item. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **Analyze the Image**: If it is food, carefully analyze the image provided via the data URI to identify the food item(s). Set 'isFood' to true.
+2.  **Analyze the Image**: If it is food, carefully analyze the image provided via the data URI.
+    *   If the image contains multiple food components (e.g., banku and okra soup), identify it as a single, combined dish.
+    *   If it is a single item (e.g., an apple), identify it as such.
+    *   Set 'isFood' to true.
 3.  **Estimate Portion Size**: You MUST estimate the total weight of the food in grams. Consider the size of the plate, bowl, or any other reference objects in the image to make an accurate estimation. Set this value in the 'estimatedWeightGrams' field.
 4.  **Calculate Nutrients for the Portion**: For each prediction, you MUST calculate the complete nutritional profile (calories, macros, micros) for the estimated portion size you identified. The values in the output schema should reflect the total nutrients for the food visible in the image, NOT per 100g.
 5.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
