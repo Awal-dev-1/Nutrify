@@ -121,35 +121,32 @@ export default function MealPlannerPage() {
 
       // 2. Prepare input for the meal plan flow
       const flowInput = {
-        personalDetails: {
-          gender: (userProfile.profile?.gender.toLowerCase() || 'other') as 'male' | 'female' | 'other',
-          age: userProfile.profile?.age || 30,
-          heightCm: userProfile.profile?.heightCm || 170,
-          weightKg: userProfile.profile?.weightKg || 70,
-          activityLevel: (userProfile.profile?.activityLevel.replace('-', ' ') || 'moderate') as 'low' | 'moderate' | 'active' | 'very active',
-        },
-        dietaryGoals: {
-          goal: (userProfile.health?.primaryGoal.replace('-', ' ') || 'maintain weight') as 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier',
-          targetCalories: userProfile.goals?.dailyCalorieGoal,
-          targetMacros: {
-            protein: userProfile.goals?.proteinPercentageGoal || 30,
-            carbs: userProfile.goals?.carbsPercentageGoal || 40,
-            fat: userProfile.goals?.fatPercentageGoal || 30,
-          },
-          targetMicros: {
-            iron: userProfile.goals?.ironTargetMg,
-            vitaminA: userProfile.goals?.vitaminATargetMcg,
-          },
-        },
+        // Personal Details
+        gender: (userProfile.profile?.gender.toLowerCase() || 'other') as 'male' | 'female' | 'other',
+        age: userProfile.profile?.age || 30,
+        heightCm: userProfile.profile?.heightCm || 170,
+        weightKg: userProfile.profile?.weightKg || 70,
+        activityLevel: (userProfile.profile?.activityLevel.replace('-', ' ') || 'moderate') as 'low' | 'moderate' | 'active' | 'very active',
+        
+        // Dietary Goals
+        goal: (userProfile.health?.primaryGoal.replace('-', ' ') || 'maintain weight') as 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier',
+        targetCalories: userProfile.goals?.dailyCalorieGoal,
+        proteinPercentageGoal: userProfile.goals?.proteinPercentageGoal || 30,
+        carbsPercentageGoal: userProfile.goals?.carbsPercentageGoal || 40,
+        fatPercentageGoal: userProfile.goals?.fatPercentageGoal || 30,
+        ironTargetMg: userProfile.goals?.ironTargetMg,
+        vitaminATargetMcg: userProfile.goals?.vitaminATargetMcg,
+
+        // Preferences
         dietaryPreferences: userProfile.health?.dietaryPreferences || [],
-        recentNutrientIntake: {
-          averageDailyCalories: analytics.summary.averageCalories,
-          averageDailyProtein: analytics.summary.averageProtein,
-          averageDailyCarbs: analytics.summary.averageCarbs,
-          averageDailyFat: analytics.summary.averageFat,
-          averageDailyIron: analytics.summary.averageIron,
-          averageDailyVitaminA: analytics.summary.averageVitaminA,
-        },
+
+        // Recent Intake
+        averageDailyCalories: analytics.summary.averageCalories,
+        averageDailyProtein: analytics.summary.averageProtein,
+        averageDailyCarbs: analytics.summary.averageCarbs,
+        averageDailyFat: analytics.summary.averageFat,
+        averageDailyIron: analytics.summary.averageIron,
+        averageDailyVitaminA: analytics.summary.averageVitaminA,
       };
 
       // 3. Call the AI flow

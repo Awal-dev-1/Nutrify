@@ -32,37 +32,34 @@ const DailyMealPlanSchema = z.object({
 });
 
 const GeneratePersonalizedMealPlanInputSchema = z.object({
-  personalDetails: z.object({
-    gender: z.enum(['male', 'female', 'other']).describe("User's gender."),
-    age: z.number().min(0).max(120).describe("User's age in years."),
-    heightCm: z.number().min(50).max(250).describe("User's height in centimeters."),
-    weightKg: z.number().min(20).max(300).describe("User's weight in kilograms."),
-    activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe("User's physical activity level."),
-  }).describe('Personal details of the user.'),
-  dietaryGoals: z.object({
-    goal: z.enum(['lose weight', 'maintain weight', 'gain weight', 'eat healthier']).describe('Overall dietary goal.'),
-    targetCalories: z.number().optional().describe('Optional: Target daily calorie intake.'),
-    targetMacros: z.object({
-      protein: z.number().min(0).max(100).describe('Target protein percentage.'),
-      carbs: z.number().min(0).max(100).describe('Target carbohydrate percentage.'),
-      fat: z.number().min(0).max(100).describe('Target fat percentage.'),
-    }).optional().describe('Optional: Target macronutrient distribution percentages.'),
-    targetMicros: z.object({
-      iron: z.number().min(0).optional().describe('Optional: Target daily Iron intake in mg.'),
-      vitaminA: z.number().min(0).optional().describe('Optional: Target daily Vitamin A intake in mcg.'),
-    }).optional().describe('Optional: Target daily micronutrient intake.'),
-  }).describe("User's dietary goals."),
+  // Personal Details (Flattened)
+  gender: z.enum(['male', 'female', 'other']).describe("User's gender."),
+  age: z.number().min(0).max(120).describe("User's age in years."),
+  heightCm: z.number().min(50).max(250).describe("User's height in centimeters."),
+  weightKg: z.number().min(20).max(300).describe("User's weight in kilograms."),
+  activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe("User's physical activity level."),
+
+  // Dietary Goals (Flattened)
+  goal: z.enum(['lose weight', 'maintain weight', 'gain weight', 'eat healthier']).describe('Overall dietary goal.'),
+  targetCalories: z.number().optional().describe('Optional: Target daily calorie intake.'),
+  proteinPercentageGoal: z.number().min(0).max(100).describe('Target protein percentage.'),
+  carbsPercentageGoal: z.number().min(0).max(100).describe('Target carbohydrate percentage.'),
+  fatPercentageGoal: z.number().min(0).max(100).describe('Target fat percentage.'),
+  ironTargetMg: z.number().min(0).optional().describe('Optional: Target daily Iron intake in mg.'),
+  vitaminATargetMcg: z.number().min(0).optional().describe('Optional: Target daily Vitamin A intake in mcg.'),
+  
+  // Dietary Preferences
   dietaryPreferences: z.array(z.string()).describe("List of user's dietary preferences (e.g., Vegan, Halal)."),
-  recentNutrientIntake: z.object({
-    averageDailyCalories: z.number().describe('Average daily calorie intake.'),
-    averageDailyProtein: z.number().describe('Average daily protein intake in grams.'),
-    averageDailyCarbs: z.number().describe('Average daily carbohydrate intake in grams.'),
-    averageDailyFat: z.number().describe('Average daily fat in grams.'),
-    averageDailyIron: z.number().describe('Average daily Iron intake in mg.'),
-    averageDailyVitaminA: z.number().describe('Average daily Vitamin A intake in mcg.'),
-    recentDeficiencies: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient deficiencies.'),
-    recentExcesses: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient excesses.'),
-  }).describe("User's recent average daily nutrient intake."),
+  
+  // Recent Nutrient Intake (Flattened)
+  averageDailyCalories: z.number().describe('Average daily calorie intake.'),
+  averageDailyProtein: z.number().describe('Average daily protein intake in grams.'),
+  averageDailyCarbs: z.number().describe('Average daily carbohydrate intake in grams.'),
+  averageDailyFat: z.number().describe('Average daily fat in grams.'),
+  averageDailyIron: z.number().describe('Average daily Iron intake in mg.'),
+  averageDailyVitaminA: z.number().describe('Average daily Vitamin A intake in mcg.'),
+  recentDeficiencies: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient deficiencies.'),
+  recentExcesses: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient excesses.'),
 });
 export type GeneratePersonalizedMealPlanInput = z.infer<typeof GeneratePersonalizedMealPlanInputSchema>;
 
@@ -87,20 +84,18 @@ The plan should be balanced, culturally appropriate (considering Ghanaian food i
 Here is the user's information:
 
 --- User Profile ---
-Gender: {{{personalDetails.gender}}}
-Age: {{{personalDetails.age}}} years
-Height: {{{personalDetails.heightCm}}} cm
-Weight: {{{personalDetails.weightKg}}} kg
-Activity Level: {{{personalDetails.activityLevel}}}
+Gender: {{{gender}}}
+Age: {{{age}}} years
+Height: {{{heightCm}}} cm
+Weight: {{{weightKg}}} kg
+Activity Level: {{{activityLevel}}}
 
 --- Dietary Goals ---
-Overall Goal: {{{dietaryGoals.goal}}}
-{{#if dietaryGoals.targetCalories}}Target Daily Calories: {{{dietaryGoals.targetCalories}}} kcal{{/if}}
-{{#if dietaryGoals.targetMacros}}Target Macronutrient Distribution (Percentages): Protein {{dietaryGoals.targetMacros.protein}}%, Carbs {{dietaryGoals.targetMacros.carbs}}%, Fat {{dietaryGoals.targetMacros.fat}}%{{/if}}
-{{#if dietaryGoals.targetMicros}}
-  {{#if dietaryGoals.targetMicros.iron}}Target Iron: {{dietaryGoals.targetMicros.iron}} mg{{/if}}
-  {{#if dietaryGoals.targetMicros.vitaminA}}Target Vitamin A: {{dietaryGoals.targetMicros.vitaminA}} mcg{{/if}}
-{{/if}}
+Overall Goal: {{{goal}}}
+{{#if targetCalories}}Target Daily Calories: {{{targetCalories}}} kcal{{/if}}
+Target Macronutrient Distribution (Percentages): Protein {{{proteinPercentageGoal}}}%, Carbs {{{carbsPercentageGoal}}}%, Fat {{{fatPercentageGoal}}}%
+{{#if ironTargetMg}}Target Iron: {{{ironTargetMg}}} mg{{/if}}
+{{#if vitaminATargetMcg}}Target Vitamin A: {{{vitaminATargetMcg}}} mcg{{/if}}
 
 --- Dietary Preferences ---
 {{#if dietaryPreferences.length}}
@@ -110,24 +105,24 @@ No specific dietary preferences.
 {{/if}}
 
 --- Recent Nutrient Intake (Daily Average) ---
-Calories: {{{recentNutrientIntake.averageDailyCalories}}} kcal
-Protein: {{{recentNutrientIntake.averageDailyProtein}}} g
-Carbs: {{{recentNutrientIntake.averageDailyCarbs}}} g
-Fat: {{{recentNutrientIntake.averageDailyFat}}} g
-Iron: {{{recentNutrientIntake.averageDailyIron}}} mg
-Vitamin A: {{{recentNutrientIntake.averageDailyVitaminA}}} mcg
-{{#if recentNutrientIntake.recentDeficiencies.length}}
-Recent Deficiencies Noted: {{#each recentNutrientIntake.recentDeficiencies}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+Calories: {{{averageDailyCalories}}} kcal
+Protein: {{{averageDailyProtein}}} g
+Carbs: {{{averageDailyCarbs}}} g
+Fat: {{{averageDailyFat}}} g
+Iron: {{{averageDailyIron}}} mg
+Vitamin A: {{{averageDailyVitaminA}}} mcg
+{{#if recentDeficiencies.length}}
+Recent Deficiencies Noted: {{#each recentDeficiencies}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 {{/if}}
-{{#if recentNutrientIntake.recentExcesses.length}}
-Recent Excesses Noted: {{#each recentNutrientIntake.recentExcesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+{{#if recentExcesses.length}}
+Recent Excesses Noted: {{#each recentExcesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 {{/if}}
 
 --- Instructions for Meal Plan Generation ---
 1.  Generate a meal plan for 7 days (Monday to Sunday).
 2.  For each day, include meals for 'Breakfast', 'Lunch', 'Dinner', and 'Snacks'.
 3.  Each meal should list specific food items, their recommended quantity in grams, their estimated calories, and optionally protein, carbs, and fat in grams.
-4.  Ensure the plan aligns with the user's \`Overall Goal\` and any specified \`Target Daily Calories\`, \`Target Macronutrient Distribution\`, and \`Target Micronutrients\`.
+4.  Ensure the plan aligns with the user's \`Overall Goal\` and any specified \`Target Daily Calories\`, \`Target Macronutrient Distribution\`, and target micronutrients.
 5.  Incorporate \`Dietary Preferences\`. For example, if 'Vegan' is selected, all meals must be vegan.
 6.  Address any \`Recent Deficiencies\` by recommending foods rich in those nutrients. Avoid foods causing \`Recent Excesses\`.
 7.  Prioritize healthy, whole foods.
