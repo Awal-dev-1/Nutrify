@@ -26,18 +26,32 @@ const compressImage = async (file: File): Promise<File> => {
     return compressedFile;
   } catch (error) {
     console.error('Image compression failed:', error);
-    return file;
+    return file; // Return original file if compression fails
   }
 };
 
-const saveScanHistory = (
+/**
+ * Saves the scan result and uploads the image in the background.
+ * This function is designed to be "fire-and-forget".
+ */
+const saveHistoryInBackground = async (
   db: Firestore,
-  userId: string,
-  scanId: string,
-  imageUrl: string,
+  user: User,
+  compressedFile: File,
   predictions: AIPrediction[]
-): void => {
-    const scanDocRef = doc(db, 'users', userId, 'aiScans', scanId);
+) => {
+  try {
+    const scanId = uuidv4();
+    const storage = getStorage();
+    const storagePath = `ai-recognition/${user.uid}/${scanId}.jpg`;
+    const storageRef = ref(storage, storagePath);
+
+    // Upload image and get its URL
+    const uploadResult = await uploadBytes(storageRef, compressedFile);
+    const imageUrl = await getDownloadURL(uploadResult.ref);
+
+    // Prepare the data for Firestore
+    const scanDocRef = doc(db, 'users', user.uid, 'aiScans', scanId);
     const dataToSet = {
       id: scanId,
       status: 'completed',
@@ -48,6 +62,7 @@ const saveScanHistory = (
       error: null,
     };
     
+    // Write to Firestore (already non-blocking thanks to error emitter pattern)
     setDoc(scanDocRef, dataToSet)
       .catch(error => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -56,6 +71,10 @@ const saveScanHistory = (
             requestResourceData: dataToSet
         }));
       });
+  } catch (error) {
+    // We log the error but don't re-throw, as this is a background task.
+    console.error('Failed to save AI scan history in background:', error);
+  }
 };
 
 export const runAiScan = async (
@@ -63,8 +82,10 @@ export const runAiScan = async (
   user: User,
   file: File
 ): Promise<RecognizeFoodOutput> => {
+  // First, compress the image (this is fast)
   const compressedFile = await compressImage(file);
 
+  // Convert to Data URI for the AI model
   const reader = new FileReader();
   const dataUriPromise = new Promise<string>((resolve, reject) => {
     reader.onload = () => resolve(reader.result as string);
@@ -73,40 +94,29 @@ export const runAiScan = async (
   reader.readAsDataURL(compressedFile);
   const photoDataUri = await dataUriPromise;
 
+  // The main blocking call: get the AI analysis
   const aiResult = await recognizeFood({ photoDataUri });
 
-  // Only filter and save if it's food and has predictions
+  // Now, process the result.
   if (aiResult.isFood && aiResult.predictions.length > 0) {
     const rawPredictions = aiResult.predictions;
 
+    // Filter and sort the predictions
     const filteredPredictions = rawPredictions
       .filter((p) => p.confidence >= 0.6)
       .sort((a, b) => b.confidence - a.confidence)
       .slice(0, 3);
 
-    // Save history only if there are predictions worth saving
+    // If there are valid predictions, save the history in the background.
     if (filteredPredictions.length > 0) {
-       try {
-        const scanId = uuidv4();
-        const storage = getStorage();
-
-        const storagePath = `ai-recognition/${user.uid}/${scanId}.jpg`;
-        const storageRef = ref(storage, storagePath);
-        const uploadResult = await uploadBytes(storageRef, compressedFile);
-        const imageUrl = await getDownloadURL(uploadResult.ref);
-        
-        saveScanHistory(db, user.uid, scanId, imageUrl, filteredPredictions);
-      } catch (error) {
-        console.error('Failed to upload image for AI scan history:', error);
-        // We don't re-throw here, as saving history is a non-critical background task.
-        // The main goal is to return the AI result to the user.
-      }
+      // IMPORTANT: This is a "fire-and-forget" call. We do NOT await it.
+      saveHistoryInBackground(db, user, compressedFile, filteredPredictions);
     }
 
-    // Return the filtered predictions within the original structure
+    // Immediately return the filtered predictions to the UI.
     return { ...aiResult, predictions: filteredPredictions };
   }
 
-  // If not food or no predictions, return the original result from the AI
+  // If it's not food or there are no predictions, return the result immediately.
   return aiResult;
 };
