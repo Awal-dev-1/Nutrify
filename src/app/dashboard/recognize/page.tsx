@@ -6,7 +6,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff, CameraReverse } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff, SwitchCamera } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -187,7 +187,7 @@ export default function RecognizePage() {
                   <Camera className="mr-2 h-4 w-4" /> Capture
                 </Button>
                 <Button size="lg" variant="secondary" onClick={handleFlipCamera} disabled={hasCameraPermission !== true}>
-                  <CameraReverse className="mr-2 h-4 w-4" /> Flip
+                  <SwitchCamera className="mr-2 h-4 w-4" /> Flip
                 </Button>
                 <Button size="lg" variant="ghost" onClick={() => setIsCameraOpen(false)}>
                   <X className="mr-2 h-4 w-4" /> Cancel
