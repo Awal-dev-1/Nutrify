@@ -30,21 +30,13 @@ const compressImage = async (file: File): Promise<File> => {
   }
 };
 
-const saveScanHistory = async (
+const saveScanHistory = (
   db: Firestore,
   userId: string,
-  imageFile: File,
+  scanId: string,
+  imageUrl: string,
   predictions: AIPrediction[]
-): Promise<void> => {
-  try {
-    const scanId = uuidv4();
-    const storage = getStorage();
-
-    const storagePath = `ai-recognition/${userId}/${scanId}.jpg`;
-    const storageRef = ref(storage, storagePath);
-    const uploadResult = await uploadBytes(storageRef, imageFile);
-    const imageUrl = await getDownloadURL(uploadResult.ref);
-
+): void => {
     const scanDocRef = doc(db, 'users', userId, 'aiScans', scanId);
     const dataToSet = {
       id: scanId,
@@ -64,10 +56,6 @@ const saveScanHistory = async (
             requestResourceData: dataToSet
         }));
       });
-
-  } catch (error) {
-    console.error('Failed to save AI scan history (Storage Error):', error);
-  }
 };
 
 export const runAiScan = async (
@@ -98,7 +86,21 @@ export const runAiScan = async (
 
     // Save history only if there are predictions worth saving
     if (filteredPredictions.length > 0) {
-      saveScanHistory(db, user.uid, compressedFile, filteredPredictions);
+       try {
+        const scanId = uuidv4();
+        const storage = getStorage();
+
+        const storagePath = `ai-recognition/${user.uid}/${scanId}.jpg`;
+        const storageRef = ref(storage, storagePath);
+        const uploadResult = await uploadBytes(storageRef, compressedFile);
+        const imageUrl = await getDownloadURL(uploadResult.ref);
+        
+        saveScanHistory(db, user.uid, scanId, imageUrl, filteredPredictions);
+      } catch (error) {
+        console.error('Failed to upload image for AI scan history:', error);
+        // We don't re-throw here, as saving history is a non-critical background task.
+        // The main goal is to return the AI result to the user.
+      }
     }
 
     // Return the filtered predictions within the original structure
