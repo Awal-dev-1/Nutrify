@@ -6,7 +6,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff, CameraReverse } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -32,6 +32,7 @@ export default function RecognizePage() {
   // New state and refs for camera
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -49,18 +50,23 @@ export default function RecognizePage() {
   
   // Effect to manage camera stream
   useEffect(() => {
+    // This effect manages the camera stream based on isCameraOpen and facingMode.
     if (!isCameraOpen) {
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
-        return;
+      // If camera is not supposed to be open, ensure stream is stopped.
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+      return;
     }
+
+    let stream: MediaStream | null = null;
 
     const getCameraStream = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Request the stream with the current facing mode.
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
         setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -68,25 +74,25 @@ export default function RecognizePage() {
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
-        setIsCameraOpen(false);
+        setIsCameraOpen(false); // Close camera UI on error
         toast({
           variant: 'destructive',
           title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use this app.',
+          description: 'Could not access the camera. Please check permissions.',
         });
       }
     };
 
     getCameraStream();
 
+    // Cleanup function to stop the stream when the component unmounts
+    // or when the dependencies (isCameraOpen, facingMode) change.
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
+      if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isCameraOpen, toast]);
-
+  }, [isCameraOpen, facingMode, toast]);
   
   const handleFileSelect = (selectedFile: File) => {
     resetState();
@@ -110,6 +116,9 @@ export default function RecognizePage() {
     }
   };
 
+  const handleFlipCamera = () => {
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+  };
 
   const handleAnalyze = async () => {
     if (!file || !user || !db) return;
@@ -152,6 +161,7 @@ export default function RecognizePage() {
     setViewedPrediction(null);
     setSelectedFood(null);
     setIsCameraOpen(false);
+    setFacingMode('environment'); // Reset camera direction
   };
 
   const renderContent = () => {
@@ -172,9 +182,12 @@ export default function RecognizePage() {
                   )}
                 </CardContent>
               </Card>
-              <div className="flex justify-center gap-4">
+              <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                 <Button size="lg" onClick={handleCapture} disabled={hasCameraPermission !== true}>
-                  <Camera className="mr-2 h-4 w-4" /> Capture Photo
+                  <Camera className="mr-2 h-4 w-4" /> Capture
+                </Button>
+                <Button size="lg" variant="secondary" onClick={handleFlipCamera} disabled={hasCameraPermission !== true}>
+                  <CameraReverse className="mr-2 h-4 w-4" /> Flip
                 </Button>
                 <Button size="lg" variant="ghost" onClick={() => setIsCameraOpen(false)}>
                   <X className="mr-2 h-4 w-4" /> Cancel
