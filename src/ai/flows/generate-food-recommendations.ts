@@ -71,10 +71,10 @@ const generateFoodRecommendationsPrompt = ai.definePrompt({
   prompt: `You are an expert nutritionist for the Nutrify app, designed to be fast. Your task is to generate personalized food recommendations for a user based on their profile, goals, and a list of available foods.
 
 --- User Information ---
-Primary Goal: {{{userProfile.primaryGoal}}}
-Dietary Preferences: {{#if userProfile.dietaryPreferences.length}}{{#each userProfile.dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
-Daily Calorie Goal: {{{userGoals.dailyCalorieGoal}}}
-Target Macro Split (P/C/F): {{{userGoals.proteinPercentageGoal}}% / {{{userGoals.carbsPercentageGoal}}% / {{{userGoals.fatPercentageGoal}}}%
+Primary Goal: {{userProfile.primaryGoal}}
+Dietary Preferences: {{#if userProfile.dietaryPreferences.length}}{{#each userProfile.dietaryPreferences}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+Daily Calorie Goal: {{userGoals.dailyCalorieGoal}}
+Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.carbsPercentageGoal}}% / {{userGoals.fatPercentageGoal}}%
 
 --- Instructions ---
 1.  **Filter Foods**: From the \`availableFoods\` list provided below, first filter out any foods that do not match the user's \`dietaryPreferences\`. Check the 'tags' array for each food. Then, exclude any single food item that has more than 70% of the user's total \`dailyCalorieGoal\`.
