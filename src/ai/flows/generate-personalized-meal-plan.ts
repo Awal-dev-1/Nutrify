@@ -10,25 +10,16 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-const MealItemSchema = z.object({
+// A single planned meal item. This will be part of a flat list.
+const PlannedMealItemSchema = z.object({
+  day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).describe('The day of the week for the meal.'),
+  mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']).describe("The type of meal (e.g., 'Breakfast')."),
   foodName: z.string().describe('Name of the food item.'),
   quantityGrams: z.number().describe('The recommended quantity of this food item in grams.'),
   calories: z.number().describe('Calories for this food item at the recommended quantity.'),
   proteinGrams: z.number().optional().describe('Protein in grams for this food item.'),
   carbsGrams: z.number().optional().describe('Carbohydrates in grams for this food item.'),
   fatGrams: z.number().optional().describe('Fat in grams for this food item.'),
-});
-
-const MealSlotSchema = z.object({
-  mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']).describe('The type of meal.'),
-  items: z.array(MealItemSchema).describe('List of food items in this meal slot.'),
-  caloriesSubtotal: z.number().describe('Total calories for this meal slot.'),
-});
-
-const DailyMealPlanSchema = z.object({
-  day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).describe('The day of the week.'),
-  meals: z.array(MealSlotSchema).describe('Meal plan for the day.'),
-  dailyTotalCalories: z.number().describe('Total calories for the entire day.'),
 });
 
 const GeneratePersonalizedMealPlanInputSchema = z.object({
@@ -57,14 +48,14 @@ const GeneratePersonalizedMealPlanInputSchema = z.object({
   averageDailyCarbs: z.number().describe('Average daily carbohydrate intake in grams.'),
   averageDailyFat: z.number().describe('Average daily fat in grams.'),
   averageDailyIron: z.number().describe('Average daily Iron intake in mg.'),
-  averageDailyVitaminA: z.number().describe('Average daily Vitamin A intake in mcg.'),
+  averageDailyVitaminA: z.number().describe('Average daily Vitamin A in mcg.'),
   recentDeficiencies: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient deficiencies.'),
   recentExcesses: z.array(z.string()).optional().describe('Optional: List of recently detected nutrient excesses.'),
 });
 export type GeneratePersonalizedMealPlanInput = z.infer<typeof GeneratePersonalizedMealPlanInputSchema>;
 
 const GeneratePersonalizedMealPlanOutputSchema = z.object({
-  weeklyMealPlan: z.array(DailyMealPlanSchema).length(7).describe('A personalized weekly meal plan.'),
+  plannedMeals: z.array(PlannedMealItemSchema).describe('A flat list of all planned meals for the entire week.'),
   planSummary: z.string().describe('A summary of the generated meal plan, highlighting how it meets the user\'s goals and preferences.'),
 });
 export type GeneratePersonalizedMealPlanOutput = z.infer<typeof GeneratePersonalizedMealPlanOutputSchema>;
@@ -119,16 +110,15 @@ Recent Excesses Noted: {{#each recentExcesses}}{{{this}}}{{#unless @last}}, {{/u
 {{/if}}
 
 --- Instructions for Meal Plan Generation ---
-1.  Generate a meal plan for 7 days (Monday to Sunday).
-2.  For each day, include meals for 'Breakfast', 'Lunch', 'Dinner', and 'Snacks'.
-3.  Each meal should list specific food items, their recommended quantity in grams, their estimated calories, and optionally protein, carbs, and fat in grams.
+1.  Generate a FLAT LIST of meal items for a full 7-day week (Monday to Sunday).
+2.  For each item in the list, you must specify the 'day' (e.g., 'Monday'), 'mealType' (e.g., 'Breakfast'), 'foodName', 'quantityGrams', and estimated nutritional information ('calories', 'proteinGrams', etc.).
+3.  Do NOT nest meals inside days. The output must be a single array called 'plannedMeals'.
 4.  Ensure the plan aligns with the user's \`Overall Goal\` and any specified \`Target Daily Calories\`, \`Target Macronutrient Distribution\`, and target micronutrients.
 5.  Incorporate \`Dietary Preferences\`. For example, if 'Vegan' is selected, all meals must be vegan.
 6.  Address any \`Recent Deficiencies\` by recommending foods rich in those nutrients. Avoid foods causing \`Recent Excesses\`.
-7.  Prioritize healthy, whole foods.
-8.  Include a variety of Ghanaian foods and dishes where appropriate and culturally relevant, while still meeting nutritional requirements.
-9.  The daily total calories should be consistent with the user's goals and details, distributed across the meals.
-10. Provide a concise \`planSummary\` explaining how the meal plan meets the user's specific needs and goals.
+7.  Prioritize healthy, whole foods and include a variety of Ghanaian dishes where appropriate.
+8.  The total calories for each day should be consistent with the user's goals.
+9.  Provide a concise \`planSummary\` explaining how the meal plan meets the user's specific needs and goals.
 
 Generate the output in JSON format according to the provided schema.`,
 });

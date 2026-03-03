@@ -153,12 +153,8 @@ export default function MealPlannerPage() {
       const result = await generatePersonalizedMealPlan(flowInput);
 
       // 4. Add the generated plan to Firestore
-      result.weeklyMealPlan.forEach(dailyPlan => {
-        dailyPlan.meals.forEach(mealSlot => {
-          mealSlot.items.forEach(item => {
-            addGeneratedMealToPlan(db, user.uid, dailyPlan.day, mealSlot.mealType, item);
-          });
-        });
+      result.plannedMeals.forEach(mealItem => {
+        addGeneratedMealToPlan(db, user.uid, mealItem.day, mealItem.mealType, mealItem);
       });
       
       toast({
