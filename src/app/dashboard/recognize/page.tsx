@@ -173,6 +173,11 @@ export default function RecognizePage() {
               <Card className="overflow-hidden">
                 <CardContent className="p-0 relative">
                   <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay muted playsInline />
+                  {hasCameraPermission === true && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-3/4 h-3/4 border-2 border-dashed border-white/50 rounded-lg animate-pulse" />
+                    </div>
+                  )}
                   {hasCameraPermission === false && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-4 text-center">
                         <VideoOff className="h-10 w-10 mb-2" />
@@ -199,17 +204,18 @@ export default function RecognizePage() {
 
         if (preview) {
           return (
-            <div className='w-full lg:w-3/4 mx-auto'>
+            <div className='w-full max-w-2xl mx-auto'>
               <div className="space-y-4 text-center">
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
-                    <Image
-                      src={preview}
-                      alt="Selected food"
-                      width={500}
-                      height={500}
-                      className="w-full h-auto object-contain max-h-[50vh]"
-                    />
+                    <div className="w-full aspect-video relative bg-black/90">
+                      <Image
+                        src={preview}
+                        alt="Selected food"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
                   </CardContent>
                 </Card>
                 <div className='flex justify-center gap-2'>
@@ -226,7 +232,7 @@ export default function RecognizePage() {
         }
 
         return (
-          <div className='w-full lg:w-3/4 mx-auto space-y-4'>
+          <div className='w-full max-w-2xl mx-auto space-y-4'>
             <ImageUploader onFileSelect={handleFileSelect} />
             <div className="block sm:hidden space-y-4">
               <div className="relative flex items-center">
