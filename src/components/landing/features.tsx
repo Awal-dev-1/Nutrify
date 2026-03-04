@@ -25,7 +25,7 @@ const featuresList = [
     icon: <Database className="h-10 w-10 text-primary" />,
     title: "Load Ghanaian Local Food",
     description:
-      "The most comprehensive database of local dishes, from Waakye to Fufu.",
+      "Access a rich library of Ghanaian and West African foods, complete with detailed nutritional information to keep you informed.",
   },
   {
     icon: <HeartPulse className="h-10 w-10 text-primary" />,
