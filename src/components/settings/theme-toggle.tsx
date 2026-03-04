@@ -22,7 +22,7 @@ export function ThemeToggle() {
     setTheme(newTheme)
     if (user && db) {
       // This is a fire-and-forget operation, no need to show loading states to the user.
-      updateUserDocument(db, user.uid, { 'preferences.themePreference': newTheme }).catch(console.error);
+      updateUserDocument(db, user.uid, { 'preferences.themePreference': newTheme });
     }
   }
 
