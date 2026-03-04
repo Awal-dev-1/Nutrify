@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -25,6 +26,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { FoodItem } from '@/types/food';
 
 type PlannedMealWithId = PlannedMealType & { id: string };
+
+// Type-safe mapping from profile values to AI schema enums
+const activityLevelMap: Record<string, 'low' | 'moderate' | 'active' | 'very active'> = {
+  'low': 'low',
+  'moderate': 'moderate',
+  'active': 'active',
+  'very-active': 'very active'
+};
+const goalMap: Record<string, 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier'> = {
+  'lose-weight': 'lose weight',
+  'maintain-weight': 'maintain weight',
+  'gain-weight': 'gain weight',
+  'eat-healthier': 'eat healthier'
+};
 
 export default function PlannerPage() {
   const { user, userProfile } = useUser();
@@ -67,13 +82,17 @@ export default function PlannerPage() {
         recentExcesses: [],
       };
 
+      const mappedActivityLevel = activityLevelMap[userProfile.profile.activityLevel] || 'moderate';
+      const mappedGoal = goalMap[userProfile.health.primaryGoal] || 'maintain weight';
+      const mappedGender = ['male', 'female', 'other'].includes(userProfile.profile.gender) ? userProfile.profile.gender as 'male' | 'female' | 'other' : 'other';
+
       const input: GeneratePersonalizedMealPlanInput = {
-        gender: ['male', 'female', 'other'].includes(userProfile.profile.gender) ? userProfile.profile.gender as 'male' | 'female' | 'other' : 'other',
+        gender: mappedGender,
         age: userProfile.profile.age,
         heightCm: userProfile.profile.heightCm,
         weightKg: userProfile.profile.weightKg,
-        activityLevel: ['low', 'moderate', 'active', 'very-active'].includes(userProfile.profile.activityLevel) ? userProfile.profile.activityLevel.replace('-',' ') as 'low' | 'moderate' | 'active' | 'very active' : 'moderate',
-        goal: ['lose-weight', 'maintain-weight', 'gain-weight', 'eat-healthier'].includes(userProfile.health.primaryGoal) ? userProfile.health.primaryGoal.replace('-', ' ') as 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier' : 'maintain weight',
+        activityLevel: mappedActivityLevel,
+        goal: mappedGoal,
         targetCalories: userProfile.goals.dailyCalorieGoal,
         proteinPercentageGoal: userProfile.goals.proteinPercentageGoal,
         carbsPercentageGoal: userProfile.goals.carbsPercentageGoal,

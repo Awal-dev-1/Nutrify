@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, type FC } from "react";
@@ -831,7 +832,7 @@ const WaterTracker: FC<{intake: number; setIntake: (intake: number) => void; goa
             <span className="text-muted-foreground">Progress</span>
             <span className="font-medium">{Math.round(progress)}%</span>
           </div>
-          <Progress value={progress} className="h-2.5 [&>div]:bg-blue-500" />
+          <Progress value={progress} className="h-2.5" indicatorStyle={{ backgroundColor: 'hsl(210 100% 50%)' }} />
         </div>
         
         {isGoalMet && (

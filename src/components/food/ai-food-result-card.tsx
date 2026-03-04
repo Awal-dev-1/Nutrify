@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FC } from 'react';
@@ -9,6 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => void; }> = ({ item, onAdd }) => {
+  const hasMicros = item.micronutrientBreakdown && 
+                    Object.values(item.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
+
   return (
     <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
       <CardHeader className="bg-primary/5">
@@ -50,9 +54,9 @@ export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => v
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
                     <ul className="space-y-1 max-h-48 overflow-y-auto">
-                        {item.micronutrientBreakdown && Object.keys(item.micronutrientBreakdown).length > 0 ? (
+                        {hasMicros ? (
                             Object.entries(item.micronutrientBreakdown).map(([key, value]) => {
-                                if (value === undefined || value === null) {
+                                if (value === undefined || value === null || value === 0) {
                                     return null;
                                 }
                                 const keyToLabel: Record<string, string> = {
@@ -81,7 +85,7 @@ export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => v
                                 );
                             })
                         ) : (
-                            <p className="text-xs text-muted-foreground text-center py-4">No micronutrient data available.</p>
+                            <p className="text-xs text-muted-foreground text-center py-4">No significant micronutrient data available.</p>
                         )}
                     </ul>
                 </CardContent>

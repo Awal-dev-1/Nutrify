@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -665,7 +666,7 @@ const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; v
         <Progress 
           value={Math.min(100, percentage)} 
           className="h-2 md:h-2.5"
-          style={{ '--progress-background': indicatorColor } as React.CSSProperties}
+          indicatorStyle={{ backgroundColor: indicatorColor }}
         />
         {percentage > 100 && (
           <div className="absolute -top-4 right-0 text-xs text-destructive">

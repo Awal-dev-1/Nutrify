@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -518,7 +519,7 @@ const GramDisplay = ({ label, value, color, icon: Icon, total }: {
           <span className="text-muted-foreground">of total</span>
           <span className="font-medium">{percentage.toFixed(0)}%</span>
         </div>
-        <Progress value={percentage} className="h-1 sm:h-1.5" style={{ '--progress-background': color } as any} />
+        <Progress value={percentage} className="h-1 sm:h-1.5" indicatorStyle={{ backgroundColor: color }} />
       </div>
       <p className="text-xs text-muted-foreground mt-1 sm:mt-2">grams per day</p>
     </motion.div>
