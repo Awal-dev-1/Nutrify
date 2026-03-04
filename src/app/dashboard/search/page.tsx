@@ -298,7 +298,7 @@ export default function SearchPage() {
               </div>
               
               <Input
-                placeholder="e.g., Grilled salmon with quinoa..."
+                placeholder="e.g., Banku with tilapia or Fufu..."
                 className="w-full h-16 pl-12 pr-32 text-lg bg-background/80 backdrop-blur-sm border-2 border-muted focus:border-primary rounded-2xl shadow-lg transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -677,5 +677,3 @@ function FoodDetailsCard({
     </Card>
   );
 }
-
-    
