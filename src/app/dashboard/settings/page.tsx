@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -385,7 +386,7 @@ export default function SettingsPage() {
               {/* Units */}
               <div>
                 <Label className="font-medium text-sm sm:text-base">Units</Label>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Choose between metric and imperial units.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Choose between metric (cm/kg) and imperial (ft/lbs) units. This affects how measurements are displayed across the app.</p>
                 <Tabs value={units} onValueChange={(v) => setUnits(v || 'metric')} className="w-[180px]">
                   <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10">
                     <TabsTrigger value="metric" className="text-xs sm:text-sm">Metric</TabsTrigger>
