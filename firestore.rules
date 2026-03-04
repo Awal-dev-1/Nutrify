@@ -110,6 +110,13 @@ service cloud.firestore {
       match /plannedMeals/{docId=**} {
         allow read, write: if isOwner(userId);
       }
+      
+      /**
+       * @description Manages a user's recent search history.
+       */
+      match /recentSearches/{docId=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     /**

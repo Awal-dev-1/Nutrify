@@ -6,24 +6,23 @@ import {
   Search as SearchIcon,
   X,
   Sparkles,
-  Bot,
   Loader2,
   AlertCircle,
   Mic,
-  Flame,
-  Beef,
-  Wheat,
-  Droplets,
   PlusCircle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchFoods, type FoodItem } from '@/ai/flows/search-foods-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useUser, useFirestore } from '@/firebase';
+import {
+  useUser,
+  useFirestore,
+  useCollection,
+  useMemoFirebase,
+} from '@/firebase';
 import { addFoodToLog } from '@/services/trackerService';
 import {
   Card,
@@ -40,6 +39,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { addRecentSearch } from '@/services/searchService';
+import type { RecentSearch } from '@/types/search';
+import { RecentSearches } from '@/components/search/recent-searches';
+import { Beef, Droplets, Wheat } from 'lucide-react';
 
 // The main search page component
 export default function SearchPage() {
@@ -65,6 +69,20 @@ export default function SearchPage() {
   const { toast } = useToast();
   const { user, userProfile, isProfileLoading } = useUser();
   const db = useFirestore();
+
+  const recentsQuery = useMemoFirebase(
+    () =>
+      user
+        ? query(
+            collection(db, 'users', user.uid, 'recentSearches'),
+            orderBy('searchedAt', 'desc'),
+            limit(5)
+          )
+        : null,
+    [user, db]
+  );
+  const { data: recentSearches, isLoading: areRecentsLoading } =
+    useCollection<RecentSearch>(recentsQuery);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -139,7 +157,12 @@ export default function SearchPage() {
         );
       }
 
-      setResult(response.foodItems[0]); // Take the first result
+      const foundFood = response.foodItems[0];
+      setResult(foundFood);
+
+      if (user && db) {
+        addRecentSearch(db, user.uid, foundFood);
+      }
     } catch (err: any) {
       console.error('AI search failed:', err);
       const errorMessage =
@@ -149,7 +172,6 @@ export default function SearchPage() {
       setLoading(false);
     }
   };
-
 
   // Form submission handler
   const onFormSubmit = (e: React.FormEvent) => {
@@ -171,6 +193,19 @@ export default function SearchPage() {
       recognitionRef.current.stop();
     } else {
       recognitionRef.current.start();
+    }
+  };
+
+  const handleRecentClick = (recent: RecentSearch) => {
+    try {
+      const foodItem: FoodItem = JSON.parse(recent.foodData);
+      setSearchQuery(recent.foodName);
+      setResult(foodItem);
+      setHasSearched(true);
+      setError(null);
+    } catch (e) {
+      console.error('Failed to parse recent search data', e);
+      setError('Could not load recent search. Please try searching for it again.');
     }
   };
 
@@ -275,16 +310,7 @@ export default function SearchPage() {
 
       {/* Results Section */}
       <div className="max-w-4xl pt-8">
-        {!hasSearched && !loading && (
-          <EmptyState
-            icon={<Bot className="h-16 w-16 text-muted-foreground" />}
-            title="Ready to assist"
-            description="Your AI nutrition assistant is waiting for your query."
-            className="border-2 border-dashed"
-          />
-        )}
-
-        {(loading || isProfileLoading) && (
+        {(loading || (isProfileLoading && hasSearched)) && (
           <div className="space-y-4">
             <Skeleton className="h-8 w-3/5" />
             <Skeleton className="h-96 w-full" />
@@ -299,6 +325,14 @@ export default function SearchPage() {
           </Alert>
         )}
 
+        {!hasSearched && !loading && (
+          <RecentSearches
+            recents={recentSearches}
+            isLoading={areRecentsLoading}
+            onRecentClick={handleRecentClick}
+          />
+        )}
+        
         {result && !loading && !error && (
           <PortionControlCard
             foodItem={result}
