@@ -9,11 +9,13 @@ import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import { LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useTheme } from 'next-themes'
 
 export function DashboardHeader() {
   const { userProfile } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const { setTheme } = useTheme();
   const [greeting, setGreeting] = useState("Good Morning");
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export function DashboardHeader() {
   }, []);
 
   const handleLogout = async () => {
+    setTheme('system');
     await logout(auth);
     router.push('/');
   }

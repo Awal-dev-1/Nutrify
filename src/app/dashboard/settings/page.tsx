@@ -49,6 +49,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { Skeleton } from '@/components/ui/skeleton';
 import { updateProfile } from 'firebase/auth';
 import { ThemeToggle } from '@/components/settings/theme-toggle';
+import { useTheme } from 'next-themes';
 
 
 export default function SettingsPage() {
@@ -57,6 +58,7 @@ export default function SettingsPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { setTheme } = useTheme();
 
   const [displayName, setDisplayName] = useState('');
   const [language, setLanguage] = useState('en');
@@ -141,6 +143,7 @@ export default function SettingsPage() {
 
   const handleLogout = async () => {
     try {
+      setTheme('system');
       await logout(auth);
       router.push('/');
     } catch (error: any) {
