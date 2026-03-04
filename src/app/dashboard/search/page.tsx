@@ -528,7 +528,9 @@ function FoodDetailsCard({
                   ))}
                 </div>
               </div>
+            </div>
 
+            <div className="grid md:grid-cols-2 gap-4">
               {/* Macro Visualization */}
               <div className="bg-muted/30 p-4 rounded-xl space-y-3">
                 <h4 className="font-medium text-sm">Macro Balance</h4>
@@ -561,6 +563,39 @@ function FoodDetailsCard({
                     <div>{calculatedNutrients.fat}g</div>
                   </div>
                 </div>
+              </div>
+              
+              {/* Micronutrients */}
+              <div className="bg-muted/30 p-4 rounded-xl space-y-3">
+                <h4 className="font-medium text-sm">Micronutrients</h4>
+                <ul className="space-y-1 max-h-[100px] overflow-y-auto text-xs pr-2">
+                  {foodItem.micronutrientBreakdown && Object.entries(foodItem.micronutrientBreakdown).length > 0 && Object.values(foodItem.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0) ? (
+                      Object.entries(foodItem.micronutrientBreakdown).map(([key, value]) => {
+                          if (value === undefined || value === null || value === 0) {
+                              return null;
+                          }
+                          const per100gValue = value || 0;
+                          const currentPortionValue = (per100gValue / 100) * portionGrams;
+
+                          const keyToLabel: Record<string, string> = {
+                              fiber: "Fiber", sugar: "Sugar", iron: "Iron", calcium: "Calcium",
+                              vitaminA: "Vit. A", vitaminC: "Vit. C", sodium: "Sodium",
+                          };
+                          const keyToUnit: Record<string, string> = {
+                              fiber: "g", sugar: "g", iron: "mg", calcium: "mg",
+                              vitaminA: "µg", vitaminC: "mg", sodium: "mg",
+                          };
+                          return (
+                          <li key={key} className="flex justify-between p-1.5 rounded-md bg-background/50">
+                              <span>{keyToLabel[key] || key}</span>
+                              <span className="font-medium">{currentPortionValue.toFixed(1)}{keyToUnit[key] || ''}</span>
+                          </li>
+                          );
+                      })
+                  ) : (
+                      <p className="text-xs text-muted-foreground text-center py-4">No significant micronutrient data available.</p>
+                  )}
+                </ul>
               </div>
             </div>
           </TabsContent>

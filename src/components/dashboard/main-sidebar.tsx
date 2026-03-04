@@ -138,9 +138,6 @@ export function MainSidebar() {
                       <p className="text-xs font-semibold text-primary uppercase tracking-wider flex-1">
                         AI Features
                       </p>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-primary/20 text-primary">
-                        4
-                      </Badge>
                     </div>
                   </div>
                 </>
@@ -172,9 +169,6 @@ export function MainSidebar() {
                       <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider flex-1">
                         Insights
                       </p>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-500/20 text-blue-500">
-                        3
-                      </Badge>
                     </div>
                   </div>
                 </>
