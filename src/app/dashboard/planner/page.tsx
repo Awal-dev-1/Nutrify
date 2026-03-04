@@ -2,10 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, orderBy, query } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
-import type { FoodItem } from '@/types/food';
-import type { PlannedMeal } from '@/types/planner';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { PlannedMeal as PlannedMealType } from '@/types/planner';
 import {
   addPlannedMeal,
   updatePlannedMeal,
@@ -13,161 +11,94 @@ import {
   clearPlan,
   addGeneratedMealToPlan,
 } from '@/services/plannerService';
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DayPlanner } from '@/components/planner/day-planner';
-import { WeekPlanner } from '@/components/planner/week-planner';
+import {
+  generatePersonalizedMealPlan,
+  type GeneratePersonalizedMealPlanInput,
+} from '@/ai/flows/generate-personalized-meal-plan';
+import { useToast } from '@/hooks/use-toast';
 import { PlannerControls } from '@/components/planner/planner-controls';
-import { Loader2 } from 'lucide-react';
-import { getAnalyticsData } from '@/services/analyticsService';
-import { generatePersonalizedMealPlan } from '@/ai/flows/generate-personalized-meal-plan';
+import { WeekPlanner } from '@/components/planner/week-planner';
+import { DayPlanner } from '@/components/planner/day-planner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import type { FoodItem } from '@/types/food';
 
-export default function MealPlannerPage() {
+type PlannedMealWithId = PlannedMealType & { id: string };
+
+export default function PlannerPage() {
   const { user, userProfile } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
-
   const [isGenerating, setIsGenerating] = useState(false);
+  const [view, setView] = useState('week');
 
-  // Fetch planned meals from Firestore
   const plannedMealsQuery = useMemoFirebase(
-    () =>
-      user
-        ? query(collection(db, 'users', user.uid, 'plannedMeals'), orderBy('createdAt', 'asc'))
-        : null,
+    () => (user ? query(collection(db, 'users', user.uid, 'plannedMeals'), orderBy('createdAt', 'asc')) : null),
     [user, db]
   );
-  const { data: plannedMeals, isLoading } = useCollection<PlannedMeal>(
-    plannedMealsQuery
-  );
-
-  const summary = useMemo(() => {
-    if (!plannedMeals) return {};
-
-    return plannedMeals.reduce((acc, meal) => {
-      if (!acc[meal.day]) {
-        acc[meal.day] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
-      }
-      acc[meal.day].calories += meal.calories;
-      acc[meal.day].protein += meal.protein;
-      acc[meal.day].carbs += meal.carbs;
-      acc[meal.day].fat += meal.fat;
-      return acc;
-    }, {} as Record<string, { calories: number; protein: number; carbs: number; fat: number }>);
-  }, [plannedMeals]);
-
-  const handleAddMeal = (
-    food: FoodItem,
-    quantity: number,
-    mealType: string,
-    day: string
-  ) => {
-    if (!user || !db) return;
-    addPlannedMeal(db, user.uid, day, mealType, food, quantity);
-    toast({
-      title: 'Meal Added',
-      description: `${food.foodName} has been added to your ${day} plan.`,
-    });
-  };
-
-  const handleUpdateMeal = (id: string, newQuantity: number) => {
-    if (!user || !db || !plannedMeals) return;
-
-    const originalMeal = plannedMeals.find((meal) => meal.id === id);
-    if (!originalMeal || originalMeal.quantity === 0) return;
-
-    const ratio = newQuantity / originalMeal.quantity;
-    const updates = {
-      quantity: newQuantity,
-      calories: originalMeal.calories * ratio,
-      protein: originalMeal.protein * ratio,
-      carbs: originalMeal.carbs * ratio,
-      fat: originalMeal.fat * ratio,
-    };
-
-    updatePlannedMeal(db, user.uid, id, updates);
-    toast({
-      title: 'Meal Updated',
-      description: `The portion size has been updated.`,
-    });
-  };
-
-  const handleRemoveMeal = (id: string) => {
-    if (!user || !db) return;
-    deletePlannedMeal(db, user.uid, id);
-    toast({
-      variant: 'destructive',
-      title: 'Meal Removed',
-      description: `The meal has been removed from your plan.`,
-    });
-  };
+  const { data: plannedMeals, isLoading, error } = useCollection<PlannedMealWithId>(plannedMealsQuery);
 
   const handleGeneratePlan = async () => {
-    if (!user || !db || !userProfile) {
+    if (!user || !db || !userProfile || !userProfile.profile || !userProfile.health || !userProfile.goals) {
       toast({
         variant: 'destructive',
-        title: 'User Profile Not Loaded',
-        description: 'Please wait for your profile to load and try again.',
+        title: 'Cannot generate plan',
+        description: 'Please complete your onboarding and set your goals first.',
       });
       return;
     }
 
     setIsGenerating(true);
-    await clearPlan(db, user.uid); // This is good, clear the old plan first.
-
+    
+    // Non-blocking clear of the plan
+    clearPlan(db, user.uid);
+    
     try {
-      // 1. Get analytics data for recent intake
-      const analytics = await getAnalyticsData(db, user.uid, '7d');
-
-      // 2. Prepare input for the meal plan flow
-      const flowInput = {
-        // Personal Details
-        gender: (userProfile.profile?.gender.toLowerCase() || 'other') as 'male' | 'female' | 'other',
-        age: userProfile.profile?.age || 30,
-        heightCm: userProfile.profile?.heightCm || 170,
-        weightKg: userProfile.profile?.weightKg || 70,
-        activityLevel: (userProfile.profile?.activityLevel.replace('-', ' ') || 'moderate') as 'low' | 'moderate' | 'active' | 'very active',
-        
-        // Dietary Goals
-        goal: (userProfile.health?.primaryGoal.replace('-', ' ') || 'maintain weight') as 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier',
-        targetCalories: userProfile.goals?.dailyCalorieGoal,
-        proteinPercentageGoal: userProfile.goals?.proteinPercentageGoal || 30,
-        carbsPercentageGoal: userProfile.goals?.carbsPercentageGoal || 40,
-        fatPercentageGoal: userProfile.goals?.fatPercentageGoal || 30,
-        ironTargetMg: userProfile.goals?.ironTargetMg,
-        vitaminATargetMcg: userProfile.goals?.vitaminATargetMcg,
-
-        // Preferences
-        dietaryPreferences: userProfile.health?.dietaryPreferences || [],
-
-        // Recent Intake
-        averageDailyCalories: analytics.summary.averageCalories,
-        averageDailyProtein: analytics.summary.averageProtein,
-        averageDailyCarbs: analytics.summary.averageCarbs,
-        averageDailyFat: analytics.summary.averageFat,
-        averageDailyIron: analytics.summary.averageIron,
-        averageDailyVitaminA: analytics.summary.averageVitaminA,
+      // These are hardcoded for now, but should come from analytics in a future version.
+      const analytics = {
+        averageDailyCalories: 2100,
+        averageDailyProtein: 100,
+        averageDailyCarbs: 250,
+        averageDailyFat: 70,
+        averageDailyIron: 15,
+        averageDailyVitaminA: 800,
+        recentDeficiencies: [],
+        recentExcesses: [],
       };
 
-      // 3. Call the AI flow
-      const result = await generatePersonalizedMealPlan(flowInput);
-
-      // 4. Add the generated plan to Firestore
-      result.plannedMeals.forEach(mealItem => {
-        addGeneratedMealToPlan(db, user.uid, mealItem.day, mealItem.mealType, mealItem);
-      });
+      const input: GeneratePersonalizedMealPlanInput = {
+        gender: ['male', 'female', 'other'].includes(userProfile.profile.gender) ? userProfile.profile.gender as 'male' | 'female' | 'other' : 'other',
+        age: userProfile.profile.age,
+        heightCm: userProfile.profile.heightCm,
+        weightKg: userProfile.profile.weightKg,
+        activityLevel: ['low', 'moderate', 'active', 'very-active'].includes(userProfile.profile.activityLevel) ? userProfile.profile.activityLevel.replace('-',' ') as 'low' | 'moderate' | 'active' | 'very active' : 'moderate',
+        goal: ['lose-weight', 'maintain-weight', 'gain-weight', 'eat-healthier'].includes(userProfile.health.primaryGoal) ? userProfile.health.primaryGoal.replace('-', ' ') as 'lose weight' | 'maintain weight' | 'gain weight' | 'eat healthier' : 'maintain weight',
+        targetCalories: userProfile.goals.dailyCalorieGoal,
+        proteinPercentageGoal: userProfile.goals.proteinPercentageGoal,
+        carbsPercentageGoal: userProfile.goals.carbsPercentageGoal,
+        fatPercentageGoal: userProfile.goals.fatPercentageGoal,
+        dietaryPreferences: userProfile.health.dietaryPreferences || [],
+        ...analytics
+      };
       
-      toast({
-        title: 'Plan Generated!',
-        description: 'A new weekly meal plan has been created for you.',
+      const result = await generatePersonalizedMealPlan(input);
+      
+      result.plannedMeals.forEach(meal => {
+        addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, meal);
       });
 
-    } catch (error: any) {
-      console.error(error);
+      toast({
+        title: '✨ Plan Generated!',
+        description: result.planSummary,
+      });
+
+    } catch (err: any) {
+      console.error(err);
       toast({
         variant: 'destructive',
         title: 'Failed to generate plan',
-        description: error.message || 'The AI could not generate a meal plan. Please try again.',
+        description: err.message || 'An AI error occurred. Please try again.',
       });
     } finally {
       setIsGenerating(false);
@@ -177,28 +108,100 @@ export default function MealPlannerPage() {
   const handleClearPlan = () => {
     if (!user || !db) return;
     clearPlan(db, user.uid);
-    toast({
-      variant: 'destructive',
-      title: 'Plan Cleared',
-      description: `Your meal plan has been reset.`,
-    });
+    toast({ title: 'Plan Cleared', description: 'Your meal plan has been reset.' });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const handleAddMeal = (food: FoodItem, quantity: number, mealType: string, day: string) => {
+    if (!user || !db) return;
+    addPlannedMeal(db, user.uid, day, mealType, food, quantity);
+  };
+  
+  const handleUpdateMeal = (id: string, newQuantity: number) => {
+    if(!user || !db || !plannedMeals) return;
 
+    const mealToUpdate = plannedMeals.find(m => m.id === id);
+    if (!mealToUpdate) return;
+    
+    const originalQuantity = mealToUpdate.quantity;
+    if (originalQuantity <= 0) return;
+
+    const ratio = newQuantity / originalQuantity;
+    const updates = {
+      quantity: newQuantity,
+      calories: mealToUpdate.calories * ratio,
+      protein: mealToUpdate.protein * ratio,
+      carbs: mealToUpdate.carbs * ratio,
+      fat: mealToUpdate.fat * ratio,
+    }
+
+    updatePlannedMeal(db, user.uid, id, updates);
+  };
+
+  const handleRemoveMeal = (id: string) => {
+    if (!user || !db) return;
+    deletePlannedMeal(db, user.uid, id);
+  };
+  
+  const mealSummary = useMemo(() => {
+    if (!plannedMeals) return {};
+    return plannedMeals.reduce((acc, meal) => {
+      if (!acc[meal.day]) {
+        acc[meal.day] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+      }
+      acc[meal.day].calories += meal.calories;
+      acc[meal.day].protein += meal.protein;
+      acc[meal.day].carbs += meal.carbs;
+      acc[meal.day].fat += meal.fat;
+      return acc;
+    }, {} as Record<string, { calories: number; protein: number; carbs: number; fat: number; }>);
+  }, [plannedMeals]);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-[500px]">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading plan</AlertTitle>
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      );
+    }
+
+    return (
+      view === 'week' ? (
+        <WeekPlanner
+          plannedMeals={plannedMeals || []}
+          summary={mealSummary}
+          onAddMeal={handleAddMeal}
+          onUpdateMeal={handleUpdateMeal}
+          onRemoveMeal={handleRemoveMeal}
+        />
+      ) : (
+         <DayPlanner
+            plannedMeals={plannedMeals || []}
+            summary={mealSummary}
+            onAddMeal={handleAddMeal}
+            onUpdateMeal={handleUpdateMeal}
+            onRemoveMeal={handleRemoveMeal}
+          />
+      )
+    );
+  };
+  
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Meal Planner</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">AI Meal Planner</h1>
           <p className="text-muted-foreground">
-            Plan your meals ahead to stay consistent with your goals.
+            Generate a personalized weekly meal plan or build your own.
           </p>
         </div>
         <PlannerControls
@@ -208,32 +211,16 @@ export default function MealPlannerPage() {
         />
       </div>
 
-      <Tabs defaultValue="week" className="w-full">
+      <Tabs value={view} onValueChange={setView} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-sm">
-          <TabsTrigger value="week">Week Planner</TabsTrigger>
-          <TabsTrigger value="day">Day Planner</TabsTrigger>
+          <TabsTrigger value="week">Week View</TabsTrigger>
+          <TabsTrigger value="day">Day View</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="week" className="mt-6">
-          <WeekPlanner
-            plannedMeals={plannedMeals || []}
-            summary={summary}
-            onAddMeal={handleAddMeal}
-            onUpdateMeal={handleUpdateMeal}
-            onRemoveMeal={handleRemoveMeal}
-          />
-        </TabsContent>
-
-        <TabsContent value="day" className="mt-6">
-          <DayPlanner
-            plannedMeals={plannedMeals || []}
-            summary={summary}
-            onAddMeal={handleAddMeal}
-            onUpdateMeal={handleUpdateMeal}
-            onRemoveMeal={handleRemoveMeal}
-          />
-        </TabsContent>
       </Tabs>
+
+      <div className="min-h-[500px]">
+        {renderContent()}
+      </div>
     </div>
   );
 }

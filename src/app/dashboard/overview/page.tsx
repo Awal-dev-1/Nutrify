@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
@@ -13,11 +12,35 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Flame, Beef, Wheat, Droplets, PlusCircle, Search, Target, Lightbulb, ArrowRight, BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
+import { 
+  Flame, 
+  Beef, 
+  Wheat, 
+  Droplets, 
+  PlusCircle, 
+  Search, 
+  Target, 
+  Lightbulb, 
+  ArrowRight, 
+  BrainCircuit, 
+  Loader2, 
+  AlertCircle,
+  TrendingUp,
+  Calendar,
+  CheckCircle2,
+  Sparkles,
+  Clock,
+  Coffee,
+  Salad,
+  Utensils
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { generateDailyRecommendations, type GenerateDailyRecommendationsOutput } from '@/ai/flows/generate-daily-recommendations';
 import { AiCoachCard } from '@/components/overview/ai-coach-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const OverviewPage = () => {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -87,6 +110,7 @@ const OverviewPage = () => {
   
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
   const calorieRemaining = derivedGoals.calories - todayTotals.totalCalories;
+  const isOverGoal = todayTotals.totalCalories > derivedGoals.calories;
 
   const handleGetCoachPlan = async () => {
     if (!userProfile || !dailyLog) {
@@ -125,254 +149,403 @@ const OverviewPage = () => {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+        {/* Header with Date */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+              <TrendingUp className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Dashboard Overview
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Calendar className="h-3.5 w-3.5" />
+                {format(new Date(), "EEEE, MMMM d, yyyy")}
+              </p>
+            </div>
+          </div>
+          <Badge variant="outline" className="rounded-full px-4 py-1.5 text-sm">
+            <Sparkles className="h-3.5 w-3.5 mr-1.5 text-primary" />
+            Your daily snapshot
+          </Badge>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Today's Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Today's Summary</CardTitle>
-              <CardDescription>Your real-time progress towards today's goals.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Today's Summary */}
+            <Card className="border-2 shadow-xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                      <div className="p-1.5 rounded-lg bg-primary/10">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
+                      Today's Summary
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Your real-time progress towards today's goals
+                    </CardDescription>
+                  </div>
+                  {todayTotals.totalCalories > 0 && (
+                    <Badge className={cn(
+                      "rounded-full px-3 py-1",
+                      isOverGoal ? "bg-destructive/10 text-destructive" : "bg-green-500/10 text-green-600"
+                    )}>
+                      {isOverGoal ? "Over goal" : "On track"}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                     <div>
-                        <div className="flex justify-between items-baseline mb-2">
-                            <span className="font-medium flex items-center gap-2"><Flame className="text-orange-500"/> Calories</span>
-                            <span className="text-muted-foreground text-sm">{todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-medium flex items-center gap-2">
+                        <div className="p-1 rounded-full bg-orange-500/10">
+                          <Flame className="h-4 w-4 text-orange-500" />
                         </div>
-                        <Progress value={calorieProgress} />
+                        Calories
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal
+                      </span>
                     </div>
-                    <div className="text-center md:border-l md:pl-6">
-                        <p className="text-sm text-muted-foreground">Calories Remaining</p>
-                        <p className="text-4xl font-bold text-primary">{Math.round(calorieRemaining)}</p>
-                    </div>
+                    <Progress value={calorieProgress} className="h-2.5" />
+                  </div>
+                  <div className="text-center md:border-l md:pl-6 py-2">
+                    <p className="text-sm text-muted-foreground mb-1">Remaining</p>
+                    <p className={cn(
+                      "text-3xl md:text-4xl font-bold",
+                      calorieRemaining < 0 ? "text-destructive" : "text-primary"
+                    )}>
+                      {Math.round(calorieRemaining)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">kcal left</p>
+                  </div>
                 </div>
 
-              <div className="grid grid-cols-3 gap-4 text-center pt-6 border-t">
-                 <MacroStat icon={<Beef className="text-red-500"/>} label="Protein" value={todayTotals.totalProtein} goal={derivedGoals.protein} />
-                 <MacroStat icon={<Wheat className="text-yellow-600"/>} label="Carbs" value={todayTotals.totalCarbs} goal={derivedGoals.carbs} />
-                 <MacroStat icon={<Droplets className="text-blue-500"/>} label="Fat" value={todayTotals.totalFat} goal={derivedGoals.fat} />
-              </div>
-            </CardContent>
-          </Card>
+                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                  <MacroStat 
+                    icon={<Beef className="h-4 w-4 text-red-500" />} 
+                    label="Protein" 
+                    value={todayTotals.totalProtein} 
+                    goal={derivedGoals.protein} 
+                  />
+                  <MacroStat 
+                    icon={<Wheat className="h-4 w-4 text-yellow-600" />} 
+                    label="Carbs" 
+                    value={todayTotals.totalCarbs} 
+                    goal={derivedGoals.carbs} 
+                  />
+                  <MacroStat 
+                    icon={<Droplets className="h-4 w-4 text-blue-500" />} 
+                    label="Fat" 
+                    value={todayTotals.totalFat} 
+                    goal={derivedGoals.fat} 
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-          <MicroNutrientGrid totals={todayTotals} />
-          
-          {/* Weekly Trend */}
-          <Card>
-            <CardHeader>
-                <CardTitle>Weekly Calorie Trend</CardTitle>
-                <CardDescription>Your calorie intake over the last 7 days.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <ResponsiveContainer width="100%" height={250}>
+            <MicroNutrientGrid totals={todayTotals} />
+            
+            {/* Weekly Trend */}
+            <Card className="border-2 shadow-xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                  </div>
+                  Weekly Calorie Trend
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Your calorie intake over the last 7 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weeklyData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="date" tickFormatter={(val) => format(new Date(val), 'EEE')} fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: 'hsl(var(--background))',
-                                border: '1px solid hsl(var(--border))',
-                            }}
-                            labelFormatter={(label) => format(new Date(label), 'MMM d')}
-                        />
-                        <Bar dataKey="calories" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(val) => format(new Date(val), 'EEE')} 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '12px',
+                          padding: '8px 12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        }}
+                        labelFormatter={(label) => format(new Date(label), 'MMMM d, yyyy')}
+                        formatter={(value: number) => [`${value} kcal`, 'Calories']}
+                      />
+                      <Bar 
+                        dataKey="calories" 
+                        fill="hsl(var(--primary))" 
+                        radius={[6, 6, 0, 0]} 
+                        maxBarSize={50}
+                      />
                     </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Right Column */}
-        <div className="lg:col-span-1 space-y-6">
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Right Column */}
+          <div className="lg:col-span-1 space-y-6">
             {/* Quick Actions */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-3">
-                    <Button asChild className="h-12"><Link href="/dashboard/tracker"><PlusCircle className="mr-2 h-4 w-4" /> Add Meal</Link></Button>
-                    <Button asChild variant="outline" className="h-12"><Link href="/dashboard/search"><Search className="mr-2 h-4 w-4" /> Search</Link></Button>
-                    <Button asChild variant="secondary" className="col-span-2 h-12"><Link href="/dashboard/goals"><Target className="mr-2 h-4 w-4" /> Update Goals</Link></Button>
-                </CardContent>
+            <Card className="border-2 shadow-xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Utensils className="h-4 w-4 text-primary" />
+                  </div>
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 grid grid-cols-2 gap-3">
+                <Button 
+                  asChild 
+                  className="h-14 rounded-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all"
+                >
+                  <Link href="/dashboard/tracker">
+                    <PlusCircle className="mr-2 h-4 w-4" /> 
+                    <span className="text-sm">Add Meal</span>
+                  </Link>
+                </Button>
+                <Button 
+                  asChild 
+                  variant="outline" 
+                  className="h-14 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
+                >
+                  <Link href="/dashboard/search">
+                    <Search className="mr-2 h-4 w-4" /> 
+                    <span className="text-sm">Search</span>
+                  </Link>
+                </Button>
+                <Button 
+                  asChild 
+                  variant="secondary" 
+                  className="col-span-2 h-14 rounded-xl bg-secondary/50 hover:bg-secondary/70 transition-all"
+                >
+                  <Link href="/dashboard/goals">
+                    <Target className="mr-2 h-4 w-4" /> 
+                    <span className="text-sm">Update Goals</span>
+                  </Link>
+                </Button>
+              </CardContent>
             </Card>
 
             {/* Smart Recommendations */}
-            <Card>
-                <CardHeader>
-                     <CardTitle className="text-lg">Smart Suggestions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isRecsLoading ? <RecommendationSkeleton/> : 
-                    latestRecs.length > 0 ? (
-                        <div className="space-y-3">
-                            {latestRecs.slice(0, 2).map((rec, i) => <RecommendationItemPreview key={i} rec={rec} />)}
-                            <Button asChild variant="secondary" className="w-full mt-2">
-                                <Link href="/dashboard/recommendations">View All Recommendations</Link>
-                            </Button>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4">No recommendations yet. Generate them on the Recommendations page!</p>
-                    )
-                  }
-                </CardContent>
+            <Card className="border-2 shadow-xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                  </div>
+                  Smart Suggestions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                {isRecsLoading ? (
+                  <RecommendationSkeleton/>
+                ) : latestRecs.length > 0 ? (
+                  <div className="space-y-3">
+                    {latestRecs.slice(0, 2).map((rec, i) => (
+                      <RecommendationItemPreview key={i} rec={rec} />
+                    ))}
+                    <Button 
+                      asChild 
+                      variant="secondary" 
+                      className="w-full mt-2 rounded-xl h-11"
+                    >
+                      <Link href="/dashboard/recommendations">
+                        View All Recommendations
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 space-y-3">
+                    <div className="inline-flex p-3 rounded-full bg-primary/10">
+                      <Lightbulb className="h-6 w-6 text-primary/50" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      No recommendations yet. Generate them on the Recommendations page!
+                    </p>
+                  </div>
+                )}
+              </CardContent>
             </Card>
 
             {/* Hydration Tip */}
-            <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2 text-blue-600 dark:text-blue-300"><Droplets /> Hydration Tip</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                        Drinking water before a meal can help with digestion and make you feel fuller, preventing overeating.
-                    </p>
-                </CardContent>
+            <Card className="border-2 shadow-xl overflow-hidden bg-gradient-to-br from-blue-500/5 to-blue-500/10 dark:from-blue-500/10 dark:to-blue-500/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg text-blue-600 dark:text-blue-400">
+                  <div className="p-1.5 rounded-lg bg-blue-500/10">
+                    <Droplets className="h-4 w-4" />
+                  </div>
+                  Hydration Tip
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+                  Drinking water before a meal can help with digestion and make you feel fuller, preventing overeating.
+                </p>
+                <div className="mt-3 flex items-center gap-2 text-xs text-blue-600/70 dark:text-blue-400/70">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>8 glasses recommended daily</span>
+                </div>
+              </CardContent>
             </Card>
+          </div>
         </div>
-      </div>
 
         {/* AI Daily Coach Section */}
         <div className="mt-6">
-            {isCoachLoading ? (
-                <Card>
-                    <CardContent className="p-8 flex flex-col items-center justify-center text-center space-y-2">
-                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                        <p className="text-sm font-semibold">Your coach is thinking...</p>
-                        <p className="text-xs text-muted-foreground">This may take a moment.</p>
-                    </CardContent>
-                </Card>
-            ) : coachError ? (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>AI Coach Error</AlertTitle>
-                    <AlertDescription>{coachError}</AlertDescription>
-                </Alert>
-            ) : coachData ? (
-                <AiCoachCard data={coachData} />
-            ) : (
-                <Card className="border-2 border-dashed">
-                    <CardContent className="p-6 text-center">
-                        <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary/10 mb-4">
-                            <BrainCircuit className="h-6 w-6 text-primary" />
-                        </div>
-                        <h3 className="text-lg font-semibold">Need some guidance?</h3>
-                        <p className="text-muted-foreground text-sm mt-1 mb-4">Get personalized tips, meal ideas, and recipes for the rest of your day.</p>
-                        <Button onClick={handleGetCoachPlan}>Ask AI Coach</Button>
-                    </CardContent>
-                </Card>
-            )}
+          {isCoachLoading ? (
+            <Card className="border-2 shadow-xl overflow-hidden">
+              <CardContent className="p-8 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse"></div>
+                  <Loader2 className="h-10 w-10 text-primary animate-spin relative" />
+                </div>
+                <div>
+                  <p className="text-base font-semibold">Your coach is thinking...</p>
+                  <p className="text-sm text-muted-foreground mt-1">This may take a moment.</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : coachError ? (
+            <Alert variant="destructive" className="border-2">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>AI Coach Error</AlertTitle>
+              <AlertDescription>{coachError}</AlertDescription>
+            </Alert>
+          ) : coachData ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AiCoachCard data={coachData} />
+            </motion.div>
+          ) : (
+            <Card className="border-2 border-dashed shadow-lg hover:shadow-xl transition-all">
+              <CardContent className="p-8 text-center">
+                <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 mb-4">
+                  <BrainCircuit className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Need some guidance?</h3>
+                <p className="text-muted-foreground text-sm mb-6 max-w-md mx-auto">
+                  Get personalized tips, meal ideas, and recipes for the rest of your day based on your current progress.
+                </p>
+                <Button 
+                  onClick={handleGetCoachPlan} 
+                  size="lg"
+                  className="rounded-xl px-8 h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                >
+                  Ask AI Coach
+                  <Sparkles className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
+      </div>
     </div>
   );
 };
 
-const MacroStat = ({ icon, label, value, goal }: { icon: React.ReactNode, label: string, value: number, goal: number }) => (
-    <div>
-        <div className="flex items-center justify-center gap-1.5 mb-1">{icon} <span className="font-medium">{label}</span></div>
-        <p className="text-lg font-bold">{value.toFixed(0)}g</p>
+// Enhanced Macro Stat Component
+const MacroStat = ({ icon, label, value, goal }: { icon: React.ReactNode, label: string, value: number, goal: number }) => {
+  const percentage = goal > 0 ? (value / goal) * 100 : 0;
+  
+  return (
+    <motion.div 
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="text-center p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+    >
+      <div className="flex items-center justify-center gap-1.5 mb-2">
+        {icon}
+        <span className="font-medium text-sm">{label}</span>
+      </div>
+      <p className="text-xl font-bold">{value.toFixed(0)}g</p>
+      <div className="mt-2 space-y-1">
+        <Progress value={percentage} className="h-1.5" />
         <p className="text-xs text-muted-foreground">Goal: {goal.toFixed(0)}g</p>
-    </div>
-);
+      </div>
+    </motion.div>
+  );
+};
 
+// Enhanced Recommendation Item Preview
 const RecommendationItemPreview = ({ rec }: { rec: RecommendationItem }) => (
-    <Link href={`/dashboard/food/${rec.foodId}`} className="block">
-        <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors group">
-            <div className="p-2 bg-background rounded-md">
-                <Lightbulb className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1">
-                <p className="font-medium text-sm truncate">{rec.name}</p>
-                <p className="text-xs text-muted-foreground">{rec.calories.toFixed(0)} kcal &bull; {rec.reason.slice(0, 30)}...</p>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-        </div>
-    </Link>
-);
-
-
-const RecommendationSkeleton = () => (
-    <div className="space-y-3">
-        <div className="flex items-center gap-3 p-2">
-            <Skeleton className="h-8 w-8 rounded-md" />
-            <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-full" />
-            </div>
-        </div>
-         <div className="flex items-center gap-3 p-2">
-            <Skeleton className="h-8 w-8 rounded-md" />
-            <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-full" />
-            </div>
-        </div>
-    </div>
-);
-
-
-const DashboardSkeleton = () => (
-  <div className="space-y-8">
-    <Skeleton className="h-9 w-80" />
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-2 space-y-6">
-        <Card>
-          <CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader>
-          <CardContent className="space-y-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div><div className="grid grid-cols-3 gap-4 pt-6 border-t"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></CardContent>
-        </Card>
-        <Card>
-          <CardHeader><Skeleton className="h-5 w-40" /></CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader>
-          <CardContent><Skeleton className="h-[250px] w-full" /></CardContent>
-        </Card>
+  <Link href={`/dashboard/food/${rec.foodId}`} className="block">
+    <motion.div 
+      whileHover={{ x: 4 }}
+      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 border border-transparent hover:border-primary/20 transition-all group"
+    >
+      <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5">
+        <Lightbulb className="h-4 w-4 text-primary" />
       </div>
-      <div className="lg:col-span-1 space-y-6">
-        <Card>
-          <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full col-span-2" /></CardContent>
-        </Card>
-        <Card>
-          <CardHeader><Skeleton className="h-6 w-40" /></CardHeader>
-          <CardContent><RecommendationSkeleton /></CardContent>
-        </Card>
-         <Card>
-          <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
-          <CardContent><Skeleton className="h-10 w-full" /></CardContent>
-        </Card>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm truncate">{rec.name}</p>
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          <span>{rec.calories.toFixed(0)} kcal</span>
+          <span>•</span>
+          <span className="truncate">{rec.reason.slice(0, 30)}...</span>
+        </p>
       </div>
-    </div>
-  </div>
+      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+    </motion.div>
+  </Link>
 );
 
+// Enhanced Micro Stat Component
 const MicroStat: FC<{label:string, value:number, unit:string}> = ({ label, value, unit }) => (
-  <div className="p-2 bg-muted/50 rounded-lg text-center">
-    <p className="text-xs text-muted-foreground">{label}</p>
-    <p className="text-base font-bold">{Math.round(value)}{unit}</p>
-  </div>
+  <motion.div 
+    whileHover={{ scale: 1.02 }}
+    className="p-3 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 border hover:shadow-md transition-all"
+  >
+    <p className="text-xs text-muted-foreground mb-1">{label}</p>
+    <p className="text-lg font-bold">{Math.round(value)}<span className="text-sm font-normal text-muted-foreground ml-0.5">{unit}</span></p>
+  </motion.div>
 );
 
+// Enhanced Micro Nutrient Grid
 const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-base">Micronutrient Overview</CardTitle>
+  <Card className="border-2 shadow-xl overflow-hidden">
+    <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+      <CardTitle className="flex items-center gap-2 text-lg">
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          <Salad className="h-4 w-4 text-primary" />
+        </div>
+        Micronutrient Overview
+      </CardTitle>
     </CardHeader>
-    <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
       <MicroStat label="Fiber" value={totals.totalFiber} unit="g" />
       <MicroStat label="Sugar" value={totals.totalSugar} unit="g" />
       <MicroStat label="Sodium" value={totals.totalSodium} unit="mg" />
@@ -381,6 +554,124 @@ const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => (
       <MicroStat label="Vit. A" value={totals.totalVitaminA} unit="µg" />
     </CardContent>
   </Card>
+);
+
+// Enhanced Recommendation Skeleton
+const RecommendationSkeleton = () => (
+  <div className="space-y-3">
+    {[1, 2].map((i) => (
+      <div key={i} className="flex items-center gap-3 p-3">
+        <Skeleton className="h-10 w-10 rounded-lg" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-full" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+// Enhanced Dashboard Skeleton
+const DashboardSkeleton = () => (
+  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-12 w-12 rounded-xl" />
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <Skeleton className="h-8 w-32 rounded-full" />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <div className="flex justify-between">
+                <div><Skeleton className="h-6 w-40" /><Skeleton className="h-4 w-56 mt-2" /></div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><Skeleton className="h-12 w-full" /></div>
+                <div><Skeleton className="h-12 w-full" /></div>
+              </div>
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                <Skeleton className="h-24 w-full rounded-xl" />
+                <Skeleton className="h-24 w-full rounded-xl" />
+                <Skeleton className="h-24 w-full rounded-xl" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64 mt-2" />
+            </CardHeader>
+            <CardContent className="p-4">
+              <Skeleton className="h-[250px] w-full rounded-xl" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="p-4 grid grid-cols-2 gap-3">
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl col-span-2" />
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent className="p-4">
+              <RecommendationSkeleton />
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader className="pb-3">
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-16 w-full rounded-xl" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Card className="border-2 border-dashed">
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center text-center">
+            <Skeleton className="h-16 w-16 rounded-full mb-4" />
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64 mb-6" />
+            <Skeleton className="h-12 w-32 rounded-xl" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
 );
 
 export default OverviewPage;

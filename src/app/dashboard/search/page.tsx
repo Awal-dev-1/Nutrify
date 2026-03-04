@@ -3,13 +3,26 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  Search as SearchIcon,
+  Search,
   X,
   Sparkles,
   Loader2,
   AlertCircle,
   Mic,
-  PlusCircle,
+  Plus,
+  Clock,
+  History,
+  Coffee,
+  Sun,
+  Moon,
+  Cookie,
+  ChevronRight,
+  Scale,
+  Flame,
+  Droplets,
+  Beef,
+  Leaf,
+  Trophy,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -43,23 +56,40 @@ import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { addRecentSearch } from '@/services/searchService';
 import type { RecentSearch } from '@/types/search';
 import { RecentSearches } from '@/components/search/recent-searches';
-import { Beef, Droplets, Wheat } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
-// The main search page component
+// Meal type configuration with icons and colors
+const MEAL_TYPES = [
+  { value: 'Breakfast', label: 'Breakfast', icon: Coffee, color: 'text-amber-500' },
+  { value: 'Lunch', label: 'Lunch', icon: Sun, color: 'text-orange-500' },
+  { value: 'Dinner', label: 'Dinner', icon: Moon, color: 'text-indigo-500' },
+  { value: 'Snacks', label: 'Snacks', icon: Cookie, color: 'text-pink-500' },
+] as const;
+
+// Quick portion suggestions with labels
+const QUICK_PORTIONS = [
+  { grams: 50, label: 'Small' },
+  { grams: 100, label: 'Regular' },
+  { grams: 200, label: 'Large' },
+  { grams: 300, label: 'Extra' },
+];
+
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams?.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<FoodItem | null>(null); // Store a single FoodItem
+  const [result, setResult] = useState<FoodItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(!!initialQuery);
 
-  // State for the new portion control feature
+  // Portion control state
   const [portionGrams, setPortionGrams] = useState(100);
-  const [mealType, setMealType] = useState<
-    'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks'
-  >('Lunch');
+  const [mealType, setMealType] = useState<(typeof MEAL_TYPES)[number]['value']>('Lunch');
   const [isAdding, setIsAdding] = useState(false);
 
   // Voice search state
@@ -84,44 +114,49 @@ export default function SearchPage() {
   const { data: recentSearches, isLoading: areRecentsLoading } =
     useCollection<RecentSearch>(recentsQuery);
 
+  // Initialize speech recognition
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return;
+
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.lang = 'en-US';
     recognition.interimResults = false;
+    
     recognition.onstart = () => setIsRecording(true);
     recognition.onend = () => setIsRecording(false);
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       toast({
         variant: 'destructive',
-        title: 'Voice Error',
-        description: `Could not recognize speech: ${event.error}`,
+        title: 'Voice recognition failed',
+        description: 'Please try again or type your search manually.',
       });
       setIsRecording(false);
     };
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setSearchQuery(transcript);
+      // Auto-search after voice input
+      handleSearch(transcript);
     };
+    
     recognitionRef.current = recognition;
+    
     return () => {
       recognition.stop();
     };
   }, [toast]);
 
-  // Effect to run search on initial query
+  // Run search on initial query
   useEffect(() => {
     if (initialQuery && userProfile) {
       handleSearch(initialQuery);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery, userProfile]);
 
-  // Main search handler function
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
       setResult(null);
@@ -134,7 +169,7 @@ export default function SearchPage() {
     setError(null);
     setResult(null);
     setHasSearched(true);
-    setPortionGrams(100); // Reset portion on new search
+    setPortionGrams(100);
 
     try {
       const userGoal = userProfile?.health?.primaryGoal;
@@ -144,51 +179,40 @@ export default function SearchPage() {
         toast({
           variant: 'destructive',
           title: 'Not a food item',
-          description:
-            'The AI can only provide nutritional analysis for food items.',
+          description: 'Please search for a specific food item.',
         });
-        setHasSearched(false); // Reset to show the empty state
+        setHasSearched(false);
         return;
       }
 
       if (response.foodItems.length === 0) {
-        throw new Error(
-          "The AI couldn't find any nutritional information for that. Please try rephrasing your search."
-        );
+        throw new Error('No nutritional information found. Try a different search.');
       }
 
       const foundFood = response.foodItems[0];
       setResult(foundFood);
 
       if (user && db) {
-        addRecentSearch(db, user.uid, foundFood);
+        await addRecentSearch(db, user.uid, foundFood);
       }
     } catch (err: any) {
-      console.error('AI search failed:', err);
-      const errorMessage =
-        err.message || 'Could not fetch AI-powered results. Please try again.';
-      setError(errorMessage);
+      console.error('Search failed:', err);
+      setError(err.message || 'Failed to get results. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Form submission handler
-  const onFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSearch(searchQuery);
-  };
-
-  // Voice search click handler
   const handleMicClick = () => {
     if (!recognitionRef.current) {
       toast({
         variant: 'destructive',
-        title: 'Unsupported Feature',
+        title: 'Not supported',
         description: 'Your browser does not support voice recognition.',
       });
       return;
     }
+    
     if (isRecording) {
       recognitionRef.current.stop();
     } else {
@@ -204,31 +228,39 @@ export default function SearchPage() {
       setHasSearched(true);
       setError(null);
     } catch (e) {
-      console.error('Failed to parse recent search data', e);
-      setError('Could not load recent search. Please try searching for it again.');
+      console.error('Failed to parse recent search', e);
+      setError('Could not load this search. Please try searching again.');
     }
   };
 
-  // Function to add food to tracker
   const handleAddToTracker = async () => {
     if (!result || !user || !db || !mealType) return;
 
     setIsAdding(true);
     try {
       await addFoodToLog(db, user.uid, mealType, result, portionGrams);
+      
       toast({
-        title: 'Food Added!',
-        description: `${result.foodName} (${portionGrams}g) was added to ${mealType}.`,
+        title: '✨ Food logged successfully!',
+        description: (
+          <div className="flex flex-col gap-1">
+            <span className="font-medium">{result.foodName}</span>
+            <span className="text-sm text-muted-foreground">
+              {portionGrams}g • {mealType}
+            </span>
+          </div>
+        ),
       });
-      // Reset UI after adding
+
+      // Reset UI
       setResult(null);
       setSearchQuery('');
       setHasSearched(false);
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to add food to tracker.',
+        title: 'Failed to add food',
+        description: 'Please try again.',
       });
       console.error(err);
     } finally {
@@ -236,322 +268,374 @@ export default function SearchPage() {
     }
   };
 
-  return (
-    <div className="w-full space-y-8">
-      {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">AI Food Search</h1>
-        <p className="text-muted-foreground">
-          Ask the AI anything about food nutrition. Try "Kenkey with grilled
-          tilapia".
-        </p>
-      </div>
+  const clearSearch = () => {
+    setSearchQuery('');
+    setResult(null);
+    setHasSearched(false);
+    setError(null);
+  };
 
-      {/* Search Section */}
-      <div className="max-w-4xl">
-        <form
-          onSubmit={onFormSubmit}
-          className="relative group w-full flex gap-2"
-        >
-          <div className="relative flex-1">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2">
-              <Sparkles className="h-5 w-5 text-primary group-focus-within:text-primary transition-colors" />
-            </div>
-            <Input
-              placeholder="Ask AI or click the mic to speak..."
-              className="w-full h-14 rounded-full border-2 bg-background pl-12 pr-24 text-base transition-all focus-visible:ring-primary/20"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              {searchQuery && (
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
+      <div className="container max-w-5xl mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <div className="space-y-2 text-center md:text-left">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            AI Food Search
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto md:mx-0">
+            Search any food and get instant nutritional insights
+          </p>
+        </div>
+
+        {/* Search Section */}
+        <div className="max-w-3xl mx-auto md:mx-0">
+          <form onSubmit={(e) => { e.preventDefault(); handleSearch(searchQuery); }}>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+                <Sparkles className="h-5 w-5 text-primary group-focus-within:text-primary/80 transition-colors" />
+              </div>
+              
+              <Input
+                placeholder="e.g., Grilled salmon with quinoa..."
+                className="w-full h-16 pl-12 pr-32 text-lg bg-background/80 backdrop-blur-sm border-2 border-muted focus:border-primary rounded-2xl shadow-lg transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                {searchQuery && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 rounded-full hover:bg-muted"
+                    onClick={clearSearch}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+                
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
-                  type="button"
-                  className="h-8 w-8 rounded-full hover:bg-muted"
-                  onClick={() => setSearchQuery('')}
+                  className={cn(
+                    "h-10 w-10 rounded-full transition-all",
+                    isRecording && "bg-red-100 text-red-600 animate-pulse dark:bg-red-950"
+                  )}
+                  onClick={handleMicClick}
                 >
-                  <X className="h-4 w-4" />
+                  <Mic className="h-4 w-4" />
                 </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                onClick={handleMicClick}
-                className={cn(
-                  'h-8 w-8 rounded-full hover:bg-muted',
-                  isRecording &&
-                    'bg-destructive/20 text-destructive hover:bg-destructive/30'
-                )}
-              >
-                <Mic
-                  className={cn('h-4 w-4', isRecording && 'animate-pulse')}
-                />
-              </Button>
+                
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-12 px-6 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  disabled={loading || !searchQuery.trim()}
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-          <Button
-            type="submit"
-            size="lg"
-            className="h-14 rounded-full px-6"
-            disabled={loading || !searchQuery.trim() || isProfileLoading}
-          >
-            {loading || isProfileLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <SearchIcon className="mr-2 h-4 w-4" />
-            )}
-            <span>Search</span>
-          </Button>
-        </form>
-      </div>
+          </form>
+        </div>
 
-      {/* Results Section */}
-      <div className="max-w-4xl pt-8">
-        {(loading || (isProfileLoading && hasSearched)) && (
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-3/5" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-        )}
+        {/* Content Section */}
+        <AnimatePresence mode="wait">
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
+            >
+              <Skeleton className="h-12 w-64" />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-64 rounded-2xl" />
+                <Skeleton className="h-64 rounded-2xl" />
+              </div>
+            </motion.div>
+          )}
 
-        {error && !loading && (
-          <Alert variant="destructive" className="border-destructive/50">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>AI Search Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          {error && !loading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <Alert variant="destructive" className="max-w-3xl">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Search Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
 
-        {!hasSearched && !loading && (
-          <RecentSearches
-            recents={recentSearches}
-            isLoading={areRecentsLoading}
-            onRecentClick={handleRecentClick}
-          />
-        )}
-        
-        {result && !loading && !error && (
-          <PortionControlCard
-            foodItem={result}
-            portion={portionGrams}
-            setPortion={setPortionGrams}
-            mealType={mealType}
-            setMealType={setMealType}
-            onAddToTracker={handleAddToTracker}
-            isAdding={isAdding}
-          />
-        )}
+          {!hasSearched && !loading && !error && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
+            >
+              <RecentSearches
+                recents={recentSearches}
+                isLoading={areRecentsLoading}
+                onRecentClick={handleRecentClick}
+              />
+              
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">Try searching for "Grilled chicken breast" or "Avocado toast"</p>
+              </div>
+            </motion.div>
+          )}
+
+          {result && !loading && !error && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <FoodDetailsCard
+                foodItem={result}
+                portionGrams={portionGrams}
+                setPortionGrams={setPortionGrams}
+                mealType={mealType}
+                setMealType={setMealType}
+                onAddToTracker={handleAddToTracker}
+                isAdding={isAdding}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
-// New component for the portion control UI
-interface PortionControlCardProps {
+interface FoodDetailsCardProps {
   foodItem: FoodItem;
-  portion: number;
-  setPortion: (portion: number) => void;
-  mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks';
-  setMealType: (
-    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks'
-  ) => void;
+  portionGrams: number;
+  setPortionGrams: (grams: number) => void;
+  mealType: typeof MEAL_TYPES[number]['value'];
+  setMealType: (type: typeof MEAL_TYPES[number]['value']) => void;
   onAddToTracker: () => void;
   isAdding: boolean;
 }
 
-function PortionControlCard({
+function FoodDetailsCard({
   foodItem,
-  portion,
-  setPortion,
+  portionGrams,
+  setPortionGrams,
   mealType,
   setMealType,
   onAddToTracker,
   isAdding,
-}: PortionControlCardProps) {
-  // Calculate nutrients for the current portion
-  const calculatedNutrients = useMemo(() => {
-    if (!foodItem) return null;
-    const ratio = portion / 100;
-    return {
-      calories: (foodItem.calories || 0) * ratio,
-      protein: (foodItem.macronutrientBreakdown.protein || 0) * ratio,
-      carbs: (foodItem.macronutrientBreakdown.carbohydrates || 0) * ratio,
-      fat: (foodItem.macronutrientBreakdown.fat || 0) * ratio,
-      micros: Object.fromEntries(
-        Object.entries(foodItem.micronutrientBreakdown || {}).map(([key, value]) => [key, (value || 0) * ratio])
-      ),
-    };
-  }, [foodItem, portion]);
+}: FoodDetailsCardProps) {
+  const [activeTab, setActiveTab] = useState('nutrition');
 
-  const quickPortions = [50, 100, 150, 200, 300];
+  const calculatedNutrients = useMemo(() => {
+    const ratio = portionGrams / 100;
+    return {
+      calories: Math.round((foodItem.calories || 0) * ratio),
+      protein: Number(((foodItem.macronutrientBreakdown.protein || 0) * ratio).toFixed(1)),
+      carbs: Number(((foodItem.macronutrientBreakdown.carbohydrates || 0) * ratio).toFixed(1)),
+      fat: Number(((foodItem.macronutrientBreakdown.fat || 0) * ratio).toFixed(1)),
+    };
+  }, [foodItem, portionGrams]);
+
+  // Calculate percentages for macro visualization
+  const totalMacros = calculatedNutrients.protein + calculatedNutrients.carbs + calculatedNutrients.fat;
+  const macroPercentages = {
+    protein: totalMacros > 0 ? (calculatedNutrients.protein / totalMacros) * 100 : 0,
+    carbs: totalMacros > 0 ? (calculatedNutrients.carbs / totalMacros) * 100 : 0,
+    fat: totalMacros > 0 ? (calculatedNutrients.fat / totalMacros) * 100 : 0,
+  };
+
+  const currentMealIcon = MEAL_TYPES.find(m => m.value === mealType)?.icon;
 
   return (
-    <Card className="animate-in fade-in-50">
-      <CardHeader>
-        <CardTitle>{foodItem.foodName}</CardTitle>
-        <CardDescription>
-          Adjust the portion size in grams to see the calculated nutritional values for your meal.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid md:grid-cols-2 gap-6">
-        {/* Left side: Calculated Nutrition & Details */}
-        <div className="space-y-6">
-          {calculatedNutrients && (
+    <Card className="border-2 shadow-xl overflow-hidden">
+      {/* Header with gradient background */}
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border-b">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">{foodItem.foodName}</h2>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Scale className="h-4 w-4" />
+                {portionGrams}g serving
+              </span>
+              <span className="flex items-center gap-1">
+                <Flame className="h-4 w-4 text-orange-500" />
+                {calculatedNutrients.calories} kcal
+              </span>
+            </div>
+          </div>
+          
+          <Badge variant="secondary" className="text-sm px-3 py-1">
+            <Sparkles className="h-3 w-3 mr-1" />
+            AI Analyzed
+          </Badge>
+        </div>
+      </div>
+
+      <CardContent className="p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
+            <TabsTrigger value="analyze">Analysis</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="nutrition" className="space-y-6">
+            {/* Portion Control */}
             <div className="space-y-4">
-              <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
-                <h4 className="font-semibold text-sm text-primary">
-                  Nutrition for {portion}g
-                </h4>
-                <div className="flex items-baseline gap-2">
-                  <p className="font-bold text-3xl text-foreground">
-                    {calculatedNutrients.calories.toFixed(0)}
-                  </p>
-                  <p className="text-lg text-muted-foreground">kcal</p>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Adjust portion size
+                </label>
+                <Slider
+                  value={[portionGrams]}
+                  onValueChange={([value]) => setPortionGrams(value)}
+                  min={25}
+                  max={500}
+                  step={25}
+                  className="mb-4"
+                />
+                
+                <div className="flex items-center gap-2 justify-between">
+                  {QUICK_PORTIONS.map(({ grams, label }) => (
+                    <Button
+                      key={grams}
+                      variant={portionGrams === grams ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPortionGrams(grams)}
+                      className="flex-1"
+                    >
+                      {label}
+                      <span className="ml-1 text-xs opacity-70">({grams}g)</span>
+                    </Button>
+                  ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-base">Macronutrients</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0 grid grid-cols-3 gap-1 text-center">
-                    <div className="space-y-1">
-                      <Beef className="mx-auto h-4 w-4 text-red-500" />
-                      <p className="font-bold text-base">
-                        {calculatedNutrients.protein.toFixed(1)}g
-                      </p>
-                      <p className="text-xs text-muted-foreground">Protein</p>
-                    </div>
-                    <div className="space-y-1">
-                      <Wheat className="mx-auto h-4 w-4 text-yellow-600" />
-                      <p className="font-bold text-base">
-                        {calculatedNutrients.carbs.toFixed(1)}g
-                      </p>
-                      <p className="text-xs text-muted-foreground">Carbs</p>
-                    </div>
-                    <div className="space-y-1">
-                      <Droplets className="mx-auto h-4 w-4 text-blue-500" />
-                      <p className="font-bold text-base">
-                        {calculatedNutrients.fat.toFixed(1)}g
-                      </p>
-                      <p className="text-xs text-muted-foreground">Fat</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-base">Micronutrients</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <ul className="text-sm space-y-1">
-                      {Object.entries(calculatedNutrients.micros)
-                        .filter(([, value]) => value && (value as number) > 0)
-                        .map(([key, value]) => {
-                          const keyToLabel: Record<string, string> = {
-                            fiber: 'Fiber',
-                            sugar: 'Sugar',
-                            iron: 'Iron',
-                            calcium: 'Calcium',
-                            vitaminA: 'Vit. A',
-                            vitaminC: 'Vit. C',
-                            sodium: 'Sodium',
-                          };
-                          const keyToUnit: Record<string, string> = {
-                            fiber: 'g',
-                            sugar: 'g',
-                            iron: 'mg',
-                            calcium: 'mg',
-                            vitaminA: 'µg',
-                            vitaminC: 'mg',
-                            sodium: 'mg',
-                          };
-                          if (!keyToLabel[key]) return null;
-                          return (
-                            <li key={key} className="flex justify-between text-xs">
-                              <span className="capitalize text-muted-foreground">{keyToLabel[key]}</span>
-                              <span className="font-medium">{(value as number).toFixed(1)}{keyToUnit[key]}</span>
-                            </li>
-                          );
-                      })}
-                    </ul>
-                  </CardContent>
-                </Card>
+
+              {/* Macro Visualization */}
+              <div className="bg-muted/30 p-4 rounded-xl space-y-3">
+                <h4 className="font-medium text-sm">Macro Balance</h4>
+                <div className="flex h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-blue-500 transition-all"
+                    style={{ width: `${macroPercentages.protein}%` }}
+                  />
+                  <div 
+                    className="bg-green-500 transition-all"
+                    style={{ width: `${macroPercentages.carbs}%` }}
+                  />
+                  <div 
+                    className="bg-yellow-500 transition-all"
+                    style={{ width: `${macroPercentages.fat}%` }}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="text-center">
+                    <div className="font-medium text-blue-600 dark:text-blue-400">Protein</div>
+                    <div>{calculatedNutrients.protein}g</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-green-600 dark:text-green-400">Carbs</div>
+                    <div>{calculatedNutrients.carbs}g</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-yellow-600 dark:text-yellow-400">Fat</div>
+                    <div>{calculatedNutrients.fat}g</div>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-           {/* AI Details */}
-          <Card>
-              <CardHeader className="p-4">
-                  <CardTitle className="text-base">AI Generated Details</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 text-sm space-y-2">
-                   <p><strong>Health Analysis:</strong> {foodItem.healthAnalysis}</p>
-                   <p><strong>Food History:</strong> {foodItem.foodHistory}</p>
-              </CardContent>
-          </Card>
-        </div>
-        {/* Right side: Portion Controls */}
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="portion" className="text-sm font-medium">
-              How much did you eat? (in grams)
-            </label>
-            <Input
-              id="portion"
-              type="number"
-              value={portion}
-              onChange={(e) =>
-                setPortion(
-                  Math.max(1, Math.min(2000, Number(e.target.value) || 0))
-                )
-              }
-              className="mt-1"
-            />
+          </TabsContent>
+
+          <TabsContent value="analyze" className="space-y-4">
+            <div className="bg-primary/5 p-4 rounded-xl">
+              <h4 className="font-medium flex items-center gap-2 mb-2">
+                <Trophy className="h-4 w-4 text-primary" />
+                Health Analysis
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {foodItem.healthAnalysis}
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-4">
+            <div className="bg-secondary/20 p-4 rounded-xl">
+              <h4 className="font-medium flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4" />
+                Food History
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {foodItem.foodHistory}
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Add to Tracker Section */}
+        <div className="mt-6 pt-6 border-t space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <Select value={mealType} onValueChange={(v: any) => setMealType(v)}>
+                <SelectTrigger className="h-12">
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      {currentMealIcon && (
+                        <currentMealIcon className={cn("h-4 w-4", MEAL_TYPES.find(m => m.value === mealType)?.color)} />
+                      )}
+                      <span>{mealType}</span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {MEAL_TYPES.map(({ value, label, icon: Icon, color }) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="flex items-center gap-2">
+                        <Icon className={cn("h-4 w-4", color)} />
+                        {label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button
+              size="lg"
+              className="h-12 px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+              onClick={onAddToTracker}
+              disabled={isAdding}
+            >
+              {isAdding ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              Add to Log
+            </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {quickPortions.map((p) => (
-              <Button
-                key={p}
-                variant="outline"
-                size="sm"
-                onClick={() => setPortion(p)}
-              >
-                {p}g
-              </Button>
-            ))}
-          </div>
-          <div>
-            <label htmlFor="mealType" className="text-sm font-medium">
-              Add to Meal
-            </label>
-            <Select value={mealType} onValueChange={(v) => setMealType(v as any)}>
-              <SelectTrigger id="mealType" className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Breakfast">Breakfast</SelectItem>
-                <SelectItem value="Lunch">Lunch</SelectItem>
-                <SelectItem value="Dinner">Dinner</SelectItem>
-                <SelectItem value="Snacks">Snacks</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={onAddToTracker}
-            disabled={isAdding || portion <= 0}
-          >
-            {isAdding ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <PlusCircle className="mr-2 h-4 w-4" />
-            )}
-            Add to Daily Tracker
-          </Button>
+
+          <p className="text-xs text-center text-muted-foreground">
+            This will add {calculatedNutrients.calories} kcal to your daily tracker
+          </p>
         </div>
       </CardContent>
     </Card>

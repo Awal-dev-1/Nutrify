@@ -46,11 +46,21 @@ import {
   TrendingUp,
   Award,
   AlertTriangle,
+  Calendar,
+  ChevronDown,
+  Sparkles,
+  Clock,
+  BarChart3,
+  PieChart as PieChartIcon,
+  TrendingDown,
+  TrendingUp as TrendUp,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 type Timeframe = '7d' | '30d' | '90d';
 
@@ -90,44 +100,70 @@ const AnalyticsPage = () => {
 
   if (error) {
     return (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Failed to load Analytics</AlertTitle>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Alert variant="destructive" className="max-w-md w-full mx-4 border-2">
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle className="text-lg">Failed to load Analytics</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+      </div>
     );
   }
 
   if (!data || data.chartData.length === 0 || data.summary.averageCalories === 0) {
     return (
-        <div className="space-y-6">
-             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                <h1 className="text-3xl font-bold tracking-tight">
-                    Analytics & Insights
+      <div className="min-h-[80vh] bg-gradient-to-b from-background to-secondary/5">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+                <BarChart3 className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Analytics & Insights
                 </h1>
-                <p className="text-muted-foreground">
-                    Your nutritional journey over the last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days.
+                <p className="text-sm md:text-base text-muted-foreground mt-0.5">
+                  Your nutritional journey over the last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days
                 </p>
-                </div>
-                <div className="flex items-center gap-2 p-1 bg-muted rounded-lg">
-                {(['7d', '30d', '90d'] as Timeframe[]).map((t) => (
-                    <Button
-                    key={t}
-                    variant={timeframe === t ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setTimeframe(t)}
-                    className="capitalize"
-                    >
-                    {t}
-                    </Button>
-                ))}
-                </div>
+              </div>
             </div>
-            <EmptyState
-                title="Not enough data"
-                description="Log your meals for a few days to unlock powerful analytics and insights."
-            />
+            <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-full sm:w-auto">
+              {(['7d', '30d', '90d'] as Timeframe[]).map((t) => (
+                <Button
+                  key={t}
+                  variant={timeframe === t ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setTimeframe(t)}
+                  className={cn(
+                    "capitalize flex-1 sm:flex-none",
+                    timeframe === t && "shadow-md"
+                  )}
+                >
+                  {t}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <EmptyState
+            icon={<PieChartIcon className="h-16 w-16 text-muted-foreground" />}
+            title="Not enough data yet"
+            description="Log your meals for a few days to unlock powerful analytics and personalized insights."
+          >
+            <Button 
+              asChild 
+              size="lg" 
+              className="mt-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+            >
+              <a href="/dashboard/tracker">
+                <Activity className="mr-2 h-5 w-5" />
+                Start Logging Meals
+              </a>
+            </Button>
+          </EmptyState>
+        </div>
       </div>
     );
   }
@@ -135,274 +171,577 @@ const AnalyticsPage = () => {
   const { chartData, summary, insights, goals } = data;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Analytics & Insights
-          </h1>
-          <p className="text-muted-foreground">
-            Your nutritional journey over the last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days.
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+              <TrendingUp className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Analytics & Insights
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Calendar className="h-3.5 w-3.5" />
+                Last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days • {chartData.length} days logged
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-full sm:w-auto">
+            {(['7d', '30d', '90d'] as Timeframe[]).map((t) => (
+              <Button
+                key={t}
+                variant={timeframe === t ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setTimeframe(t)}
+                className={cn(
+                  "capitalize flex-1 sm:flex-none transition-all",
+                  timeframe === t && "shadow-md"
+                )}
+              >
+                {t}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg">
-          {(['7d', '30d', '90d'] as Timeframe[]).map((t) => (
-            <Button
-              key={t}
-              variant={timeframe === t ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setTimeframe(t)}
-              className="capitalize"
-            >
-              {t}
-            </Button>
-          ))}
+
+        {/* Summary Cards - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <StatCard 
+            title="Avg. Daily Calories" 
+            value={summary.averageCalories.toFixed(0)} 
+            unit="kcal" 
+            icon={<Activity className="h-4 w-4 text-primary" />}
+            trend={summary.goalAchievementRate > 80 ? 'good' : summary.goalAchievementRate > 50 ? 'average' : 'low'}
+          />
+          <StatCard 
+            title="Goal Achievement" 
+            value={`${summary.goalAchievementRate.toFixed(0)}%`} 
+            unit="of days" 
+            icon={<Target className="h-4 w-4 text-green-500" />}
+            trend={summary.goalAchievementRate > 70 ? 'good' : summary.goalAchievementRate > 40 ? 'average' : 'low'}
+          />
+          <StatCard 
+            title="Consistency Score" 
+            value={`${summary.consistencyScore.toFixed(0)}%`} 
+            unit="stability" 
+            icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
+            trend={summary.consistencyScore > 70 ? 'good' : summary.consistencyScore > 40 ? 'average' : 'low'}
+          />
+          <StatCard 
+            title="Avg. Daily Protein" 
+            value={summary.averageProtein.toFixed(0)} 
+            unit="g" 
+            icon={<Beef className="h-4 w-4 text-red-500" />}
+            trend={(summary.averageProtein / goals.protein) > 0.8 ? 'good' : 'average'}
+          />
         </div>
-      </div>
 
-      {/* Summary Cards */}
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Avg. Daily Calories" value={summary.averageCalories.toFixed(0)} unit="kcal" icon={<Activity />} />
-        <StatCard title="Goal Achievement" value={`${summary.goalAchievementRate.toFixed(0)}%`} unit="of days" icon={<Target />} />
-        <StatCard title="Consistency Score" value={`${summary.consistencyScore.toFixed(0)}%`} unit="stability" icon={<TrendingUp />} />
-        <StatCard title="Avg. Daily Protein" value={summary.averageProtein.toFixed(0)} unit="g" icon={<Beef />} />
-      </div>
-
-      {/* Main Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Calorie Intake vs. Goal</CardTitle>
-          <CardDescription>
-            Your daily calorie consumption compared to your goal of {goals.calories} kcal.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <ComposedChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(str) => format(new Date(str), 'MMM d')}
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                }}
-                labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')}
-              />
-              <Legend />
-              <Bar dataKey="calories" name="Calories" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              <Line
-                type="monotone"
-                dataKey="goal"
-                name="Goal"
-                stroke="hsl(var(--destructive))"
-                strokeWidth={2}
-                dot={false}
-                strokeDasharray="5 5"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-      
-      {/* Goal Comparison Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Average Intake vs. Goals</CardTitle>
-          <CardDescription>How your average daily intake compares to your targets.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-2">
-          <GoalProgressBar label="Calories" value={summary.averageCalories} goal={goals.calories} unit="kcal" />
-          <GoalProgressBar label="Protein" value={summary.averageProtein} goal={goals.protein} unit="g" />
-          <GoalProgressBar label="Carbs" value={summary.averageCarbs} goal={goals.carbs} unit="g" />
-          <GoalProgressBar label="Fat" value={summary.averageFat} goal={goals.fat} unit="g" />
-        </CardContent>
-      </Card>
-
-      {/* Trend Charts */}
-       <div className="grid lg:grid-cols-2 gap-4">
-         <Card>
-            <CardHeader>
-                <CardTitle>Macronutrient Trends</CardTitle>
-                <CardDescription>Daily protein, carb, and fat intake.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'MMM d')} fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis unit="g" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')} />
-                        <Legend />
-                        <Line type="monotone" dataKey="protein" name="Protein" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="carbs" name="Carbs" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="fat" name="Fat" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
-            </CardContent>
+        {/* Main Chart */}
+        <Card className="border-2 shadow-xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <BarChart3 className="h-4 w-4 text-primary" />
+              </div>
+              Calorie Intake vs. Goal
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Your daily calorie consumption compared to your goal of {goals.calories} kcal
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-3 md:p-6">
+            <div className="h-[250px] sm:h-[300px] md:h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(str) => format(new Date(str), 'MMM d')}
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis 
+                    fontSize={11} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    width={40}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '12px',
+                      padding: '8px 12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    }}
+                    labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d, yyyy')}
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                    iconType="circle"
+                  />
+                  <Bar 
+                    dataKey="calories" 
+                    name="Calories" 
+                    fill="hsl(var(--primary))" 
+                    radius={[6, 6, 0, 0]} 
+                    maxBarSize={50}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="goal"
+                    name="Goal"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth={2}
+                    dot={false}
+                    strokeDasharray="5 5"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
         </Card>
-         <Card>
-            <CardHeader>
-                <CardTitle>Mineral & Salt Trends</CardTitle>
-                <CardDescription>Daily iron, sodium, and calcium intake.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'MMM d')} fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis unit="mg" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')} />
-                        <Legend />
-                        <Line type="monotone" dataKey="iron" name="Iron (mg)" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="sodium" name="Sodium (mg)" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="calcium" name="Calcium (mg)" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Fiber, Sugar & Vitamin A Trends</CardTitle>
-                <CardDescription>Daily fiber, sugar, and Vitamin A intake.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="date" tickFormatter={(str) => format(new Date(str), 'MMM d')} fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis yAxisId="left" unit="g" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis yAxisId="right" orientation="right" unit="µg" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} labelFormatter={(label) => format(new Date(label), 'EEEE, MMM d')} />
-                        <Legend />
-                        <Line yAxisId="left" type="monotone" dataKey="fiber" name="Fiber (g)" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
-                        <Line yAxisId="left" type="monotone" dataKey="sugar" name="Sugar (g)" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
-                        <Line yAxisId="right" type="monotone" dataKey="vitaminA" name="Vitamin A (µg)" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-       </div>
-
-      {/* Insights Grid */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {summary.lowestCalorieDay && (
-            <DaySummaryCard 
-                day={summary.lowestCalorieDay} 
-                title="Best Calorie Day" 
-                icon={<Award className="text-green-500"/>} 
+        
+        {/* Goal Comparison Section */}
+        <Card className="border-2 shadow-xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <Target className="h-4 w-4 text-primary" />
+              </div>
+              Average Intake vs. Goals
+            </CardTitle>
+            <CardDescription className="text-sm">
+              How your average daily intake compares to your targets
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 md:p-6 space-y-4 md:space-y-5">
+            <GoalProgressBar 
+              label="Calories" 
+              value={summary.averageCalories} 
+              goal={goals.calories} 
+              unit="kcal" 
+              color="hsl(var(--primary))"
             />
-        )}
-        {summary.highestCalorieDay && (
-            <DaySummaryCard 
-                day={summary.highestCalorieDay} 
-                title="Highest Intake Day" 
-                icon={<AlertTriangle className="text-orange-500" />}
+            <GoalProgressBar 
+              label="Protein" 
+              value={summary.averageProtein} 
+              goal={goals.protein} 
+              unit="g" 
+              color="hsl(var(--chart-2))"
             />
-        )}
-         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Lightbulb /> AI-Generated Insights
-                </CardTitle>
-                <CardDescription>Actionable advice based on your data.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ul className="space-y-3 list-disc list-inside text-sm">
-                    {insights.map((insight, i) => <li key={i}>{insight}</li>)}
-                </ul>
-            </CardContent>
+            <GoalProgressBar 
+              label="Carbs" 
+              value={summary.averageCarbs} 
+              goal={goals.carbs} 
+              unit="g" 
+              color="hsl(var(--chart-3))"
+            />
+            <GoalProgressBar 
+              label="Fat" 
+              value={summary.averageFat} 
+              goal={goals.fat} 
+              unit="g" 
+              color="hsl(var(--chart-4))"
+            />
+          </CardContent>
         </Card>
+
+        {/* Trend Charts - Responsive Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Macronutrient Trends */}
+          <Card className="border-2 shadow-xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Beef className="h-4 w-4 text-primary" />
+                </div>
+                Macronutrient Trends
+              </CardTitle>
+              <CardDescription className="text-xs md:text-sm">
+                Daily protein, carb, and fat intake
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 md:p-4">
+              <div className="h-[250px] md:h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(str) => format(new Date(str), 'MMM d')} 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      unit="g" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      width={30}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        padding: '6px 10px',
+                        fontSize: '11px',
+                      }}
+                      labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
+                      iconSize={8}
+                    />
+                    <Line type="monotone" dataKey="protein" name="Protein" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="carbs" name="Carbs" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="fat" name="Fat" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Mineral & Salt Trends */}
+          <Card className="border-2 shadow-xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                Mineral & Salt Trends
+              </CardTitle>
+              <CardDescription className="text-xs md:text-sm">
+                Daily iron, sodium, and calcium intake
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 md:p-4">
+              <div className="h-[250px] md:h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(str) => format(new Date(str), 'MMM d')} 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      unit="mg" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      width={30}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        padding: '6px 10px',
+                        fontSize: '11px',
+                      }}
+                      labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
+                      iconSize={8}
+                    />
+                    <Line type="monotone" dataKey="iron" name="Iron" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="sodium" name="Sodium" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="calcium" name="Calcium" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Fiber, Sugar & Vitamin A Trends */}
+          <Card className="border-2 shadow-xl overflow-hidden lg:col-span-2">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Eye className="h-4 w-4 text-primary" />
+                </div>
+                Fiber, Sugar & Vitamin A Trends
+              </CardTitle>
+              <CardDescription className="text-xs md:text-sm">
+                Daily fiber, sugar, and Vitamin A intake
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 md:p-4">
+              <div className="h-[250px] md:h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(str) => format(new Date(str), 'MMM d')} 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      yAxisId="left" 
+                      unit="g" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      width={30}
+                    />
+                    <YAxis 
+                      yAxisId="right" 
+                      orientation="right" 
+                      unit="µg" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      width={30}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        padding: '6px 10px',
+                        fontSize: '11px',
+                      }}
+                      labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
+                      iconSize={8}
+                    />
+                    <Line yAxisId="left" type="monotone" dataKey="fiber" name="Fiber" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                    <Line yAxisId="left" type="monotone" dataKey="sugar" name="Sugar" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
+                    <Line yAxisId="right" type="monotone" dataKey="vitaminA" name="Vitamin A" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Insights Grid - Responsive */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {summary.lowestCalorieDay && (
+            <DaySummaryCard 
+              day={summary.lowestCalorieDay} 
+              title="Best Calorie Day" 
+              icon={<Award className="h-4 w-4 text-green-500" />} 
+              color="green"
+            />
+          )}
+          {summary.highestCalorieDay && (
+            <DaySummaryCard 
+              day={summary.highestCalorieDay} 
+              title="Highest Intake Day" 
+              icon={<AlertTriangle className="h-4 w-4 text-orange-500" />}
+              color="orange"
+            />
+          )}
+          
+          {/* AI Insights Card */}
+          <Card className="border-2 shadow-xl overflow-hidden md:col-span-2 lg:col-span-1">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                </div>
+                AI-Generated Insights
+              </CardTitle>
+              <CardDescription className="text-xs md:text-sm">
+                Actionable advice based on your data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4">
+              <ul className="space-y-3">
+                {insights.map((insight, i) => (
+                  <motion.li 
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-start gap-2 text-xs md:text-sm"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{insight}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ title, value, unit, icon }: { title: string; value: string; unit?: string; icon: React.ReactNode; }) => {
+// Enhanced Stat Card Component
+const StatCard = ({ title, value, unit, icon, trend }: { title: string; value: string; unit?: string; icon: React.ReactNode; trend?: 'good' | 'average' | 'low' }) => {
+  const trendColors = {
+    good: 'text-green-500',
+    average: 'text-yellow-500',
+    low: 'text-red-500',
+  };
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="text-muted-foreground">{icon}</div>
+    <motion.div
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
+      <Card className="border-2 shadow-lg hover:shadow-xl transition-all overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-primary/5 to-transparent">
+          <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">{title}</CardTitle>
+          <div className={cn("p-1.5 rounded-lg", trend && `bg-${trendColors[trend]}/10`)}>
+            {icon}
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="text-xl md:text-2xl lg:text-3xl font-bold">
+            {value}
+            {unit && <span className="text-xs md:text-sm font-normal text-muted-foreground ml-1">{unit}</span>}
+          </div>
+          {trend && (
+            <div className="flex items-center gap-1 mt-1">
+              {trend === 'good' && <TrendUp className="h-3 w-3 text-green-500" />}
+              {trend === 'low' && <TrendingDown className="h-3 w-3 text-red-500" />}
+              <span className={cn("text-xs", trendColors[trend])}>
+                {trend === 'good' ? 'On track' : trend === 'average' ? 'Moderate' : 'Needs improvement'}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Enhanced Goal Progress Bar
+const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; value: number; goal: number; unit: string; color: string }) => {
+  const percentage = goal > 0 ? (value / goal) * 100 : 0;
+  const isOver = percentage > 105;
+  const isUnder = percentage < 95;
+  
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-center text-xs md:text-sm">
+        <span className="font-medium flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+          {label}
+        </span>
+        <span className="text-muted-foreground">
+          <span className="font-bold">{value.toFixed(0)}</span> / {goal.toFixed(0)} {unit}
+        </span>
+      </div>
+      <div className="relative">
+        <Progress 
+          value={Math.min(100, percentage)} 
+          className={cn(
+            "h-2 md:h-2.5",
+            isOver && "[&>div]:bg-destructive",
+            !isOver && isUnder && "[&>div]:bg-yellow-500"
+          )}
+          style={{ '--progress-background': !isOver && !isUnder ? color : undefined } as any}
+        />
+        {percentage > 100 && (
+          <div className="absolute -top-4 right-0 text-xs text-destructive">
+            +{(percentage - 100).toFixed(0)}% over
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Day Summary Card
+const DaySummaryCard = ({ day, title, icon, color }: { day: AnalyticsData; title: string; icon: React.ReactNode; color: string }) => {
+  return (
+    <Card className="border-2 shadow-lg hover:shadow-xl transition-all overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3">
+        <CardTitle className={cn("flex items-center gap-2 text-sm md:text-base font-semibold", `text-${color}-600`)}>
+          {icon} {title}
+        </CardTitle>
+        <CardDescription className="text-xs flex items-center gap-1">
+          <Calendar className="h-3 w-3" />
+          {format(new Date(day.date), 'EEEE, MMM d, yyyy')}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {value}
-          {unit && <span className="text-base font-normal text-muted-foreground ml-1">{unit}</span>}
+      <CardContent className="p-4 space-y-2 text-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="p-2 rounded-lg bg-muted/30">
+            <p className="text-xs text-muted-foreground">Calories</p>
+            <p className="font-bold text-primary">{day.calories.toFixed(0)} kcal</p>
+          </div>
+          <div className="p-2 rounded-lg bg-muted/30">
+            <p className="text-xs text-muted-foreground">Protein</p>
+            <p className="font-bold text-red-500">{day.protein.toFixed(0)}g</p>
+          </div>
+          <div className="p-2 rounded-lg bg-muted/30">
+            <p className="text-xs text-muted-foreground">Carbs</p>
+            <p className="font-bold text-yellow-600">{day.carbs.toFixed(0)}g</p>
+          </div>
+          <div className="p-2 rounded-lg bg-muted/30">
+            <p className="text-xs text-muted-foreground">Fat</p>
+            <p className="font-bold text-blue-500">{day.fat.toFixed(0)}g</p>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 };
 
-const GoalProgressBar = ({ label, value, goal, unit }: { label: string; value: number; goal: number; unit: string; }) => {
-  const percentage = goal > 0 ? (value / goal) * 100 : 0;
-  const isOver = percentage > 105;
-  const isUnder = percentage < 95;
-  
-  return (
-    <div>
-      <div className="flex justify-between mb-1 text-sm">
-        <span className="font-medium">{label}</span>
-        <span className="text-muted-foreground">
-          {value.toFixed(0)} / {goal.toFixed(0)} {unit}
-        </span>
-      </div>
-       <Progress value={Math.min(100, percentage)} className={cn(isOver && "[&>div]:bg-destructive")} />
-    </div>
-  )
-};
-
-const DaySummaryCard = ({ day, title, icon }: { day: AnalyticsData, title: string, icon: React.ReactNode}) => {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                    {icon} {title}
-                </CardTitle>
-                <CardDescription>{format(new Date(day.date), 'EEEE, MMM d')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Calories:</span> <span className="font-medium">{day.calories.toFixed(0)} kcal</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Protein:</span> <span className="font-medium">{day.protein.toFixed(0)}g</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Carbs:</span> <span className="font-medium">{day.carbs.toFixed(0)}g</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Fat:</span> <span className="font-medium">{day.fat.toFixed(0)}g</span></div>
-            </CardContent>
-        </Card>
-    )
-}
-
+// Enhanced Analytics Skeleton
 const AnalyticsSkeleton = () => (
-  <div className="space-y-6">
-    <div className="flex justify-between items-center">
-      <Skeleton className="h-9 w-64" />
-      <Skeleton className="h-9 w-48" />
+  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-12 w-12 rounded-xl" />
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <Skeleton className="h-10 w-48 rounded-lg" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 md:h-32 rounded-xl" />)}
+      </div>
+
+      <Skeleton className="h-[300px] md:h-[420px] rounded-xl" />
+      <Skeleton className="h-48 md:h-60 rounded-xl" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {[1,2,3].map(i => <Skeleton key={i} className="h-[300px] md:h-[350px] rounded-xl" />)}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {[1,2,3].map(i => <Skeleton key={i} className="h-48 md:h-56 rounded-xl" />)}
+      </div>
     </div>
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-    </div>
-    <Skeleton className="h-[420px]" />
-    <Skeleton className="h-60" />
-     <div className="grid lg:grid-cols-2 gap-4">
-        <Skeleton className="h-80" />
-        <Skeleton className="h-80" />
-        <Skeleton className="h-80" />
-    </div>
-     <div className="grid lg:grid-cols-3 gap-4">
-        <Skeleton className="h-60" />
-        <Skeleton className="h-60" />
-        <Skeleton className="h-60" />
-     </div>
   </div>
 );
 

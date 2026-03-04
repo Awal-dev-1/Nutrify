@@ -21,8 +21,29 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
-import { Save, RefreshCw, Target, AlertCircle, Info } from 'lucide-react';
+import { 
+  Save, 
+  RefreshCw, 
+  Target, 
+  AlertCircle, 
+  Info, 
+  Flame, 
+  Beef, 
+  Wheat, 
+  Droplets,
+  Scale,
+  CheckCircle2,
+  Loader2,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Heart
+} from 'lucide-react';
 import { UserProfile } from '@/firebase/provider';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const MACRO_COLORS = {
   protein: 'hsl(var(--chart-2))',
@@ -43,7 +64,6 @@ const getRecommendedGoals = (primaryGoal: string | undefined) => {
       return { protein: 30, carbs: 40, fat: 30 };
   }
 };
-
 
 export default function GoalsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -166,17 +186,25 @@ export default function GoalsPage() {
     return false;
   }, [calories, macros, initialState]);
 
+  const goalProgress = {
+    protein: (macros.protein / 100) * 100,
+    carbs: (macros.carbs / 100) * 100,
+    fat: (macros.fat / 100) * 100,
+  };
+
   if (isProfileLoading) {
     return <GoalsSkeleton />;
   }
 
   if (!userProfile) {
     return (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <Alert variant="destructive" className="max-w-md w-full mx-4">
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle className="text-lg">Error Loading Profile</AlertTitle>
           <AlertDescription>Could not load user profile. Please try again later.</AlertDescription>
         </Alert>
+      </div>
     )
   }
 
@@ -187,161 +215,375 @@ export default function GoalsPage() {
   ];
   
   const goalMessage = {
-      'lose-weight': "You're working toward weight loss. Consistency is key!",
-      'gain-weight': "You're building muscle. Fuel your body for growth!",
-      'maintain-weight': "You're maintaining a healthy weight. Great job on the balance!",
-      'eat-healthier': "You're focused on healthier eating. Every choice is a step forward!",
+      'lose-weight': {
+        message: "You're working toward weight loss. Consistency is key!",
+        icon: TrendingDown,
+        color: 'text-blue-500'
+      },
+      'gain-weight': {
+        message: "You're building muscle. Fuel your body for growth!",
+        icon: TrendingUp,
+        color: 'text-green-500'
+      },
+      'maintain-weight': {
+        message: "You're maintaining a healthy weight. Great job on the balance!",
+        icon: Scale,
+        color: 'text-purple-500'
+      },
+      'eat-healthier': {
+        message: "You're focused on healthier eating. Every choice is a step forward!",
+        icon: Heart,
+        color: 'text-red-500'
+      },
   }[userProfile.health?.primaryGoal || 'maintain-weight'];
 
+  const GoalIcon = goalMessage.icon;
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <Target className="h-8 w-8 text-primary"/>
-            Nutrition Goals
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Customize your daily targets to match your health goals.
-        </p>
-         <Alert className="mt-4 bg-primary/5 border-primary/20">
-          <Info className="h-4 w-4 text-primary" />
-          <AlertTitle className="text-primary/90">Heads Up!</AlertTitle>
-          <AlertDescription>
-            {goalMessage}
-          </AlertDescription>
-        </Alert>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
+        {/* Header Section - Responsive */}
+        <div className="space-y-3 md:space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4">
+            <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg w-fit">
+              <Target className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Nutrition Goals
+              </h1>
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground mt-0.5 md:mt-1">
+                Customize your daily targets to match your health goals
+              </p>
+            </div>
+          </div>
 
-      <div className="grid lg:grid-cols-5 gap-8">
-        <div className="lg:col-span-3 space-y-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Daily Calorie Target</CardTitle>
-                    <CardDescription>Set your daily energy intake goal.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Label htmlFor="calories">Daily Calories (kcal)</Label>
+          <Alert className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent">
+            <GoalIcon className={`h-4 w-4 md:h-5 md:w-5 ${goalMessage.color} shrink-0`} />
+            <div className="flex-1 min-w-0">
+              <AlertTitle className={`${goalMessage.color} font-semibold text-sm md:text-base`}>
+                {userProfile.health?.primaryGoal?.split('-').map(word => 
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ')} Mode
+              </AlertTitle>
+              <AlertDescription className="text-xs md:text-sm text-foreground/80">
+                {goalMessage.message}
+              </AlertDescription>
+            </div>
+          </Alert>
+        </div>
+
+        {/* Main Content Grid - Fully Responsive */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+          {/* Left Column - Goal Settings */}
+          <div className="md:col-span-2 space-y-4 md:space-y-6 lg:space-y-8">
+            {/* Calorie Target Card */}
+            <Card className="border shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg lg:text-xl">
+                  <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary/10">
+                    <Flame className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                  </div>
+                  Daily Calorie Target
+                </CardTitle>
+                <CardDescription className="text-xs md:text-sm lg:text-base">
+                  Set your daily energy intake goal
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="space-y-2 md:space-y-3">
+                  <Label htmlFor="calories" className="text-xs md:text-sm font-medium">
+                    Daily Calories (kcal)
+                  </Label>
+                  <div className="relative max-w-full md:max-w-xs">
                     <Input 
-                        id="calories"
-                        type="number"
-                        value={calories}
-                        onChange={(e) => setCalories(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                        className="text-lg max-w-xs"
+                      id="calories"
+                      type="number"
+                      value={calories}
+                      onChange={(e) => setCalories(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                      className="text-base md:text-lg pl-3 md:pl-4 pr-12 py-4 md:py-6 rounded-lg md:rounded-xl border-2 focus:border-primary"
                     />
-                </CardContent>
+                    <div className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2">
+                      <Badge variant="secondary" className="rounded-full px-2 md:px-3 py-0.5 md:py-1 text-xs">
+                        kcal
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Macronutrient Distribution</CardTitle>
-                    <CardDescription>Adjust the percentage of your daily calories from each macro.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <MacroSlider 
-                        label="Protein" 
-                        value={macros.protein} 
-                        color={MACRO_COLORS.protein}
-                        onValueChange={(v) => handleMacroChange('protein', v)}
-                    />
-                    <MacroSlider 
-                        label="Carbohydrates" 
-                        value={macros.carbs} 
-                        color={MACRO_COLORS.carbs}
-                        onValueChange={(v) => handleMacroChange('carbs', v)}
-                    />
-                    <MacroSlider 
-                        label="Fat" 
-                        value={macros.fat} 
-                        color={MACRO_COLORS.fat}
-                        onValueChange={(v) => handleMacroChange('fat', v)}
-                    />
-                </CardContent>
+            {/* Macro Distribution Card */}
+            <Card className="border shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg lg:text-xl">
+                  <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary/10">
+                    <Scale className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                  </div>
+                  Macronutrient Distribution
+                </CardTitle>
+                <CardDescription className="text-xs md:text-sm lg:text-base">
+                  Adjust the percentage of your daily calories from each macro
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6 lg:space-y-8">
+                <MacroSlider 
+                  label="Protein" 
+                  value={macros.protein} 
+                  color={MACRO_COLORS.protein}
+                  icon={Beef}
+                  onValueChange={(v) => handleMacroChange('protein', v)}
+                />
+                <MacroSlider 
+                  label="Carbohydrates" 
+                  value={macros.carbs} 
+                  color={MACRO_COLORS.carbs}
+                  icon={Wheat}
+                  onValueChange={(v) => handleMacroChange('carbs', v)}
+                />
+                <MacroSlider 
+                  label="Fat" 
+                  value={macros.fat} 
+                  color={MACRO_COLORS.fat}
+                  icon={Droplets}
+                  onValueChange={(v) => handleMacroChange('fat', v)}
+                />
+
+                {/* Quick Stats - Responsive Grid */}
+                <div className="grid grid-cols-3 gap-2 md:gap-4 pt-2 md:pt-4">
+                  <div className="text-center p-2 md:p-3 rounded-lg md:rounded-xl bg-muted/30">
+                    <p className="text-lg md:text-xl lg:text-2xl font-bold text-green-500">{macros.protein}%</p>
+                    <p className="text-xs text-muted-foreground truncate">Protein</p>
+                  </div>
+                  <div className="text-center p-2 md:p-3 rounded-lg md:rounded-xl bg-muted/30">
+                    <p className="text-lg md:text-xl lg:text-2xl font-bold text-blue-500">{macros.carbs}%</p>
+                    <p className="text-xs text-muted-foreground truncate">Carbs</p>
+                  </div>
+                  <div className="text-center p-2 md:p-3 rounded-lg md:rounded-xl bg-muted/30">
+                    <p className="text-lg md:text-xl lg:text-2xl font-bold text-yellow-500">{macros.fat}%</p>
+                    <p className="text-xs text-muted-foreground truncate">Fat</p>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
+          </div>
+
+          {/* Right Column - Analytics */}
+          <div className="space-y-4 md:space-y-6 lg:space-y-8">
+            {/* Grams Display Card */}
+            <Card className="border shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary/10">
+                    <Target className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+                  </div>
+                  Daily Grams
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Your macro targets in grams
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
+                <GramDisplay 
+                  label="Protein" 
+                  value={macroGrams.protein} 
+                  color="text-green-500"
+                  icon={Beef}
+                  total={macroGrams.protein + macroGrams.carbs + macroGrams.fat}
+                />
+                <GramDisplay 
+                  label="Carbs" 
+                  value={macroGrams.carbs} 
+                  color="text-blue-500"
+                  icon={Wheat}
+                  total={macroGrams.protein + macroGrams.carbs + macroGrams.fat}
+                />
+                <GramDisplay 
+                  label="Fat" 
+                  value={macroGrams.fat} 
+                  color="text-yellow-500"
+                  icon={Droplets}
+                  total={macroGrams.protein + macroGrams.carbs + macroGrams.fat}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Visualization Card */}
+            <Card className="border shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary/10">
+                    <PieChart className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+                  </div>
+                  Visual Breakdown
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="h-[160px] sm:h-[180px] md:h-[200px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie 
+                        data={pieData} 
+                        dataKey="value" 
+                        nameKey="name" 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={40}
+                        outerRadius={60}
+                        paddingAngle={4}
+                        label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                        labelLine={false}
+                      >
+                        {pieData.map((entry) => (
+                          <Cell key={entry.name} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          padding: '6px 10px',
+                          fontSize: '12px',
+                        }}
+                        formatter={(value: number) => [`${value}%`, 'Percentage']}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Calculated Grams</CardTitle>
-                    <CardDescription>Your daily macro targets in grams based on your goals.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-3 gap-4 text-center">
-                    <GramDisplay label="Protein" value={macroGrams.protein} color="text-green-500" />
-                    <GramDisplay label="Carbs" value={macroGrams.carbs} color="text-blue-500" />
-                    <GramDisplay label="Fat" value={macroGrams.fat} color="text-yellow-500" />
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Goal Visualization</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                            {pieData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
-                        </Pie>
-                        <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-        </div>
-      </div>
-      
-      <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 mt-8 border-t pt-6">
-        <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
-            <RefreshCw className="mr-2 h-4 w-4" /> Reset to Recommended
-        </Button>
-        <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg">
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+        {/* Footer Actions - Responsive */}
+        <CardFooter className="flex flex-col sm:flex-row justify-end gap-2 md:gap-3 mt-4 md:mt-8 border-t pt-4 md:pt-8 bg-gradient-to-r from-transparent via-primary/5 to-transparent rounded-lg p-4 md:p-6">
+          <Button 
+            variant="outline" 
+            onClick={handleReset} 
+            disabled={isSaving}
+            className="w-full sm:w-auto rounded-lg md:rounded-xl px-4 md:px-6 py-4 md:py-6 h-auto text-sm md:text-base border-2 hover:border-primary/50 transition-all"
+          >
+            <RefreshCw className="mr-2 h-3 w-3 md:h-4 md:w-4" /> 
+            Reset to Recommended
+          </Button>
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving || !hasChanges} 
+            size="lg"
+            className="w-full sm:w-auto rounded-lg md:rounded-xl px-6 md:px-8 py-4 md:py-6 h-auto text-sm md:text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all"
+          >
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin"/>
+            ) : (
+              <Save className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+            )}
             Save Goals
-        </Button>
-      </CardFooter>
+            {hasChanges && <ChevronRight className="ml-1 md:ml-2 h-4 w-4 md:h-5 md:w-5" />}
+          </Button>
+        </CardFooter>
+
+        {/* Success Indicator */}
+        {!hasChanges && initialState && (
+          <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-muted-foreground">
+            <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
+            <span>All goals are up to date</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-const MacroSlider = ({label, value, color, onValueChange}: {label: string, value: number, color: string, onValueChange: (value: number) => void}) => (
-    <div>
-        <div className="flex justify-between mb-2">
-            <Label>{label}</Label>
-            <span className="font-medium">{value}%</span>
+// Enhanced MacroSlider Component - Responsive
+const MacroSlider = ({label, value, color, icon: Icon, onValueChange}: {label: string, value: number, color: string, icon: any, onValueChange: (value: number) => void}) => (
+  <div className="space-y-2 md:space-y-3">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1.5 md:gap-2">
+        <div className="p-1 md:p-1.5 rounded-md md:rounded-lg" style={{ backgroundColor: `${color}20` }}>
+          <Icon className="h-3 w-3 md:h-4 md:w-4" style={{ color }} />
         </div>
-        <Slider
-            value={[value]}
-            onValueChange={([v]) => onValueChange(v)}
-            max={100}
-            step={1}
-            style={{'--slider-color': color} as any}
-            className="[&_.bg-primary]:bg-[var(--slider-color)] [&_.border-primary]:border-[var(--slider-color)]"
-        />
+        <Label className="text-xs md:text-sm lg:text-base font-medium">{label}</Label>
+      </div>
+      <Badge variant="outline" className="text-sm md:text-base lg:text-lg font-semibold px-2 md:px-3 py-0.5 md:py-1">
+        {value}%
+      </Badge>
     </div>
+    <Slider
+      value={[value]}
+      onValueChange={([v]) => onValueChange(v)}
+      max={100}
+      step={1}
+      style={{'--slider-color': color} as any}
+      className="[&_.bg-primary]:bg-[var(--slider-color)] [&_.border-primary]:border-[var(--slider-color)] [&_.bg-primary]:shadow-lg"
+    />
+    <div className="flex justify-between text-xs text-muted-foreground">
+      <span>0%</span>
+      <span className="hidden sm:inline">50%</span>
+      <span>100%</span>
+    </div>
+  </div>
 )
 
-const GramDisplay = ({label, value, color}: {label: string, value: number, color: string}) => (
-    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-        <p className={`text-3xl font-bold ${color}`}>{Math.round(value)}</p>
-        <p className="text-sm text-muted-foreground">{label} (g)</p>
+// Enhanced GramDisplay Component - Responsive
+const GramDisplay = ({label, value, color, icon: Icon, total}: {label: string, value: number, color: string, icon: any, total: number}) => {
+  const percentage = total > 0 ? (value / total) * 100 : 0;
+  
+  return (
+    <motion.div 
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="p-3 md:p-4 rounded-lg md:rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border hover:shadow-md transition-all"
+    >
+      <div className="flex items-center justify-between mb-1 md:mb-2">
+        <div className="flex items-center gap-1.5 md:gap-2">
+          <div className="p-1 md:p-1.5 rounded-md md:rounded-lg" style={{ backgroundColor: `${color}20` }}>
+            <Icon className="h-3 w-3 md:h-4 md:w-4" style={{ color }} />
+          </div>
+          <span className="text-xs md:text-sm font-medium text-muted-foreground">{label}</span>
+        </div>
+        <span className={`text-lg md:text-xl lg:text-2xl font-bold ${color}`}>{Math.round(value)}</span>
+      </div>
+      <div className="space-y-0.5 md:space-y-1">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">of total</span>
+          <span className="font-medium">{percentage.toFixed(0)}%</span>
+        </div>
+        <Progress value={percentage} className="h-1 md:h-1.5" style={{ '--progress-background': color } as any} />
+      </div>
+      <p className="text-xs text-muted-foreground mt-1 md:mt-2">grams per day</p>
     </motion.div>
-)
+  );
+}
 
+// Enhanced Skeleton - Responsive
 const GoalsSkeleton = () => (
-    <div className="space-y-8">
-        <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-5 w-96" />
+  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
+      <div className="space-y-3 md:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4">
+          <Skeleton className="h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl" />
+          <div className="flex-1">
+            <Skeleton className="h-6 w-48 md:h-12 md:w-64 mb-1 md:mb-2" />
+            <Skeleton className="h-4 w-64 md:h-6 md:w-96" />
+          </div>
         </div>
-        <div className="grid lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3 space-y-8">
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-72 w-full" />
-            </div>
-             <div className="lg:col-span-2 space-y-8">
-                <Skeleton className="h-40 w-full" />
-                <Skeleton className="h-64 w-full" />
-            </div>
+        <Skeleton className="h-16 md:h-20 w-full rounded-lg md:rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+        <div className="md:col-span-2 space-y-4 md:space-y-6 lg:space-y-8">
+          <Skeleton className="h-40 md:h-48 lg:h-56 w-full rounded-xl md:rounded-2xl" />
+          <Skeleton className="h-64 md:h-80 lg:h-96 w-full rounded-xl md:rounded-2xl" />
         </div>
+        <div className="space-y-4 md:space-y-6 lg:space-y-8">
+          <Skeleton className="h-56 md:h-64 lg:h-72 w-full rounded-xl md:rounded-2xl" />
+          <Skeleton className="h-48 md:h-56 lg:h-64 w-full rounded-xl md:rounded-2xl" />
+        </div>
+      </div>
+      
+      <Skeleton className="h-16 md:h-20 w-full rounded-lg md:rounded-xl" />
     </div>
+  </div>
 )
