@@ -1,4 +1,3 @@
-
 "use client"
 
 import { usePathname } from 'next/navigation'
@@ -14,6 +13,12 @@ import {
   Settings,
   Target,
   User,
+  Sparkles,
+  Brain,
+  ChefHat,
+  PieChart,
+  Activity,
+  Flame,
 } from 'lucide-react'
 
 import {
@@ -29,28 +34,31 @@ import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUser } from '@/firebase'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 const mainLinks = [
   { href: '/dashboard/overview', label: 'Overview', icon: LayoutGrid },
-  { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
-  { href: '/dashboard/search', label: 'AI Food Search', icon: Search },
-  { href: '/dashboard/goals', label: 'Goals', icon: Target },
-]
-
-const insightLinks = [
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/dashboard/planner', label: 'Meal Planner', icon: Calendar },
 ]
 
 const aiLinks = [
-  { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
+  { href: '/dashboard/search', label: 'AI Food Search', icon: Search },
   { href: '/dashboard/recognize', label: 'AI Recognition', icon: ScanLine },
+  { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
+  { href: '/dashboard/planner', label: 'Meal Planner', icon: Calendar },
+]
+
+const insightLinks = [
+  { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
+  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
+  { href: '/dashboard/goals', label: 'Goals', icon: Target },
 ]
 
 export function MainSidebar() {
   const pathname = usePathname()
   const { user } = useUser();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const handleCloseMobileSidebar = () => {
     if(isMobile) {
@@ -58,76 +66,159 @@ export function MainSidebar() {
     }
   }
 
-  const renderLinks = (links: {href: string, label: string, icon: any}[]) => (
-    <SidebarMenu className="gap-1">
-      {links.map((link) => (
-        <SidebarMenuItem key={link.href}>
-          <SidebarMenuButton
-            asChild
-            isActive={pathname === link.href}
-            tooltip={link.label}
-            className="py-2"
-            onClick={handleCloseMobileSidebar}
-          >
-            <Link href={link.href}>
-              <link.icon className="h-4 w-4" />
-              <span>{link.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
-  )
+  const renderLinks = (links: {href: string, label: string, icon: any}[], groupLabel?: string) => (
+    <div className="space-y-1">
+      {groupLabel && !isCollapsed && (
+        <p className="text-xs font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider">
+          {groupLabel}
+        </p>
+      )}
+      <SidebarMenu className="gap-0.5">
+        {links.map((link) => {
+          const isActive = pathname === link.href;
+          const Icon = link.icon;
+          
+          return (
+            <SidebarMenuItem key={link.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive}
+                tooltip={link.label}
+                className={cn(
+                  "py-2.5 transition-all",
+                  isActive && "bg-primary/10 text-primary font-medium shadow-sm",
+                  !isActive && "hover:bg-muted/50 hover:text-foreground"
+                )}
+                onClick={handleCloseMobileSidebar}
+              >
+                <Link href={link.href}>
+                  <Icon className={cn(
+                    "h-4 w-4",
+                    isActive && "text-primary"
+                  )} />
+                  <span>{link.label}</span>
+                 
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
+    </div>
+  );
 
   return (
     <>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className={cn(
+        "p-4",
+        isCollapsed && "flex justify-center"
+      )}>
         <Logo />
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className={cn(
+        "px-2 py-4",
+        isCollapsed && "px-1"
+      )}>
         <div className="space-y-6">
-          {/* Main Navigation */}
+          {/* Main - Overview */}
+          {renderLinks(mainLinks, "Main")}
+
+          {/* AI Features Group */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider">
-              Main
-            </p>
-            {renderLinks(mainLinks)}
+            <div className="relative">
+              {!isCollapsed && (
+                <>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg blur-sm"></div>
+                  <div className="relative bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded-md bg-primary/10">
+                        <Brain className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wider flex-1">
+                        AI Features
+                      </p>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-primary/20 text-primary">
+                        4
+                      </Badge>
+                    </div>
+                  </div>
+                </>
+              )}
+              {isCollapsed && (
+                <div className="flex justify-center py-2">
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <Brain className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              {renderLinks(aiLinks)}
+            </div>
           </div>
 
-          {/* Insights */}
+          {/* Insights Group */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider">
-              Insights
-            </p>
-            {renderLinks(insightLinks)}
-          </div>
-
-          {/* AI Features */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground px-2 uppercase tracking-wider">
-              AI Features
-            </p>
-            {renderLinks(aiLinks)}
+            <div className="relative">
+              {!isCollapsed && (
+                <>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/5 via-blue-500/10 to-blue-500/5 rounded-lg blur-sm"></div>
+                  <div className="relative bg-gradient-to-r from-blue-500/5 to-transparent rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded-md bg-blue-500/10">
+                        <PieChart className="h-3.5 w-3.5 text-blue-500" />
+                      </div>
+                      <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider flex-1">
+                        Insights
+                      </p>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-500/20 text-blue-500">
+                        3
+                      </Badge>
+                    </div>
+                  </div>
+                </>
+              )}
+              {isCollapsed && (
+                <div className="flex justify-center py-2">
+                  <div className="p-1.5 rounded-md bg-blue-500/10">
+                    <PieChart className="h-4 w-4 text-blue-500" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              {renderLinks(insightLinks)}
+            </div>
           </div>
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-3">
+      <SidebarFooter className={cn(
+        "border-t p-3",
+        isCollapsed && "p-2"
+      )}>
         {/* Settings */}
-        <div className="mb-3">
-          <SidebarMenu className="gap-1">
+        <div className="mb-2">
+          <SidebarMenu className="gap-0.5">
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
                 isActive={pathname === '/dashboard/settings'}
                 tooltip="Settings"
-                className="py-2"
+                className={cn(
+                  "py-2.5 transition-all",
+                  pathname === '/dashboard/settings' && "bg-primary/10 text-primary font-medium shadow-sm",
+                  pathname !== '/dashboard/settings' && "hover:bg-muted/50 hover:text-foreground"
+                )}
                 onClick={handleCloseMobileSidebar}
               >
                 <Link href="/dashboard/settings">
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
+                  <Settings className={cn(
+                    "h-4 w-4",
+                    pathname === '/dashboard/settings' && "text-primary"
+                  )} />
+                  {!isCollapsed && <span>Settings</span>}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -135,18 +226,30 @@ export function MainSidebar() {
         </div>
 
         {/* User Profile */}
-        <div className="rounded-lg bg-muted/30 p-2 transition-colors group-data-[collapsible=icon]:p-2">
-          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-            <Avatar className="h-9 w-9 border border-border">
+        <div className={cn(
+          "rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-2 transition-all hover:shadow-md",
+          isCollapsed && "p-1.5 flex justify-center"
+        )}>
+          <div className={cn(
+            "flex items-center",
+            isCollapsed ? "justify-center" : "gap-3"
+          )}>
+            <Avatar className={cn(
+              "border-2 border-background shadow-sm",
+              isCollapsed ? "h-8 w-8" : "h-9 w-9"
+            )}>
               <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || ""} />
-              <AvatarFallback className="bg-primary/10 text-primary">
-                {user?.displayName?.charAt(0)}
+              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-semibold">
+                {user?.displayName?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
-              <p className="text-sm font-semibold truncate leading-tight">{user?.displayName}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-            </div>
+            
+            {!isCollapsed && (
+              <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-semibold truncate leading-tight">{user?.displayName || 'User'}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email || 'user@example.com'}</p>
+              </div>
+            )}
           </div>
         </div>
       </SidebarFooter>

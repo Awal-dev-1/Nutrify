@@ -229,7 +229,7 @@ const OverviewPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
                   <MacroStat 
                     icon={<Beef className="h-4 w-4 text-red-500" />} 
                     label="Protein" 
@@ -355,7 +355,7 @@ const OverviewPage = () => {
               </CardContent>
             </Card>
 
-            {/* Smart Recommendations */}
+            {/* Smart Suggestions */}
             <Card className="border-2 shadow-xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -485,13 +485,13 @@ const MacroStat = ({ icon, label, value, goal }: { icon: React.ReactNode, label:
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      className="text-center p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+      className="text-center p-2 sm:p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
     >
       <div className="flex items-center justify-center gap-1.5 mb-2">
         {icon}
         <span className="font-medium text-sm">{label}</span>
       </div>
-      <p className="text-xl font-bold">{value.toFixed(0)}g</p>
+      <p className="text-lg sm:text-xl font-bold">{value.toFixed(0)}g</p>
       <div className="mt-2 space-y-1">
         <Progress value={percentage} className="h-1.5" />
         <p className="text-xs text-muted-foreground">Goal: {goal.toFixed(0)}g</p>
@@ -600,7 +600,7 @@ const DashboardSkeleton = () => (
                 <div><Skeleton className="h-12 w-full" /></div>
                 <div><Skeleton className="h-12 w-full" /></div>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
                 <Skeleton className="h-24 w-full rounded-xl" />
                 <Skeleton className="h-24 w-full rounded-xl" />
                 <Skeleton className="h-24 w-full rounded-xl" />
