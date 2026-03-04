@@ -643,6 +643,12 @@ const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; v
   const percentage = goal > 0 ? (value / goal) * 100 : 0;
   const isOver = percentage > 105;
   const isUnder = percentage < 95;
+
+  const indicatorColor = isOver
+    ? 'hsl(var(--destructive))'
+    : !isOver && isUnder
+    ? 'hsl(48 96% 53%)' // A vibrant yellow like Tailwind's yellow-500
+    : color;
   
   return (
     <div className="space-y-1.5">
@@ -658,12 +664,8 @@ const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; v
       <div className="relative">
         <Progress 
           value={Math.min(100, percentage)} 
-          className={cn(
-            "h-2 md:h-2.5",
-            isOver && "[&>div]:bg-destructive",
-            !isOver && isUnder && "[&>div]:bg-yellow-500"
-          )}
-          style={{ '--progress-background': !isOver && !isUnder ? color : undefined } as any}
+          className="h-2 md:h-2.5"
+          style={{ '--progress-background': indicatorColor } as React.CSSProperties}
         />
         {percentage > 100 && (
           <div className="absolute -top-4 right-0 text-xs text-destructive">
@@ -674,6 +676,7 @@ const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; v
     </div>
   );
 };
+
 
 // Enhanced Day Summary Card
 const DaySummaryCard = ({ day, title, icon, color }: { day: AnalyticsData; title: string; icon: React.ReactNode; color: string }) => {
