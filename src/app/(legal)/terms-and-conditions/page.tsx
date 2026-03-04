@@ -1,7 +1,7 @@
 const TermsAndConditionsPage = () => {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight border-b pb-4">Terms and Conditions</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight border-b pb-4">Terms and Conditions</h1>
         <div className="text-muted-foreground">
             <p><strong>Platform Name:</strong> Nutrify</p>
         </div>

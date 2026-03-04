@@ -162,7 +162,7 @@ export default function FoodDetailsPage() {
         <div className="p-6">
           <div className="space-y-4">
              {food.tags && food.tags.length > 0 && <Badge variant="outline">{food.tags[0]}</Badge>}
-            <h1 className="text-4xl font-bold">{food.foodName}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{food.foodName}</h1>
              <div className="text-5xl font-extrabold text-primary">
               {calculatedNutrients?.calories.toFixed(0)}{' '}
               <span className="text-2xl font-medium text-muted-foreground">kcal</span>
