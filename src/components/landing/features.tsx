@@ -77,7 +77,7 @@ export function Features() {
           {featuresList.map((feature, index) => (
             <Card
               key={feature.title}
-              className="group relative border-2 border-primary/5 bg-gradient-to-b from-card to-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-2 text-center sm:text-left"
+              className="group relative border-2 border-primary/5 bg-gradient-to-b from-card to-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-2 text-center"
             >
               {/* Decorative gradient overlay */}
               <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
