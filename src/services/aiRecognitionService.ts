@@ -80,7 +80,8 @@ const saveHistoryInBackground = async (
 export const runAiScan = async (
   db: Firestore,
   user: User,
-  file: File
+  file: File,
+  userGoal?: string
 ): Promise<RecognizeFoodOutput> => {
   // First, compress the image (this is fast)
   const compressedFile = await compressImage(file);
@@ -95,7 +96,7 @@ export const runAiScan = async (
   const photoDataUri = await dataUriPromise;
 
   // The main blocking call: get the AI analysis
-  const aiResult = await recognizeFood({ photoDataUri });
+  const aiResult = await recognizeFood({ photoDataUri, userGoal });
 
   // Now, process the result.
   if (aiResult.isFood && aiResult.predictions.length > 0) {

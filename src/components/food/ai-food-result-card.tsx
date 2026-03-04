@@ -3,10 +3,12 @@
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Beef, Wheat, Droplets, PlusCircle } from 'lucide-react';
+import { Beef, Wheat, Droplets, PlusCircle, Stethoscope } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (item: FoodItem) => void; }> = ({ item, userGoal, onAdd }) => {
+
+export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => void; }> = ({ item, onAdd }) => {
   return (
     <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
       <CardHeader className="bg-primary/5">
@@ -16,7 +18,7 @@ export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (i
             <span className="text-lg font-medium text-muted-foreground">kcal (for ~{item.estimatedWeightGrams}g)</span>
         </div>
       </CardHeader>
-      <CardContent className="p-4 md:p-6">
+      <CardContent className="p-4 md:p-6 space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
             <Card>
                 <CardHeader>
@@ -85,6 +87,15 @@ export const AiFoodResultCard: FC<{ item: FoodItem; userGoal?: string; onAdd: (i
                 </CardContent>
             </Card>
         </div>
+        {item.healthAnalysis && (
+          <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+            <Stethoscope className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+            <AlertTitle className="text-blue-800 dark:text-blue-200">Health Tip</AlertTitle>
+            <AlertDescription className="text-blue-700 dark:text-blue-200/90">
+              {item.healthAnalysis}
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
        <CardFooter>
         <Button className="w-full" onClick={() => onAdd(item)}>

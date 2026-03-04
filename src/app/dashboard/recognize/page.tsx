@@ -129,7 +129,7 @@ export default function RecognizePage() {
     setViewedPrediction(null);
 
     try {
-      const scanResults = await runAiScan(db, user, file);
+      const scanResults = await runAiScan(db, user, file, userProfile?.health?.primaryGoal);
 
       if (!scanResults.isFood) {
         toast({
@@ -290,7 +290,6 @@ export default function RecognizePage() {
             <AiFoodResultCard
               item={viewedPrediction}
               onAdd={setSelectedFood}
-              userGoal={userProfile?.health?.primaryGoal}
             />
 
             {otherPredictions.length > 0 && (
