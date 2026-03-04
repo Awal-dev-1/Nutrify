@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -394,7 +395,7 @@ export default function SearchPage() {
               />
               
               <div className="text-center text-muted-foreground">
-                <p className="text-sm">Try searching for "Grilled chicken breast" or "Avocado toast"</p>
+                <p className="text-sm">Try searching for "Banku and tilapia" or "Jollof rice with chicken"</p>
               </div>
             </motion.div>
           )}
@@ -676,3 +677,5 @@ function FoodDetailsCard({
     </Card>
   );
 }
+
+    
