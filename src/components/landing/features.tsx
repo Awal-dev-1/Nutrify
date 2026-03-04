@@ -101,13 +101,6 @@ export function Features() {
             </Card>
           ))}
         </div>
-
-        {/* Bottom CTA */}
-        <div className="mt-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">2,000+</span> users already tracking their nutrition
-          </p>
-        </div>
       </div>
     </section>
   );
