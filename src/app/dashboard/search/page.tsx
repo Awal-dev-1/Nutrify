@@ -461,7 +461,7 @@ function FoodDetailsCard({
     fat: totalMacros > 0 ? (calculatedNutrients.fat / totalMacros) * 100 : 0,
   };
 
-  const currentMealIcon = MEAL_TYPES.find(m => m.value === mealType)?.icon;
+  const CurrentMealIcon = MEAL_TYPES.find(m => m.value === mealType)?.icon;
 
   return (
     <Card className="border-2 shadow-xl overflow-hidden">
@@ -633,8 +633,8 @@ function FoodDetailsCard({
                 <SelectTrigger className="h-12">
                   <SelectValue>
                     <div className="flex items-center gap-2">
-                      {currentMealIcon && (
-                        <currentMealIcon className={cn("h-4 w-4", MEAL_TYPES.find(m => m.value === mealType)?.color)} />
+                      {CurrentMealIcon && (
+                        <CurrentMealIcon className={cn("h-4 w-4", MEAL_TYPES.find(m => m.value === mealType)?.color)} />
                       )}
                       <span>{mealType}</span>
                     </div>
