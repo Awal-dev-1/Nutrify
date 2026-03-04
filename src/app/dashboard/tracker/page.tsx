@@ -8,7 +8,6 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  Legend,
 } from "recharts";
 import {
   Accordion,
@@ -483,18 +482,19 @@ const MacroPieChart: FC<{ totals: DailyLog }> = ({ totals }) => {
             <CardHeader>
                 <CardTitle className="text-lg">Macronutrient Distribution</CardTitle>
             </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                         <Pie
                             data={data}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
+                            label={false}
                             outerRadius={80}
-                            fill="#8884d8"
+                            innerRadius={50}
+                            paddingAngle={2}
                             dataKey="value"
-                            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                         >
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -504,11 +504,26 @@ const MacroPieChart: FC<{ totals: DailyLog }> = ({ totals }) => {
                             contentStyle={{
                                 backgroundColor: 'hsl(var(--background))',
                                 border: '1px solid hsl(var(--border))',
+                                borderRadius: 'var(--radius)',
                             }}
+                            formatter={(value: number) => `${Math.round(value)} kcal`}
                         />
-                        <Legend wrapperStyle={{fontSize: '0.875rem'}}/>
                     </PieChart>
                 </ResponsiveContainer>
+                <div className="space-y-4">
+                    {data.map(item => {
+                        const percentage = totalMacroCalories > 0 ? (item.value / totalMacroCalories) * 100 : 0;
+                        return (
+                            <div key={item.name} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2">
+                                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                                    <span>{item.name}</span>
+                                </div>
+                                <span className="font-semibold">{percentage.toFixed(0)}%</span>
+                            </div>
+                        )
+                    })}
+                </div>
             </CardContent>
         </Card>
     );
