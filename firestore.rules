@@ -134,13 +134,18 @@ service cloud.firestore {
 
     /**
      * @description Rules for the public community feed.
+     * This is structured in two parts to correctly handle permissions.
      */
-    // This block handles collection-level reads (listing documents).
+    
+    // Part 1: Collection-level rule.
+    // This rule allows the `list` operation, which is required to fetch all
+    // documents for displaying the main community feed.
     match /community_posts {
       allow list: if true;
     }
 
-    // This block handles document-level operations for community posts.
+    // Part 2: Document-level rules.
+    // These rules apply to individual posts (e.g., reading one post, creating, updating).
     match /community_posts/{postId} {
       // Allow anyone to read a single post directly.
       allow get: if true;

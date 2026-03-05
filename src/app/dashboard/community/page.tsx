@@ -1,8 +1,9 @@
+
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -29,48 +30,79 @@ export default function CommunityPage() {
 
   const [posts, setPosts] = useState<CommunityPostWithId[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<CommunityPostWithId | null>(null);
 
-  const fetchPosts = useCallback(async () => {
-    if (!db) {
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!db) {
         setIsLoading(false);
-        setError(new Error("Database connection not available."));
+        setError("Database connection not available.");
         return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const postsQuery = query(collection(db, 'community_posts'));
+        const querySnapshot = await getDocs(postsQuery);
+        
+        const postsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        } as CommunityPostWithId));
+
+        // Sort posts on the client-side to avoid indexing issues
+        postsData.sort((a, b) => {
+          const timeA = a.createdAt?.toDate?.().getTime() || 0;
+          const timeB = b.createdAt?.toDate?.().getTime() || 0;
+          return timeB - timeA;
+        });
+
+        setPosts(postsData);
+      } catch (err: any) {
+        console.error("Failed to fetch posts:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    setIsLoading(true);
-    setError(null);
-    try {
-      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(postsQuery);
-      const postsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      } as CommunityPostWithId));
-      setPosts(postsData);
-    } catch (err: any) {
-      console.error("Failed to fetch posts:", err);
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [db]);
-
-  useEffect(() => {
     fetchPosts();
-  }, [fetchPosts]);
+  }, [db]);
 
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
     try {
       await createPost(db, user, userProfile, data.title, data.content, data.tag);
       toast({ title: 'Post Created!', description: 'Your post is now live.' });
-      fetchPosts(); // Refetch to get the new post
+      // Manually trigger a refetch
+      const event = new Event('refetchPosts');
+      window.dispatchEvent(event);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Creating Post', description: err.message });
     }
   };
+  
+  useEffect(() => {
+    const refetch = () => {
+      const fetchPosts = async () => {
+        if (!db) return;
+        try {
+          const postsQuery = query(collection(db, 'community_posts'));
+          const querySnapshot = await getDocs(postsQuery);
+          const postsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPostWithId));
+          postsData.sort((a, b) => (b.createdAt?.toDate()?.getTime() || 0) - (a.createdAt?.toDate()?.getTime() || 0));
+          setPosts(postsData);
+        } catch (err) { /* already handled */ }
+      };
+      fetchPosts();
+    };
+
+    window.addEventListener('refetchPosts', refetch);
+    return () => window.removeEventListener('refetchPosts', refetch);
+  }, [db]);
+
 
   const handleUpdatePost = async (postId: string, data: { title: string; content: string; tag: string }) => {
     if (!db) return;
@@ -78,7 +110,8 @@ export default function CommunityPage() {
       await updatePost(db, postId, data.title, data.content, data.tag);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
       setEditingPost(null);
-      fetchPosts(); // Refetch to show updated post
+      const event = new Event('refetchPosts');
+      window.dispatchEvent(event);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
@@ -105,7 +138,8 @@ export default function CommunityPage() {
       await toggleLike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
-      fetchPosts(); // Revert on error
+      const event = new Event('refetchPosts');
+      window.dispatchEvent(event); // Revert on error
     }
   };
   
@@ -124,7 +158,8 @@ export default function CommunityPage() {
       await toggleDislike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
-      fetchPosts(); // Revert on error
+      const event = new Event('refetchPosts');
+      window.dispatchEvent(event); // Revert on error
     }
   };
 
@@ -133,7 +168,8 @@ export default function CommunityPage() {
     try {
       await deletePost(db, postId);
       toast({ title: 'Post Deleted', variant: 'destructive' });
-      fetchPosts(); // Refetch after delete
+      const event = new Event('refetchPosts');
+      window.dispatchEvent(event); // Refetch after delete
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
     }
@@ -153,7 +189,7 @@ export default function CommunityPage() {
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Failed to Load Feed</AlertTitle>
-                <AlertDescription>{error.message}</AlertDescription>
+                <AlertDescription>{error}</AlertDescription>
             </Alert>
         </div>
     )
