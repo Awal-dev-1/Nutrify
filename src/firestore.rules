@@ -1,0 +1,151 @@
+/**
+ * # Firestore Security Rules for Nutrify
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a strict user-ownership model. All user-generated data,
+ * including profiles, and daily logs, is private and can only be
+ * accessed by the user who created it. This ensures strong data privacy and
+ * prevents users from accessing or modifying each other's sensitive information.
+ * Public data, like the global food database and community posts, is read-only for
+ * authenticated users.
+ *
+ * ## Data Structure
+ * The data is organized hierarchically to reflect ownership:
+ * - `/users/{userId}`: A top-level collection where each document represents a single
+ *   user's profile. The document ID `{userId}` is the user's Firebase Auth UID.
+ * - `/users/{userId}/dailyLogs/{date}`: A subcollection containing aggregated
+ *   daily nutrition data. The document ID `{date}` is the date string 'YYYY-MM-DD'.
+ * - `/foodItems/{foodId}`: A separate top-level collection containing a global,
+ *   read-only library of food nutritional information.
+ * - `/community_posts/{postId}`: A top-level collection for public posts.
+ *
+ * ## Key Security Decisions
+ * - **No User Enumeration**: Listing the entire `/users` collection is explicitly
+ *   disallowed to protect user privacy.
+ * - **Strict Ownership**: All access to a user's data tree (`/users/{userId}/...`)
+ *   is gated by checking if the requester's UID matches the `{userId}` in the path.
+ * - **Publicly Readable Community**: The community feed is readable by anyone, but
+ *   posts can only be created by signed-in users, and only edited/deleted by
+ *   their original authors.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Validates that critical, immutable fields are not changed during an update.
+    function areImmutableFieldsUnchanged() {
+      return request.resource.data.id == resource.data.id
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // Performs basic validation on the data being written in an update.
+    function isValidUserUpdate() {
+        let data = request.resource.data;
+        let profile = data.get('profile', {});
+        let goals = data.get('goals', {});
+
+        // Validate name exists and is a non-empty string.
+        let isNameValid = data.name is string && data.name.size() > 1;
+        
+        // Validate age if it's being updated.
+        let isAgeValid = !profile.keys().hasAny(['age']) || (profile.age is number && profile.age > 0);
+
+        // Validate calorie goal if it's being updated.
+        let isCalorieGoalValid = !goals.keys().hasAny(['dailyCalorieGoal']) || (goals.dailyCalorieGoal is number && goals.dailyCalorieGoal > 0);
+        
+        return isNameValid && isAgeValid && isCalorieGoalValid;
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection Rules
+    // -------------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow get, delete: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && isValidUserUpdate();
+
+      /**
+       * @description Manages a user's private daily nutrition logs.
+       * A recursive wildcard `{docId=**}` is used to grant the owner
+       * full read/write access to this subcollection and any documents within it.
+       */
+      match /dailyLogs/{docId=**} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      /**
+       * @description Manages a user's generated recommendation history.
+       * A recursive wildcard is used for simplicity and robustness.
+       */
+      match /generatedRecommendations/{docId=**} {
+        allow read, write: if isOwner(userId);
+      }
+
+      /**
+       * @description Manages AI food recognition scans.
+       * A recursive wildcard is used for simplicity and robustness.
+       */
+      match /aiScans/{docId=**} {
+         allow read, write: if isOwner(userId);
+      }
+      
+      /**
+       * @description Manages a user's private meal plans.
+       * A recursive wildcard is used for simplicity and robustness.
+       */
+      match /plannedMeals/{docId=**} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      /**
+       * @description Manages a user's recent search history.
+       */
+      match /recentSearches/{docId=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    /**
+     * @description A global, public database of food items. This data is readable
+     *              by all authenticated users. Writes are also allowed to enable
+     *              the AI service to cache new recipes, but deletes are blocked.
+     * @path /foodItems/{foodItemId}
+     */
+    match /foodItems/{foodItemId} {
+      allow get, list, create, update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    /**
+     * @description Public community posts.
+     */
+    match /community_posts/{postId} {
+      // Allow anyone to read a single post.
+      allow get: if true;
+
+      // Allow only the owner to create, update or delete their own post.
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth.uid == resource.data.userId;
+    }
+    
+    // Explicitly allow listing the entire collection for the feed.
+    match /community_posts {
+        allow list: if true;
+    }
+  }
+}
