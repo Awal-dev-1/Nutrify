@@ -132,12 +132,18 @@ service cloud.firestore {
     }
 
     /**
-     * @description Public community posts. This single block handles all operations
-     *              for the community feed.
+     * @description Rules for the public community feed.
      */
+
+    // This rule applies to collection-level queries (e.g., fetching all posts).
+    match /community_posts {
+      allow list: if true;
+    }
+     
+    // This rule applies to operations on individual post documents.
     match /community_posts/{postId} {
-      // Allow any user (even unauthenticated) to read posts.
-      allow get, list: if true;
+      // Allow any user to read a single post.
+      allow get: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
       allow create: if request.auth.uid == request.resource.data.userId;
