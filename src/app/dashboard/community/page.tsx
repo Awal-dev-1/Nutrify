@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -33,7 +33,7 @@ export default function CommunityPage() {
     if (!db) return;
     setError(null);
     try {
-      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
+      const postsQuery = query(collection(db, 'community_posts'));
       const querySnapshot = await getDocs(postsQuery);
       const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
       setPostsData(posts);
@@ -50,7 +50,16 @@ export default function CommunityPage() {
     fetchPosts();
   }, [fetchPosts]);
 
-  const sortedPosts = postsData; // Query handles sorting
+  const sortedPosts = useMemo(() => {
+    if (!postsData) return [];
+    return [...postsData].sort((a, b) => {
+      const dateA = a.createdAt?.toDate() || 0;
+      const dateB = b.createdAt?.toDate() || 0;
+      if (dateA > dateB) return -1;
+      if (dateA < dateB) return 1;
+      return 0;
+    });
+  }, [postsData]);
 
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
