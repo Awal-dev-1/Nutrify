@@ -7,8 +7,8 @@ const steps = [
     icon: <Scan className="h-8 w-8 md:h-10 md:w-10 text-primary" />,
     title: "Search or Scan Food",
     description:
-      "Instantly find any food from our vast database or use your camera to recognize your meal.",
-    benefits: ["Instant recognition", "Local Ghanaian foods"],
+      "Instantly get your nutrient information by search, image, or camera.",
+    benefits: ["Text Search", "Image Upload", "Camera Scan"],
   },
   {
     icon: <BarChart className="h-8 w-8 md:h-10 md:w-10 text-primary" />,
