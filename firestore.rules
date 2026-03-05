@@ -134,9 +134,15 @@ service cloud.firestore {
     /**
      * @description Rules for the public community feed.
      */
+    // Explicitly allow anyone to list the posts for the feed.
+    match /community_posts {
+      allow list: if true;
+    }
+    
+    // Rules for individual post documents
     match /community_posts/{postId} {
-      // Anyone can read posts (get single, list collection).
-      allow read: if true;
+      // Anyone can read a single post.
+      allow get: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
       allow create: if request.auth.uid == request.resource.data.userId;
