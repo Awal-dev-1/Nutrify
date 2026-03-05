@@ -51,7 +51,7 @@ export function LoginForm() {
       
       // Handle specific Firebase Auth errors for a better user experience.
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        description = "No account found with this email address. Please check your email or sign up.";
+        description = "No account found with this email address. You need to create an account.";
       } else if (error.code === 'auth/wrong-password') {
         description = "Incorrect password. Please try again.";
       } else {
