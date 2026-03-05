@@ -1,46 +1,54 @@
-import { Scan, BarChart, HeartPulse } from "lucide-react";
+// components/landing/how-it-works.tsx
+import { Scan, BarChart, HeartPulse, ArrowRight, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const steps = [
   {
-    icon: <Scan className="h-10 w-10 text-primary" />,
+    icon: <Scan className="h-8 w-8 md:h-10 md:w-10 text-primary" />,
     title: "Search or Scan Food",
     description:
       "Instantly find any food from our vast database or use your camera to recognize your meal.",
+    benefits: ["50,000+ foods", "Instant recognition", "Local Ghanaian foods"],
   },
   {
-    icon: <BarChart className="h-10 w-10 text-primary" />,
+    icon: <BarChart className="h-8 w-8 md:h-10 md:w-10 text-primary" />,
     title: "View Nutrient Breakdown",
     description:
       "Get a detailed analysis of calories, macros, and micronutrients for every item you log.",
+    benefits: ["Real-time tracking", "Visual charts", "Goal progress"],
   },
   {
-    icon: <HeartPulse className="h-10 w-10 text-primary" />,
+    icon: <HeartPulse className="h-8 w-8 md:h-10 md:w-10 text-primary" />,
     title: "Track & Improve Health",
     description:
       "Monitor your progress, get smart insights, and receive personalized recommendations to reach your goals.",
+    benefits: ["AI insights", "Personalized", "Weekly reports"],
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-b from-background to-secondary/30">
+    <section id="how-it-works" className="py-16 md:py-24 lg:py-32 bg-gradient-to-b from-secondary/5 to-background">
       <div className="container px-4">
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+          <div className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-xs sm:text-sm text-blue-500">
+            <CheckCircle className="h-3.5 w-3.5 mr-2" />
+            Simple Process
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
             A Simpler Path to Health
           </h2>
-          <p className="text-lg text-muted-foreground/90 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground/90 max-w-2xl mx-auto">
             Getting started with your nutrition journey is as easy as one, two,
             three.
           </p>
         </div>
         
-        <div className="relative mt-16 lg:mt-24">
+        <div className="relative mt-12 md:mt-16 lg:mt-24">
           {/* Connecting line (desktop only) */}
           <div className="absolute top-24 left-1/2 -translate-x-1/2 w-3/4 h-0.5 bg-gradient-to-r from-transparent via-primary/20 to-transparent hidden lg:block" />
           
-          <div className="grid gap-8 md:grid-cols-3 relative">
+          <div className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-3 relative">
             {steps.map((step, index) => (
               <Card 
                 key={index} 
@@ -48,30 +56,40 @@ export function HowItWorks() {
               >
                 {/* Step number */}
                 <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-300" />
-                <div className="absolute top-6 right-6 text-6xl font-bold text-primary/5 select-none">
+                <div className="absolute top-4 right-4 text-5xl md:text-6xl font-bold text-primary/5 select-none">
                   {index + 1}
                 </div>
                 
-                <CardHeader>
-                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300 mb-2">
+                <CardHeader className="pb-2">
+                  <div className="mx-auto flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300 mb-2">
                     <div className="transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                       {step.icon}
                     </div>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="text-center space-y-3">
-                  <CardTitle className="text-2xl font-bold">
+                <CardContent className="text-center space-y-3 md:space-y-4 px-3 md:px-6 pb-6">
+                  <CardTitle className="text-lg md:text-xl lg:text-2xl font-bold">
                     {step.title}
                   </CardTitle>
-                  <p className="text-muted-foreground/80 leading-relaxed">
+                  <p className="text-xs sm:text-sm md:text-base text-muted-foreground/80 leading-relaxed">
                     {step.description}
                   </p>
                   
-                  {/* Progress indicator */}
+                  {/* Benefits list */}
+                  <div className="pt-2 space-y-1.5">
+                    {step.benefits.map((benefit, i) => (
+                      <div key={i} className="flex items-center justify-center gap-1.5 text-xs md:text-sm text-muted-foreground">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        {benefit}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Progress indicator for mobile */}
                   {index < steps.length - 1 && (
-                    <div className="flex justify-center mt-4 lg:hidden">
-                      <div className="w-1 h-8 bg-gradient-to-b from-primary/30 to-transparent rounded-full" />
+                    <div className="flex justify-center mt-4 md:hidden">
+                      <ArrowRight className="h-5 w-5 text-primary/50 animate-pulse" />
                     </div>
                   )}
                 </CardContent>
@@ -81,10 +99,10 @@ export function HowItWorks() {
         </div>
 
         {/* Bottom accent */}
-        <div className="mt-16 text-center">
-          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Start your journey in minutes
+        <div className="mt-12 md:mt-16 text-center">
+          <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            Start your journey in minutes — no credit card required
           </div>
         </div>
       </div>
