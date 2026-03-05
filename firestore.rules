@@ -1,34 +1,4 @@
 
-/**
- * # Firestore Security Rules for Nutrify
- *
- * ## Core Philosophy
- * This ruleset enforces a strict user-ownership model. All user-generated data,
- * including profiles, and daily logs, is private and can only be
- * accessed by the user who created it. This ensures strong data privacy and
- * prevents users from accessing or modifying each other's sensitive information.
- * Public data, like the global food database and community posts, is read-only for
- * authenticated users.
- *
- * ## Data Structure
- * The data is organized hierarchically to reflect ownership:
- * - `/users/{userId}`: A top-level collection where each document represents a single
- *   user's profile. The document ID `{userId}` is the user's Firebase Auth UID.
- * - `/users/{userId}/dailyLogs/{date}`: A subcollection containing aggregated
- *   daily nutrition data. The document ID `{date}` is the date string 'YYYY-MM-DD'.
- * - `/foodItems/{foodId}`: A separate top-level collection containing a global,
- *   read-only library of food nutritional information.
- * - `/community_posts/{postId}`: A top-level collection for public posts.
- *
- * ## Key Security Decisions
- * - **No User Enumeration**: Listing the entire `/users` collection is explicitly
- *   disallowed to protect user privacy.
- * - **Strict Ownership**: All access to a user's data tree (`/users/{userId}/...`)
- *   is gated by checking if the requester's UID matches the `{userId}` in the path.
- * - **Publicly Readable Community**: The community feed is readable by anyone, but
- *   posts can only be created by signed-in users, and only edited/deleted by
- *   their original authors.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -134,21 +104,20 @@ service cloud.firestore {
 
     /**
      * @description Rules for the public community feed.
-     * This is structured in two parts to correctly handle permissions.
+     * This structure separates collection-level reads (list) from document-level
+     * operations to correctly handle permissions.
      */
     
-    // Part 1: Collection-level rule.
-    // This rule allows the `list` operation, which is required to fetch all
-    // documents for displaying the main community feed.
+    // Rule for listing the entire collection.
+    // Required to fetch all documents for the main feed.
     match /community_posts {
-      allow list: if true;
+      allow list: if isSignedIn();
     }
 
-    // Part 2: Document-level rules.
-    // These rules apply to individual posts (e.g., reading one post, creating, updating).
+    // Rules for individual posts (e.g., reading one post, creating, updating).
     match /community_posts/{postId} {
-      // Allow anyone to read a single post directly.
-      allow get: if true;
+      // Allow any signed-in user to read a single post directly.
+      allow get: if isSignedIn();
 
       // Only authenticated users can create posts, and they must be the owner.
       allow create: if isSignedIn() && isOwner(request.resource.data.userId);

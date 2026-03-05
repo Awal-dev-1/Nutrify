@@ -1,9 +1,8 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -33,76 +32,52 @@ export default function CommunityPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<CommunityPostWithId | null>(null);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      if (!db) {
-        setIsLoading(false);
-        setError("Database connection not available.");
-        return;
-      }
+  const fetchPosts = useCallback(async () => {
+    if (!db) {
+      setIsLoading(false);
+      setError("Database connection not available.");
+      return;
+    }
 
-      setIsLoading(true);
-      setError(null);
-      try {
-        const postsQuery = query(collection(db, 'community_posts'));
-        const querySnapshot = await getDocs(postsQuery);
-        
-        const postsData = querySnapshot.docs.map(doc => ({
+    setIsLoading(true);
+    setError(null);
+    try {
+      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(postsQuery);
+      
+      const postsData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
           id: doc.id,
-          ...doc.data(),
-        } as CommunityPostWithId));
+          ...data,
+          // Ensure createdAt is a Timestamp object for client-side sorting if needed later
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt : new Timestamp(0,0),
+        } as CommunityPostWithId;
+      });
 
-        // Sort posts on the client-side to avoid indexing issues
-        postsData.sort((a, b) => {
-          const timeA = a.createdAt?.toDate?.().getTime() || 0;
-          const timeB = b.createdAt?.toDate?.().getTime() || 0;
-          return timeB - timeA;
-        });
-
-        setPosts(postsData);
-      } catch (err: any) {
-        console.error("Failed to fetch posts:", err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchPosts();
+      setPosts(postsData);
+    } catch (err: any) {
+      console.error("RAW FIREBASE ERROR in community/page.tsx:", err);
+      setError(err.message || 'An unknown error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [db]);
+  
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
     try {
       await createPost(db, user, userProfile, data.title, data.content, data.tag);
       toast({ title: 'Post Created!', description: 'Your post is now live.' });
-      // Manually trigger a refetch
-      const event = new Event('refetchPosts');
-      window.dispatchEvent(event);
+      fetchPosts(); // Refetch posts after creating
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Creating Post', description: err.message });
     }
   };
-  
-  useEffect(() => {
-    const refetch = () => {
-      const fetchPosts = async () => {
-        if (!db) return;
-        try {
-          const postsQuery = query(collection(db, 'community_posts'));
-          const querySnapshot = await getDocs(postsQuery);
-          const postsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPostWithId));
-          postsData.sort((a, b) => (b.createdAt?.toDate()?.getTime() || 0) - (a.createdAt?.toDate()?.getTime() || 0));
-          setPosts(postsData);
-        } catch (err) { /* already handled */ }
-      };
-      fetchPosts();
-    };
-
-    window.addEventListener('refetchPosts', refetch);
-    return () => window.removeEventListener('refetchPosts', refetch);
-  }, [db]);
-
 
   const handleUpdatePost = async (postId: string, data: { title: string; content: string; tag: string }) => {
     if (!db) return;
@@ -110,8 +85,7 @@ export default function CommunityPage() {
       await updatePost(db, postId, data.title, data.content, data.tag);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
       setEditingPost(null);
-      const event = new Event('refetchPosts');
-      window.dispatchEvent(event);
+      fetchPosts(); // Refetch posts after updating
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
@@ -126,7 +100,6 @@ export default function CommunityPage() {
   const handleLike = async (postId: string) => {
     if (!user || !db) return;
 
-    // Optimistic update
     handleOptimisticUpdate(postId, post => {
         const hasLiked = post.likes.includes(user.uid);
         const newLikes = hasLiked ? post.likes.filter(uid => uid !== user.uid) : [...post.likes, user.uid];
@@ -138,15 +111,13 @@ export default function CommunityPage() {
       await toggleLike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
-      const event = new Event('refetchPosts');
-      window.dispatchEvent(event); // Revert on error
+      fetchPosts(); // Revert on error
     }
   };
   
   const handleDislike = async (postId: string) => {
     if (!user || !db) return;
 
-    // Optimistic update
      handleOptimisticUpdate(postId, post => {
         const hasDisliked = post.dislikes.includes(user.uid);
         const newDislikes = hasDisliked ? post.dislikes.filter(uid => uid !== user.uid) : [...post.dislikes, user.uid];
@@ -158,8 +129,7 @@ export default function CommunityPage() {
       await toggleDislike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
-      const event = new Event('refetchPosts');
-      window.dispatchEvent(event); // Revert on error
+      fetchPosts(); // Revert on error
     }
   };
 
@@ -168,8 +138,7 @@ export default function CommunityPage() {
     try {
       await deletePost(db, postId);
       toast({ title: 'Post Deleted', variant: 'destructive' });
-      const event = new Event('refetchPosts');
-      window.dispatchEvent(event); // Refetch after delete
+      fetchPosts(); // Refetch after delete
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
     }
