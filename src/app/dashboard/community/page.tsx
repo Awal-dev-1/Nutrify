@@ -6,18 +6,31 @@ import { CommunityFeed } from '@/components/community/community-feed';
 import type { CommunityPost } from '@/types/community';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { addPost, updatePost, deletePost } from '@/services/communityService';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function CommunityPage() {
   const { user } = useUser();
   const db = useFirestore();
 
+  // Remove orderBy from the query to prevent potential SDK internal errors.
+  // We will sort the data on the client side.
   const communityPostsQuery = useMemoFirebase(
-    () => (db ? query(collection(db, 'community_posts'), orderBy('createdAt', 'desc')) : null),
+    () => (db ? query(collection(db, 'community_posts')) : null),
     [db]
   );
   const { data: posts, isLoading, error } = useCollection<CommunityPost>(communityPostsQuery);
+
+  // Client-side sorting as a workaround for the SDK error
+  const sortedPosts = useMemo(() => {
+    if (!posts) return [];
+    // Sort by createdAt timestamp, newest first.
+    return [...posts].sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [posts]);
 
   const handleAddPost = (postData: Pick<CommunityPost, 'title' | 'content' | 'tag'>) => {
     if (!user || !db) return;
@@ -39,7 +52,7 @@ export default function CommunityPage() {
   };
 
   const renderFeed = () => {
-    if (isLoading) {
+    if (isLoading && !posts) {
       return (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -61,7 +74,7 @@ export default function CommunityPage() {
     
     return (
       <CommunityFeed
-        posts={posts || []}
+        posts={sortedPosts || []}
         currentUserId={user?.uid || ''}
         onUpdatePost={handleUpdatePost}
         onDeletePost={handleDeletePost}
