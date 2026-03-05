@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -50,8 +49,11 @@ export default function CommunityPage() {
   }, [db]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    // Ensure db is available before fetching
+    if(db) {
+        fetchPosts();
+    }
+  }, [fetchPosts, db]);
 
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
