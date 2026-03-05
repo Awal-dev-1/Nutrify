@@ -132,13 +132,10 @@ service cloud.firestore {
     }
 
     /**
-     * @description Rules for the public community feed. The `allow read: if true`
-     *              is the critical change to allow anyone (including unauthenticated
-     *              or newly authenticated users) to `list` the collection for the feed.
-     *              Write operations are still secured.
+     * @description Rules for the public community feed.
      */
     match /community_posts/{postId} {
-      // Allow anyone to read posts (get and list).
+      // Allow anyone to read posts (get and list). This is the key fix.
       allow read: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
