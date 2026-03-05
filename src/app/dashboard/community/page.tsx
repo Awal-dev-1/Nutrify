@@ -34,10 +34,18 @@ export default function CommunityPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
+      const postsQuery = query(collection(db, 'community_posts'));
       const querySnapshot = await getDocs(postsQuery);
       const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
-      setPostsData(posts);
+      
+      // Sort posts by date on the client side
+      const sortedPosts = posts.sort((a, b) => {
+        const dateA = a.createdAt?.toDate() || 0;
+        const dateB = b.createdAt?.toDate() || 0;
+        return dateB - dateA;
+      });
+
+      setPostsData(sortedPosts);
     } catch (err: any) {
       // Log the full error to the console for detailed debugging
       console.error("Failed to fetch posts:", err);
