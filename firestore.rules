@@ -134,16 +134,10 @@ service cloud.firestore {
     /**
      * @description Rules for the public community feed.
      */
-
-    // This rule applies to collection-level queries (e.g., fetching all posts).
-    match /community_posts {
-      allow list: if isSignedIn();
-    }
-     
-    // This rule applies to operations on individual post documents.
     match /community_posts/{postId} {
-      // Allow any signed-in user to read a single post.
-      allow get: if isSignedIn();
+      // Any user can read the community posts, signed in or not.
+      // This rule covers both `get` and `list` operations.
+      allow read: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
       allow create: if request.auth.uid == request.resource.data.userId;
