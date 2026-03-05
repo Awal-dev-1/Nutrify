@@ -136,11 +136,11 @@ service cloud.firestore {
      * @description Rules for the public community feed.
      */
     match /community_posts/{postId} {
-      // Any user can read posts (get single, list collection).
+      // Allow anyone to read posts (get single) and list the collection.
       allow read: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
-      allow create: if request.auth.uid == request.resource.data.userId;
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
       
       // Allow updates under two conditions:
       // 1. The user is the owner and is only updating content fields.
@@ -153,7 +153,7 @@ service cloud.firestore {
       );
       
       // Only the owner can delete their own post.
-      allow delete: if request.auth.uid == resource.data.userId;
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
     }
   }
 }
