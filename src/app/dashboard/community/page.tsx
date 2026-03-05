@@ -1,40 +1,55 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Users, Loader2, AlertCircle } from 'lucide-react';
 import { CreatePostForm } from '@/components/community/create-post-form';
 import { CommunityFeed } from '@/components/community/community-feed';
 import type { CommunityPost } from '@/types/community';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { addPost, updatePost, deletePost } from '@/services/communityService';
-import { collection, query } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function CommunityPage() {
   const { user } = useUser();
   const db = useFirestore();
 
-  // Remove orderBy from the query to prevent potential SDK internal errors.
-  // We will sort the data on the client side.
-  const communityPostsQuery = useMemoFirebase(
-    () => (db ? query(collection(db, 'community_posts')) : null),
-    [db]
-  );
-  const { data: posts, isLoading, error } = useCollection<CommunityPost>(communityPostsQuery);
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Client-side sorting as a workaround for the SDK error
-  const sortedPosts = useMemo(() => {
-    if (!posts) return [];
-    // Sort by createdAt timestamp, newest first.
-    return [...posts].sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [posts]);
+  const fetchPosts = async () => {
+    if (!db || !user) return;
+    
+    // Set loading to true only if it's the initial load
+    if (posts.length === 0) {
+        setIsLoading(true);
+    }
+    setError(null);
+    try {
+      const postsQuery = query(collection(db, 'community_posts'));
+      const querySnapshot = await getDocs(postsQuery);
+      const fetchedPosts = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as CommunityPost[];
+      setPosts(fetchedPosts);
+    } catch (e: any) {
+      console.error("Error fetching posts:", e);
+      setError("Could not load community feed. Please check your permissions and try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch posts once on component mount
+  useEffect(() => {
+    fetchPosts();
+  }, [db, user]);
 
   const handleAddPost = (postData: Pick<CommunityPost, 'title' | 'content' | 'tag'>) => {
     if (!user || !db) return;
     addPost(db, user, postData);
+    // Refetch posts after a short delay to allow Firestore to process the write
+    setTimeout(() => {
+      fetchPosts();
+    }, 1000);
   };
 
   const handleUpdatePost = (updatedPost: CommunityPost) => {
@@ -44,15 +59,27 @@ export default function CommunityPage() {
       content: updatedPost.content,
       tag: updatedPost.tag,
     });
+    // Optimistically update the UI
+    setPosts(prevPosts => prevPosts.map(p => p.id === updatedPost.id ? { ...p, ...updatedPost} : p));
   };
 
   const handleDeletePost = (postId: string) => {
     if (!db) return;
     deletePost(db, postId);
+    // Optimistically update the UI
+    setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
   };
 
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [posts]);
+
   const renderFeed = () => {
-    if (isLoading && !posts) {
+    if (isLoading) {
       return (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -65,16 +92,14 @@ export default function CommunityPage() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error loading posts</AlertTitle>
-          <AlertDescription>
-            Could not load the community feed. Please try again later.
-          </AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       );
     }
     
     return (
       <CommunityFeed
-        posts={sortedPosts || []}
+        posts={sortedPosts}
         currentUserId={user?.uid || ''}
         onUpdatePost={handleUpdatePost}
         onDeletePost={handleDeletePost}
