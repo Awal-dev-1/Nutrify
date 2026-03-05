@@ -56,11 +56,11 @@ const calculateGoals = (data: OnboardingData) => {
     return goals;
 }
 
-export const completeOnboarding = (
+export const completeOnboarding = async (
   db: Firestore,
   userId: string,
   onboardingData: OnboardingData
-) => {
+): Promise<void> => {
   const userRef = doc(db, 'users', userId);
   const calculatedGoals = calculateGoals(onboardingData);
 
@@ -86,12 +86,14 @@ export const completeOnboarding = (
     updatedAt: serverTimestamp(),
   };
 
-  updateDoc(userRef, userDataToUpdate)
-    .catch(error => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: userRef.path,
-            operation: 'update',
-            requestResourceData: userDataToUpdate
-        }));
-    });
+  try {
+    await updateDoc(userRef, userDataToUpdate);
+  } catch (error) {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'update',
+        requestResourceData: userDataToUpdate
+    }));
+    throw error; // Re-throw the error so the calling page can handle it
+  }
 };
