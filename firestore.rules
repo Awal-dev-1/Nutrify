@@ -129,5 +129,14 @@ service cloud.firestore {
       allow get, list, create, update: if isSignedIn();
       allow delete: if false;
     }
+
+    /**
+     * @description Public community posts.
+     */
+    match /communityPosts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
+    }
   }
 }

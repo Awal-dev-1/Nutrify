@@ -294,6 +294,23 @@
       },
       "required": ["foodId", "foodName", "day", "mealType", "quantity", "calories", "protein", "carbs", "fat", "createdAt"]
     },
+    "CommunityPost": {
+      "title": "CommunityPost",
+      "type": "object",
+      "description": "Represents a single post made by a user in the community feed.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "description": "The UID of the user who created the post." },
+        "username": { "type": "string", "description": "The display name of the user." },
+        "userAvatarUrl": { "type": "string", "format": "uri", "description": "URL to the user's avatar." },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "tag": { "type": "string", "enum": ["Healthy Tips", "Recipe", "Weight Loss", "Fitness", "Nutrition Advice"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of the last update." }
+      },
+      "required": ["userId", "username", "title", "content", "createdAt"]
+    },
     "RecommendationItem": {
       "title": "RecommendationItem",
       "type": "object",
@@ -533,6 +550,22 @@
             {
               "name": "searchId",
               "description": "The unique ID for the search entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/communityPosts/{postId}",
+        "definition": {
+          "entityName": "CommunityPost",
+          "schema": {
+            "$ref": "#/backend/entities/CommunityPost"
+          },
+          "description": "Stores all community posts. Each document is a single post.",
+          "params": [
+            {
+              "name": "postId",
+              "description": "The unique ID for the community post."
             }
           ]
         }
