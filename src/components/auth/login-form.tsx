@@ -47,10 +47,21 @@ export function LoginForm() {
       // The parent page (`/login`) is responsible for handling the redirect
       // after the auth state changes. This component just handles the login action.
     } catch (error: any) {
+      let description = "An unexpected error occurred. Please try again.";
+      
+      // Handle specific Firebase Auth errors for a better user experience.
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        description = "No account found with this email address. Please check your email or sign up.";
+      } else if (error.code === 'auth/wrong-password') {
+        description = "Incorrect password. Please try again.";
+      } else {
+        description = error.message || description;
+      }
+
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     } finally {
       setIsLoading(false);

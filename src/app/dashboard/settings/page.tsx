@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,6 +19,15 @@ import {
   KeyRound,
   FileBadge,
   LogOut,
+  ChevronRight,
+  Settings,
+  Moon,
+  Sun,
+  Globe,
+  Ruler,
+  Clock,
+  Shield,
+  HelpCircle,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -51,7 +59,9 @@ import { updateProfile } from 'firebase/auth';
 import { ThemeToggle } from '@/components/settings/theme-toggle';
 import { useTheme } from 'next-themes';
 import { SettingsCard } from '@/components/settings/settings-card';
-
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default function SettingsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -59,14 +69,15 @@ export default function SettingsPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
 
   const [displayName, setDisplayName] = useState('');
   const [language, setLanguage] = useState('en');
   const [units, setUnits] = useState('metric');
   const [dailyReminder, setDailyReminder] = useState(false);
   const [weeklySummary, setWeeklySummary] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState('profile');
+
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
@@ -97,8 +108,8 @@ export default function SettingsPage() {
     if (!user || !db) return;
     setIsSaving(true);
     const prefs = {
-        'preferences.languagePreference': language,
-        'preferences.unitPreference': units,
+      'preferences.languagePreference': language,
+      'preferences.unitPreference': units,
     };
     updateUserDocument(db, user.uid, prefs);
     toast({ title: 'Preferences Saved!' });
@@ -109,7 +120,7 @@ export default function SettingsPage() {
     if (!user || !db) return;
     setIsSaving(true);
     const prefs = {
-        'preferences.reminderEnabled': dailyReminder,
+      'preferences.reminderEnabled': dailyReminder,
     };
     updateUserDocument(db, user.uid, prefs);
     toast({ title: 'Notification Preferences Saved!' });
@@ -128,7 +139,7 @@ export default function SettingsPage() {
       toast({ variant: 'destructive', title: 'Error', description: error.message });
     }
   };
-  
+
   const handleAccountDelete = async () => {
     setIsSaving(true);
     try {
@@ -154,316 +165,532 @@ export default function SettingsPage() {
 
   if (isProfileLoading) {
     return (
-      <div className="space-y-6 sm:space-y-8 px-3 sm:px-0">
+      <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-6">
         <div className="space-y-2">
-          <Skeleton className="h-7 sm:h-8 w-48 sm:w-64" />
-          <Skeleton className="h-4 sm:h-5 w-64 sm:w-96" />
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <Skeleton className="h-72 sm:h-96 w-full" />
+        <Skeleton className="h-96 w-full rounded-xl" />
       </div>
     );
   }
 
   const isDeleteDisabled = deleteConfirmText !== 'DELETE';
 
-  return (
-    <div className="space-y-6 sm:space-y-8 px-3 sm:px-0 pb-8">
+  // Mobile tabs as dropdown
+  const TabDropdown = () => (
+    <Select value={activeTab} onValueChange={setActiveTab}>
+      <SelectTrigger className="w-full h-12 bg-muted/30 border-2">
+        <SelectValue>
+          <div className="flex items-center gap-2">
+            {activeTab === 'profile' && <User className="h-4 w-4" />}
+            {activeTab === 'account' && <KeyRound className="h-4 w-4" />}
+            {activeTab === 'preferences' && <Palette className="h-4 w-4" />}
+            {activeTab === 'notifications' && <Bell className="h-4 w-4" />}
+            {activeTab === 'privacy' && <FileBadge className="h-4 w-4" />}
+            <span className="capitalize">{activeTab}</span>
+          </div>
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="profile">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4" /> Profile
+          </div>
+        </SelectItem>
+        <SelectItem value="account">
+          <div className="flex items-center gap-2">
+            <KeyRound className="h-4 w-4" /> Account
+          </div>
+        </SelectItem>
+        <SelectItem value="preferences">
+          <div className="flex items-center gap-2">
+            <Palette className="h-4 w-4" /> Preferences
+          </div>
+        </SelectItem>
+        <SelectItem value="notifications">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4" /> Notifications
+          </div>
+        </SelectItem>
+        <SelectItem value="privacy">
+          <div className="flex items-center gap-2">
+            <FileBadge className="h-4 w-4" /> Privacy
+          </div>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  );
 
+  return (
+    <div className="w-full max-w-4xl mx-auto px-4 py-4 md:py-6 lg:py-8">
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
-          Manage your account, preferences, and privacy.
-        </p>
+      <div className="mb-6 md:mb-8">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+            <Settings className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your account, preferences, and privacy.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
+      {/* Mobile Dropdown - visible only on mobile */}
+      <div className="block md:hidden mb-4">
+        <TabDropdown />
+      </div>
 
-        {/* Tab bar — scrollable on mobile, grid on larger screens */}
-        <TabsList className="
-          flex w-full overflow-x-auto gap-0.5
-          sm:grid sm:grid-cols-5
-          h-auto sm:h-10
-          p-1 scrollbar-none
-        ">
-          <TabsTrigger value="profile" className="shrink-0 sm:shrink text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-1.5 flex items-center gap-1 sm:gap-2 whitespace-nowrap">
-            <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span>Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="account" className="shrink-0 sm:shrink text-xs sm:text-sm px-2 sm:px-3 py-1.5 flex items-center gap-1 sm:gap-2 whitespace-nowrap">
-            <KeyRound className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span>Account</span>
-          </TabsTrigger>
-          <TabsTrigger value="preferences" className="shrink-0 sm:shrink text-xs sm:text-sm px-2 sm:px-3 py-1.5 flex items-center gap-1 sm:gap-2 whitespace-nowrap">
-            <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span>Preferences</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="shrink-0 sm:shrink text-xs sm:text-sm px-2 sm:px-3 py-1.5 flex items-center gap-1 sm:gap-2 whitespace-nowrap">
-            <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span>Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="privacy" className="shrink-0 sm:shrink text-xs sm:text-sm px-2 sm:px-3 py-1.5 flex items-center gap-1 sm:gap-2 whitespace-nowrap">
-            <FileBadge className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span>Privacy</span>
-          </TabsTrigger>
-        </TabsList>
+      {/* Desktop Tabs - hidden on mobile */}
+      <div className="hidden md:block mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-5 w-full h-12 p-1">
+            <TabsTrigger value="profile" className="text-sm gap-2">
+              <User className="h-4 w-4" /> Profile
+            </TabsTrigger>
+            <TabsTrigger value="account" className="text-sm gap-2">
+              <KeyRound className="h-4 w-4" /> Account
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="text-sm gap-2">
+              <Palette className="h-4 w-4" /> Preferences
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="text-sm gap-2">
+              <Bell className="h-4 w-4" /> Notifications
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="text-sm gap-2">
+              <FileBadge className="h-4 w-4" /> Privacy
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
-        {/* ── Profile Tab ── */}
-        <TabsContent value="profile" className="mt-4 sm:mt-6">
-           <SettingsCard
-              title="Profile Information"
-              description="Update your photo and personal details."
-              icon={<User className="h-5 w-5" />}
-              footer={
-                <Button onClick={handleProfileSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                  {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                  Save Profile
-                </Button>
-              }
-            >
-              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-                <div className="flex flex-row sm:flex-col items-center gap-3 sm:gap-0 sm:flex-shrink-0">
-                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-2 border-primary/20">
+      {/* Content Area - changes based on active tab */}
+      <div className="space-y-6">
+        {/* Profile Tab Content */}
+        {activeTab === 'profile' && (
+          <Card className="border-2 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <User className="h-5 w-5 text-primary" />
+                Profile Information
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Update your photo and personal details.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-4 md:p-6 space-y-6">
+              {/* Avatar + Name */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                <div className="flex flex-col items-center gap-2">
+                  <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary/20">
                     <AvatarImage src={user?.photoURL || userProfile?.profile?.profileImageUrl} alt={displayName} />
-                    <AvatarFallback className="text-sm sm:text-base">{displayName.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="text-xl bg-primary/10">
+                      {displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
-                  <Button variant="link" className="mt-0 sm:mt-2 text-xs h-auto p-0">
-                    Upload Photo
+                  <Button variant="outline" size="sm" className="h-8 text-xs rounded-full">
+                    Change Photo
                   </Button>
                 </div>
-                <div className="space-y-3 sm:space-y-4 flex-grow w-full min-w-0">
+
+                <div className="flex-1 space-y-4 w-full">
                   <div>
-                    <Label htmlFor="displayName" className="text-xs sm:text-sm">Display Name</Label>
+                    <Label htmlFor="displayName" className="text-sm">Display Name</Label>
                     <Input
                       id="displayName"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="mt-1 h-9 sm:h-10 text-sm"
+                      className="mt-1 h-11"
+                      placeholder="Your name"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
-                    <Input id="email" value={user?.email || ''} readOnly disabled className="mt-1 h-9 sm:h-10 text-sm" />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <Label htmlFor="email" className="text-sm">Email Address</Label>
+                    <Input
+                      id="email"
+                      value={user?.email || ''}
+                      readOnly
+                      disabled
+                      className="mt-1 h-11 bg-muted/50"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1.5">
                       Email cannot be changed after signup.
                     </p>
                   </div>
                 </div>
               </div>
-            </SettingsCard>
-        </TabsContent>
-
-        {/* ── Account Tab ── */}
-        <TabsContent value="account" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
-          <SettingsCard
-            title="Account Security"
-            description="Change your password and manage account security."
-            icon={<KeyRound className="h-5 w-5" />}
-          >
-            <div className="space-y-3 sm:space-y-4">
-              <div className="p-3 sm:p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:justify-between">
-                <div className="min-w-0">
-                  <p className="font-medium text-sm sm:text-base">Password Reset</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Send a password reset link to your email.</p>
-                </div>
-                <Button variant="secondary" onClick={handlePasswordReset} className="w-full sm:w-auto shrink-0 h-9 sm:h-10 text-xs sm:text-sm">
-                  Send Reset Email
-                </Button>
-              </div>
-              <div className="p-3 sm:p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:justify-between">
-                <div className="min-w-0">
-                  <p className="font-medium text-sm sm:text-base">Logout</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">End your current session on this device.</p>
-                </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-auto shrink-0 h-9 sm:h-10 text-xs sm:text-sm">
-                      <LogOut className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Logout
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-md mx-auto rounded-xl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Logout</AlertDialogTitle>
-                      <AlertDialogDescription>Are you sure you want to log out?</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-                      <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          </SettingsCard>
-
-          {/* Danger Zone */}
-          <Card className="border-destructive/50">
-            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
-              <CardTitle className="text-base sm:text-lg text-destructive flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-                Danger Zone
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
-              <div className="p-3 sm:p-4 border border-destructive/20 rounded-lg flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:justify-between">
-                <div className="min-w-0">
-                  <p className="font-medium text-sm sm:text-base">Delete Account</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Permanently delete your account and all data.</p>
-                </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" disabled={isSaving} className="w-full sm:w-auto shrink-0 h-9 sm:h-10 text-xs sm:text-sm">
-                      <Trash2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Delete My Account
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-md mx-auto rounded-xl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action is permanent and cannot be undone. This will permanently delete your account and remove your data from our servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="space-y-2 py-2">
-                      <Label htmlFor="delete-confirm" className="text-sm">
-                        Type <strong className="text-foreground">DELETE</strong> to confirm.
-                      </Label>
-                      <Input
-                        id="delete-confirm"
-                        value={deleteConfirmText}
-                        onChange={(e) => setDeleteConfirmText(e.target.value)}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-                      <AlertDialogCancel className="mt-0" onClick={() => setDeleteConfirmText('')}>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        disabled={isDeleteDisabled || isSaving}
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={handleAccountDelete}
-                      >
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Delete Permanently
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
             </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* ── Preferences Tab ── */}
-        <TabsContent value="preferences" className="mt-4 sm:mt-6">
-          <SettingsCard
-            title="Preferences"
-            description="Customize the look and feel of the application."
-            icon={<Palette className="h-5 w-5" />}
-            footer={
-              <Button onClick={handlePreferencesSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                Save Preferences
+            <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
+              <Button 
+                onClick={handleProfileSave} 
+                disabled={isSaving}
+                className="w-full sm:w-auto rounded-full px-6"
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Profile Changes
               </Button>
-            }
-          >
-            <div className="space-y-5 sm:space-y-6">
-              <div>
-                <Label className="font-medium text-sm sm:text-base">Theme</Label>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Select your preferred interface theme.</p>
-                <ThemeToggle />
+            </CardFooter>
+          </Card>
+        )}
+
+        {/* Account Tab Content */}
+        {activeTab === 'account' && (
+          <div className="space-y-6">
+            <Card className="border-2 shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                  <KeyRound className="h-5 w-5 text-primary" />
+                  Account Security
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Manage your password and account access.
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="p-4 md:p-6 space-y-4">
+                {/* Password Reset */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg bg-muted/20">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">Password Reset</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Send a password reset link to your email.
+                    </p>
+                  </div>
+                  <Button 
+                    variant="secondary" 
+                    onClick={handlePasswordReset}
+                    className="w-full sm:w-auto rounded-full"
+                  >
+                    Send Reset Email
+                  </Button>
+                </div>
+
+                {/* Logout */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">Logout</h3>
+                    <p className="text-sm text-muted-foreground">
+                      End your current session on this device.
+                    </p>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" className="w-full sm:w-auto rounded-full">
+                        <LogOut className="mr-2 h-4 w-4" /> Logout
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="w-[90vw] max-w-md rounded-xl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Logout</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to log out of your account?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                        <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleLogout} className="w-full sm:w-auto">
+                          Logout
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Danger Zone */}
+            <Card className="border-2 border-destructive/20 shadow-lg overflow-hidden">
+              <CardHeader className="bg-destructive/5 border-b border-destructive/20 p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg md:text-xl text-destructive">
+                  <AlertTriangle className="h-5 w-5" />
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-lg">
+                  <div className="space-y-1">
+                    <h3 className="font-medium text-destructive">Delete Account</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Permanently delete your account and all associated data.
+                    </p>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="w-full sm:w-auto rounded-full">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="w-[90vw] max-w-md rounded-xl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete your account
+                          and remove all your data from our servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="space-y-3 py-3">
+                        <Label htmlFor="delete-confirm" className="text-sm">
+                          Type <span className="font-bold">DELETE</span> to confirm
+                        </Label>
+                        <Input
+                          id="delete-confirm"
+                          value={deleteConfirmText}
+                          onChange={(e) => setDeleteConfirmText(e.target.value)}
+                          placeholder="DELETE"
+                          className="h-11"
+                        />
+                      </div>
+                      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                        <AlertDialogCancel 
+                          className="w-full sm:w-auto"
+                          onClick={() => setDeleteConfirmText('')}
+                        >
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          disabled={isDeleteDisabled || isSaving}
+                          className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
+                          onClick={handleAccountDelete}
+                        >
+                          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Delete Permanently
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Preferences Tab Content */}
+        {activeTab === 'preferences' && (
+          <Card className="border-2 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <Palette className="h-5 w-5 text-primary" />
+                Preferences
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Customize your app experience.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-4 md:p-6 space-y-6">
+              {/* Theme */}
+              <div className="space-y-3">
+                <Label className="text-base">Theme</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={theme === 'light' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTheme('light')}
+                    className="flex-1 rounded-full"
+                  >
+                    <Sun className="mr-2 h-4 w-4" /> Light
+                  </Button>
+                  <Button
+                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTheme('dark')}
+                    className="flex-1 rounded-full"
+                  >
+                    <Moon className="mr-2 h-4 w-4" /> Dark
+                  </Button>
+                  <Button
+                    variant={theme === 'system' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTheme('system')}
+                    className="flex-1 rounded-full"
+                  >
+                    System
+                  </Button>
+                </div>
               </div>
-              <div>
-                <Label className="font-medium text-sm sm:text-base" htmlFor="language">Language</Label>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Choose your preferred language.</p>
+
+              {/* Language */}
+              <div className="space-y-3">
+                <Label htmlFor="language" className="text-base">Language</Label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger id="language" className="w-full sm:w-[240px] h-9 sm:h-10 text-sm">
+                  <SelectTrigger id="language" className="h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="tw">Twi</SelectItem>
-                    <SelectItem value="ew">Ewe</SelectItem>
+                    <SelectItem value="tw">Twi (Ghana)</SelectItem>
+                    <SelectItem value="ew">Ewe (Ghana)</SelectItem>
+                    <SelectItem value="ha">Hausa</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="font-medium text-sm sm:text-base">Units</Label>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Choose between metric (cm/kg) and imperial (ft/lbs) units. This affects how measurements are displayed across the app.</p>
-                <Tabs value={units} onValueChange={(v) => setUnits(v || 'metric')} className="w-[180px]">
-                  <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10">
-                    <TabsTrigger value="metric" className="text-xs sm:text-sm">Metric</TabsTrigger>
-                    <TabsTrigger value="imperial" className="text-xs sm:text-sm">Imperial</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-          </SettingsCard>
-        </TabsContent>
 
-        {/* ── Notifications Tab ── */}
-        <TabsContent value="notifications" className="mt-4 sm:mt-6">
-          <SettingsCard
-            title="Notifications"
-            description="Manage your notification preferences."
-            icon={<Bell className="h-5 w-5" />}
-            footer={
-              <Button onClick={handleNotificationsSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                Save Notifications
+              {/* Units */}
+              <div className="space-y-3">
+                <Label className="text-base">Measurement Units</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={units === 'metric' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUnits('metric')}
+                    className="flex-1 rounded-full"
+                  >
+                    <Ruler className="mr-2 h-4 w-4" /> Metric
+                  </Button>
+                  <Button
+                    variant={units === 'imperial' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUnits('imperial')}
+                    className="flex-1 rounded-full"
+                  >
+                    Imperial
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Metric: cm, kg • Imperial: ft, lbs
+                </p>
+              </div>
+            </CardContent>
+
+            <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
+              <Button 
+                onClick={handlePreferencesSave} 
+                disabled={isSaving}
+                className="w-full sm:w-auto rounded-full px-6"
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Preferences
               </Button>
-            }
-          >
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex items-start sm:items-center justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50">
-                <div className="min-w-0 flex-1">
-                  <Label htmlFor="daily-reminder" className="cursor-pointer font-medium text-sm sm:text-base">
+            </CardFooter>
+          </Card>
+        )}
+
+        {/* Notifications Tab Content */}
+        {activeTab === 'notifications' && (
+          <Card className="border-2 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <Bell className="h-5 w-5 text-primary" />
+                Notifications
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Control how and when we notify you.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-4 md:p-6 space-y-4">
+              {/* Daily Reminder */}
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-1 pr-4">
+                  <Label htmlFor="daily-reminder" className="text-base font-medium">
                     Daily Meal Reminder
                   </Label>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Get a daily reminder to log your meals.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Get a daily reminder to log your meals
+                  </p>
                 </div>
-                <Switch id="daily-reminder" checked={dailyReminder} onCheckedChange={setDailyReminder} className="shrink-0 mt-0.5 sm:mt-0" />
+                <Switch
+                  id="daily-reminder"
+                  checked={dailyReminder}
+                  onCheckedChange={setDailyReminder}
+                />
               </div>
-              <div className="flex items-start sm:items-center justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 opacity-50 cursor-not-allowed">
-                <div className="min-w-0 flex-1">
-                  <Label htmlFor="weekly-summary" className="cursor-not-allowed font-medium text-sm sm:text-base">
+
+              {/* Weekly Summary (disabled) */}
+              <div className="flex items-center justify-between p-4 border rounded-lg opacity-60">
+                <div className="space-y-1 pr-4">
+                  <Label htmlFor="weekly-summary" className="text-base font-medium">
                     Weekly Nutrition Summary
                   </Label>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Receive a summary of your week's nutrition.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receive a summary of your week's nutrition (coming soon)
+                  </p>
                 </div>
-                <Switch id="weekly-summary" checked={weeklySummary} onCheckedChange={setWeeklySummary} disabled className="shrink-0 mt-0.5 sm:mt-0" />
+                <Switch
+                  id="weekly-summary"
+                  checked={weeklySummary}
+                  onCheckedChange={setWeeklySummary}
+                  disabled
+                />
               </div>
-              <p className="text-xs text-muted-foreground text-center">More notification options coming soon!</p>
-            </div>
-          </SettingsCard>
-        </TabsContent>
 
-        {/* ── Privacy Tab ── */}
-        <TabsContent value="privacy" className="mt-4 sm:mt-6">
-          <SettingsCard
-            title="Privacy & Data"
-            description="Manage your data and privacy settings."
-            icon={<FileBadge className="h-5 w-5" />}
-          >
-            <div className="space-y-3 sm:space-y-4">
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Nutrify uses your data to provide personalized nutrition insights. Your data is encrypted and never sold.
+              <Badge variant="secondary" className="w-full py-2 text-center">
+                More notification options coming soon!
+              </Badge>
+            </CardContent>
+
+            <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
+              <Button 
+                onClick={handleNotificationsSave} 
+                disabled={isSaving}
+                className="w-full sm:w-auto rounded-full px-6"
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Notification Settings
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
+
+        {/* Privacy Tab Content */}
+        {activeTab === 'privacy' && (
+          <Card className="border-2 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <FileBadge className="h-5 w-5 text-primary" />
+                Privacy & Data
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Manage your data and privacy settings.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-4 md:p-6 space-y-4">
+              <p className="text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg">
+                Nutrify uses your data to provide personalized nutrition insights. 
+                Your data is encrypted and never sold to third parties.
               </p>
-              <div className="space-y-2 sm:space-y-3">
-                <Button variant="outline" className="w-full justify-start h-9 sm:h-10 text-xs sm:text-sm" asChild>
-                  <Link href="/privacy-policy">View Privacy Policy</Link>
+
+              <div className="space-y-3 pt-2">
+                <Button variant="outline" className="w-full justify-start h-11 rounded-full" asChild>
+                  <Link href="/privacy-policy">
+                    <Shield className="mr-2 h-4 w-4" /> View Privacy Policy
+                  </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-start h-9 sm:h-10 text-xs sm:text-sm" asChild>
-                  <Link href="/terms-and-conditions">View Terms & Conditions</Link>
+                <Button variant="outline" className="w-full justify-start h-11 rounded-full" asChild>
+                  <Link href="/terms-and-conditions">
+                    <FileBadge className="mr-2 h-4 w-4" /> View Terms & Conditions
+                  </Link>
                 </Button>
-                <Button variant="secondary" className="w-full justify-start h-9 sm:h-10 text-xs sm:text-sm">
-                  <Download className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                  Download My Data
+                <Button variant="secondary" className="w-full justify-start h-11 rounded-full">
+                  <Download className="mr-2 h-4 w-4" /> Download My Data
+                </Button>
+                <Button variant="ghost" className="w-full justify-start h-11 rounded-full">
+                  <HelpCircle className="mr-2 h-4 w-4" /> Contact Support
                 </Button>
               </div>
-            </div>
-          </SettingsCard>
-        </TabsContent>
-
-      </Tabs>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

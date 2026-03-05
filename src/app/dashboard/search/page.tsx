@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -278,70 +277,83 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
-      <div className="container max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+
         {/* Header */}
-        <div className="space-y-2 text-center md:text-left">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <div className="space-y-1 text-center sm:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent leading-tight">
             AI Food Search
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto md:mx-0">
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto sm:mx-0">
             Search any food and get instant nutritional insights
           </p>
         </div>
 
         {/* Search Section */}
-        <div className="max-w-3xl mx-auto md:mx-0">
+        <div className="w-full max-w-3xl mx-auto sm:mx-0">
           <form onSubmit={(e) => { e.preventDefault(); handleSearch(searchQuery); }}>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-                <Sparkles className="h-5 w-5 text-primary group-focus-within:text-primary/80 transition-colors" />
+              {/* Sparkles icon — hidden on very small screens to save space */}
+              <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 hidden xs:block">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary group-focus-within:text-primary/80 transition-colors" />
               </div>
-              
+
               <Input
                 placeholder="e.g., Banku with tilapia or Fufu..."
-                className="w-full h-16 pl-12 pr-32 text-lg bg-background/80 backdrop-blur-sm border-2 border-muted focus:border-primary rounded-2xl shadow-lg transition-all"
+                className={cn(
+                  "w-full h-14 sm:h-16 text-base sm:text-lg",
+                  "pl-4 xs:pl-11 sm:pl-12",
+                  "pr-28 sm:pr-36",
+                  "bg-background/80 backdrop-blur-sm",
+                  "border-2 border-muted focus:border-primary",
+                  "rounded-xl sm:rounded-2xl shadow-lg transition-all"
+                )}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+
+              <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
                 {searchQuery && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 rounded-full hover:bg-muted"
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-muted shrink-0"
                     onClick={clearSearch}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Button>
                 )}
-                
+
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-10 w-10 rounded-full transition-all",
+                    "h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all shrink-0",
                     isRecording && "bg-red-100 text-red-600 animate-pulse dark:bg-red-950"
                   )}
                   onClick={handleMicClick}
                 >
-                  <Mic className="h-4 w-4" />
+                  <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
-                
+
                 <Button
                   type="submit"
-                  size="lg"
-                  className="h-12 px-6 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  size="sm"
+                  className={cn(
+                    "h-9 sm:h-12 px-3 sm:px-6 rounded-lg sm:rounded-xl shrink-0",
+                    "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
+                    "text-sm sm:text-base"
+                  )}
                   disabled={loading || !searchQuery.trim()}
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <Search className="h-4 w-4 mr-2" />
-                      Search
+                      <Search className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Search</span>
                     </>
                   )}
                 </Button>
@@ -359,10 +371,10 @@ export default function SearchPage() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-4"
             >
-              <Skeleton className="h-12 w-64" />
-              <div className="grid gap-4 md:grid-cols-2">
-                <Skeleton className="h-64 rounded-2xl" />
-                <Skeleton className="h-64 rounded-2xl" />
+              <Skeleton className="h-10 w-48 sm:w-64" />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Skeleton className="h-48 sm:h-64 rounded-xl sm:rounded-2xl" />
+                <Skeleton className="h-48 sm:h-64 rounded-xl sm:rounded-2xl" />
               </div>
             </motion.div>
           )}
@@ -386,16 +398,18 @@ export default function SearchPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
               <RecentSearches
                 recents={recentSearches}
                 isLoading={areRecentsLoading}
                 onRecentClick={handleRecentClick}
               />
-              
-              <div className="text-center text-muted-foreground">
-                <p className="text-sm">Try searching for "Banku and tilapia" or "Jollof rice with chicken"</p>
+
+              <div className="text-center text-muted-foreground px-4">
+                <p className="text-xs sm:text-sm">
+                  Try searching for "Banku and tilapia" or "Jollof rice with chicken"
+                </p>
               </div>
             </motion.div>
           )}
@@ -466,90 +480,91 @@ function FoodDetailsCard({
 
   return (
     <Card className="border-2 shadow-xl overflow-hidden">
-      {/* Header with gradient background */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border-b">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">{foodItem.foodName}</h2>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-6 border-b">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 truncate">
+              {foodItem.foodName}
+            </h2>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Scale className="h-4 w-4" />
+                <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 {portionGrams}g serving
               </span>
               <span className="flex items-center gap-1">
-                <Flame className="h-4 w-4 text-orange-500" />
+                <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500 shrink-0" />
                 {calculatedNutrients.calories} kcal
               </span>
             </div>
           </div>
-          
-          <Badge variant="secondary" className="text-sm px-3 py-1">
+
+          <Badge variant="secondary" className="text-xs sm:text-sm px-2 sm:px-3 py-1 shrink-0 whitespace-nowrap">
             <Sparkles className="h-3 w-3 mr-1" />
             AI Analyzed
           </Badge>
         </div>
       </div>
 
-      <CardContent className="p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
-            <TabsTrigger value="analyze">Analysis</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+      <CardContent className="p-4 sm:p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 h-9 sm:h-10">
+            <TabsTrigger value="nutrition" className="text-xs sm:text-sm">Nutrition</TabsTrigger>
+            <TabsTrigger value="analyze" className="text-xs sm:text-sm">Analysis</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="nutrition" className="space-y-6">
+          {/* Nutrition Tab */}
+          <TabsContent value="nutrition" className="space-y-4 sm:space-y-6">
             {/* Portion Control */}
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Adjust portion size
-                </label>
-                <Slider
-                  value={[portionGrams]}
-                  onValueChange={([value]) => setPortionGrams(value)}
-                  min={25}
-                  max={500}
-                  step={25}
-                  className="mb-4"
-                />
-                
-                <div className="flex items-center gap-2 justify-between">
-                  {QUICK_PORTIONS.map(({ grams, label }) => (
-                    <Button
-                      key={grams}
-                      variant={portionGrams === grams ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPortionGrams(grams)}
-                      className="flex-1"
-                    >
-                      {label}
-                      <span className="ml-1 text-xs opacity-70">({grams}g)</span>
-                    </Button>
-                  ))}
-                </div>
+            <div className="space-y-3 sm:space-y-4">
+              <label className="text-sm font-medium block">Adjust portion size</label>
+              <Slider
+                value={[portionGrams]}
+                onValueChange={([value]) => setPortionGrams(value)}
+                min={25}
+                max={500}
+                step={25}
+                className="mb-3 sm:mb-4"
+              />
+
+              {/* Quick portion buttons — 2 per row on mobile, 4 on wider */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {QUICK_PORTIONS.map(({ grams, label }) => (
+                  <Button
+                    key={grams}
+                    variant={portionGrams === grams ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPortionGrams(grams)}
+                    className="w-full text-xs sm:text-sm"
+                  >
+                    {label}
+                    <span className="ml-1 opacity-70">({grams}g)</span>
+                  </Button>
+                ))}
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            {/* Macro + Micronutrient panels — stacked on mobile, side-by-side on md+ */}
+            <div className="grid gap-4 md:grid-cols-2">
               {/* Macro Visualization */}
-              <div className="bg-muted/30 p-4 rounded-xl space-y-3">
+              <div className="bg-muted/30 p-3 sm:p-4 rounded-xl space-y-3">
                 <h4 className="font-medium text-sm">Macro Balance</h4>
                 <div className="flex h-2 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="bg-blue-500 transition-all"
                     style={{ width: `${macroPercentages.protein}%` }}
                   />
-                  <div 
+                  <div
                     className="bg-green-500 transition-all"
                     style={{ width: `${macroPercentages.carbs}%` }}
                   />
-                  <div 
+                  <div
                     className="bg-yellow-500 transition-all"
                     style={{ width: `${macroPercentages.fat}%` }}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="text-center">
                     <div className="font-medium text-blue-600 dark:text-blue-400">Protein</div>
@@ -565,61 +580,71 @@ function FoodDetailsCard({
                   </div>
                 </div>
               </div>
-              
-              {/* Micronutrients */}
-              <div className="bg-muted/30 p-4 rounded-xl space-y-3">
-                <h4 className="font-medium text-sm">Micronutrients</h4>
-                <ul className="space-y-1 max-h-[100px] overflow-y-auto text-xs pr-2">
-                  {foodItem.micronutrientBreakdown && Object.entries(foodItem.micronutrientBreakdown).length > 0 && Object.values(foodItem.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0) ? (
-                      Object.entries(foodItem.micronutrientBreakdown).map(([key, value]) => {
-                          if (value === undefined || value === null || value === 0) {
-                              return null;
-                          }
-                          const per100gValue = value || 0;
-                          const currentPortionValue = (per100gValue / 100) * portionGrams;
 
-                          const keyToLabel: Record<string, string> = {
-                              fiber: "Fiber", sugar: "Sugar", iron: "Iron", calcium: "Calcium",
-                              vitaminA: "Vit. A", vitaminC: "Vit. C", sodium: "Sodium",
-                          };
-                          const keyToUnit: Record<string, string> = {
-                              fiber: "g", sugar: "g", iron: "mg", calcium: "mg",
-                              vitaminA: "µg", vitaminC: "mg", sodium: "mg",
-                          };
-                          return (
-                          <li key={key} className="flex justify-between p-1.5 rounded-md bg-background/50">
-                              <span>{keyToLabel[key] || key}</span>
-                              <span className="font-medium">{currentPortionValue.toFixed(1)}{keyToUnit[key] || ''}</span>
-                          </li>
-                          );
-                      })
+              {/* Micronutrients */}
+              <div className="bg-muted/30 p-3 sm:p-4 rounded-xl space-y-3">
+                <h4 className="font-medium text-sm">Micronutrients</h4>
+                <ul className="space-y-1 max-h-[120px] overflow-y-auto text-xs pr-1">
+                  {foodItem.micronutrientBreakdown &&
+                  Object.entries(foodItem.micronutrientBreakdown).length > 0 &&
+                  Object.values(foodItem.micronutrientBreakdown).some(
+                    (v) => v !== undefined && v !== null && v > 0
+                  ) ? (
+                    Object.entries(foodItem.micronutrientBreakdown).map(([key, value]) => {
+                      if (value === undefined || value === null || value === 0) return null;
+                      const per100gValue = value || 0;
+                      const currentPortionValue = (per100gValue / 100) * portionGrams;
+                      const keyToLabel: Record<string, string> = {
+                        fiber: 'Fiber', sugar: 'Sugar', iron: 'Iron', calcium: 'Calcium',
+                        vitaminA: 'Vit. A', vitaminC: 'Vit. C', sodium: 'Sodium',
+                      };
+                      const keyToUnit: Record<string, string> = {
+                        fiber: 'g', sugar: 'g', iron: 'mg', calcium: 'mg',
+                        vitaminA: 'µg', vitaminC: 'mg', sodium: 'mg',
+                      };
+                      return (
+                        <li
+                          key={key}
+                          className="flex justify-between p-1.5 rounded-md bg-background/50"
+                        >
+                          <span>{keyToLabel[key] || key}</span>
+                          <span className="font-medium">
+                            {currentPortionValue.toFixed(1)}{keyToUnit[key] || ''}
+                          </span>
+                        </li>
+                      );
+                    })
                   ) : (
-                      <p className="text-xs text-muted-foreground text-center py-4">No significant micronutrient data available.</p>
+                    <p className="text-xs text-muted-foreground text-center py-4">
+                      No significant micronutrient data available.
+                    </p>
                   )}
                 </ul>
               </div>
             </div>
           </TabsContent>
 
+          {/* Analysis Tab */}
           <TabsContent value="analyze" className="space-y-4">
             <div className="bg-primary/5 p-4 rounded-xl">
-              <h4 className="font-medium flex items-center gap-2 mb-2">
-                <Trophy className="h-4 w-4 text-primary" />
+              <h4 className="font-medium flex items-center gap-2 mb-2 text-sm sm:text-base">
+                <Trophy className="h-4 w-4 text-primary shrink-0" />
                 Health Analysis
               </h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {foodItem.healthAnalysis}
               </p>
             </div>
           </TabsContent>
 
+          {/* History Tab */}
           <TabsContent value="history" className="space-y-4">
             <div className="bg-secondary/20 p-4 rounded-xl">
-              <h4 className="font-medium flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4" />
+              <h4 className="font-medium flex items-center gap-2 mb-2 text-sm sm:text-base">
+                <Clock className="h-4 w-4 shrink-0" />
                 Food History
               </h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {foodItem.foodHistory}
               </p>
             </div>
@@ -627,15 +652,21 @@ function FoodDetailsCard({
         </Tabs>
 
         {/* Add to Tracker Section */}
-        <div className="mt-6 pt-6 border-t space-y-4">
-          <div className="flex items-center gap-3">
+        <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t space-y-3">
+          {/* Stacks on mobile, side-by-side on sm+ */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex-1">
               <Select value={mealType} onValueChange={(v: any) => setMealType(v)}>
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-11 sm:h-12 w-full">
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       {CurrentMealIcon && (
-                        <CurrentMealIcon className={cn("h-4 w-4", MEAL_TYPES.find(m => m.value === mealType)?.color)} />
+                        <CurrentMealIcon
+                          className={cn(
+                            "h-4 w-4 shrink-0",
+                            MEAL_TYPES.find((m) => m.value === mealType)?.color
+                          )}
+                        />
                       )}
                       <span>{mealType}</span>
                     </div>
@@ -645,7 +676,7 @@ function FoodDetailsCard({
                   {MEAL_TYPES.map(({ value, label, icon: Icon, color }) => (
                     <SelectItem key={value} value={value}>
                       <div className="flex items-center gap-2">
-                        <Icon className={cn("h-4 w-4", color)} />
+                        <Icon className={cn('h-4 w-4', color)} />
                         {label}
                       </div>
                     </SelectItem>
@@ -653,10 +684,10 @@ function FoodDetailsCard({
                 </SelectContent>
               </Select>
             </div>
-            
+
             <Button
               size="lg"
-              className="h-12 px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+              className="h-11 sm:h-12 w-full sm:w-auto px-6 sm:px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
               onClick={onAddToTracker}
               disabled={isAdding}
             >

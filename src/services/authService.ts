@@ -71,14 +71,19 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
 
   const userDocRef = doc(db, "users", user.uid);
   
-  // Non-blocking delete with contextual error
-  deleteDoc(userDocRef).catch(error => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: userDocRef.path,
-          operation: 'delete'
-      }));
-  });
+  try {
+    // First, delete the user's document from Firestore. This should be awaited.
+    await deleteDoc(userDocRef);
+  } catch (error) {
+     // If deleting the document fails, emit a contextual error and stop.
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: userDocRef.path,
+        operation: 'delete'
+    }));
+     // Re-throw the error to inform the caller that the deletion failed.
+    throw new Error("Failed to delete user data from the database.");
+  }
 
-  // This is an auth operation, which can be awaited as it might have its own UI flow.
+  // Once the database document is gone, delete the auth user.
   await deleteUser(user);
 };
