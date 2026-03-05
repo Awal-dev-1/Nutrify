@@ -4,8 +4,9 @@ import { LoginForm } from "@/components/auth/login-form";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2, Leaf, Utensils } from "lucide-react";
+import { Loader2, Leaf } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "@/components/shared/logo";
 
 export default function LoginPage() {
   const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
@@ -16,24 +17,15 @@ export default function LoginPage() {
       return; // Wait for auth and profile state to be determined
     }
 
-    // This logic handles redirection for a user who is already logged in
-    // or has just successfully logged in.
     if (user && userProfile) {
       if (userProfile.onboardingCompleted) {
-        // User is fully set up, go to the main dashboard.
         router.push("/dashboard/overview");
       } else {
-        // User has a profile but hasn't finished onboarding. Send them there.
         router.push("/onboarding");
       }
     }
-    // If there's no user, or a user without a profile document,
-    // we remain on the login page. The signup flow is responsible
-    // for directing new users to the onboarding page.
-    
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
 
-  // Show a loading screen while auth state is being determined or while redirecting.
   if (isUserLoading || isProfileLoading || (user && userProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
@@ -55,6 +47,11 @@ export default function LoginPage() {
       {/* Left Side - Branding (visible on md and up) */}
       <div className="hidden md:flex md:w-5/12 lg:w-1/2 relative bg-gradient-to-br from-primary/5 via-primary/5 to-background items-center justify-center p-6 lg:p-8 overflow-hidden">
         {/* Decorative elements */}
+        <div className="absolute top-6 left-6">
+          <Link href="/">
+            <Logo />
+          </Link>
+        </div>
         <div className="absolute inset-0 bg-grid-primary/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
@@ -76,45 +73,18 @@ export default function LoginPage() {
             Track your nutrition, discover local foods, and get personalized
             AI-powered recommendations to reach your health goals.
           </p>
-          
         </div>
       </div>
 
       {/* Right Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
-        {/* Mobile header (visible only on mobile) */}
-        <div className="absolute top-6 left-0 right-0 flex justify-center md:hidden">
-          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
-            <Leaf className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Nutrify</span>
-          </div>
+        <div className="absolute top-6 left-6 md:hidden">
+          <Link href="/">
+            <Logo />
+          </Link>
         </div>
         
-        <div className="relative w-full max-w-md space-y-6 pt-16 md:pt-0">
-          {/* Header text */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Sign in to your account
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Welcome back! Please enter your details.
-            </p>
-          </div>
-
-          {/* Login Form */}
-          <LoginForm />
-
-          {/* Footer links */}
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Link 
-              href="/signup" 
-              className="text-primary font-medium hover:underline"
-            >
-              Sign up
-            </Link>
-          </div>
-        </div>
+        <LoginForm />
       </div>
     </div>
   );
