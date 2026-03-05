@@ -88,6 +88,10 @@ export function useDoc<T = any>(
 
     return () => unsubscribe();
   }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
+  
+  if(memoizedDocRef && !(memoizedDocRef as any).__memo) {
+    throw new Error(memoizedDocRef.path + ' was not properly memoized using useMemoFirebase');
+  }
 
   return { data, isLoading, error };
 }

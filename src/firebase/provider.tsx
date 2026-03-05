@@ -5,6 +5,7 @@ import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, onSnapshot } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 export interface UserProfile {
   id: string;
@@ -27,6 +28,12 @@ export interface UserProfile {
     proteinPercentageGoal: number;
     carbsPercentageGoal: number;
     fatPercentageGoal: number;
+  };
+  preferences?: {
+    themePreference?: 'light' | 'dark' | 'system';
+    unitPreference?: 'metric' | 'imperial';
+    languagePreference?: 'en' | 'tw' | 'ew';
+    reminderEnabled?: boolean;
   };
   createdAt: any;
   updatedAt?: any;
@@ -166,8 +173,12 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
                 }
             },
             (error) => {
-                console.error("FirebaseProvider: User profile snapshot error:", error);
-                setProfileState({ userProfile: null, isProfileLoading: false, profileError: error });
+                const contextualError = new FirestorePermissionError({
+                  path: userDocRef.path,
+                  operation: 'get'
+                });
+                setProfileState({ userProfile: null, isProfileLoading: false, profileError: contextualError });
+                errorEmitter.emit('permission-error', contextualError);
             }
         );
         return () => unsubscribe();
