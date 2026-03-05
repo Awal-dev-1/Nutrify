@@ -38,8 +38,14 @@ export default function CommunityPage() {
       const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
       
       const sorted = posts.sort((a, b) => {
-          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+          const getSafeDate = (timestamp: any): Date => {
+            if (timestamp && typeof timestamp.toDate === 'function') {
+                return timestamp.toDate();
+            }
+            return new Date(0); // Fallback for invalid or missing timestamps
+          }
+          const dateA = getSafeDate(a.createdAt);
+          const dateB = getSafeDate(b.createdAt);
           return dateB.getTime() - dateA.getTime();
       });
 
