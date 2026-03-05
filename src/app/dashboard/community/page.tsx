@@ -21,17 +21,18 @@ export default function CommunityPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = async () => {
-    if (!db || !user) return;
-    
-    // Set loading to true only if it's the initial load
-    if (posts.length === 0) {
-        setIsLoading(true);
+    if (!db || !user) {
+        setIsLoading(false);
+        return;
     }
+    
+    setIsLoading(true);
     setError(null);
     try {
       const postsQuery = query(collection(db, 'community_posts'));
       const querySnapshot = await getDocs(postsQuery);
       const fetchedPosts = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as CommunityPost[];
+      
       const sorted = [...fetchedPosts].sort((a, b) => {
         const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
         const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
@@ -40,21 +41,27 @@ export default function CommunityPage() {
       setPosts(sorted);
     } catch (e: any) {
       console.error("Error fetching posts:", e);
-      setError("Could not load community feed. Please check your permissions and try again later.");
+      if (e.code === 'permission-denied') {
+        setError("Could not load community feed. Please check your permissions and try again later.");
+      } else {
+        setError(e.message || "An unknown error occurred while fetching posts.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch posts once on component mount
   useEffect(() => {
-    fetchPosts();
+    if (db && user) {
+        fetchPosts();
+    } else {
+        setIsLoading(false);
+    }
   }, [db, user]);
 
   const handleAddPost = (postData: Pick<CommunityPost, 'title' | 'content' | 'tag'>) => {
     if (!user || !db) return;
     addPost(db, user, postData);
-    // Refetch posts after a short delay to allow Firestore to process the write
     setTimeout(() => {
       fetchPosts();
     }, 1000);
@@ -67,7 +74,6 @@ export default function CommunityPage() {
     try {
       const aiPostData = await generateCommunityPost();
       addAiGeneratedPost(db, user.uid, aiPostData);
-      // Refetch posts after a short delay
       setTimeout(() => fetchPosts(), 1000);
     } catch (e: any) {
       console.error("Error generating AI post:", e);
@@ -84,24 +90,14 @@ export default function CommunityPage() {
       content: updatedPost.content,
       tag: updatedPost.tag,
     });
-    // Optimistically update the UI
     setPosts(prevPosts => prevPosts.map(p => p.id === updatedPost.id ? { ...p, ...updatedPost} : p));
   };
 
   const handleDeletePost = (postId: string) => {
     if (!db) return;
     deletePost(db, postId);
-    // Optimistically update the UI
     setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
   };
-
-  const sortedPosts = useMemo(() => {
-    return [...posts].sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [posts]);
 
   const renderFeed = () => {
     if (isLoading) {
@@ -124,7 +120,7 @@ export default function CommunityPage() {
     
     return (
       <CommunityFeed
-        posts={sortedPosts}
+        posts={posts}
         currentUserId={user?.uid || ''}
         onUpdatePost={handleUpdatePost}
         onDeletePost={handleDeletePost}
@@ -134,7 +130,6 @@ export default function CommunityPage() {
 
   return (
     <div className="space-y-8">
-      {/* 1. Page Header */}
       <div className="bg-card p-6 rounded-lg shadow-sm border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-4">
@@ -159,17 +154,15 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {error && (
+      {error && !isLoading && (
         <Alert variant="destructive">
           <AlertTitle>An error occurred</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* 2. Create Post Section */}
       <CreatePostForm onAddPost={handleAddPost} />
-
-      {/* 3. Community Feed */}
+      
       {renderFeed()}
     </div>
   );
