@@ -395,6 +395,24 @@
         "foodData": { "type": "string", "description": "A JSON string of the full FoodItem object." }
       },
       "required": ["foodName", "searchedAt", "calories", "foodData"]
+    },
+    "CommunityPost": {
+      "title": "CommunityPost",
+      "type": "object",
+      "description": "Represents a single post in the community feed.",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "userAvatar": { "type": "string", "format": "uri" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "tag": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "likes": { "type": "array", "items": { "type": "string" }, "description": "Array of user UIDs who liked the post." },
+        "dislikes": { "type": "array", "items": { "type": "string" }, "description": "Array of user UIDs who disliked the post." }
+      },
+      "required": ["userId", "username", "title", "content", "tag", "createdAt", "likes", "dislikes"]
     }
   },
   "auth": {
@@ -533,6 +551,22 @@
             {
               "name": "searchId",
               "description": "The unique ID for the search entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/community_posts/{postId}",
+        "definition": {
+          "entityName": "CommunityPost",
+          "schema": {
+            "$ref": "#/backend/entities/CommunityPost"
+          },
+          "description": "Stores all user-generated posts for the community feed.",
+          "params": [
+            {
+              "name": "postId",
+              "description": "The unique ID for the community post."
             }
           ]
         }

@@ -53,6 +53,7 @@ const insightLinks = [
   { href: '/dashboard/tracker', label: 'Daily Tracker', icon: HeartPulse },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/dashboard/goals', label: 'Goals', icon: Target },
+  { href: '/dashboard/community', label: 'Community', icon: Users },
 ]
 
 export function MainSidebar() {
