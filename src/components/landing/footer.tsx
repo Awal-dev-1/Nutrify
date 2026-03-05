@@ -9,7 +9,7 @@ export function Footer() {
       <div className="container px-4 py-12 md:py-16">
         <div className="flex flex-col items-center justify-center text-center space-y-6">
           {/* Brand */}
-          <div className="space-y-3">
+          <div className="flex flex-col items-center justify-center gap-4">
             <Logo />
             <p className="text-sm text-muted-foreground/80 max-w-md mx-auto">
               Making healthy eating simple with AI-powered nutrition tracking, 
