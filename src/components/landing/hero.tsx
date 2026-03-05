@@ -94,11 +94,6 @@ export function Hero() {
               <Link href="/login">Login</Link>
             </Button>
           </motion.div>
-          
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block animate-bounce">
-            <ChevronDown className="h-6 w-6 text-white/50" />
-          </div>
         </div>
       </div>
     </section>
