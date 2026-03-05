@@ -75,7 +75,7 @@ export default function CommunityPage() {
       setEditingPost(null);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
       fetchPosts(); // Refetch posts after updating
-    } catch (err: any) => {
+    } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
   };
@@ -126,7 +126,7 @@ export default function CommunityPage() {
       await deletePost(db, postId);
       toast({ title: 'Post Deleted', variant: 'destructive' });
       fetchPosts(); // Refetch posts after deleting
-    } catch (err: any) => {
+    } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
     }
   };
