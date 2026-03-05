@@ -16,16 +16,6 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
         
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-            Features
-          </Link>
-          <Link href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-            How It Works
-          </Link>
-        </nav>
-        
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-3">
           <Button 
@@ -59,24 +49,7 @@ export function Header() {
         isMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
       )}>
         <div className="container px-4 py-6 space-y-4">
-          <nav className="flex flex-col gap-3">
-            <Link 
-              href="#features" 
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Features
-            </Link>
-            <Link 
-              href="#how-it-works" 
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              How It Works
-            </Link>
-          </nav>
-          
-          <div className="flex flex-col gap-3 pt-4 border-t">
+          <div className="flex flex-col gap-3">
             <Button 
               variant="ghost" 
               asChild 
