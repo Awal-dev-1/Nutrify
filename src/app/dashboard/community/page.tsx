@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -31,17 +31,17 @@ export default function CommunityPage() {
 
   const fetchPosts = useCallback(async () => {
     if (!db) return;
+    setIsLoading(true);
     setError(null);
     try {
-      const postsQuery = query(collection(db, 'community_posts'));
+      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(postsQuery);
       const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
-      
-      // The sort was causing issues. Displaying in default order for now.
-      // A future improvement will be to order by a timestamp from the server.
       setPostsData(posts);
     } catch (err: any) {
+      // Log the full error to the console for detailed debugging
       console.error("Failed to fetch posts:", err);
+      // Set a more specific error message for the UI
       setError(err.message || "An unknown error occurred while fetching the feed.");
     } finally {
       setIsLoading(false);
@@ -49,7 +49,6 @@ export default function CommunityPage() {
   }, [db]);
 
   useEffect(() => {
-    setIsLoading(true);
     fetchPosts();
   }, [fetchPosts]);
 
@@ -71,7 +70,7 @@ export default function CommunityPage() {
       setEditingPost(null);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
       fetchPosts(); // Refetch posts after updating
-    } catch (err: any) {
+    } catch (err: any) => {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
   };
