@@ -42,7 +42,7 @@ export function DashboardHeader() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="flex flex-col">
-        <h1 className="text-base md:text-xl font-semibold">
+        <h1 className="text-sm md:text-xl font-semibold">
           {greeting}, {userProfile?.name || 'User'}!
         </h1>
         <p className="text-sm text-muted-foreground">
