@@ -50,6 +50,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { updateProfile } from 'firebase/auth';
 import { ThemeToggle } from '@/components/settings/theme-toggle';
 import { useTheme } from 'next-themes';
+import { SettingsCard } from '@/components/settings/settings-card';
 
 
 export default function SettingsPage() {
@@ -134,7 +135,7 @@ export default function SettingsPage() {
       await deleteUserAccount(auth, db);
       toast({ title: "Account Deleted", description: "Your account has been permanently deleted." });
       router.push('/');
-    } catch (error: any) {
+    } catch (error: any) => {
       toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message });
     } finally {
       setIsSaving(false);
@@ -209,14 +210,18 @@ export default function SettingsPage() {
 
         {/* ── Profile Tab ── */}
         <TabsContent value="profile" className="mt-4 sm:mt-6">
-          <Card>
-            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
-              <CardTitle className="text-base sm:text-lg">Profile Information</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Update your photo and personal details.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+           <SettingsCard
+              title="Profile Information"
+              description="Update your photo and personal details."
+              icon={<User className="h-5 w-5" />}
+              footer={
+                <Button onClick={handleProfileSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
+                  {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                  Save Profile
+                </Button>
+              }
+            >
               <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-                {/* Avatar */}
                 <div className="flex flex-row sm:flex-col items-center gap-3 sm:gap-0 sm:flex-shrink-0">
                   <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-2 border-primary/20">
                     <AvatarImage src={user?.photoURL || userProfile?.profile?.profileImageUrl} alt={displayName} />
@@ -226,7 +231,6 @@ export default function SettingsPage() {
                     Upload Photo
                   </Button>
                 </div>
-                {/* Fields */}
                 <div className="space-y-3 sm:space-y-4 flex-grow w-full min-w-0">
                   <div>
                     <Label htmlFor="displayName" className="text-xs sm:text-sm">Display Name</Label>
@@ -246,25 +250,17 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-            <CardFooter className="bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 border-t flex justify-end">
-              <Button onClick={handleProfileSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                Save Profile
-              </Button>
-            </CardFooter>
-          </Card>
+            </SettingsCard>
         </TabsContent>
 
         {/* ── Account Tab ── */}
         <TabsContent value="account" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
-          <Card>
-            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
-              <CardTitle className="text-base sm:text-lg">Account Security</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Change your password and manage account security.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
-              {/* Password Reset */}
+          <SettingsCard
+            title="Account Security"
+            description="Change your password and manage account security."
+            icon={<KeyRound className="h-5 w-5" />}
+          >
+            <div className="space-y-3 sm:space-y-4">
               <div className="p-3 sm:p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-medium text-sm sm:text-base">Password Reset</p>
@@ -274,7 +270,6 @@ export default function SettingsPage() {
                   Send Reset Email
                 </Button>
               </div>
-              {/* Logout */}
               <div className="p-3 sm:p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-medium text-sm sm:text-base">Logout</p>
@@ -298,8 +293,8 @@ export default function SettingsPage() {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </SettingsCard>
 
           {/* Danger Zone */}
           <Card className="border-destructive/50">
@@ -359,19 +354,23 @@ export default function SettingsPage() {
 
         {/* ── Preferences Tab ── */}
         <TabsContent value="preferences" className="mt-4 sm:mt-6">
-          <Card>
-            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
-              <CardTitle className="text-base sm:text-lg">Preferences</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Customize the look and feel of the application.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-5 sm:space-y-6">
-              {/* Theme */}
+          <SettingsCard
+            title="Preferences"
+            description="Customize the look and feel of the application."
+            icon={<Palette className="h-5 w-5" />}
+            footer={
+              <Button onClick={handlePreferencesSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
+                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                Save Preferences
+              </Button>
+            }
+          >
+            <div className="space-y-5 sm:space-y-6">
               <div>
                 <Label className="font-medium text-sm sm:text-base">Theme</Label>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2">Select your preferred interface theme.</p>
                 <ThemeToggle />
               </div>
-              {/* Language */}
               <div>
                 <Label className="font-medium text-sm sm:text-base" htmlFor="language">Language</Label>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2">Choose your preferred language.</p>
@@ -386,7 +385,6 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              {/* Units */}
               <div>
                 <Label className="font-medium text-sm sm:text-base">Units</Label>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2">Choose between metric (cm/kg) and imperial (ft/lbs) units. This affects how measurements are displayed across the app.</p>
@@ -397,25 +395,24 @@ export default function SettingsPage() {
                   </TabsList>
                 </Tabs>
               </div>
-            </CardContent>
-            <CardFooter className="bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 border-t flex justify-end">
-              <Button onClick={handlePreferencesSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                Save Preferences
-              </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </SettingsCard>
         </TabsContent>
 
         {/* ── Notifications Tab ── */}
         <TabsContent value="notifications" className="mt-4 sm:mt-6">
-          <Card>
-            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
-              <CardTitle className="text-base sm:text-lg">Notifications</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Manage your notification preferences.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
-              {/* Daily Reminder */}
+          <SettingsCard
+            title="Notifications"
+            description="Manage your notification preferences."
+            icon={<Bell className="h-5 w-5" />}
+            footer={
+              <Button onClick={handleNotificationsSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
+                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                Save Notifications
+              </Button>
+            }
+          >
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-start sm:items-center justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50">
                 <div className="min-w-0 flex-1">
                   <Label htmlFor="daily-reminder" className="cursor-pointer font-medium text-sm sm:text-base">
@@ -425,7 +422,6 @@ export default function SettingsPage() {
                 </div>
                 <Switch id="daily-reminder" checked={dailyReminder} onCheckedChange={setDailyReminder} className="shrink-0 mt-0.5 sm:mt-0" />
               </div>
-              {/* Weekly Summary (disabled) */}
               <div className="flex items-start sm:items-center justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 opacity-50 cursor-not-allowed">
                 <div className="min-w-0 flex-1">
                   <Label htmlFor="weekly-summary" className="cursor-not-allowed font-medium text-sm sm:text-base">
@@ -436,24 +432,18 @@ export default function SettingsPage() {
                 <Switch id="weekly-summary" checked={weeklySummary} onCheckedChange={setWeeklySummary} disabled className="shrink-0 mt-0.5 sm:mt-0" />
               </div>
               <p className="text-xs text-muted-foreground text-center">More notification options coming soon!</p>
-            </CardContent>
-            <CardFooter className="bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 border-t flex justify-end">
-              <Button onClick={handleNotificationsSave} disabled={isSaving} size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                Save Notifications
-              </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </SettingsCard>
         </TabsContent>
 
         {/* ── Privacy Tab ── */}
         <TabsContent value="privacy" className="mt-4 sm:mt-6">
-          <Card>
-            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
-              <CardTitle className="text-base sm:text-lg">Privacy & Data</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Manage your data and privacy settings.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
+          <SettingsCard
+            title="Privacy & Data"
+            description="Manage your data and privacy settings."
+            icon={<FileBadge className="h-5 w-5" />}
+          >
+            <div className="space-y-3 sm:space-y-4">
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Nutrify uses your data to provide personalized nutrition insights. Your data is encrypted and never sold.
               </p>
@@ -469,8 +459,8 @@ export default function SettingsPage() {
                   Download My Data
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </SettingsCard>
         </TabsContent>
 
       </Tabs>
