@@ -135,7 +135,7 @@ export default function SettingsPage() {
       await deleteUserAccount(auth, db);
       toast({ title: "Account Deleted", description: "Your account has been permanently deleted." });
       router.push('/');
-    } catch (error: any) => {
+    } catch (error: any) {
       toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message });
     } finally {
       setIsSaving(false);
