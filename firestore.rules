@@ -137,7 +137,7 @@ service cloud.firestore {
      */
     match /community_posts/{postId} {
       // Allow anyone to read any post (get) or list of posts (list).
-      allow read: if true;
+      allow get, list: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
       allow create: if request.auth.uid == request.resource.data.userId;
