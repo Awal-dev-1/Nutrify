@@ -24,7 +24,7 @@
  * - **Strict Ownership**: All access to a user's data tree (`/users/{userId}/...`)
  *   is gated by checking if the requester's UID matches the `{userId}` in the path.
  * - **Publicly Writable Food Data**: The `/foodItems` collection is readable by all
- *   authenticated users. Client-side writes are permitted to allow the AI to
+ *   authenticated users. Writes are also permitted to allow the AI to
  *   cache new food details, but deletes are blocked to prevent data loss.
  */
 rules_version = '2';
@@ -134,7 +134,7 @@ service cloud.firestore {
      * @description Public community posts.
      */
     match /community_posts/{postId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow create: if isSignedIn() && isOwner(request.resource.data.userId);
       allow update, delete: if isSignedIn() && isOwner(resource.data.userId);
     }
