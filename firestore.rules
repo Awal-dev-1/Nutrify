@@ -132,21 +132,18 @@ service cloud.firestore {
     }
 
     /**
-     * @description Public community posts.
-     * Document-level rules for single post operations.
+     * @description Public community posts. This single block handles all operations
+     *              for the community feed.
      */
     match /community_posts/{postId} {
-      allow get: if true;
-      allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
-    }
+      // Allow anyone to read any post (get) or list of posts (list).
+      allow read: if true;
 
-    /**
-     * @description Public community posts.
-     * Collection-level rule for listing all posts.
-     */
-    match /community_posts {
-        allow list: if true;
+      // Only authenticated users can create posts, and they must be the owner.
+      allow create: if request.auth.uid == request.resource.data.userId;
+      
+      // Only the owner can update or delete their own post.
+      allow update, delete: if request.auth.uid == resource.data.userId;
     }
   }
 }
