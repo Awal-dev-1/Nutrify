@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useTheme } from 'next-themes';
 import { Loader2 } from "lucide-react";
+import { Logo } from "@/components/shared/logo";
 
 export default function DashboardLayout({
   children,
@@ -38,8 +39,20 @@ export default function DashboardLayout({
   
   if (isUserLoading || isProfileLoading || !user || (userProfile && !userProfile.onboardingCompleted)) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
+        <div className="text-center space-y-6 p-4">
+          <Logo className="justify-center text-2xl" />
+          <div className="relative flex justify-center items-center h-16">
+            <div className="absolute h-16 w-16 bg-primary/10 rounded-full blur-2xl animate-pulse"></div>
+            <Loader2 className="h-10 w-10 animate-spin text-primary relative" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">Loading Your Dashboard</p>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Just a moment...
+            </p>
+          </div>
+        </div>
       </div>
     );
   }

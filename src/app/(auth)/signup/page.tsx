@@ -29,14 +29,18 @@ export default function SignUpPage() {
   if (isUserLoading || isProfileLoading || (user && userProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse"></div>
-            <Loader2 className="h-12 w-12 animate-spin text-primary relative" />
+        <div className="text-center space-y-6 p-4">
+          <Logo className="justify-center text-2xl" />
+          <div className="relative flex justify-center items-center h-16">
+            <div className="absolute h-16 w-16 bg-primary/10 rounded-full blur-2xl animate-pulse"></div>
+            <Loader2 className="h-10 w-10 animate-spin text-primary relative" />
           </div>
-          <p className="text-sm text-muted-foreground animate-pulse">
-            Loading your account...
-          </p>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">Creating your account...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Getting everything set up for you.
+            </p>
+          </div>
         </div>
       </div>
     );
