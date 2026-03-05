@@ -132,14 +132,15 @@ service cloud.firestore {
     }
 
     /**
-     * @description Rules for the public community feed.
+     * @description Rules for the public community feed. This grants public read
+     *              access while securing all write operations.
      */
     match /community_posts/{postId} {
-      // Allow anyone to read posts (get and list). This is the key fix.
+      // Allow anyone to read posts (covers `get` and `list`).
       allow read: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
       
       // Allow updates under two conditions:
       // 1. The user is the owner and is only updating content fields.

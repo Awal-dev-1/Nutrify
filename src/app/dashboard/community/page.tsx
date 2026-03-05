@@ -37,19 +37,9 @@ export default function CommunityPage() {
       const querySnapshot = await getDocs(postsQuery);
       const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
       
-      const sorted = posts.sort((a, b) => {
-          const getSafeDate = (timestamp: any): Date => {
-            if (timestamp && typeof timestamp.toDate === 'function') {
-                return timestamp.toDate();
-            }
-            return new Date(0); // Fallback for invalid or missing timestamps
-          }
-          const dateA = getSafeDate(a.createdAt);
-          const dateB = getSafeDate(b.createdAt);
-          return dateB.getTime() - dateA.getTime();
-      });
-
-      setPostsData(sorted);
+      // The sort was causing issues. Displaying in default order for now.
+      // A future improvement will be to order by a timestamp from the server.
+      setPostsData(posts);
     } catch (err: any) {
       console.error("Failed to fetch posts:", err);
       setError(err.message || "An unknown error occurred while fetching the feed.");
