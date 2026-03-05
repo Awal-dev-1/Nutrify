@@ -9,7 +9,6 @@ import {
   orderBy,
   limit,
   getDocs,
-  deleteDoc,
   writeBatch,
 } from 'firebase/firestore';
 import type { FoodItem } from '@/types/food';
@@ -35,17 +34,27 @@ export const addRecentSearch = (
     foodData: JSON.stringify(foodItem) 
   };
 
-  addDoc(recentsColRef, newRecentSearch).then(async () => {
-    // Prune old searches if the count exceeds the limit
+  addDoc(recentsColRef, newRecentSearch).then(() => {
+    // Prune old searches if the count exceeds the limit. This is fire-and-forget.
     const q = query(recentsColRef, orderBy('searchedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.size > RECENTS_LIMIT) {
-      const docsToDelete = querySnapshot.docs.slice(RECENTS_LIMIT);
-      const batch = writeBatch(db);
-      docsToDelete.forEach(doc => batch.delete(doc.ref));
-      await batch.commit();
-    }
+    getDocs(q).then(querySnapshot => {
+      if (querySnapshot.size > RECENTS_LIMIT) {
+        const docsToDelete = querySnapshot.docs.slice(RECENTS_LIMIT);
+        const batch = writeBatch(db);
+        docsToDelete.forEach(doc => batch.delete(doc.ref));
+        batch.commit().catch(error => {
+           errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: recentsColRef.path,
+            operation: 'delete',
+          }));
+        })
+      }
+    }).catch(error => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: recentsColRef.path,
+        operation: 'list',
+      }));
+    })
   }).catch(error => {
     errorEmitter.emit('permission-error', new FirestorePermissionError({
       path: recentsColRef.path,

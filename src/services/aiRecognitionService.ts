@@ -34,47 +34,45 @@ const compressImage = async (file: File): Promise<File> => {
  * Saves the scan result and uploads the image in the background.
  * This function is designed to be "fire-and-forget".
  */
-const saveHistoryInBackground = async (
+const saveHistoryInBackground = (
   db: Firestore,
   user: User,
   compressedFile: File,
   predictions: AIPrediction[]
 ) => {
-  try {
-    const scanId = uuidv4();
-    const storage = getStorage();
-    const storagePath = `ai-recognition/${user.uid}/${scanId}.jpg`;
-    const storageRef = ref(storage, storagePath);
+  const scanId = uuidv4();
+  const storage = getStorage();
+  const storagePath = `ai-recognition/${user.uid}/${scanId}.jpg`;
+  const storageRef = ref(storage, storagePath);
+  const scanDocRef = doc(db, 'users', user.uid, 'aiScans', scanId);
 
-    // Upload image and get its URL
-    const uploadResult = await uploadBytes(storageRef, compressedFile);
-    const imageUrl = await getDownloadURL(uploadResult.ref);
-
-    // Prepare the data for Firestore
-    const scanDocRef = doc(db, 'users', user.uid, 'aiScans', scanId);
-    const dataToSet = {
-      id: scanId,
-      status: 'completed',
-      imageUrl,
-      predictions,
-      createdAt: serverTimestamp(),
-      processedAt: serverTimestamp(),
-      error: null,
-    };
-    
-    // Write to Firestore (already non-blocking thanks to error emitter pattern)
-    setDoc(scanDocRef, dataToSet)
-      .catch(error => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: scanDocRef.path,
-            operation: 'create',
-            requestResourceData: dataToSet
-        }));
-      });
-  } catch (error) {
-    // We log the error but don't re-throw, as this is a background task.
-    console.error('Failed to save AI scan history in background:', error);
-  }
+  // Upload image first, then save doc with URL
+  uploadBytes(storageRef, compressedFile)
+    .then(uploadResult => getDownloadURL(uploadResult.ref))
+    .then(imageUrl => {
+      const dataToSet = {
+        id: scanId,
+        status: 'completed',
+        imageUrl,
+        predictions,
+        createdAt: serverTimestamp(),
+        processedAt: serverTimestamp(),
+        error: null,
+      };
+      // Write to Firestore (non-blocking)
+      setDoc(scanDocRef, dataToSet)
+        .catch(error => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+              path: scanDocRef.path,
+              operation: 'create',
+              requestResourceData: dataToSet
+          }));
+        });
+    })
+    .catch(error => {
+      // Log errors but don't block the main thread
+      console.error('Failed to save AI scan history in background:', error);
+    });
 };
 
 export const runAiScan = async (

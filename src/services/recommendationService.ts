@@ -59,7 +59,17 @@ export async function generateRecommendations(
   userId: string
 ): Promise<RecommendationResult> {
   const userRef = doc(db, 'users', userId);
-  const userSnap = await getDoc(userRef);
+  let userSnap;
+  try {
+    userSnap = await getDoc(userRef);
+  } catch (error) {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: userRef.path,
+      operation: 'get',
+    }));
+    throw new Error("Could not fetch user profile. Please check your connection or permissions.");
+  }
+
 
   if (!userSnap.exists()) {
     throw new Error('User profile not found. Please complete onboarding.');
