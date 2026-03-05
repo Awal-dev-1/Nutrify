@@ -52,7 +52,7 @@ export default function CommunityPage() {
       setPostsData(sorted);
     } catch (err: any) {
       console.error("Failed to fetch posts:", err);
-      setError("Could not load the community feed. Please check your permissions and try again later.");
+      setError(err.message || "An unknown error occurred while fetching the feed.");
     } finally {
       setIsLoading(false);
     }

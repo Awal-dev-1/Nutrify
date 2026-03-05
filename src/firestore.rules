@@ -132,21 +132,30 @@ service cloud.firestore {
     }
 
     /**
-     * @description Rules for the public community feed.
+     * @description Rules for the public community feed. The `allow read: if true`
+     *              is the critical change to allow anyone (including unauthenticated
+     *              or newly authenticated users) to `list` the collection for the feed.
+     *              Write operations are still secured.
      */
     match /community_posts/{postId} {
-      // allow anyone to read posts (get and list)
+      // Allow anyone to read posts (get and list).
       allow read: if true;
 
-      // only logged-in users can create posts, and they must be the owner.
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-
-      // only the owner can update their own post.
-      // NOTE: This simplified rule temporarily disables the ability for others to like/dislike posts.
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
-
-      // only the owner can delete their own post.
-      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Only authenticated users can create posts, and they must be the owner.
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      
+      // Allow updates under two conditions:
+      // 1. The user is the owner and is only updating content fields.
+      // 2. Any signed-in user is only updating the likes/dislikes arrays.
+      allow update: if isSignedIn() && (
+        (isOwner(resource.data.userId) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'content', 'tag', 'updatedAt']))
+        ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'dislikes']))
+      );
+      
+      // Only the owner can delete their own post.
+      allow delete: if isOwner(resource.data.userId);
     }
   }
 }
