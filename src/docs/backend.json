@@ -1,0 +1,543 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile information, personal details, nutrition goals, and application preferences within the Nutrify application. This data drives personalization and tracking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity. (Primary Key)"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's full name as provided during signup."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address, used for authentication and communication.",
+          "format": "email"
+        },
+        "onboardingCompleted": {
+          "type": "boolean",
+          "description": "Flag indicating if the user has completed the initial onboarding wizard."
+        },
+        "profile": {
+          "type": "object",
+          "description": "Contains the user's core physical and demographic information.",
+          "properties": {
+            "gender": {
+              "type": "string",
+              "description": "User's self-identified gender (e.g., 'Male', 'Female', 'Other')."
+            },
+            "age": {
+              "type": "number",
+              "description": "User's age in years."
+            },
+            "heightCm": {
+              "type": "number",
+              "description": "User's height in centimeters."
+            },
+            "weightKg": {
+              "type": "number",
+              "description": "User's current weight in kilograms."
+            },
+            "activityLevel": {
+              "type": "string",
+              "description": "User's self-reported activity level (e.g., 'Low', 'Moderate', 'Active', 'Very Active')."
+            },
+             "profileImageUrl": {
+              "type": "string",
+              "description": "URL to the user's profile picture.",
+              "format": "uri"
+            }
+          }
+        },
+        "health": {
+          "type": "object",
+          "description": "Contains the user's primary health goals and dietary constraints.",
+          "properties": {
+             "primaryGoal": {
+              "type": "string",
+              "description": "User's primary nutrition goal (e.g., 'Lose Weight', 'Maintain Weight', 'Gain Weight', 'Eat Healthier')."
+            },
+            "dietaryPreferences": {
+              "type": "array",
+              "description": "An array of dietary restrictions or preferences selected by the user (e.g., 'Vegan', 'Halal', 'Diabetic-Friendly').",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "goals": {
+          "type": "object",
+          "description": "Contains the user's specific nutritional targets.",
+          "properties": {
+             "dailyCalorieGoal": {
+              "type": "number",
+              "description": "The user's target daily calorie intake."
+            },
+            "proteinPercentageGoal": {
+              "type": "number",
+              "description": "Target percentage of daily calories from protein (0-100)."
+            },
+            "carbsPercentageGoal": {
+              "type": "number",
+              "description": "Target percentage of daily calories from carbohydrates (0-100)."
+            },
+            "fatPercentageGoal": {
+              "type": "number",
+              "description": "Target percentage of daily calories from fats (0-100)."
+            },
+            "ironTargetMg": {
+              "type": "number",
+              "description": "User's target daily iron intake in milligrams."
+            },
+            "vitaminATargetMcg": {
+              "type": "number",
+              "description": "User's target daily Vitamin A intake in micrograms."
+            }
+          }
+        },
+        "preferences": {
+            "type": "object",
+            "description": "Application-specific user preferences.",
+            "properties": {
+                "unitPreference": {
+                "type": "string",
+                "description": "Preferred unit system for measurements (e.g., 'metric' for cm/kg, 'imperial' for ft/lbs)."
+                },
+                "themePreference": {
+                "type": "string",
+                "description": "User's preferred application theme (e.g., 'Light', 'Dark')."
+                },
+                "languagePreference": {
+                "type": "string",
+                "description": "User's preferred language for the application (e.g., 'English', 'Twi', 'Ewe')."
+                },
+                "reminderEnabled": {
+                "type": "boolean",
+                "description": "Flag indicating if daily nutrition reminders are enabled for the user."
+                }
+            }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of the last update to the user profile.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "onboardingCompleted",
+        "createdAt"
+      ]
+    },
+    "FoodItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FoodItem",
+      "type": "object",
+      "description": "Represents a single food item with its nutritional values and categorization.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FoodItem entity. (Primary Key)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The common name of the food item."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description or general category of the food item."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to an image representing the food item.",
+          "format": "uri"
+        },
+        "caloriesPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Calories per 100 grams of the food."
+        },
+        "proteinPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Protein in grams per 100 grams of the food."
+        },
+        "carbsPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Carbohydrates in grams per 100 grams of the food."
+        },
+        "fatPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Fats in grams per 100 grams of the food."
+        },
+        "fiberPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Fiber in grams per 100 grams of the food."
+        },
+        "ironPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Iron in milligrams per 100 grams of the food."
+        },
+        "vitaminAPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Vitamin A in micrograms per 100 grams of the food."
+        },
+        "sodiumPer100g": {
+          "type": "number",
+          "description": "Nutritional value: Sodium in milligrams per 100 grams of the food."
+        },
+        "category": {
+          "type": "string",
+          "description": "Primary category of the food item (e.g., 'Fruits', 'Proteins', 'Local Dishes', 'Vegetables', 'International')."
+        },
+        "isGhanaianLocal": {
+          "type": "boolean",
+          "description": "Flag indicating if the food item is considered a local Ghanaian dish or ingredient."
+        },
+        "tags": {
+          "type": "array",
+          "description": "An array of descriptive tags, including dietary tags like 'Vegan', 'Halal', 'Gluten-Free'.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "smallServingGrams": {
+          "type": "number",
+          "description": "Weight in grams for a 'Small' portion size of this food. (Optional)"
+        },
+        "mediumServingGrams": {
+          "type": "number",
+          "description": "Weight in grams for a 'Medium' portion size of this food. (Optional)"
+        },
+        "largeServingGrams": {
+          "type": "number",
+          "description": "Weight in grams for a 'Large' portion size of this food. (Optional)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "imageUrl",
+        "caloriesPer100g",
+        "proteinPer100g",
+        "carbsPer100g",
+        "fatPer100g",
+        "category"
+      ]
+    },
+    "LoggedFoodItem": {
+      "title": "LoggedFoodItem",
+      "type": "object",
+      "description": "Represents a single food item logged as part of a meal within a daily log.",
+      "properties": {
+          "logId": { "type": "string" },
+          "foodId": { "type": "string" },
+          "name": { "type": "string" },
+          "quantity": { "type": "number" },
+          "calories": { "type": "number" },
+          "protein": { "type": "number" },
+          "carbs": { "type": "number" },
+          "fat": { "type": "number" },
+          "imageUrl": {"type": "string", "format": "uri"}
+      },
+      "required": ["logId", "foodId", "name", "quantity", "calories"]
+    },
+    "DailyLog": {
+      "title": "DailyLog",
+      "type": "object",
+      "description": "Aggregated daily nutritional data for a user, including total intake and a list of all food items consumed. Updated with every change in the tracker.",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "totalCalories": { "type": "number" },
+        "totalProtein": { "type": "number" },
+        "totalCarbs": { "type": "number" },
+        "totalFat": { "type": "number" },
+        "waterIntake": { "type": "number" },
+        "meals": {
+          "type": "object",
+          "properties": {
+            "Breakfast": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Lunch": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Dinner": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Snacks": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } }
+          }
+        }
+      },
+      "required": ["date", "totalCalories", "totalProtein", "totalCarbs", "totalFat"]
+    },
+    "PlannedMeal": {
+      "title": "PlannedMeal",
+      "type": "object",
+      "description": "Represents a single food item planned for a specific meal on a specific day.",
+      "properties": {
+        "foodId": { "type": "string", "description": "Name of the food, used as an ID since we use AI search." },
+        "foodName": { "type": "string" },
+        "day": { "type": "string", "description": "Day of the week, e.g., 'Monday'." },
+        "mealType": { "type": "string", "description": "e.g., 'Breakfast', 'Lunch'." },
+        "quantity": { "type": "number", "description": "in grams" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["foodId", "foodName", "day", "mealType", "quantity", "calories", "protein", "carbs", "fat", "createdAt"]
+    },
+    "RecommendationItem": {
+      "title": "RecommendationItem",
+      "type": "object",
+      "description": "A single recommended food item with scoring and reasoning.",
+      "properties": {
+        "foodId": { "type": "string" },
+        "name": { "type": "string" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "reason": { "type": "string" },
+        "score": { "type": "number" }
+      },
+      "required": ["foodId", "name", "calories", "reason", "score"]
+    },
+    "GeneratedRecommendations": {
+      "title": "GeneratedRecommendations",
+      "type": "object",
+      "description": "A set of generated food recommendations for a user at a specific time.",
+      "properties": {
+        "createdAt": { "type": "string", "format": "date-time" },
+        "basedOnGoal": { "type": "string" },
+        "recommendations": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/RecommendationItem" }
+        }
+      },
+      "required": ["createdAt", "basedOnGoal", "recommendations"]
+    },
+    "AIPrediction": {
+      "title": "AIPrediction",
+      "type": "object",
+      "description": "A single food prediction generated by the AI model, including confidence score and full nutritional data.",
+      "properties": {
+        "foodName": { "type": "string" },
+        "confidence": { "type": "number", "description": "The AI's confidence in this prediction, from 0 to 1." },
+        "calories": { "type": "number" },
+        "macronutrientBreakdown": {
+          "type": "object",
+          "properties": {
+            "protein": { "type": "number" },
+            "carbohydrates": { "type": "number" },
+            "fat": { "type": "number" }
+          }
+        },
+        "micronutrientBreakdown": {
+          "type": "object",
+          "properties": {
+            "fiber": { "type": "number" },
+            "sugar": { "type": "number" },
+            "iron": { "type": "number" },
+            "calcium": { "type": "number" },
+            "vitaminA": { "type": "number" },
+            "vitaminC": { "type": "number" },
+            "sodium": { "type": "number" }
+          }
+        },
+        "detailedRecipe": {
+          "type": "object",
+          "properties": {
+            "ingredients": { "type": "array", "items": { "type": "string" } },
+            "instructions": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "foodHistory": { "type": "string" },
+        "healthAnalysis": { "type": "string" }
+      },
+      "required": ["foodName", "confidence", "calories", "macronutrientBreakdown"]
+    },
+    "AIScan": {
+      "title": "AIScan",
+      "type": "object",
+      "description": "Represents a single AI food recognition scan session initiated by a user.",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["processing", "completed", "failed"] },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "predictions": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/AIPrediction" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "error": { "type": "string" }
+      },
+      "required": ["id", "status", "imageUrl", "createdAt"]
+    },
+    "RecentSearchItem": {
+      "title": "RecentSearchItem",
+      "type": "object",
+      "description": "Represents a single food item from a user's recent search history.",
+      "properties": {
+        "foodName": { "type": "string" },
+        "searchedAt": { "type": "string", "format": "date-time" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "foodData": { "type": "string", "description": "A JSON string of the full FoodItem object." }
+      },
+      "required": ["foodName", "searchedAt", "calories", "foodData"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores individual user profile data, preferences, and nutritional goals. The document ID (`{userId}`) matches the Firebase Authentication UID, ensuring path-based ownership and authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, matching their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/foodItems/{foodItemId}",
+        "definition": {
+          "entityName": "FoodItem",
+          "schema": {
+            "$ref": "#/backend/entities/FoodItem"
+          },
+          "description": "A global, read-only collection of food items with detailed nutritional information. Accessible by all authenticated users for search and meal logging.",
+          "params": [
+            {
+              "name": "foodItemId",
+              "description": "The unique identifier for a specific food item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/dailyLogs/{date}",
+        "definition": {
+          "entityName": "DailyLog",
+          "schema": {
+            "$ref": "#/backend/entities/DailyLog"
+          },
+          "description": "User-specific collection for storing aggregated daily nutritional data. The document ID is the date in 'YYYY-MM-DD' format. This structure is optimized for fast analytics queries.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, derived from the parent collection, matching their Firebase Authentication UID."
+            },
+            {
+              "name": "date",
+              "description": "The date of the log in 'YYYY-MM-DD' format."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/generatedRecommendations/{recommendationId}",
+        "definition": {
+          "entityName": "GeneratedRecommendations",
+          "schema": {
+            "$ref": "#/backend/entities/GeneratedRecommendations"
+          },
+          "description": "Stores historical sets of generated meal recommendations for a user. Each document is a snapshot of recommendations at a point in time.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's ID."
+            },
+            {
+              "name": "recommendationId",
+              "description": "The unique ID for this set of recommendations."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/aiScans/{scanId}",
+        "definition": {
+          "entityName": "AIScan",
+          "schema": {
+            "$ref": "#/backend/entities/AIScan"
+          },
+          "description": "Stores the state and results of a single AI food recognition scan. Users can create and read their own scans; only a backend process can update them with results.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's ID."
+            },
+            {
+              "name": "scanId",
+              "description": "The unique ID for this scan session."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/plannedMeals/{mealId}",
+        "definition": {
+          "entityName": "PlannedMeal",
+          "schema": {
+            "$ref": "#/backend/entities/PlannedMeal"
+          },
+          "description": "Stores individual meals planned by a user. The document ID is the unique ID for the planned meal.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's ID."
+            },
+            {
+              "name": "mealId",
+              "description": "The unique ID for the planned meal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/recentSearches/{searchId}",
+        "definition": {
+          "entityName": "RecentSearchItem",
+          "schema": {
+            "$ref": "#/backend/entities/RecentSearchItem"
+          },
+          "description": "Stores a user's recent food searches for quick access.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's ID."
+            },
+            {
+              "name": "searchId",
+              "description": "The unique ID for the search entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure prioritizes security, scalability, and query performance. Storing user-specific data under `/users/{userId}` ensures strong ownership and simplifies security rules. The new `/users/{userId}/dailyLogs/{date}` collection is specifically designed for analytics performance. By storing pre-aggregated daily totals in a single document per day (identified by date), the application can fetch analytics data for a date range (e.g., 7 or 30 days) with a single, efficient query, rather than needing to read and aggregate hundreds of individual food log documents on the client. This dramatically improves performance and reduces cost at scale."
+  }
+}
