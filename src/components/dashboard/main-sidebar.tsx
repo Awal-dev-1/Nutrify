@@ -19,7 +19,6 @@ import {
   PieChart,
   Activity,
   Flame,
-  Users,
 } from 'lucide-react'
 
 import {
