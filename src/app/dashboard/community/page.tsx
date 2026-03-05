@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useState, useEffect, useCallback } from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -15,29 +15,58 @@ import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { PostCard } from '@/components/community/PostCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { MessageSquare, Users, AlertCircle } from 'lucide-react';
+import { MessageSquare, AlertCircle } from 'lucide-react';
 import type { CommunityPost } from '@/types/community';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+// To ensure we get the ID from Firestore documents
+type CommunityPostWithId = CommunityPost & { id: string };
 
 export default function CommunityPage() {
   const { user, userProfile } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
 
-  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [posts, setPosts] = useState<CommunityPostWithId[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [editingPost, setEditingPost] = useState<CommunityPostWithId | null>(null);
 
-  const postsQuery = useMemoFirebase(
-    () => db ? query(collection(db, 'community_posts'), orderBy('createdAt', 'desc')) : null,
-    [db]
-  );
-  
-  const { data: postsData, isLoading, error } = useCollection<CommunityPost>(postsQuery);
+  const fetchPosts = useCallback(async () => {
+    if (!db) {
+        setIsLoading(false);
+        setError(new Error("Database connection not available."));
+        return;
+    };
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(postsQuery);
+      const postsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      } as CommunityPostWithId));
+      setPosts(postsData);
+    } catch (err: any) {
+      console.error("Failed to fetch posts:", err);
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [db]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
     try {
       await createPost(db, user, userProfile, data.title, data.content, data.tag);
-      toast({ title: 'Post Created!', description: 'Your post is now live on the community feed.' });
+      toast({ title: 'Post Created!', description: 'Your post is now live.' });
+      fetchPosts(); // Refetch to get the new post
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Creating Post', description: err.message });
     }
@@ -47,28 +76,55 @@ export default function CommunityPage() {
     if (!db) return;
     try {
       await updatePost(db, postId, data.title, data.content, data.tag);
-      setEditingPost(null);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
+      setEditingPost(null);
+      fetchPosts(); // Refetch to show updated post
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
   };
+  
+  const handleOptimisticUpdate = (postId: string, updateFn: (post: CommunityPostWithId) => CommunityPostWithId) => {
+      setPosts(currentPosts => 
+          currentPosts.map(p => p.id === postId ? updateFn(p) : p)
+      );
+  }
 
   const handleLike = async (postId: string) => {
     if (!user || !db) return;
+
+    // Optimistic update
+    handleOptimisticUpdate(postId, post => {
+        const hasLiked = post.likes.includes(user.uid);
+        const newLikes = hasLiked ? post.likes.filter(uid => uid !== user.uid) : [...post.likes, user.uid];
+        const newDislikes = post.dislikes.filter(uid => uid !== user.uid);
+        return { ...post, likes: newLikes, dislikes: newDislikes };
+    });
+
     try {
       await toggleLike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
+      fetchPosts(); // Revert on error
     }
   };
   
   const handleDislike = async (postId: string) => {
     if (!user || !db) return;
+
+    // Optimistic update
+     handleOptimisticUpdate(postId, post => {
+        const hasDisliked = post.dislikes.includes(user.uid);
+        const newDislikes = hasDisliked ? post.dislikes.filter(uid => uid !== user.uid) : [...post.dislikes, user.uid];
+        const newLikes = post.likes.filter(uid => uid !== user.uid);
+        return { ...post, likes: newLikes, dislikes: newDislikes };
+    });
+
     try {
       await toggleDislike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
+      fetchPosts(); // Revert on error
     }
   };
 
@@ -77,6 +133,7 @@ export default function CommunityPage() {
     try {
       await deletePost(db, postId);
       toast({ title: 'Post Deleted', variant: 'destructive' });
+      fetchPosts(); // Refetch after delete
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
     }
@@ -129,14 +186,14 @@ export default function CommunityPage() {
             <Skeleton className="h-48 w-full rounded-lg" />
             <Skeleton className="h-48 w-full rounded-lg" />
           </div>
-        ) : postsData && postsData.length === 0 ? (
+        ) : posts && posts.length === 0 ? (
           <EmptyState
             icon={<MessageSquare className="h-16 w-16 text-muted-foreground" />}
             title="It's quiet in here..."
             description="Be the first one to share something with the community!"
           />
         ) : (
-          postsData?.map(post => (
+          posts?.map(post => (
             <PostCard
               key={post.id}
               post={post}
