@@ -140,7 +140,7 @@ service cloud.firestore {
       allow read: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
-      allow create: if isOwner(request.resource.data.userId);
+      allow create: if request.auth.uid == request.resource.data.userId;
       
       // Allow updates under two conditions:
       // 1. The user is the owner and is only updating content fields.

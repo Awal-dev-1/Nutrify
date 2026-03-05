@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -15,8 +15,9 @@ import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { PostCard } from '@/components/community/PostCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { MessageSquare, Users } from 'lucide-react';
+import { MessageSquare, Users, AlertCircle } from 'lucide-react';
 import type { CommunityPost } from '@/types/community';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function CommunityPage() {
   const { user, userProfile } = useUser();
@@ -24,50 +25,126 @@ export default function CommunityPage() {
   const { toast } = useToast();
 
   const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [postsData, setPostsData] = useState<CommunityPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const postsQuery = useMemoFirebase(
-    () => (db ? query(collection(db, 'community_posts')) : null),
-    [db]
-  );
+  const fetchPosts = useCallback(async () => {
+    if (!db) return;
+    setError(null);
+    try {
+      const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(postsQuery);
+      const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
+      setPostsData(posts);
+    } catch (err: any) {
+      console.error("Failed to fetch posts:", err);
+      setError("Could not load the community feed. Please check your permissions and try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [db]);
 
-  const { data: postsData, isLoading } = useCollection<CommunityPost>(postsQuery);
+  useEffect(() => {
+    setIsLoading(true);
+    fetchPosts();
+  }, [fetchPosts]);
 
-  const sortedPosts = useMemo(() => {
-    if (!postsData) return [];
-    // Firestore Timestamps can be null during creation before server value is set.
-    return [...postsData].sort((a, b) => 
-        (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)
-    );
-  }, [postsData]);
+  const sortedPosts = postsData; // Query handles sorting
 
-  const handleCreatePost = (data: { title: string; content: string; tag: string }) => {
+  const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
-    createPost(db, user, userProfile, data.title, data.content, data.tag);
-    toast({ title: 'Post Created!', description: 'Your post is now live on the community feed.' });
+    try {
+      await createPost(db, user, userProfile, data.title, data.content, data.tag);
+      toast({ title: 'Post Created!', description: 'Your post is now live on the community feed.' });
+      fetchPosts();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error Creating Post', description: err.message });
+    }
   };
 
-  const handleUpdatePost = (postId: string, data: { title: string; content: string; tag: string }) => {
+  const handleUpdatePost = async (postId: string, data: { title: string; content: string; tag: string }) => {
     if (!db) return;
-    updatePost(db, postId, data.title, data.content, data.tag);
-    setEditingPost(null);
-    toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
-  };
-  
-  const handleLike = (postId: string) => {
-    if (!user || !db) return;
-    toggleLike(db, postId, user.uid);
-  };
-  
-  const handleDislike = (postId: string) => {
-    if (!user || !db) return;
-    toggleDislike(db, postId, user.uid);
+    try {
+      await updatePost(db, postId, data.title, data.content, data.tag);
+      setEditingPost(null);
+      toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
+      fetchPosts();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
+    }
   };
 
-  const handleDelete = (postId: string) => {
-    if (!db) return;
-    deletePost(db, postId);
-    toast({ title: 'Post Deleted', variant: 'destructive' });
+  const handleLike = async (postId: string) => {
+    if (!user || !db) return;
+    // Optimistic update for better UX
+    setPostsData(prevPosts => prevPosts.map(p => {
+      if (p.id === postId) {
+        const hasLiked = p.likes.includes(user.uid);
+        const newLikes = hasLiked ? p.likes.filter(id => id !== user.uid) : [...p.likes, user.uid];
+        const newDislikes = p.dislikes.filter(id => id !== user.uid);
+        return { ...p, likes: newLikes, dislikes: newDislikes };
+      }
+      return p;
+    }));
+    try {
+      await toggleLike(db, postId, user.uid);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
+      fetchPosts(); // Re-fetch to correct state on error
+    }
   };
+  
+  const handleDislike = async (postId: string) => {
+    if (!user || !db) return;
+    // Optimistic update
+    setPostsData(prevPosts => prevPosts.map(p => {
+      if (p.id === postId) {
+        const hasDisliked = p.dislikes.includes(user.uid);
+        const newDislikes = hasDisliked ? p.dislikes.filter(id => id !== user.uid) : [...p.dislikes, user.uid];
+        const newLikes = p.likes.filter(id => id !== user.uid);
+        return { ...p, likes: newLikes, dislikes: newDislikes };
+      }
+      return p;
+    }));
+    try {
+      await toggleDislike(db, postId, user.uid);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
+      fetchPosts();
+    }
+  };
+
+  const handleDelete = async (postId: string) => {
+    if (!db) return;
+    try {
+      await deletePost(db, postId);
+      toast({ title: 'Post Deleted', variant: 'destructive' });
+      fetchPosts();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
+    }
+  };
+
+  if (error) {
+    return (
+        <div className="space-y-8">
+            <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                <h1 className="text-3xl font-bold tracking-tight">Community Feed</h1>
+                <p className="text-muted-foreground">
+                    Share ideas, recipes, and tips with other Nutrify users.
+                </p>
+                </div>
+            </div>
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Failed to Load Feed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
@@ -108,8 +185,8 @@ export default function CommunityPage() {
               key={post.id}
               post={post}
               currentUser={user}
-              onLike={handleLike}
-              onDislike={handleDislike}
+              onLike={() => handleLike(post.id)}
+              onDislike={() => handleDislike(post.id)}
               onEdit={() => setEditingPost(post)}
               onDelete={() => handleDelete(post.id)}
             />

@@ -12,13 +12,11 @@ import {
   type Firestore,
   runTransaction,
 } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import type { User } from 'firebase/auth';
 import type { UserProfile } from '@/firebase';
 
 // Create Post
-export const createPost = (
+export const createPost = async (
   db: Firestore,
   user: User,
   userProfile: UserProfile,
@@ -40,17 +38,11 @@ export const createPost = (
     dislikes: [],
   };
 
-  addDoc(postsColRef, newPost).catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: postsColRef.path,
-      operation: 'create',
-      requestResourceData: newPost,
-    }));
-  });
+  await addDoc(postsColRef, newPost);
 };
 
 // Update Post
-export const updatePost = (
+export const updatePost = async (
   db: Firestore,
   postId: string,
   title: string,
@@ -65,31 +57,20 @@ export const updatePost = (
     updatedAt: serverTimestamp(),
   };
 
-  updateDoc(postDocRef, updatedData).catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: postDocRef.path,
-      operation: 'update',
-      requestResourceData: updatedData,
-    }));
-  });
+  await updateDoc(postDocRef, updatedData);
 };
 
 // Delete Post
-export const deletePost = (db: Firestore, postId: string) => {
+export const deletePost = async (db: Firestore, postId: string) => {
   const postDocRef = doc(db, 'community_posts', postId);
-  deleteDoc(postDocRef).catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: postDocRef.path,
-      operation: 'delete',
-    }));
-  });
+  await deleteDoc(postDocRef);
 };
 
 // Toggle Like
-export const toggleLike = (db: Firestore, postId: string, userId: string) => {
+export const toggleLike = async (db: Firestore, postId: string, userId: string) => {
   const postDocRef = doc(db, 'community_posts', postId);
   
-  runTransaction(db, async (transaction) => {
+  await runTransaction(db, async (transaction) => {
     const postDoc = await transaction.get(postDocRef);
     if (!postDoc.exists()) {
       throw "Document does not exist!";
@@ -109,20 +90,14 @@ export const toggleLike = (db: Firestore, postId: string, userId: string) => {
         transaction.update(postDocRef, { dislikes: arrayRemove(userId) });
       }
     }
-  }).catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: postDocRef.path,
-      operation: 'update',
-      requestResourceData: { likes: '...' } // Representational data
-    }));
   });
 };
 
 // Toggle Dislike
-export const toggleDislike = (db: Firestore, postId: string, userId: string) => {
+export const toggleDislike = async (db: Firestore, postId: string, userId: string) => {
   const postDocRef = doc(db, 'community_posts', postId);
   
-  runTransaction(db, async (transaction) => {
+  await runTransaction(db, async (transaction) => {
     const postDoc = await transaction.get(postDocRef);
     if (!postDoc.exists()) {
       throw "Document does not exist!";
@@ -142,11 +117,5 @@ export const toggleDislike = (db: Firestore, postId: string, userId: string) => 
         transaction.update(postDocRef, { likes: arrayRemove(userId) });
       }
     }
-  }).catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: postDocRef.path,
-      operation: 'update',
-      requestResourceData: { dislikes: '...' }
-    }));
   });
 };
