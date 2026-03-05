@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CommunityPost } from '@/types/community';
+import type { CommunityPost } from '@/types/community';
 
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters.").max(100),
@@ -16,8 +16,10 @@ const formSchema = z.object({
   tag: z.enum(['Healthy Tips', 'Recipe', 'Weight Loss', 'Fitness', 'Nutrition Advice']),
 });
 
+type PostFormData = Pick<CommunityPost, 'title' | 'content' | 'tag'>;
+
 type CreatePostFormProps = {
-  onAddPost: (post: Omit<CommunityPost, 'id' | 'createdAt' | 'userId' | 'username' | 'userAvatarUrl'>) => void;
+  onAddPost: (postData: PostFormData) => void;
 };
 
 export function CreatePostForm({ onAddPost }: CreatePostFormProps) {

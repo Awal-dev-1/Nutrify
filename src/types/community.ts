@@ -2,9 +2,10 @@ export interface CommunityPost {
   id: string;
   userId: string;
   username: string;
-  userAvatarUrl: string;
+  userAvatar: string;
   title: string;
   content: string;
   tag: 'Healthy Tips' | 'Recipe' | 'Weight Loss' | 'Fitness' | 'Nutrition Advice';
-  createdAt: Date;
+  createdAt: any; // Can be a Date or Firestore Timestamp
+  updatedAt?: any; // Optional, can be a Date or Firestore Timestamp
 }

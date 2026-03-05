@@ -133,10 +133,10 @@ service cloud.firestore {
     /**
      * @description Public community posts.
      */
-    match /communityPosts/{postId} {
+    match /community_posts/{postId} {
       allow read: if isSignedIn();
-      allow create: if isOwner(request.resource.data.userId);
-      allow update, delete: if isOwner(resource.data.userId);
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+      allow update, delete: if isSignedIn() && isOwner(resource.data.userId);
     }
   }
 }

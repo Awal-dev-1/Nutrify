@@ -17,19 +17,22 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, isOwner, onEdit, onDelete }: PostCardProps) {
+  const displayDate = post.updatedAt?.toDate() || post.createdAt?.toDate() || new Date();
+  const dateLabel = post.updatedAt ? 'Updated' : 'Posted';
+  
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={post.userAvatarUrl} />
+              <AvatarImage src={post.userAvatar} />
               <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold">{post.username}</p>
               <p className="text-xs text-muted-foreground">
-                Posted {formatDistanceToNow(post.createdAt, { addSuffix: true })}
+                {dateLabel} {formatDistanceToNow(displayDate, { addSuffix: true })}
               </p>
             </div>
           </div>

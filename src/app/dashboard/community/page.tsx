@@ -1,60 +1,72 @@
 'use client';
-import React, { useState } from 'react';
-import { Users } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Users, Loader2, AlertCircle } from 'lucide-react';
 import { CreatePostForm } from '@/components/community/create-post-form';
 import { CommunityFeed } from '@/components/community/community-feed';
 import type { CommunityPost } from '@/types/community';
-import { useUser } from '@/firebase';
-
-// Mock data for initial state
-const initialPosts: CommunityPost[] = [
-  {
-    id: '1',
-    userId: 'user-2',
-    username: 'Ama Serwaa',
-    userAvatarUrl: 'https://picsum.photos/seed/ama/40/40',
-    title: 'My Favorite Low-Calorie Banku Recipe!',
-    content: 'I found a great way to make Banku with less corn dough and more cassava dough. It feels lighter and is great for weight management. I pair it with grilled tilapia and a simple pepper sauce. So delicious and guilt-free!',
-    tag: 'Recipe',
-    createdAt: new Date(Date.now() - 3600000 * 2), // 2 hours ago
-  },
-  {
-    id: '2',
-    userId: 'user-1', // This will match the mock current user
-    username: 'Kofi Mensah',
-    userAvatarUrl: 'https://picsum.photos/seed/kofi/40/40',
-    title: 'Morning Walk Benefits',
-    content: 'Just a reminder to everyone: a simple 30-minute walk in the morning can do wonders. It boosts your metabolism, improves your mood, and sets a positive tone for the whole day. You don\'t need a gym to stay active!',
-    tag: 'Fitness',
-    createdAt: new Date(Date.now() - 3600000 * 5), // 5 hours ago
-  },
-];
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { addPost, updatePost, deletePost } from '@/services/communityService';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function CommunityPage() {
   const { user } = useUser();
-  const [posts, setPosts] = useState<CommunityPost[]>(initialPosts);
-  
-  // A mock user ID until full auth is wired up
-  const currentUserId = user?.uid || 'user-1';
+  const db = useFirestore();
 
-  const addPost = (post: Omit<CommunityPost, 'id' | 'createdAt' | 'userId' | 'username' | 'userAvatarUrl'>) => {
-    const newPost: CommunityPost = {
-      id: new Date().toISOString(),
-      userId: currentUserId,
-      username: user?.displayName || 'Kofi Mensah',
-      userAvatarUrl: user?.photoURL || 'https://picsum.photos/seed/kofi/40/40',
-      ...post,
-      createdAt: new Date(),
-    };
-    setPosts(prevPosts => [newPost, ...prevPosts]);
+  const communityPostsQuery = useMemoFirebase(
+    () => (db ? query(collection(db, 'community_posts'), orderBy('createdAt', 'desc')) : null),
+    [db]
+  );
+  const { data: posts, isLoading, error } = useCollection<CommunityPost>(communityPostsQuery);
+
+  const handleAddPost = (postData: Pick<CommunityPost, 'title' | 'content' | 'tag'>) => {
+    if (!user || !db) return;
+    addPost(db, user, postData);
   };
 
-  const updatePost = (updatedPost: CommunityPost) => {
-    setPosts(posts.map(p => (p.id === updatedPost.id ? updatedPost : p)));
+  const handleUpdatePost = (updatedPost: CommunityPost) => {
+    if (!db) return;
+    updatePost(db, updatedPost.id, {
+      title: updatedPost.title,
+      content: updatedPost.content,
+      tag: updatedPost.tag,
+    });
   };
 
-  const deletePost = (postId: string) => {
-    setPosts(posts.filter(p => p.id !== postId));
+  const handleDeletePost = (postId: string) => {
+    if (!db) return;
+    deletePost(db, postId);
+  };
+
+  const renderFeed = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading posts</AlertTitle>
+          <AlertDescription>
+            Could not load the community feed. Please try again later.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    
+    return (
+      <CommunityFeed
+        posts={posts || []}
+        currentUserId={user?.uid || ''}
+        onUpdatePost={handleUpdatePost}
+        onDeletePost={handleDeletePost}
+      />
+    );
   };
 
   return (
@@ -75,15 +87,10 @@ export default function CommunityPage() {
       </div>
 
       {/* 2. Create Post Section */}
-      <CreatePostForm onAddPost={addPost} />
+      <CreatePostForm onAddPost={handleAddPost} />
 
       {/* 3. Community Feed */}
-      <CommunityFeed
-        posts={posts}
-        currentUserId={currentUserId}
-        onUpdatePost={updatePost}
-        onDeletePost={deletePost}
-      />
+      {renderFeed()}
     </div>
   );
 }
