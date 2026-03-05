@@ -36,7 +36,14 @@ export default function CommunityPage() {
       const postsQuery = query(collection(db, 'community_posts'));
       const querySnapshot = await getDocs(postsQuery);
       const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
-      setPostsData(posts);
+      
+      const sorted = posts.sort((a, b) => {
+          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+          return dateB.getTime() - dateA.getTime();
+      });
+
+      setPostsData(sorted);
     } catch (err: any) {
       console.error("Failed to fetch posts:", err);
       setError("Could not load the community feed. Please check your permissions and try again later.");
@@ -50,23 +57,12 @@ export default function CommunityPage() {
     fetchPosts();
   }, [fetchPosts]);
 
-  const sortedPosts = useMemo(() => {
-    if (!postsData) return [];
-    return [...postsData].sort((a, b) => {
-      const dateA = a.createdAt?.toDate() || 0;
-      const dateB = b.createdAt?.toDate() || 0;
-      if (dateA > dateB) return -1;
-      if (dateA < dateB) return 1;
-      return 0;
-    });
-  }, [postsData]);
-
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
     try {
       await createPost(db, user, userProfile, data.title, data.content, data.tag);
       toast({ title: 'Post Created!', description: 'Your post is now live on the community feed.' });
-      fetchPosts();
+      fetchPosts(); // Refetch posts after creating
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Creating Post', description: err.message });
     }
@@ -78,8 +74,8 @@ export default function CommunityPage() {
       await updatePost(db, postId, data.title, data.content, data.tag);
       setEditingPost(null);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
-      fetchPosts();
-    } catch (err: any) {
+      fetchPosts(); // Refetch posts after updating
+    } catch (err: any) => {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
   };
@@ -129,13 +125,13 @@ export default function CommunityPage() {
     try {
       await deletePost(db, postId);
       toast({ title: 'Post Deleted', variant: 'destructive' });
-      fetchPosts();
-    } catch (err: any) {
+      fetchPosts(); // Refetch posts after deleting
+    } catch (err: any) => {
       toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
     }
   };
 
-  if (error) {
+  if (error && !isLoading) {
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
@@ -182,14 +178,14 @@ export default function CommunityPage() {
             <Skeleton className="h-48 w-full rounded-lg" />
             <Skeleton className="h-48 w-full rounded-lg" />
           </div>
-        ) : sortedPosts.length === 0 ? (
+        ) : postsData.length === 0 ? (
           <EmptyState
             icon={<MessageSquare className="h-16 w-16 text-muted-foreground" />}
             title="It's quiet in here..."
             description="Be the first one to share something with the community!"
           />
         ) : (
-          sortedPosts.map(post => (
+          postsData.map(post => (
             <PostCard
               key={post.id}
               post={post}

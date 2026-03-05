@@ -135,8 +135,7 @@ service cloud.firestore {
      * @description Rules for the public community feed.
      */
     match /community_posts/{postId} {
-      // Any user can read the community posts, signed in or not.
-      // This rule covers both `get` and `list` operations.
+      // Anyone can read posts (get single, list collection).
       allow read: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
