@@ -6,8 +6,8 @@
  * including profiles, and daily logs, is private and can only be
  * accessed by the user who created it. This ensures strong data privacy and
  * prevents users from accessing or modifying each other's sensitive information.
- * Public data, like the global food database, is read-only for all authenticated
- * users.
+ * Public data, like the global food database and community posts, is read-only for
+ * authenticated users.
  *
  * ## Data Structure
  * The data is organized hierarchically to reflect ownership:
@@ -17,15 +17,16 @@
  *   daily nutrition data. The document ID `{date}` is the date string 'YYYY-MM-DD'.
  * - `/foodItems/{foodId}`: A separate top-level collection containing a global,
  *   read-only library of food nutritional information.
+ * - `/community_posts/{postId}`: A top-level collection for public posts.
  *
  * ## Key Security Decisions
  * - **No User Enumeration**: Listing the entire `/users` collection is explicitly
  *   disallowed to protect user privacy.
  * - **Strict Ownership**: All access to a user's data tree (`/users/{userId}/...`)
  *   is gated by checking if the requester's UID matches the `{userId}` in the path.
- * - **Publicly Writable Food Data**: The `/foodItems` collection is readable by all
- *   authenticated users. Writes are also permitted to allow the AI to
- *   cache new food details, but deletes are blocked to prevent data loss.
+ * - **Publicly Readable Community**: The community feed is readable by anyone, but
+ *   posts can only be created by signed-in users, and only edited/deleted by
+ *   their original authors.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -134,9 +135,9 @@ service cloud.firestore {
      * @description Public community posts.
      */
     match /community_posts/{postId} {
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-      allow update, delete: if isSignedIn() && isOwner(resource.data.userId);
+      allow get, list: if true;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth.uid == resource.data.userId;
     }
   }
 }
