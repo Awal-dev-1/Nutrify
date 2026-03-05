@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -15,7 +15,7 @@ import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { PostCard } from '@/components/community/PostCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { MessageSquare, Loader2, Users } from 'lucide-react';
+import { MessageSquare, Users } from 'lucide-react';
 import type { CommunityPost } from '@/types/community';
 
 export default function CommunityPage() {
@@ -23,39 +23,22 @@ export default function CommunityPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  const [posts, setPosts] = useState<CommunityPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
 
   const postsQuery = useMemoFirebase(
-    () => (db ? query(collection(db, 'community_posts'), orderBy('createdAt', 'desc')) : null),
+    () => (db ? query(collection(db, 'community_posts')) : null),
     [db]
   );
 
-  useEffect(() => {
-    if (!postsQuery) {
-      setIsLoading(false);
-      return;
-    }
+  const { data: postsData, isLoading } = useCollection<CommunityPost>(postsQuery);
 
-    const unsubscribe = onSnapshot(postsQuery, 
-      (snapshot) => {
-        const fetchedPosts = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as CommunityPost));
-        setPosts(fetchedPosts);
-        setIsLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching community posts:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not load community feed." });
-        setIsLoading(false);
-      }
+  const sortedPosts = useMemo(() => {
+    if (!postsData) return [];
+    // Firestore Timestamps can be null during creation before server value is set.
+    return [...postsData].sort((a, b) => 
+        (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)
     );
-
-    return () => unsubscribe();
-  }, [postsQuery, toast]);
+  }, [postsData]);
 
   const handleCreatePost = (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
@@ -113,14 +96,14 @@ export default function CommunityPage() {
             <Skeleton className="h-48 w-full rounded-lg" />
             <Skeleton className="h-48 w-full rounded-lg" />
           </div>
-        ) : posts.length === 0 ? (
+        ) : sortedPosts.length === 0 ? (
           <EmptyState
             icon={<MessageSquare className="h-16 w-16 text-muted-foreground" />}
             title="It's quiet in here..."
             description="Be the first one to share something with the community!"
           />
         ) : (
-          posts.map(post => (
+          sortedPosts.map(post => (
             <PostCard
               key={post.id}
               post={post}

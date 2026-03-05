@@ -136,8 +136,8 @@ service cloud.firestore {
      *              for the community feed.
      */
     match /community_posts/{postId} {
-      // Allow any signed-in user to read any post (get) or list of posts (list).
-      allow get, list: if isSignedIn();
+      // Allow any user (even unauthenticated) to read posts.
+      allow get, list: if true;
 
       // Only authenticated users can create posts, and they must be the owner.
       allow create: if request.auth.uid == request.resource.data.userId;
