@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -70,7 +71,7 @@ export default function CommunityPage() {
       setEditingPost(null);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
       fetchPosts(); // Refetch posts after updating
-    } catch (err: any) => {
+    } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
   };
