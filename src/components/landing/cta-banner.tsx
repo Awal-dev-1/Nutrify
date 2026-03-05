@@ -54,11 +54,6 @@ export function CtaBanner() {
               </Link>
             </Button>
           </div>
-
-          {/* Trust indicator */}
-          <p className="text-xs text-primary-foreground/60 pt-4">
-            Join 10,000+ users already tracking their nutrition
-          </p>
         </div>
       </div>
     </section>
