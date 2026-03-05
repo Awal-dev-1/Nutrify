@@ -1,9 +1,12 @@
+'use client';
+
 // components/landing/hero.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { ArrowRight, Sparkles, Camera, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function Hero() {
   const heroImage = PlaceHolderImages.find(
@@ -29,29 +32,49 @@ export function Hero() {
       <div className="relative z-10 container px-4 py-16 md:py-24">
         <div className="max-w-5xl mx-auto text-center text-white space-y-8 md:space-y-10">
           {/* Badge */}
-          <div className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs sm:text-sm border border-white/20 animate-fade-in">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs sm:text-sm border border-white/20"
+          >
             <Camera className="h-3.5 w-3.5 mr-2" />
             AI-Powered Nutrition Tracking
             <Sparkles className="h-3.5 w-3.5 ml-2 text-yellow-300" />
-          </div>
+          </motion.div>
           
           {/* Main Heading */}
-          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight"
+          >
             Eat Smart.
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-300 via-green-400 to-green-500 mt-2">
               Live Healthy.
             </span>
-          </h1>
+          </motion.h1>
           
           {/* Description */}
-          <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4"
+          >
             Discover the rich world of Ghanaian cuisine and take control of your
             health. Nutrify helps you understand, track, and improve your diet
             with smart, AI-powered tools.
-          </p>
+          </motion.p>
           
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4 px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col sm:flex-row justify-center gap-4 pt-4 px-4"
+          >
             <Button 
               size="lg" 
               asChild 
@@ -70,7 +93,7 @@ export function Hero() {
             >
               <Link href="/login">Login</Link>
             </Button>
-          </div>
+          </motion.div>
           
           {/* Scroll Indicator */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block animate-bounce">

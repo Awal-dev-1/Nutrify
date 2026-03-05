@@ -1,6 +1,9 @@
+'use client';
+
 // components/landing/how-it-works.tsx
 import { Scan, BarChart, HeartPulse, ArrowRight, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 const steps = [
   {
@@ -50,50 +53,58 @@ export function HowItWorks() {
           
           <div className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-3 relative">
             {steps.map((step, index) => (
-              <Card 
-                key={index} 
-                className="relative border-0 bg-gradient-to-b from-card to-card/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden group"
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+                className="h-full"
               >
-                {/* Step number */}
-                <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-300" />
-                <div className="absolute top-4 right-4 text-5xl md:text-6xl font-bold text-primary/5 select-none">
-                  {index + 1}
-                </div>
-                
-                <CardHeader className="pb-2">
-                  <div className="mx-auto flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300 mb-2">
-                    <div className="transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                      {step.icon}
-                    </div>
+                <Card 
+                  className="relative border-0 bg-gradient-to-b from-card to-card/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden group h-full"
+                >
+                  {/* Step number */}
+                  <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-300" />
+                  <div className="absolute top-4 right-4 text-5xl md:text-6xl font-bold text-primary/5 select-none">
+                    {index + 1}
                   </div>
-                </CardHeader>
-                
-                <CardContent className="text-center space-y-3 md:space-y-4 px-3 md:px-6 pb-6">
-                  <CardTitle className="text-lg md:text-xl lg:text-2xl font-bold">
-                    {step.title}
-                  </CardTitle>
-                  <p className="text-xs sm:text-sm md:text-base text-muted-foreground/80 leading-relaxed">
-                    {step.description}
-                  </p>
                   
-                  {/* Benefits list */}
-                  <div className="pt-2 space-y-1.5">
-                    {step.benefits.map((benefit, i) => (
-                      <div key={i} className="flex items-center justify-center gap-1.5 text-xs md:text-sm text-muted-foreground">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        {benefit}
+                  <CardHeader className="pb-2">
+                    <div className="mx-auto flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300 mb-2">
+                      <div className="transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        {step.icon}
                       </div>
-                    ))}
-                  </div>
-                  
-                  {/* Progress indicator for mobile */}
-                  {index < steps.length - 1 && (
-                    <div className="flex justify-center mt-4 md:hidden">
-                      <ArrowRight className="h-5 w-5 text-primary/50 animate-pulse" />
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  
+                  <CardContent className="text-center space-y-3 md:space-y-4 px-3 md:px-6 pb-6">
+                    <CardTitle className="text-lg md:text-xl lg:text-2xl font-bold">
+                      {step.title}
+                    </CardTitle>
+                    <p className="text-xs sm:text-sm md:text-base text-muted-foreground/80 leading-relaxed">
+                      {step.description}
+                    </p>
+                    
+                    {/* Benefits list */}
+                    <div className="pt-2 space-y-1.5">
+                      {step.benefits.map((benefit, i) => (
+                        <div key={i} className="flex items-center justify-center gap-1.5 text-xs md:text-sm text-muted-foreground">
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                          {benefit}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Progress indicator for mobile */}
+                    {index < steps.length - 1 && (
+                      <div className="flex justify-center mt-4 md:hidden">
+                        <ArrowRight className="h-5 w-5 text-primary/50 animate-pulse" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>

@@ -1,3 +1,5 @@
+'use client';
+
 // components/landing/features.tsx
 import {
   Bot,
@@ -14,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 const featuresList = [
   {
@@ -76,30 +79,37 @@ export function Features() {
         {/* Features Grid */}
         <div className="mt-12 md:mt-16 grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {featuresList.map((feature, index) => (
-            <Card
+            <motion.div
               key={feature.title}
-              className="group relative border-2 border-primary/5 bg-gradient-to-b from-card to-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-2 text-center h-full"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              {/* Decorative gradient overlay */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              <CardHeader className="pb-2 md:pb-4">
-                <div className="mx-auto flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
-                  <div className="transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                    {feature.icon}
+              <Card
+                className="group relative border-2 border-primary/5 bg-gradient-to-b from-card to-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-2 text-center h-full"
+              >
+                {/* Decorative gradient overlay */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <CardHeader className="pb-2 md:pb-4">
+                  <div className="mx-auto flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
+                    <div className="transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                      {feature.icon}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="relative space-y-2 md:space-y-3 px-3 md:px-6 pb-4 md:pb-6">
-                <CardTitle className="text-base md:text-lg lg:text-xl font-bold group-hover:text-primary transition-colors duration-300">
-                  {feature.title}
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm md:text-base leading-relaxed text-muted-foreground/80">
-                  {feature.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                
+                <CardContent className="relative space-y-2 md:space-y-3 px-3 md:px-6 pb-4 md:pb-6">
+                  <CardTitle className="text-base md:text-lg lg:text-xl font-bold group-hover:text-primary transition-colors duration-300">
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm md:text-base leading-relaxed text-muted-foreground/80">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>

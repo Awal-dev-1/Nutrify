@@ -1,7 +1,10 @@
+'use client';
+
 // components/landing/cta-banner.tsx
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, CheckCircle } from "lucide-react";
+import { motion } from 'framer-motion';
 
 export function CtaBanner() {
   return (
@@ -11,7 +14,13 @@ export function CtaBanner() {
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
       
-      <div className="container relative px-4 py-16 md:py-24 lg:py-32">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.7 }}
+        className="container relative px-4 py-16 md:py-24 lg:py-32"
+      >
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs sm:text-sm border border-white/20">
@@ -55,7 +64,7 @@ export function CtaBanner() {
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
