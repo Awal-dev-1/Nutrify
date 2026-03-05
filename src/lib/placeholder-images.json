@@ -37,6 +37,12 @@
       "imageHint": "person portrait"
     },
     {
+      "id": "ai-coach-avatar",
+      "description": "Avatar for the AI coach.",
+      "imageUrl": "https://picsum.photos/seed/aicoach/100/100",
+      "imageHint": "robot bot"
+    },
+    {
       "id": "jollof-rice",
       "description": "A plate of Jollof Rice.",
       "imageUrl": "https://images.unsplash.com/photo-1610057098265-05f2bcbedd55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8am9sbG9mJTIwcmljZXxlbnwwfHx8fDE3NzIzODY1NjN8MA&ixlib=rb-4.1.0&q=80&w=1080",

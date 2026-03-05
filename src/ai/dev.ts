@@ -7,3 +7,4 @@ import '@/ai/flows/search-foods-flow.ts';
 import '@/ai/flows/recognize-food-flow.ts';
 import '@/ai/flows/generate-food-recommendations.ts';
 import '@/ai/flows/generate-daily-recommendations.ts';
+import '@/ai/flows/generate-community-post.ts';

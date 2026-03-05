@@ -1,13 +1,15 @@
 'use client';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Users, Loader2, AlertCircle } from 'lucide-react';
+import { Users, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { CreatePostForm } from '@/components/community/create-post-form';
 import { CommunityFeed } from '@/components/community/community-feed';
 import type { CommunityPost } from '@/types/community';
 import { useUser, useFirestore } from '@/firebase';
-import { addPost, updatePost, deletePost } from '@/services/communityService';
+import { addPost, updatePost, deletePost, addAiGeneratedPost } from '@/services/communityService';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { generateCommunityPost } from '@/ai/flows/generate-community-post';
 
 export default function CommunityPage() {
   const { user } = useUser();
@@ -15,6 +17,7 @@ export default function CommunityPage() {
 
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = async () => {
@@ -29,7 +32,12 @@ export default function CommunityPage() {
       const postsQuery = query(collection(db, 'community_posts'));
       const querySnapshot = await getDocs(postsQuery);
       const fetchedPosts = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as CommunityPost[];
-      setPosts(fetchedPosts);
+      const sorted = [...fetchedPosts].sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      setPosts(sorted);
     } catch (e: any) {
       console.error("Error fetching posts:", e);
       setError("Could not load community feed. Please check your permissions and try again later.");
@@ -50,6 +58,23 @@ export default function CommunityPage() {
     setTimeout(() => {
       fetchPosts();
     }, 1000);
+  };
+
+  const handleGenerateAiPost = async () => {
+    if (!user || !db) return;
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const aiPostData = await generateCommunityPost();
+      addAiGeneratedPost(db, user.uid, aiPostData);
+      // Refetch posts after a short delay
+      setTimeout(() => fetchPosts(), 1000);
+    } catch (e: any) {
+      console.error("Error generating AI post:", e);
+      setError("Failed to generate an AI tip. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleUpdatePost = (updatedPost: CommunityPost) => {
@@ -87,7 +112,7 @@ export default function CommunityPage() {
       );
     }
 
-    if (error) {
+    if (error && posts.length === 0) {
       return (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -111,18 +136,35 @@ export default function CommunityPage() {
     <div className="space-y-8">
       {/* 1. Page Header */}
       <div className="bg-card p-6 rounded-lg shadow-sm border">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
-            <Users className="h-6 w-6" />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary/10 text-primary">
+              <Users className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight" style={{color: '#00B37E'}}>Community</h1>
+              <p className="text-muted-foreground">
+                Share nutrition ideas, recipes, and healthy tips with others.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{color: '#00B37E'}}>Community</h1>
-            <p className="text-muted-foreground">
-              Share nutrition ideas, recipes, and healthy tips with others.
-            </p>
-          </div>
+          <Button onClick={handleGenerateAiPost} disabled={isGenerating}>
+            {isGenerating ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="mr-2 h-4 w-4" />
+            )}
+            Generate AI Tip
+          </Button>
         </div>
       </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>An error occurred</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {/* 2. Create Post Section */}
       <CreatePostForm onAddPost={handleAddPost} />

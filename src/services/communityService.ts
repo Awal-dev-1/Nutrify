@@ -13,6 +13,7 @@ import type { User } from 'firebase/auth';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { CommunityPost } from '@/types/community';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type PostData = Pick<CommunityPost, 'title' | 'content' | 'tag'>;
 
@@ -26,6 +27,30 @@ export const addPost = (db: Firestore, user: User, postData: PostData) => {
     userAvatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
     createdAt: serverTimestamp(),
     updatedAt: null,
+  };
+
+  addDoc(postsColRef, newPost).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: postsColRef.path,
+      operation: 'create',
+      requestResourceData: newPost,
+    }));
+  });
+};
+
+// Post an AI-generated tip to the community, associated with the user who generated it
+export const addAiGeneratedPost = (db: Firestore, userId: string, postData: PostData) => {
+  const postsColRef = collection(db, 'community_posts');
+  const aiAvatar = PlaceHolderImages.find(p => p.id === 'ai-coach-avatar')?.imageUrl || '';
+
+  const newPost = {
+    ...postData,
+    userId: userId, // The user who triggered it, for ownership
+    username: 'Nutrify AI Coach',
+    userAvatar: aiAvatar,
+    createdAt: serverTimestamp(),
+    updatedAt: null,
+    isAiPost: true, // Flag to identify AI posts
   };
 
   addDoc(postsColRef, newPost).catch(error => {

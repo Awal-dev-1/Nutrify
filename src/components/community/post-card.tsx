@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface PostCardProps {
@@ -17,7 +17,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, isOwner, onEdit, onDelete }: PostCardProps) {
-  const displayDate = post.updatedAt?.toDate() || post.createdAt?.toDate() || new Date();
+  const displayDate = post.updatedAt?.toDate ? post.updatedAt.toDate() : post.createdAt?.toDate ? post.createdAt.toDate() : new Date(0);
   const dateLabel = post.updatedAt ? 'Updated' : 'Posted';
   
   return (
@@ -30,7 +30,15 @@ export function PostCard({ post, isOwner, onEdit, onDelete }: PostCardProps) {
               <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold">{post.username}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold">{post.username}</p>
+                {post.isAiPost && (
+                  <Badge variant="secondary" className="px-2 py-0.5 text-xs bg-primary/10 text-primary border-primary/20">
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    AI
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {dateLabel} {formatDistanceToNow(displayDate, { addSuffix: true })}
               </p>

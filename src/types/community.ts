@@ -8,4 +8,5 @@ export interface CommunityPost {
   tag: 'Healthy Tips' | 'Recipe' | 'Weight Loss' | 'Fitness' | 'Nutrition Advice';
   createdAt: any; // Can be a Date or Firestore Timestamp
   updatedAt?: any; // Optional, can be a Date or Firestore Timestamp
+  isAiPost?: boolean;
 }
