@@ -130,20 +130,5 @@ service cloud.firestore {
       allow get, list, create, update: if isSignedIn();
       allow delete: if false;
     }
-
-    /**
-     * @description Public community posts. This single block handles all operations
-     *              for the community feed.
-     */
-    match /community_posts/{postId} {
-      // Allow anyone to read any post (get) or list of posts (list).
-      allow read: if true;
-
-      // Only authenticated users can create posts, and they must be the owner.
-      allow create: if request.auth.uid == request.resource.data.userId;
-      
-      // Only the owner can update or delete their own post.
-      allow update, delete: if request.auth.uid == resource.data.userId;
-    }
   }
 }
