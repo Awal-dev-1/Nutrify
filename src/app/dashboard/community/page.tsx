@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import {
   createPost,
   updatePost,
@@ -25,50 +25,19 @@ export default function CommunityPage() {
   const { toast } = useToast();
 
   const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
-  const [postsData, setPostsData] = useState<CommunityPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchPosts = useCallback(async () => {
-    if (!db) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const postsQuery = query(collection(db, 'community_posts'));
-      const querySnapshot = await getDocs(postsQuery);
-      const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
-      
-      // Sort posts by date on the client side
-      const sortedPosts = posts.sort((a, b) => {
-        const dateA = a.createdAt?.toDate() || 0;
-        const dateB = b.createdAt?.toDate() || 0;
-        return dateB - dateA;
-      });
-
-      setPostsData(sortedPosts);
-    } catch (err: any) {
-      // Log the full error to the console for detailed debugging
-      console.error("Failed to fetch posts:", err);
-      // Set a more specific error message for the UI
-      setError(err.message || "An unknown error occurred while fetching the feed.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [db]);
-
-  useEffect(() => {
-    // Ensure db is available before fetching
-    if(db) {
-        fetchPosts();
-    }
-  }, [fetchPosts, db]);
+  const postsQuery = useMemoFirebase(
+    () => db ? query(collection(db, 'community_posts'), orderBy('createdAt', 'desc')) : null,
+    [db]
+  );
+  
+  const { data: postsData, isLoading, error } = useCollection<CommunityPost>(postsQuery);
 
   const handleCreatePost = async (data: { title: string; content: string; tag: string }) => {
     if (!user || !db || !userProfile) return;
     try {
       await createPost(db, user, userProfile, data.title, data.content, data.tag);
       toast({ title: 'Post Created!', description: 'Your post is now live on the community feed.' });
-      fetchPosts(); // Refetch posts after creating
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Creating Post', description: err.message });
     }
@@ -80,7 +49,6 @@ export default function CommunityPage() {
       await updatePost(db, postId, data.title, data.content, data.tag);
       setEditingPost(null);
       toast({ title: 'Post Updated!', description: 'Your changes have been saved.' });
-      fetchPosts(); // Refetch posts after updating
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Updating Post', description: err.message });
     }
@@ -88,41 +56,19 @@ export default function CommunityPage() {
 
   const handleLike = async (postId: string) => {
     if (!user || !db) return;
-    // Optimistic update for better UX
-    setPostsData(prevPosts => prevPosts.map(p => {
-      if (p.id === postId) {
-        const hasLiked = p.likes.includes(user.uid);
-        const newLikes = hasLiked ? p.likes.filter(id => id !== user.uid) : [...p.likes, user.uid];
-        const newDislikes = p.dislikes.filter(id => id !== user.uid);
-        return { ...p, likes: newLikes, dislikes: newDislikes };
-      }
-      return p;
-    }));
     try {
       await toggleLike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
-      fetchPosts(); // Re-fetch to correct state on error
     }
   };
   
   const handleDislike = async (postId: string) => {
     if (!user || !db) return;
-    // Optimistic update
-    setPostsData(prevPosts => prevPosts.map(p => {
-      if (p.id === postId) {
-        const hasDisliked = p.dislikes.includes(user.uid);
-        const newDislikes = hasDisliked ? p.dislikes.filter(id => id !== user.uid) : [...p.dislikes, user.uid];
-        const newLikes = p.likes.filter(id => id !== user.uid);
-        return { ...p, likes: newLikes, dislikes: newDislikes };
-      }
-      return p;
-    }));
     try {
       await toggleDislike(db, postId, user.uid);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update reaction.' });
-      fetchPosts();
     }
   };
 
@@ -131,7 +77,6 @@ export default function CommunityPage() {
     try {
       await deletePost(db, postId);
       toast({ title: 'Post Deleted', variant: 'destructive' });
-      fetchPosts(); // Refetch posts after deleting
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error Deleting Post', description: err.message });
     }
@@ -151,7 +96,7 @@ export default function CommunityPage() {
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Failed to Load Feed</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{error.message}</AlertDescription>
             </Alert>
         </div>
     )
@@ -184,14 +129,14 @@ export default function CommunityPage() {
             <Skeleton className="h-48 w-full rounded-lg" />
             <Skeleton className="h-48 w-full rounded-lg" />
           </div>
-        ) : postsData.length === 0 ? (
+        ) : postsData && postsData.length === 0 ? (
           <EmptyState
             icon={<MessageSquare className="h-16 w-16 text-muted-foreground" />}
             title="It's quiet in here..."
             description="Be the first one to share something with the community!"
           />
         ) : (
-          postsData.map(post => (
+          postsData?.map(post => (
             <PostCard
               key={post.id}
               post={post}
