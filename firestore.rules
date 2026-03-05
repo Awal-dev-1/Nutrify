@@ -133,11 +133,20 @@ service cloud.firestore {
 
     /**
      * @description Public community posts.
+     * Document-level rules for single post operations.
      */
     match /community_posts/{postId} {
-      allow get, list: if true;
+      allow get: if true;
       allow create: if request.auth.uid == request.resource.data.userId;
       allow update, delete: if request.auth.uid == resource.data.userId;
+    }
+
+    /**
+     * @description Public community posts.
+     * Collection-level rule for listing all posts.
+     */
+    match /community_posts {
+        allow list: if true;
     }
   }
 }
