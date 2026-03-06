@@ -6,25 +6,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-// This schema represents a food item as it is passed to the AI.
-// We simplify the field names for a cleaner prompt.
-const AiFoodItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  calories: z.number(),
-  protein: z.number(),
-  carbs: z.number(),
-  fat: z.number(),
-  fiber: z.number().optional(),
-  iron: z.number().optional(),
-  calcium: z.number().optional(),
-  sodium: z.number().optional(),
-  isGhanaianLocal: z.boolean().optional(),
-  tags: z.array(z.string()).optional(),
-});
-
 const RecommendationItemSchema = z.object({
-  foodId: z.string().describe("The original ID of the food item from the input list."),
+  foodId: z.string().describe("A unique kebab-case ID for the food item (e.g., 'jollof-rice-with-chicken')."),
   name: z.string().describe("The name of the recommended food."),
   calories: z.number().describe("Calories per 100g."),
   protein: z.number().describe("Protein in grams per 100g."),
@@ -50,7 +33,6 @@ const GenerateFoodRecommendationsInputSchema = z.object({
     carbsPercentageGoal: z.number().describe("Target percentage of daily calories from carbohydrates."),
     fatPercentageGoal: z.number().describe("Target percentage of daily calories from fats."),
   }),
-  availableFoods: z.array(AiFoodItemSchema).describe("A list of all available food items from the database."),
 });
 
 const GenerateFoodRecommendationsOutputSchema = z.object({
@@ -69,7 +51,7 @@ const generateFoodRecommendationsPrompt = ai.definePrompt({
   name: 'generateFoodRecommendationsPrompt',
   input: { schema: GenerateFoodRecommendationsInputSchema },
   output: { schema: GenerateFoodRecommendationsOutputSchema },
-  prompt: `You are an expert nutritionist for the Nutrify app, specializing in Ghanaian and West African cuisine. You are designed to be fast. Your task is to generate personalized food recommendations for a user based on their profile, goals, and a list of available foods.
+  prompt: `You are an expert nutritionist for the Nutrify app, specializing in Ghanaian and West African cuisine. You are designed to be extremely fast. Your task is to generate personalized food recommendations for a user based on their profile and goals.
 
 --- User Information ---
 Primary Goal: {{userProfile.primaryGoal}}
@@ -78,22 +60,22 @@ Daily Calorie Goal: {{userGoals.dailyCalorieGoal}}
 Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.carbsPercentageGoal}}% / {{userGoals.fatPercentageGoal}}%
 
 --- Instructions ---
-1.  **Filter Foods**: From the \`availableFoods\` list provided below, first filter out any foods that do not match the user's \`dietaryPreferences\`. Check the 'tags' array for each food. Then, exclude any single food item that has more than 70% of the user's total \`dailyCalorieGoal\`.
-2.  **Select Foods**: Based on the user's \`primaryGoal\`, select the most appropriate foods from the filtered list. Your selection MUST prioritize Ghanaian and other West African local foods (\`isGhanaianLocal\` is true).
-    *   **If goal is 'lose-weight'**: Prioritize foods that are lower in calories and higher in protein.
-    *   **If goal is 'gain-weight'**: Prioritize foods that are higher in calories and protein.
-    *   **If goal is 'maintain-weight' or 'eat-healthier'**: Prioritize balanced, nutrient-dense foods.
-3.  **Generate Recommendations**: For each of the top 3-5 foods, create the full recommendation object.
-    *   **Nutrients**: Map the food properties (name, calories, protein, carbs, fat) directly. Include a \`micronutrients\` object with values for fiber, iron, calcium, and sodium from the input data.
-    *   **Reason**: Create a short, encouraging \`reason\` (1-2 sentences) explaining why it's a good choice for their goal.
-4.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal and the recommendations provided.
-5.  **Final Output**: Return the top 3-5 foods from the selection. Ensure the output strictly adheres to the JSON schema. Use the original 'id' from the food item as the 'foodId' in the output.
+1.  **Generate Recommendations**: Generate a list of 3-5 food items suitable for the user. Your selection MUST prioritize Ghanaian and other West African local foods.
+    *   Based on the user's \`primaryGoal\`:
+        *   'lose-weight': Prioritize foods lower in calories and higher in protein.
+        *   'gain-weight': Prioritize foods higher in calories and protein.
+        *   'maintain-weight' or 'eat-healthier': Prioritize balanced, nutrient-dense foods.
+    *   Adhere to the user's \`dietaryPreferences\`.
+2.  **Provide Full Nutritional Details**: For each recommended food, you MUST provide the following details, all calculated per 100g:
+    *   \`foodId\`: Use the food's name in kebab-case (e.g., 'jollof-rice-with-chicken').
+    *   \`name\`: The common name of the food.
+    *   \`calories\`, \`protein\`, \`carbs\`, \`fat\`: All in grams per 100g.
+    *   \`micronutrients\`: An object with optional values for \`fiber\`, \`iron\`, \`calcium\`, and \`sodium\`.
+    *   \`reason\`: A short, encouraging explanation (1-2 sentences) explaining why it's a good choice for their goal.
+3.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal and the recommendations you've provided.
+4.  **Final Output**: Ensure the output strictly adheres to the JSON schema.
 
---- Available Foods ---
-{{{json availableFoods}}}
-
-Generate your response in the specified JSON format.
-`,
+Generate your response in the specified JSON format. Do not use any external food lists; generate the recommendations from your own knowledge base.`,
 });
 
 const generateFoodRecommendationsFlow = ai.defineFlow(
