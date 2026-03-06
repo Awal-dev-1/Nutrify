@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PieChart as PieChartIcon, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import { 
   Save, 
@@ -41,6 +41,7 @@ import {
   Heart,
   User,
   Activity,
+  PieChart as PieChartIcon,
 } from 'lucide-react';
 import { UserProfile } from '@/firebase/provider';
 import { Badge } from '@/components/ui/badge';
@@ -485,3 +486,5 @@ const GoalsSkeleton = () => (
     </div>
   </div>
 );
+
+    
