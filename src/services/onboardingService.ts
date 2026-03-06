@@ -56,11 +56,11 @@ const calculateGoals = (data: OnboardingData) => {
     return goals;
 }
 
-export const completeOnboarding = async (
+export const completeOnboarding = (
   db: Firestore,
   userId: string,
   onboardingData: OnboardingData
-): Promise<void> => {
+): void => {
   const userRef = doc(db, 'users', userId);
   const calculatedGoals = calculateGoals(onboardingData);
 
@@ -86,14 +86,13 @@ export const completeOnboarding = async (
     updatedAt: serverTimestamp(),
   };
 
-  try {
-    await updateDoc(userRef, userDataToUpdate);
-  } catch (error) {
+  updateDoc(userRef, userDataToUpdate).catch(error => {
     errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: userRef.path,
         operation: 'update',
         requestResourceData: userDataToUpdate
     }));
-    throw error; // Re-throw the error so the calling page can handle it
-  }
+    // We don't re-throw the error to keep this non-blocking.
+    // The global error listener will handle displaying the error.
+  });
 };

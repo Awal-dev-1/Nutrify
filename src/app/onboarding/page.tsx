@@ -51,23 +51,19 @@ export default function OnboardingPage() {
     };
     setStep(totalSteps + 1); // Loading step
     
-    try {
-      await completeOnboarding(db, user.uid, formData as any);
+    // Fire-and-forget the database update.
+    completeOnboarding(db, user.uid, formData as any);
+    
+    // Add a small delay to allow the loading animation to play,
+    // giving the user feedback that the process has completed.
+    await new Promise(resolve => setTimeout(resolve, 1500));
       
-      toast({
-          title: "Profile Created!",
-          description: "Welcome to Nutrify! Your personalized dashboard is ready."
-      });
-      router.push("/dashboard/overview");
-
-    } catch (error) {
-       toast({
-            variant: "destructive",
-            title: "Setup Failed",
-            description: "Could not save your profile. Please try again."
-        });
-        setStep(step - 1); // Go back to the summary step
-    }
+    toast({
+        title: "Profile Created!",
+        description: "Welcome to Nutrify! Your personalized dashboard is ready."
+    });
+    
+    router.push("/dashboard/overview");
   };
 
   const stepsComponents = [
