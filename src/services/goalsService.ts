@@ -1,3 +1,4 @@
+
 'use client';
 
 import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
@@ -11,7 +12,7 @@ export interface UserGoals {
   fatPercentageGoal: number;
 }
 
-export const updateUserGoals = (
+export const updateUserGoals = async (
   db: Firestore,
   userId: string,
   newGoals: UserGoals
@@ -22,7 +23,9 @@ export const updateUserGoals = (
     updatedAt: serverTimestamp(),
   };
 
-  updateDoc(userRef, dataToUpdate).catch((error) => {
+  try {
+    await updateDoc(userRef, dataToUpdate);
+  } catch (error) {
     errorEmitter.emit(
       'permission-error',
       new FirestorePermissionError({
@@ -31,5 +34,6 @@ export const updateUserGoals = (
         requestResourceData: dataToUpdate,
       })
     );
-  });
+    throw error;
+  }
 };

@@ -140,7 +140,7 @@ export default function GoalsPage() {
     toast({ title: "Goals Reset", description: "Your macros have been reset to our recommended values." });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user || !db) return;
     setIsSaving(true);
     const newGoals: UserGoals = {
@@ -149,10 +149,19 @@ export default function GoalsPage() {
       carbsPercentageGoal: macros.carbs,
       fatPercentageGoal: macros.fat,
     };
-    updateUserGoals(db, user.uid, newGoals);
-    setInitialState({ calories, macros });
-    toast({ title: 'Goals Saved!', description: 'Your nutritional targets have been updated.' });
-    setIsSaving(false);
+    try {
+        await updateUserGoals(db, user.uid, newGoals);
+        setInitialState({ calories, macros });
+        toast({ title: 'Goals Saved!', description: 'Your nutritional targets have been updated.' });
+    } catch(e: any) {
+        toast({
+            variant: "destructive",
+            title: "Error Saving Goals",
+            description: "There was a problem saving your goals. Please try again.",
+        });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const hasChanges = useMemo(() => {
