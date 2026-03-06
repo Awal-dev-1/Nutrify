@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart as PieChartComponent, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import { 
   Save, 
@@ -208,7 +208,26 @@ export default function GoalsPage() {
   }, [calories, macros, profileData, initialState]);
 
   const handleProfileFieldChange = (field: keyof typeof profileData, value: string | number) => {
-    setProfileData(prev => ({...prev, [field]: value}));
+    setProfileData(prev => {
+        const newProfileData = { ...prev, [field]: value };
+        
+        if (newProfileData.primaryGoal && newProfileData.weightKg > 0 && newProfileData.activityLevel) {
+            const recommended = calculateRecommendedGoals({
+                primaryGoal: newProfileData.primaryGoal,
+                weightKg: newProfileData.weightKg,
+                activityLevel: newProfileData.activityLevel
+            });
+    
+            setCalories(recommended.dailyCalorieGoal);
+            setMacros({
+                protein: recommended.proteinPercentageGoal,
+                carbs: recommended.carbsPercentageGoal,
+                fat: recommended.fatPercentageGoal
+            });
+        }
+
+        return newProfileData;
+    });
   }
 
   if (isProfileLoading || !initialState) return <GoalsSkeleton />;
@@ -309,7 +328,7 @@ export default function GoalsPage() {
                             <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><PieChartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />Visual Breakdown</CardTitle></CardHeader>
                             <CardContent className="p-4 sm:p-5 md:p-6">
                             <div className="h-[180px] sm:h-[200px] lg:h-[180px] xl:h-[200px] w-full">
-                            <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={4} label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''} labelLine={false}>{pieData.map((entry) => (<Cell key={entry.name} fill={entry.color} />))}</Pie><Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))',border: '1px solid hsl(var(--border))',borderRadius: '8px',padding: '6px 10px',fontSize: '12px',}} formatter={(value: number) => [`${value}%`, 'Percentage']}/></PieChart></ResponsiveContainer></div>
+                            <ResponsiveContainer width="100%" height="100%"><PieChartComponent><Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={4} label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''} labelLine={false}>{pieData.map((entry) => (<Cell key={entry.name} fill={entry.color} />))}</Pie><Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))',border: '1px solid hsl(var(--border))',borderRadius: '8px',padding: '6px 10px',fontSize: '12px',}} formatter={(value: number) => [`${value}%`, 'Percentage']}/></PieChartComponent></ResponsiveContainer></div>
                             </CardContent>
                         </Card>
                     </div>
@@ -323,22 +342,8 @@ export default function GoalsPage() {
                         <User className="h-4 w-4 text-primary" />Your Goal Profile</CardTitle>
                         <CardDescription className="text-xs sm:text-sm">These details help us calculate your recommended nutritional targets.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-4 sm:p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <h3 className="font-medium text-muted-foreground">Personal Details</h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2"><Label htmlFor="age">Age</Label><Input id="age" type="number" value={profileData.age} onChange={(e) => handleProfileFieldChange('age', parseInt(e.target.value) || 0)} /></div>
-                                <div className="space-y-2"><Label htmlFor="height">Height (cm)</Label><Input id="height" type="number" value={profileData.heightCm} onChange={(e) => handleProfileFieldChange('heightCm', parseInt(e.target.value) || 0)} /></div>
-                                <div className="space-y-2"><Label htmlFor="weight">Weight (kg)</Label><Input id="weight" type="number" value={profileData.weightKg} onChange={(e) => handleProfileFieldChange('weightKg', parseFloat(e.target.value) || 0)} /></div>
-                            </div>
-                            <div className="space-y-2"><Label htmlFor="gender">Gender</Label>
-                                <Select value={profileData.gender} onValueChange={(v) => handleProfileFieldChange('gender', v)}>
-                                    <SelectTrigger id="gender"><SelectValue /></SelectTrigger>
-                                    <SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="space-y-4">
+                    <CardContent className="p-4 sm:p-5 md:p-6">
+                        <div className="space-y-4 max-w-md">
                              <h3 className="font-medium text-muted-foreground">Health & Activity</h3>
                             <div className="space-y-2"><Label>Primary Goal</Label>
                                 <Select value={profileData.primaryGoal} onValueChange={(v) => handleProfileFieldChange('primaryGoal', v)}>
@@ -486,5 +491,7 @@ const GoalsSkeleton = () => (
     </div>
   </div>
 );
+
+    
 
     
