@@ -56,10 +56,11 @@ CRITICAL INSTRUCTIONS:
     *   Explain CLEARLY why the food is beneficial or detrimental based on the user's specific goal (e.g., 'lose-weight', 'gain-weight').
     *   Go beyond a single sentence. For 'lose-weight', discuss calorie density, fiber content for satiety, and protein for muscle maintenance. For 'gain-weight', discuss energy density and quality of macronutrients. For 'eat-healthier', discuss the balance of nutrients and vitamin/mineral content.
     *   Be specific. Instead of "good for weight loss", say "This portion of Banku is calorie-dense. While a good energy source, a smaller portion might be better for your weight loss goal. The accompanying Tilapia, however, is an excellent source of lean protein.".
-5.  **Generate Other Details**: Also provide \`foodHistory\`, a \`detailedRecipe\` (if applicable), \`isGhanaianLocal\` status, and relevant \`tags\`.
-6.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
-7.  **Return JSON**: Return a list of up to 3 potential matches. Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary.
-8.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+5.  **Generate DETAILED Recipe**: For each prediction, if applicable, generate a detailed recipe. This MUST include a list of ingredients with specific quantities and a thorough, step-by-step list of preparation instructions.
+6.  **Generate Other Details**: Also provide \`foodHistory\`, \`isGhanaianLocal\` status, and relevant \`tags\`.
+7.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
+8.  **Return JSON**: Return a list of up to 3 potential matches. Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary.
+9.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
 
 Image to analyze: {{media url=photoDataUri}}
 

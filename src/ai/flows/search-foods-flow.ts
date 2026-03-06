@@ -39,10 +39,10 @@ const searchFoodsPrompt = ai.definePrompt({
 User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
 CRITICAL INSTRUCTIONS:
-1.  **Speed and Brevity**: Your response MUST be generated as quickly as possible. Keep all text fields concise, except for the Health Analysis.
+1.  **Speed and Brevity**: Your response MUST be generated as quickly as possible. Keep all text fields concise, except for the Health Analysis and Recipe.
 2.  **Food Queries Only**: If the user's query is clearly not about food (e.g., "a car"), you MUST set 'isFoodQuery' to false and return an empty 'foodItems' array.
 3.  **Handle Specific and Combined Dishes**: If the user asks for a single food ("fufu"), provide info for that item. If they ask for a combined dish ("banku with okra soup"), analyze the entire dish as one.
-4.  **Recipe**: For the \`detailedRecipe.instructions\` field, provide a single-sentence summary of the cooking method, not a long list of steps.
+4.  **Detailed Recipe**: For the \`detailedRecipe\` field, you MUST provide a list of all necessary ingredients with quantities, and a clear, step-by-step guide for the cooking instructions. Be thorough.
 5.  **Provide DETAILED Health Analysis**: For each food item, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
     *   Explain CLEARLY why the food is beneficial or detrimental based on the user's specific goal (e.g., 'lose-weight', 'gain-weight').
     *   Go beyond a single sentence. For 'lose-weight', discuss calorie density, fiber content for satiety, and protein for muscle maintenance. For 'gain-weight', discuss energy density and quality of macronutrients. For 'eat-healthier', discuss the balance of nutrients and vitamin/mineral content.
@@ -58,7 +58,7 @@ For each food item that EXACTLY matches the query, you must provide:
 - calories
 - macronutrientBreakdown
 - micronutrientBreakdown
-- detailedRecipe (ingredients and a single summary instruction)
+- detailedRecipe (ingredients and step-by-step instructions)
 - foodHistory
 - healthAnalysis (this should be detailed and personalized)
 - tags
