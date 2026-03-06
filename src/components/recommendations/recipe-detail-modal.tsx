@@ -96,8 +96,8 @@ export function RecipeDetailModal({ isOpen, onClose, foodId }: RecipeDetailModal
               <DialogTitle>
                 <Skeleton className="h-8 w-3/4" />
               </DialogTitle>
-              <DialogDescription>
-                <Skeleton className="h-4 w-full mt-2" />
+              <DialogDescription asChild>
+                <div><Skeleton className="h-4 w-full mt-2" /></div>
               </DialogDescription>
             </>
           ) : (
