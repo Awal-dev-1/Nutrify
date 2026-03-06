@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -161,7 +162,15 @@ export default function FoodDetailsPage() {
       <Card>
         <div className="p-6">
           <div className="space-y-4">
-             {food.tags && food.tags.length > 0 && <Badge variant="outline">{food.tags[0]}</Badge>}
+            <div className="flex flex-wrap items-center gap-2">
+              {food.isGhanaianLocal && (
+                <Badge variant="secondary">
+                  <Leaf className="mr-1.5 h-3.5 w-3.5 text-green-600" />
+                  Ghanaian Local
+                </Badge>
+              )}
+              {food.tags && food.tags.length > 0 && <Badge variant="outline">{food.tags[0]}</Badge>}
+            </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{food.foodName}</h1>
              <div className="text-5xl font-extrabold text-primary">
               {calculatedNutrients?.calories.toFixed(0)}{' '}
