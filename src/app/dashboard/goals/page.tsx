@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { updateUserGoals, type UserGoals } from '@/services/goalsService';
+import { updateUserGoalsAndProfile, calculateRecommendedGoals } from '@/services/goalsService';
 
 import {
   Card,
@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart as PieChartIcon, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import { 
   Save, 
@@ -38,13 +38,17 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
-  Heart
+  Heart,
+  User,
+  Activity,
 } from 'lucide-react';
 import { UserProfile } from '@/firebase/provider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const MACRO_COLORS = {
   protein: 'hsl(var(--chart-2))',
@@ -52,43 +56,52 @@ const MACRO_COLORS = {
   fat: 'hsl(var(--chart-4))',
 };
 
-const getRecommendedGoals = (primaryGoal: string | undefined) => {
-  switch (primaryGoal) {
-    case 'lose-weight':
-      return { protein: 35, carbs: 40, fat: 25 };
-    case 'gain-weight':
-      return { protein: 30, carbs: 45, fat: 25 };
-    case 'eat-healthier':
-      return { protein: 30, carbs: 40, fat: 30 };
-    case 'maintain-weight':
-    default:
-      return { protein: 30, carbs: 40, fat: 30 };
-  }
-};
-
 export default function GoalsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
 
+  const [activeTab, setActiveTab] = useState('targets');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Targets state
   const [calories, setCalories] = useState<number>(2000);
   const [macros, setMacros] = useState({ protein: 30, carbs: 40, fat: 30 });
-  const [isSaving, setIsSaving] = useState(false);
-  const [initialState, setInitialState] = useState<{calories: number; macros: {protein: number, carbs: number, fat: number}} | null>(null);
+
+  // Profile state
+  const [profileData, setProfileData] = useState({
+      age: userProfile?.profile?.age || 0,
+      gender: userProfile?.profile?.gender || '',
+      heightCm: userProfile?.profile?.heightCm || 0,
+      weightKg: userProfile?.profile?.weightKg || 0,
+      activityLevel: userProfile?.profile?.activityLevel || '',
+      primaryGoal: userProfile?.health?.primaryGoal || '',
+  });
+
+  const [initialState, setInitialState] = useState<any>(null);
 
   useEffect(() => {
-    if (userProfile?.goals) {
-      const initialGoals = {
-        calories: userProfile.goals.dailyCalorieGoal,
+    if (userProfile) {
+      const initial = {
+        calories: userProfile.goals?.dailyCalorieGoal || 2000,
         macros: {
-          protein: userProfile.goals.proteinPercentageGoal,
-          carbs: userProfile.goals.carbsPercentageGoal,
-          fat: userProfile.goals.fatPercentageGoal,
+          protein: userProfile.goals?.proteinPercentageGoal || 30,
+          carbs: userProfile.goals?.carbsPercentageGoal || 40,
+          fat: userProfile.goals?.fatPercentageGoal || 30,
+        },
+        profile: {
+          age: userProfile.profile?.age || 0,
+          gender: userProfile.profile?.gender || '',
+          heightCm: userProfile.profile?.heightCm || 0,
+          weightKg: userProfile.profile?.weightKg || 0,
+          activityLevel: userProfile.profile?.activityLevel || '',
+          primaryGoal: userProfile.health?.primaryGoal || '',
         }
       };
-      setCalories(initialGoals.calories);
-      setMacros(initialGoals.macros);
-      setInitialState(initialGoals);
+      setCalories(initial.calories);
+      setMacros(initial.macros);
+      setProfileData(initial.profile);
+      setInitialState(initial);
     }
   }, [userProfile]);
 
@@ -103,61 +116,77 @@ export default function GoalsPage() {
     changedMacro: 'protein' | 'carbs' | 'fat',
     value: number
   ) => {
-    let newMacros = { ...macros };
-    const oldValue = newMacros[changedMacro];
-    const delta = value - oldValue;
-    if (delta === 0) return;
-    newMacros[changedMacro] = value;
-    const otherMacros = (['protein', 'carbs', 'fat'] as const).filter(m => m !== changedMacro);
-    const [macroA, macroB] = otherMacros;
-    const totalOther = newMacros[macroA] + newMacros[macroB];
-    if (totalOther > 0) {
-      let changeA = delta * (newMacros[macroA] / totalOther);
-      let changeB = delta * (newMacros[macroB] / totalOther);
-      newMacros[macroA] -= changeA;
-      newMacros[macroB] -= changeB;
-    } else {
-      newMacros[macroA] -= delta / 2;
-      newMacros[macroB] -= delta / 2;
+    let newMacros = { ...macros, [changedMacro]: value };
+    const total = newMacros.protein + newMacros.carbs + newMacros.fat;
+    if (total > 100) {
+        const otherMacros = (['protein', 'carbs', 'fat'] as const).filter(m => m !== changedMacro);
+        let over = total - 100;
+        newMacros[otherMacros[0]] -= over / 2;
+        newMacros[otherMacros[1]] -= over / 2;
+    } else if (total < 100) {
+         newMacros[changedMacro] += 100 - total;
     }
-    newMacros.protein = Math.max(0, Math.min(100, newMacros.protein));
-    newMacros.carbs = Math.max(0, Math.min(100, newMacros.carbs));
-    newMacros.fat = Math.max(0, Math.min(100, newMacros.fat));
-    const finalTotal = newMacros.protein + newMacros.carbs + newMacros.fat;
-    const finalDelta = 100 - finalTotal;
-    const maxMacro = Object.keys(newMacros).reduce((a, b) => newMacros[a as keyof typeof newMacros] > newMacros[b as keyof typeof newMacros] ? a : b) as keyof typeof newMacros;
-    newMacros[maxMacro] += finalDelta;
+
     setMacros({
-      protein: Math.round(newMacros.protein),
-      carbs: Math.round(newMacros.carbs),
-      fat: Math.round(newMacros.fat),
+      protein: Math.max(0, Math.round(newMacros.protein)),
+      carbs: Math.max(0, Math.round(newMacros.carbs)),
+      fat: Math.max(0, Math.round(newMacros.fat)),
     });
   };
 
   const handleReset = () => {
-    const recommended = getRecommendedGoals(userProfile?.health?.primaryGoal);
-    setMacros(recommended);
-    toast({ title: "Goals Reset", description: "Your macros have been reset to our recommended values." });
+    if (!profileData.primaryGoal || !profileData.weightKg) {
+      toast({
+        variant: "destructive",
+        title: "Profile Incomplete",
+        description: "Please complete your profile to get recommended goals.",
+      });
+      return;
+    }
+    
+    const recommended = calculateRecommendedGoals({
+        primaryGoal: profileData.primaryGoal,
+        weightKg: profileData.weightKg,
+        activityLevel: profileData.activityLevel
+    });
+
+    setCalories(recommended.dailyCalorieGoal);
+    setMacros({
+      protein: recommended.proteinPercentageGoal,
+      carbs: recommended.carbsPercentageGoal,
+      fat: recommended.fatPercentageGoal
+    });
+    toast({ title: "Goals Reset", description: "Your targets have been reset to our recommended values based on your profile." });
   };
 
   const handleSave = async () => {
     if (!user || !db) return;
     setIsSaving(true);
-    const newGoals: UserGoals = {
-      dailyCalorieGoal: calories,
-      proteinPercentageGoal: macros.protein,
-      carbsPercentageGoal: macros.carbs,
-      fatPercentageGoal: macros.fat,
+    const updates = {
+        'goals.dailyCalorieGoal': calories,
+        'goals.proteinPercentageGoal': macros.protein,
+        'goals.carbsPercentageGoal': macros.carbs,
+        'goals.fatPercentageGoal': macros.fat,
+        'profile.age': profileData.age,
+        'profile.gender': profileData.gender,
+        'profile.heightCm': profileData.heightCm,
+        'profile.weightKg': profileData.weightKg,
+        'profile.activityLevel': profileData.activityLevel,
+        'health.primaryGoal': profileData.primaryGoal
     };
     try {
-        await updateUserGoals(db, user.uid, newGoals);
-        setInitialState({ calories, macros });
-        toast({ title: 'Goals Saved!', description: 'Your nutritional targets have been updated.' });
+        await updateUserGoalsAndProfile(db, user.uid, updates);
+        setInitialState({
+            calories,
+            macros,
+            profile: profileData
+        });
+        toast({ title: 'Goals & Profile Saved!', description: 'Your nutritional profile and targets have been updated.' });
     } catch(e: any) {
         toast({
             variant: "destructive",
-            title: "Error Saving Goals",
-            description: "There was a problem saving your goals. Please try again.",
+            title: "Error Saving",
+            description: "There was a problem saving your data. Please try again.",
         });
     } finally {
         setIsSaving(false);
@@ -168,10 +197,20 @@ export default function GoalsPage() {
     if (!initialState) return false;
     if (calories !== initialState.calories) return true;
     if (macros.protein !== initialState.macros.protein || macros.carbs !== initialState.macros.carbs || macros.fat !== initialState.macros.fat) return true;
+    if (profileData.age !== initialState.profile.age ||
+        profileData.gender !== initialState.profile.gender ||
+        profileData.heightCm !== initialState.profile.heightCm ||
+        profileData.weightKg !== initialState.profile.weightKg ||
+        profileData.activityLevel !== initialState.profile.activityLevel ||
+        profileData.primaryGoal !== initialState.profile.primaryGoal) return true;
     return false;
-  }, [calories, macros, initialState]);
+  }, [calories, macros, profileData, initialState]);
 
-  if (isProfileLoading) return <GoalsSkeleton />;
+  const handleProfileFieldChange = (field: keyof typeof profileData, value: string | number) => {
+    setProfileData(prev => ({...prev, [field]: value}));
+  }
+
+  if (isProfileLoading || !initialState) return <GoalsSkeleton />;
 
   if (!userProfile) {
     return (
@@ -190,21 +229,17 @@ export default function GoalsPage() {
     { name: 'Carbs', value: macros.carbs, color: MACRO_COLORS.carbs },
     { name: 'Fat', value: macros.fat, color: MACRO_COLORS.fat },
   ];
-
-  const goalMessage = {
-    'lose-weight': { message: "You're working toward weight loss. Consistency is key!", icon: TrendingDown, color: 'text-blue-500' },
-    'gain-weight': { message: "You're building muscle. Fuel your body for growth!", icon: TrendingUp, color: 'text-green-500' },
-    'maintain-weight': { message: "You're maintaining a healthy weight. Great job on the balance!", icon: Scale, color: 'text-purple-500' },
-    'eat-healthier': { message: "You're focused on healthier eating. Every choice is a step forward!", icon: Heart, color: 'text-red-500' },
-  }[userProfile.health?.primaryGoal || 'maintain-weight'];
-
-  const GoalIcon = goalMessage.icon;
+  
+  const GoalIcon = {
+    'lose-weight': TrendingDown,
+    'gain-weight': TrendingUp,
+    'maintain-weight': Scale,
+    'eat-healthier': Heart,
+  }[profileData.primaryGoal || 'maintain-weight'] || Scale;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
-
-        {/* Header */}
         <div className="space-y-3 md:space-y-4">
           <div className="flex flex-col xs:flex-row xs:items-center gap-3">
             <div className="shrink-0 p-2.5 sm:p-3 md:p-4 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg w-fit">
@@ -219,238 +254,128 @@ export default function GoalsPage() {
               </p>
             </div>
           </div>
-
-          <Alert className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent">
-            <GoalIcon className={`h-4 w-4 shrink-0 ${goalMessage.color}`} />
-            <div className="flex-1 min-w-0">
-              <AlertTitle className={`${goalMessage.color} font-semibold text-sm sm:text-base`}>
-                {userProfile.health?.primaryGoal?.split('-').map(word =>
-                  word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(' ')} Mode
-              </AlertTitle>
-              <AlertDescription className="text-xs sm:text-sm text-foreground/80">
-                {goalMessage.message}
-              </AlertDescription>
-            </div>
-          </Alert>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-
-          {/* Left / Main column */}
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
-
-            {/* Calorie Target */}
-            <Card className="border shadow-lg overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <div className="shrink-0 p-1.5 rounded-lg bg-primary/10">
-                    <Flame className="h-4 w-4 text-primary" />
-                  </div>
-                  Daily Calorie Target
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Set your daily energy intake goal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-5 md:p-6">
-                <div className="space-y-2">
-                  <Label htmlFor="calories" className="text-xs sm:text-sm font-medium">
-                    Daily Calories (kcal)
-                  </Label>
-                  <div className="relative w-full sm:max-w-xs">
-                    <Input
-                      id="calories"
-                      type="number"
-                      value={calories}
-                      onChange={(e) => setCalories(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                      className="text-sm sm:text-base pr-14 py-2 sm:py-3 rounded-lg border-2 focus:border-primary h-10 sm:h-12"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                      <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs">
-                        kcal
-                      </Badge>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 h-12 p-1.5">
+                <TabsTrigger value="targets" className="text-sm gap-2 h-full">
+                    <Target className="h-4 w-4" /> Targets
+                </TabsTrigger>
+                <TabsTrigger value="profile" className="text-sm gap-2 h-full">
+                    <User className="h-4 w-4" /> Profile
+                </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="targets" className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                        <Card className="border shadow-lg overflow-hidden">
+                            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
+                                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                <Flame className="h-4 w-4 text-primary" />Daily Calorie Target</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm">Set your daily energy intake goal</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-4 sm:p-5 md:p-6">
+                                <div className="space-y-2"><Label htmlFor="calories" className="text-xs sm:text-sm font-medium">Daily Calories (kcal)</Label>
+                                <div className="relative w-full sm:max-w-xs"><Input id="calories" type="number" value={calories} onChange={(e) => setCalories(Math.max(0, parseInt(e.target.value, 10) || 0))} className="text-sm sm:text-base pr-14 py-2 sm:py-3 rounded-lg border-2 focus:border-primary h-10 sm:h-12" />
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2"><Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs">kcal</Badge></div></div></div>
+                            </CardContent>
+                        </Card>
+                        <Card className="border shadow-lg overflow-hidden">
+                            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
+                                <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Scale className="h-4 w-4 text-primary" />Macronutrient Distribution</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm">Adjust the percentage of your daily calories from each macro</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-4 sm:p-5 md:p-6 space-y-5 sm:space-y-6 md:space-y-8">
+                                <MacroSlider label="Protein" value={macros.protein} color={MACRO_COLORS.protein} icon={Beef} onValueChange={(v) => handleMacroChange('protein', v)} />
+                                <MacroSlider label="Carbohydrates" value={macros.carbs} color={MACRO_COLORS.carbs} icon={Wheat} onValueChange={(v) => handleMacroChange('carbs', v)} />
+                                <MacroSlider label="Fat" value={macros.fat} color={MACRO_COLORS.fat} icon={Droplets} onValueChange={(v) => handleMacroChange('fat', v)} />
+                            </CardContent>
+                        </Card>
                     </div>
-                  </div>
+
+                    <div className="lg:col-span-1 space-y-4 md:space-y-6">
+                        <Card className="border shadow-lg"><CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
+                            <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />Daily Grams</CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">Your macro targets in grams</CardDescription></CardHeader>
+                            <CardContent className="p-4 sm:p-5 md:p-6 space-y-3">
+                                <GramDisplay label="Protein" value={macroGrams.protein} color={MACRO_COLORS.protein} icon={Beef} total={macroGrams.protein + macroGrams.carbs + macroGrams.fat} />
+                                <GramDisplay label="Carbs" value={macroGrams.carbs} color={MACRO_COLORS.carbs} icon={Wheat} total={macroGrams.protein + macroGrams.carbs + macroGrams.fat} />
+                                <GramDisplay label="Fat" value={macroGrams.fat} color={MACRO_COLORS.fat} icon={Droplets} total={macroGrams.protein + macroGrams.carbs + macroGrams.fat} />
+                            </CardContent>
+                        </Card>
+                        <Card className="border shadow-lg"><CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
+                            <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><PieChartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />Visual Breakdown</CardTitle></CardHeader>
+                            <CardContent className="p-4 sm:p-5 md:p-6">
+                            <div className="h-[180px] sm:h-[200px] lg:h-[180px] xl:h-[200px] w-full">
+                            <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={4} label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''} labelLine={false}>{pieData.map((entry) => (<Cell key={entry.name} fill={entry.color} />))}</Pie><Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))',border: '1px solid hsl(var(--border))',borderRadius: '8px',padding: '6px 10px',fontSize: '12px',}} formatter={(value: number) => [`${value}%`, 'Percentage']}/></PieChart></ResponsiveContainer></div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-              </CardContent>
-            </Card>
+            </TabsContent>
 
-            {/* Macro Distribution */}
-            <Card className="border shadow-lg overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <div className="shrink-0 p-1.5 rounded-lg bg-primary/10">
-                    <Scale className="h-4 w-4 text-primary" />
-                  </div>
-                  Macronutrient Distribution
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Adjust the percentage of your daily calories from each macro
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-5 md:p-6 space-y-5 sm:space-y-6 md:space-y-8">
-                <MacroSlider
-                  label="Protein"
-                  value={macros.protein}
-                  color={MACRO_COLORS.protein}
-                  icon={Beef}
-                  onValueChange={(v) => handleMacroChange('protein', v)}
-                />
-                <MacroSlider
-                  label="Carbohydrates"
-                  value={macros.carbs}
-                  color={MACRO_COLORS.carbs}
-                  icon={Wheat}
-                  onValueChange={(v) => handleMacroChange('carbs', v)}
-                />
-                <MacroSlider
-                  label="Fat"
-                  value={macros.fat}
-                  color={MACRO_COLORS.fat}
-                  icon={Droplets}
-                  onValueChange={(v) => handleMacroChange('fat', v)}
-                />
+            <TabsContent value="profile" className="mt-6">
+                <Card className="border shadow-lg overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <User className="h-4 w-4 text-primary" />Your Goal Profile</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">These details help us calculate your recommended nutritional targets.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <h3 className="font-medium text-muted-foreground">Personal Details</h3>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2"><Label htmlFor="age">Age</Label><Input id="age" type="number" value={profileData.age} onChange={(e) => handleProfileFieldChange('age', parseInt(e.target.value) || 0)} /></div>
+                                <div className="space-y-2"><Label htmlFor="height">Height (cm)</Label><Input id="height" type="number" value={profileData.heightCm} onChange={(e) => handleProfileFieldChange('heightCm', parseInt(e.target.value) || 0)} /></div>
+                                <div className="space-y-2"><Label htmlFor="weight">Weight (kg)</Label><Input id="weight" type="number" value={profileData.weightKg} onChange={(e) => handleProfileFieldChange('weightKg', parseFloat(e.target.value) || 0)} /></div>
+                            </div>
+                            <div className="space-y-2"><Label htmlFor="gender">Gender</Label>
+                                <Select value={profileData.gender} onValueChange={(v) => handleProfileFieldChange('gender', v)}>
+                                    <SelectTrigger id="gender"><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                             <h3 className="font-medium text-muted-foreground">Health & Activity</h3>
+                            <div className="space-y-2"><Label>Primary Goal</Label>
+                                <Select value={profileData.primaryGoal} onValueChange={(v) => handleProfileFieldChange('primaryGoal', v)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="lose-weight">Lose Weight</SelectItem>
+                                        <SelectItem value="maintain-weight">Maintain Weight</SelectItem>
+                                        <SelectItem value="gain-weight">Gain Weight</SelectItem>
+                                        <SelectItem value="eat-healthier">Eat Healthier</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2"><Label>Activity Level</Label>
+                                <RadioGroup value={profileData.activityLevel} onValueChange={(v) => handleProfileFieldChange('activityLevel', v)} className="grid grid-cols-2 gap-2">
+                                    {(['low', 'moderate', 'active', 'very-active'] as const).map(level => (
+                                        <Label key={level} className="p-2 border rounded-md cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary text-center text-xs">
+                                            <RadioGroupItem value={level} className="sr-only" />
+                                            <span className="capitalize">{level.replace('-',' ')}</span>
+                                        </Label>
+                                    ))}
+                                </RadioGroup>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
 
-                {/* Quick % Stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2 border-t">
-                  <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/30">
-                    <p className="text-base sm:text-lg md:text-2xl font-bold" style={{color: MACRO_COLORS.protein}}>{macros.protein}%</p>
-                    <p className="text-xs text-muted-foreground">Protein</p>
-                  </div>
-                  <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/30">
-                    <p className="text-base sm:text-lg md:text-2xl font-bold" style={{color: MACRO_COLORS.carbs}}>{macros.carbs}%</p>
-                    <p className="text-xs text-muted-foreground">Carbs</p>
-                  </div>
-                  <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/30">
-                    <p className="text-base sm:text-lg md:text-2xl font-bold" style={{color: MACRO_COLORS.fat}}>{macros.fat}%</p>
-                    <p className="text-xs text-muted-foreground">Fat</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right / Analytics column */}
-          {/* On mobile stacks below; on lg sits beside */}
-          <div className="lg:col-span-1 space-y-4 md:space-y-6">
-
-            {/* Daily Grams */}
-            <Card className="border shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <div className="shrink-0 p-1.5 rounded-lg bg-primary/10">
-                    <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  </div>
-                  Daily Grams
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Your macro targets in grams
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-5 md:p-6 space-y-3">
-                <GramDisplay
-                  label="Protein"
-                  value={macroGrams.protein}
-                  color={MACRO_COLORS.protein}
-                  icon={Beef}
-                  total={macroGrams.protein + macroGrams.carbs + macroGrams.fat}
-                />
-                <GramDisplay
-                  label="Carbs"
-                  value={macroGrams.carbs}
-                  color={MACRO_COLORS.carbs}
-                  icon={Wheat}
-                  total={macroGrams.protein + macroGrams.carbs + macroGrams.fat}
-                />
-                <GramDisplay
-                  label="Fat"
-                  value={macroGrams.fat}
-                  color={MACRO_COLORS.fat}
-                  icon={Droplets}
-                  total={macroGrams.protein + macroGrams.carbs + macroGrams.fat}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Pie Chart */}
-            <Card className="border shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 sm:p-5 md:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <div className="shrink-0 p-1.5 rounded-lg bg-primary/10">
-                    <PieChart className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  </div>
-                  Visual Breakdown
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-5 md:p-6">
-                {/* Chart is taller on mobile since it's full-width; compact on lg sidebar */}
-                <div className="h-[180px] sm:h-[200px] lg:h-[180px] xl:h-[200px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={38}
-                        outerRadius={58}
-                        paddingAngle={4}
-                        label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
-                        labelLine={false}
-                      >
-                        {pieData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                          padding: '6px 10px',
-                          fontSize: '12px',
-                        }}
-                        formatter={(value: number) => [`${value}%`, 'Percentage']}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
         <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t pt-4 md:pt-6 bg-gradient-to-r from-transparent via-primary/5 to-transparent rounded-lg p-3 sm:p-4 md:p-6">
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            disabled={isSaving}
-            className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all"
-          >
-            <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            Reset to Recommended
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || !hasChanges}
-            size="lg"
-            className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all"
-          >
-            {isSaving ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4 shrink-0" />
-            )}
-            Save Goals
+          <Button variant="outline" onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all">
+            <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
+          <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg" className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all">
+            {isSaving ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4 shrink-0" />)}
+            Save Changes
             {hasChanges && <ChevronRight className="ml-1 sm:ml-2 h-4 w-4 shrink-0" />}
           </Button>
         </div>
 
-        {/* Up-to-date indicator */}
         {!hasChanges && initialState && (
           <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
             <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0" />
@@ -462,7 +387,6 @@ export default function GoalsPage() {
   );
 }
 
-// MacroSlider
 const MacroSlider = ({ label, value, color, icon: Icon, onValueChange }: {
   label: string;
   value: number;
@@ -498,7 +422,6 @@ const MacroSlider = ({ label, value, color, icon: Icon, onValueChange }: {
   </div>
 );
 
-// GramDisplay
 const GramDisplay = ({ label, value, color, icon: Icon, total }: {
   label: string;
   value: number;
@@ -535,7 +458,6 @@ const GramDisplay = ({ label, value, color, icon: Icon, total }: {
   );
 };
 
-// Skeleton
 const GoalsSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
