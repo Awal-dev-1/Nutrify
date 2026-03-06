@@ -92,10 +92,14 @@ export function RecipeDetailModal({ isOpen, onClose, foodId }: RecipeDetailModal
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           {isLoading || !food ? (
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-            </div>
+            <>
+              <DialogTitle>
+                <Skeleton className="h-8 w-3/4" />
+              </DialogTitle>
+              <DialogDescription>
+                <Skeleton className="h-4 w-full mt-2" />
+              </DialogDescription>
+            </>
           ) : (
             <>
               <DialogTitle className="text-2xl">{food.foodName}</DialogTitle>
