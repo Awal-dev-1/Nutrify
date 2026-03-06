@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser, useFirestore, useAuth } from '@/firebase';
@@ -69,6 +70,7 @@ export default function SettingsPage() {
   const { setTheme, theme } = useTheme();
 
   const [displayName, setDisplayName] = useState('');
+  const [initialDisplayName, setInitialDisplayName] = useState('');
   const [language, setLanguage] = useState('en');
   const [units, setUnits] = useState('metric');
   const [dailyReminder, setDailyReminder] = useState(false);
@@ -84,7 +86,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (userProfile) {
-      setDisplayName(userProfile.name || '');
+      const name = userProfile.name || '';
+      setDisplayName(name);
+      setInitialDisplayName(name);
       setLanguage(userProfile.preferences?.languagePreference || 'en');
       setUnits(userProfile.preferences?.unitPreference || 'metric');
       setDailyReminder(userProfile.preferences?.reminderEnabled || false);
@@ -92,6 +96,12 @@ export default function SettingsPage() {
       setProfileImageFile(null);
     }
   }, [userProfile]);
+
+  const hasProfileChanges = useMemo(() => {
+    if (isProfileLoading) return false;
+    return displayName !== initialDisplayName || profileImageFile !== null;
+  }, [displayName, initialDisplayName, profileImageFile, isProfileLoading]);
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,7 +117,7 @@ export default function SettingsPage() {
   };
 
   const handleProfileSave = async () => {
-    if (!user || !db || !auth) return;
+    if (!user || !db || !auth || !hasProfileChanges) return;
     setIsSaving(true);
     try {
       await updateUserProfileAndPhoto(db, auth, displayName, profileImageFile);
@@ -115,6 +125,8 @@ export default function SettingsPage() {
       setProfileImageFile(null);
       setImagePreview(null);
       if(fileInputRef.current) fileInputRef.current.value = "";
+      // The userProfile hook will cause a re-render with the new data,
+      // which will reset initialDisplayName via the useEffect.
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error Saving Profile', description: error.message });
     } finally {
@@ -353,7 +365,7 @@ export default function SettingsPage() {
             <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
               <Button 
                 onClick={handleProfileSave} 
-                disabled={isSaving}
+                disabled={isSaving || !hasProfileChanges}
                 className="w-full sm:w-auto rounded-full px-6"
               >
                 {isSaving ? (
@@ -362,6 +374,7 @@ export default function SettingsPage() {
                   <Save className="mr-2 h-4 w-4" />
                 )}
                 Save Profile Changes
+                {hasProfileChanges && <ChevronRight className="ml-2 h-4 w-4" />}
               </Button>
             </CardFooter>
           </Card>
