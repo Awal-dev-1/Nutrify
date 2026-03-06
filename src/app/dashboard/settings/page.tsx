@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { updateUserDocument } from '@/services/userService';
+import { updateUserProfileAndPhoto } from '@/services/profileService';
 import { logout, resetPassword, deleteUserAccount } from '@/services/authService';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -55,13 +56,9 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { updateProfile } from 'firebase/auth';
-import { ThemeToggle } from '@/components/settings/theme-toggle';
 import { useTheme } from 'next-themes';
-import { SettingsCard } from '@/components/settings/settings-card';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 
 export default function SettingsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -80,6 +77,10 @@ export default function SettingsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (userProfile) {
@@ -87,18 +88,35 @@ export default function SettingsPage() {
       setLanguage(userProfile.preferences?.languagePreference || 'en');
       setUnits(userProfile.preferences?.unitPreference || 'metric');
       setDailyReminder(userProfile.preferences?.reminderEnabled || false);
+      setImagePreview(null);
+      setProfileImageFile(null);
     }
   }, [userProfile]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            toast({ variant: 'destructive', title: 'File too large', description: 'Please select an image smaller than 5MB.' });
+            return;
+        }
+        setProfileImageFile(file);
+        const objectUrl = URL.createObjectURL(file);
+        setImagePreview(objectUrl);
+    }
+  };
+
   const handleProfileSave = async () => {
-    if (!user || !db || !auth.currentUser) return;
+    if (!user || !db || !auth) return;
     setIsSaving(true);
     try {
-      await updateProfile(auth.currentUser, { displayName });
-      updateUserDocument(db, user.uid, { name: displayName });
-      toast({ title: 'Profile Saved!', description: 'Your display name has been updated.' });
+      await updateUserProfileAndPhoto(db, auth, displayName, profileImageFile);
+      toast({ title: 'Profile Saved!', description: 'Your profile has been successfully updated.' });
+      setProfileImageFile(null);
+      setImagePreview(null);
+      if(fileInputRef.current) fileInputRef.current.value = "";
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error Saving Profile', description: error.message });
     } finally {
       setIsSaving(false);
     }
@@ -287,14 +305,21 @@ export default function SettingsPage() {
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 <div className="flex flex-col items-center gap-2">
                   <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary/20">
-                    <AvatarImage src={user?.photoURL || userProfile?.profile?.profileImageUrl} alt={displayName} />
+                    <AvatarImage src={imagePreview || user?.photoURL || userProfile?.profile?.profileImageUrl} alt={displayName} />
                     <AvatarFallback className="text-xl bg-primary/10">
                       {displayName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <Button variant="outline" size="sm" className="h-8 text-xs rounded-full">
+                  <Button variant="outline" size="sm" className="h-8 text-xs rounded-full" onClick={() => fileInputRef.current?.click()}>
                     Change Photo
                   </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">
