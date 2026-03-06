@@ -71,10 +71,6 @@ export default function GoalsPage() {
 
   // Profile state
   const [profileData, setProfileData] = useState({
-      age: userProfile?.profile?.age || 0,
-      gender: userProfile?.profile?.gender || '',
-      heightCm: userProfile?.profile?.heightCm || 0,
-      weightKg: userProfile?.profile?.weightKg || 0,
       activityLevel: userProfile?.profile?.activityLevel || '',
       primaryGoal: userProfile?.health?.primaryGoal || '',
   });
@@ -91,10 +87,6 @@ export default function GoalsPage() {
           fat: userProfile.goals?.fatPercentageGoal || 30,
         },
         profile: {
-          age: userProfile.profile?.age || 0,
-          gender: userProfile.profile?.gender || '',
-          heightCm: userProfile.profile?.heightCm || 0,
-          weightKg: userProfile.profile?.weightKg || 0,
           activityLevel: userProfile.profile?.activityLevel || '',
           primaryGoal: userProfile.health?.primaryGoal || '',
         }
@@ -136,7 +128,7 @@ export default function GoalsPage() {
   };
 
   const handleReset = () => {
-    if (!profileData.primaryGoal || !profileData.weightKg) {
+    if (!profileData.primaryGoal || !userProfile?.profile?.weightKg) {
       toast({
         variant: "destructive",
         title: "Profile Incomplete",
@@ -147,7 +139,7 @@ export default function GoalsPage() {
     
     const recommended = calculateRecommendedGoals({
         primaryGoal: profileData.primaryGoal,
-        weightKg: profileData.weightKg,
+        weightKg: userProfile.profile.weightKg,
         activityLevel: profileData.activityLevel
     });
 
@@ -168,10 +160,6 @@ export default function GoalsPage() {
         'goals.proteinPercentageGoal': macros.protein,
         'goals.carbsPercentageGoal': macros.carbs,
         'goals.fatPercentageGoal': macros.fat,
-        'profile.age': profileData.age,
-        'profile.gender': profileData.gender,
-        'profile.heightCm': profileData.heightCm,
-        'profile.weightKg': profileData.weightKg,
         'profile.activityLevel': profileData.activityLevel,
         'health.primaryGoal': profileData.primaryGoal
     };
@@ -198,11 +186,7 @@ export default function GoalsPage() {
     if (!initialState) return false;
     if (calories !== initialState.calories) return true;
     if (macros.protein !== initialState.macros.protein || macros.carbs !== initialState.macros.carbs || macros.fat !== initialState.macros.fat) return true;
-    if (profileData.age !== initialState.profile.age ||
-        profileData.gender !== initialState.profile.gender ||
-        profileData.heightCm !== initialState.profile.heightCm ||
-        profileData.weightKg !== initialState.profile.weightKg ||
-        profileData.activityLevel !== initialState.profile.activityLevel ||
+    if (profileData.activityLevel !== initialState.profile.activityLevel ||
         profileData.primaryGoal !== initialState.profile.primaryGoal) return true;
     return false;
   }, [calories, macros, profileData, initialState]);
@@ -211,10 +195,10 @@ export default function GoalsPage() {
     setProfileData(prev => {
         const newProfileData = { ...prev, [field]: value };
         
-        if (newProfileData.primaryGoal && newProfileData.weightKg > 0 && newProfileData.activityLevel) {
+        if (newProfileData.primaryGoal && (userProfile?.profile?.weightKg || 0) > 0 && newProfileData.activityLevel) {
             const recommended = calculateRecommendedGoals({
                 primaryGoal: newProfileData.primaryGoal,
-                weightKg: newProfileData.weightKg,
+                weightKg: userProfile!.profile!.weightKg,
                 activityLevel: newProfileData.activityLevel
             });
     
@@ -359,7 +343,7 @@ export default function GoalsPage() {
                             <div className="space-y-2"><Label>Activity Level</Label>
                                 <RadioGroup value={profileData.activityLevel} onValueChange={(v) => handleProfileFieldChange('activityLevel', v)} className="grid grid-cols-2 gap-2">
                                     {(['low', 'moderate', 'active', 'very-active'] as const).map(level => (
-                                        <Label key={level} className="p-2 border rounded-md cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary text-center text-xs">
+                                        <Label key={level} className="p-2 border rounded-md cursor-pointer has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:checked]:border-primary text-center text-xs transition-colors">
                                             <RadioGroupItem value={level} className="sr-only" />
                                             <span className="capitalize">{level.replace('-',' ')}</span>
                                         </Label>
