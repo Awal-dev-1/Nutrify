@@ -8,7 +8,7 @@ import { FirebaseClientProvider } from '@/firebase';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Nutrify - Eat Smart. Live Healthy.',
+  title: 'Nutrify',
   description: 'A Ghana-focused smart nutrition platform to help you track your meals and achieve your health goals.',
 };
 
