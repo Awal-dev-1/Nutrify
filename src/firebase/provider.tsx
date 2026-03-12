@@ -18,6 +18,7 @@ export interface UserProfile {
     heightCm: number;
     weightKg: number;
     activityLevel: string;
+    profileImageUrl?: string;
   };
   health?: {
     primaryGoal: string;
@@ -118,34 +119,25 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
     
-    let unsubscribe: (() => void) | undefined;
-
-    const setupAuth = async () => {
-      try {
-        await setPersistence(auth, browserSessionPersistence);
-        unsubscribe = onAuthStateChanged(
-          auth,
-          (firebaseUser) => {
-            setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
-          },
-          (error) => {
-            console.error("FirebaseProvider: onAuthStateChanged error:", error);
-            setUserAuthState({ user: null, isUserLoading: false, userError: error });
-          }
-        );
-      } catch (error) {
+    // Set persistence once in the background. We don't need to wait for it.
+    // Errors here are logged but don't block the auth flow.
+    setPersistence(auth, browserSessionPersistence).catch((error) => {
         console.error("FirebaseProvider: setPersistence error:", error);
-        setUserAuthState({ user: null, isUserLoading: false, userError: error as Error });
-      }
-    };
+    });
 
-    setupAuth();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
+    // The listener for auth changes is now set up immediately.
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+      },
+      (error) => {
+        console.error("FirebaseProvider: onAuthStateChanged error:", error);
+        setUserAuthState({ user: null, isUserLoading: false, userError: error });
       }
-    };
+    );
+
+    return () => unsubscribe();
   }, [auth]);
 
   const { user, isUserLoading } = userAuthState;
