@@ -15,6 +15,7 @@ import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
@@ -22,6 +23,7 @@ export default function RecognizePage() {
   const { user, userProfile } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -245,25 +247,27 @@ export default function RecognizePage() {
         return (
           <div className='w-full max-w-2xl mx-auto space-y-4'>
             <ImageUploader onFileSelect={handleFileSelect} />
-            <div className="block space-y-4">
-              <div className="relative flex items-center">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
-                <div className="flex-grow border-t border-gray-300"></div>
+            {isMobile && (
+              <div className="block space-y-4">
+                <div className="relative flex items-center">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                <Button variant="secondary" className="w-full" onClick={() => setIsCameraOpen(true)} disabled={hasCameraPermission === false}>
+                    <Camera className="mr-2 h-4 w-4" /> Use Camera
+                </Button>
+                {hasCameraPermission === false && (
+                    <Alert variant="destructive" className="mt-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Camera Disabled</AlertTitle>
+                        <AlertDescription>
+                            You have previously denied camera access. Please enable it in your browser settings to use this feature.
+                        </AlertDescription>
+                    </Alert>
+                )}
               </div>
-              <Button variant="secondary" className="w-full" onClick={() => setIsCameraOpen(true)} disabled={hasCameraPermission === false}>
-                  <Camera className="mr-2 h-4 w-4" /> Use Camera
-              </Button>
-              {hasCameraPermission === false && (
-                  <Alert variant="destructive" className="mt-4">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Camera Disabled</AlertTitle>
-                      <AlertDescription>
-                          You have previously denied camera access. Please enable it in your browser settings to use this feature.
-                      </AlertDescription>
-                  </Alert>
-              )}
-            </div>
+            )}
           </div>
         );
 
