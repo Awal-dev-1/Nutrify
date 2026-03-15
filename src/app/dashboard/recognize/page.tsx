@@ -13,6 +13,7 @@ import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-
 import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
@@ -169,34 +170,52 @@ export default function RecognizePage() {
       case 'idle':
         if (isCameraOpen) {
           return (
-            <div className="w-full max-w-2xl mx-auto space-y-4">
-              <Card className="overflow-hidden">
-                <CardContent className="p-0 relative">
-                  <video ref={videoRef} className="w-full h-[60vh] object-contain rounded-md bg-black" autoPlay muted playsInline />
-                  {hasCameraPermission === true && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-3/4 h-3/4 border-2 border-dashed border-white/50 rounded-lg animate-pulse" />
+            <div className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
+              <div className="relative w-full h-full md:h-[70vh] md:rounded-lg overflow-hidden">
+                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                
+                {/* Controls Overlay */}
+                <div className="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+                    {/* Top right close button */}
+                    <div className="flex justify-end">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsCameraOpen(false)}
+                            className="bg-black/40 text-white hover:bg-black/60 rounded-full w-10 h-10"
+                        >
+                            <X className="h-5 w-5" />
+                        </Button>
                     </div>
-                  )}
-                  {hasCameraPermission === false && (
+
+                    {/* Bottom center snap button */}
+                    <div className="flex items-center justify-center gap-x-16 pb-8">
+                        <div className="w-12 h-12" /> {/* Spacer */}
+                        <button
+                            onClick={handleCapture}
+                            disabled={hasCameraPermission !== true}
+                            className="w-16 h-16 rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition"
+                            aria-label="Capture image"
+                        />
+                         <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleFlipCamera}
+                            disabled={hasCameraPermission !== true}
+                            className="bg-black/40 text-white hover:bg-black/60 rounded-full w-12 h-12"
+                        >
+                            <SwitchCamera className="h-6 w-6" />
+                        </Button>
+                    </div>
+                </div>
+
+                {hasCameraPermission === false && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-4 text-center">
                         <VideoOff className="h-10 w-10 mb-2" />
                         <p className="font-semibold">Camera Access Denied</p>
                         <p className="text-sm">Please enable camera permissions in your browser settings.</p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-              <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
-                <Button size="lg" onClick={handleCapture} disabled={hasCameraPermission !== true}>
-                  <Camera className="mr-2 h-4 w-4" /> Capture
-                </Button>
-                <Button size="lg" variant="secondary" onClick={handleFlipCamera} disabled={hasCameraPermission !== true}>
-                  <SwitchCamera className="mr-2 h-4 w-4" /> Flip
-                </Button>
-                <Button size="lg" variant="ghost" onClick={() => setIsCameraOpen(false)}>
-                  <X className="mr-2 h-4 w-4" /> Cancel
-                </Button>
+                )}
               </div>
             </div>
           );
@@ -234,7 +253,7 @@ export default function RecognizePage() {
         return (
           <div className='w-full max-w-2xl mx-auto space-y-4'>
             <ImageUploader onFileSelect={handleFileSelect} />
-            <div className="block sm:hidden space-y-4">
+            <div className="block space-y-4">
               <div className="relative flex items-center">
                 <div className="flex-grow border-t border-gray-300"></div>
                 <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
@@ -362,7 +381,8 @@ export default function RecognizePage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      {/* This header is hidden when the camera is open on mobile */}
+      <div className={cn(isCameraOpen && 'md:block hidden')}>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
           <ScanLine className="h-8 w-8 text-primary" />
           AI Food Recognition
