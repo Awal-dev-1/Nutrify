@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -6,7 +7,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff, SwitchCamera } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -110,7 +111,14 @@ export default function RecognizePage() {
       canvas.toBlob((blob) => {
         if (blob) {
           const capturedFile = new File([blob], "capture.jpg", { type: "image/jpeg" });
-          handleFileSelect(capturedFile);
+          // Don't call handleFileSelect as it does a full reset.
+          // Instead, reset just the analysis state and set the new file.
+          // The useEffect on `file` will handle creating the preview and closing the camera.
+          setStatus('idle');
+          setError(null);
+          setPredictions(null);
+          setViewedPrediction(null);
+          setFile(capturedFile);
         }
       }, 'image/jpeg', 0.95);
     }
