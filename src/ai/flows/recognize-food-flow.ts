@@ -47,9 +47,9 @@ User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{
 
 CRITICAL INSTRUCTIONS:
 1.  **Analyze the Image**: Carefully analyze the image provided. First, determine if the image contains food. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **Estimate Portion Size**: You MUST estimate the total weight of the food in grams (\`estimatedWeightGrams\`). This is a critical step for all subsequent calculations.
-3.  **Calculate ALL Nutrients for the Portion**: For each potential food match, you MUST calculate a comprehensive nutritional profile for the estimated portion size. This includes:
-    *   Total \`calories\`.
+2.  **Estimate Portion Size**: You MUST visually estimate the total weight of the food in the image and provide this value in grams in the \`estimatedWeightGrams\` field. This is the MOST CRITICAL step, as all subsequent nutritional calculations will be based on this weight. Be as precise as possible.
+3.  **Calculate Nutrients for Estimated Portion**: Based on your estimated weight, you MUST calculate a comprehensive nutritional profile. The values for \`calories\`, \`macronutrientBreakdown\`, and \`micronutrientBreakdown\` MUST correspond directly to the \`estimatedWeightGrams\` you provided. This includes:
+    *   Total \`calories\` for the estimated portion.
     *   \`macronutrientBreakdown\` (protein, carbohydrates, fat).
     *   A detailed \`micronutrientBreakdown\`, including fiber, sugar, iron, calcium, vitaminA, vitaminC, and sodium. If a nutrient is not present, omit it or set it to 0.
 4.  **Provide DETAILED Health Analysis**: For each prediction, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
