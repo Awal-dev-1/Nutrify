@@ -258,10 +258,28 @@ export default function RecognizePage() {
 
       case 'analyzing':
         return (
-          <div className="flex flex-col items-center justify-center text-center p-8 space-y-3">
-            <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <h3 className="text-xl font-semibold">AI is analyzing your food...</h3>
-            <p className="text-muted-foreground">This may take a few moments.</p>
+          <div className="w-full max-w-2xl mx-auto">
+            <div className="space-y-4 text-center">
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="w-full h-[60vh] relative bg-black/90 rounded-md">
+                    {preview && (
+                      <Image
+                        src={preview}
+                        alt="Analyzing food"
+                        fill
+                        className="object-contain opacity-50"
+                      />
+                    )}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 space-y-3 bg-black/50">
+                      <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                      <h3 className="text-xl font-semibold text-white">AI is analyzing your food...</h3>
+                      <p className="text-white/80">This may take a few moments.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         );
       
