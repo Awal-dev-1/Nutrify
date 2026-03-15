@@ -33,7 +33,6 @@ export default function RecognizePage() {
   // New state and refs for camera
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -66,8 +65,8 @@ export default function RecognizePage() {
 
     const getCameraStream = async () => {
       try {
-        // Request the stream with the current facing mode.
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+        // Request the stream with the environment (rear) camera.
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -87,13 +86,13 @@ export default function RecognizePage() {
     getCameraStream();
 
     // Cleanup function to stop the stream when the component unmounts
-    // or when the dependencies (isCameraOpen, facingMode) change.
+    // or when the dependencies (isCameraOpen) change.
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isCameraOpen, facingMode, toast]);
+  }, [isCameraOpen, toast]);
   
   const handleFileSelect = (selectedFile: File) => {
     resetState();
@@ -115,10 +114,6 @@ export default function RecognizePage() {
         }
       }, 'image/jpeg', 0.95);
     }
-  };
-
-  const handleFlipCamera = () => {
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   };
 
   const handleAnalyze = async () => {
@@ -162,7 +157,6 @@ export default function RecognizePage() {
     setViewedPrediction(null);
     setSelectedFood(null);
     setIsCameraOpen(false);
-    setFacingMode('environment'); // Reset camera direction
   };
 
   const renderContent = () => {
@@ -189,23 +183,13 @@ export default function RecognizePage() {
                     </div>
 
                     {/* Bottom center snap button */}
-                    <div className="flex items-center justify-center gap-x-16 pb-8">
-                        <div className="w-12 h-12" /> {/* Spacer */}
+                    <div className="flex items-center justify-center pb-8">
                         <button
                             onClick={handleCapture}
                             disabled={hasCameraPermission !== true}
                             className="w-16 h-16 rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition"
                             aria-label="Capture image"
                         />
-                         <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleFlipCamera}
-                            disabled={hasCameraPermission !== true}
-                            className="bg-black/40 text-white hover:bg-black/60 rounded-full w-12 h-12"
-                        >
-                            <SwitchCamera className="h-6 w-6" />
-                        </Button>
                     </div>
                 </div>
 
