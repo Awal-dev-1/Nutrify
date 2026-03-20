@@ -271,6 +271,16 @@ const OverviewPage = () => {
                 <div className="h-[200px] sm:h-[230px] md:h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weeklyData}>
+                      <defs>
+                        <linearGradient id="underGoal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        </linearGradient>
+                        <linearGradient id="overGoal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                       <XAxis 
                         dataKey="date" 
@@ -298,6 +308,7 @@ const OverviewPage = () => {
                         }}
                         labelFormatter={(label) => format(new Date(label), 'MMMM d, yyyy')}
                         formatter={(value: number) => [`${Math.round(value)} kcal`, 'Calories']}
+                        cursor={{ fill: 'hsl(var(--accent))', fillOpacity: 0.1, radius: 4 }}
                       />
                       <ReferenceLine 
                         y={derivedGoals.calories} 
@@ -312,7 +323,7 @@ const OverviewPage = () => {
                         animationDuration={500}
                       >
                          {weeklyData?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.calories > entry.goal ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'} />
+                            <Cell key={`cell-${index}`} fill={entry.calories > entry.goal ? "url(#overGoal)" : "url(#underGoal)"} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -695,5 +706,3 @@ const DashboardSkeleton = () => (
 );
 
 export default OverviewPage;
-
-    
