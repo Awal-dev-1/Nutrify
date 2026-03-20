@@ -29,9 +29,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '../ui/progress';
-import { subDays, addDays, format, isToday } from 'date-fns';
+import { subDays, addDays, format, isToday, startOfWeek, isSameDay } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/firebase';
+import { cn } from '@/lib/utils';
 
 interface WeekPlannerProps {
     plannedMeals: (PlannedMeal & { id: string })[];
@@ -55,27 +56,29 @@ const getMealIcon = (mealType: string) => {
 
 export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: WeekPlannerProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [direction, setDirection] = useState(0);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
   const [mealToAdd, setMealToAdd] = useState<string | null>(null);
   const { userProfile } = useUser();
-  const [[page, direction], setPage] = useState([0, 0]);
-
-  const paginate = (newDirection: number) => {
-    setPage([page + newDirection, newDirection]);
-    setCurrentDate(prevDate => newDirection > 0 ? addDays(prevDate, 1) : subDays(prevDate, 1));
+  
+  const paginate = (days: number) => {
+    setDirection(days > 0 ? 1 : -1);
+    setCurrentDate(prev => addDays(prev, days));
   };
 
   const goToToday = () => {
     const today = new Date();
-    if (currentDate < today) {
-      setPage([page + 1, 1]);
-    } else if (currentDate > today) {
-      setPage([page - 1, -1]);
-    }
+    setDirection(today > currentDate ? 1 : -1);
     setCurrentDate(today);
   }
   
+  const handleDotClick = (day: Date) => {
+    if (isSameDay(day, currentDate)) return;
+    setDirection(day > currentDate ? 1 : -1);
+    setCurrentDate(day);
+  }
+
   const currentDayKey = format(currentDate, 'EEEE');
   const userGoals = userProfile?.goals || { dailyCalorieGoal: 2200, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
   const derivedGoals = {
@@ -146,16 +149,17 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
       )
   }
 
+  // For pagination dots
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Week starts on Monday
+  const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
+
   return (
     <div className="max-w-4xl mx-auto relative overflow-x-hidden min-h-[60vh]">
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
-          key={page}
+          key={currentDate.getTime()}
           custom={direction}
           variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
           transition={{
             x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.2 },
@@ -173,6 +177,19 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                   <Button variant="outline" onClick={goToToday} disabled={isToday(currentDate)}>
                       Today
                   </Button>
+              </div>
+              <div className="flex justify-center gap-3 pt-3">
+                {weekDays.map((day, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleDotClick(day)}
+                    className={cn(
+                      "h-2 w-2 rounded-full bg-muted transition-all duration-300 hover:bg-muted-foreground/50",
+                      isSameDay(day, currentDate) && "w-4 bg-primary"
+                    )}
+                    aria-label={`Go to ${format(day, 'EEEE')}`}
+                  />
+                ))}
               </div>
               <CardDescription>How your planned meals stack up against your goals.</CardDescription>
             </CardHeader>
