@@ -20,19 +20,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   gender: z.string().min(1, "Gender is required"),
   age: z.coerce.number().min(1, "Age is required"),
+  heightUnit: z.enum(["cm", "m", "ft-in"]),
   height: z.coerce.number().min(1, "Height is required"),
+  heightInches: z.coerce.number().optional(),
+  weightUnit: z.enum(["kg", "g", "lb", "oz"]),
   weight: z.coerce.number().min(1, "Weight is required"),
+}).refine(data => {
+  if (data.heightUnit === 'ft-in') {
+    return data.heightInches !== undefined && data.heightInches >= 0;
+  }
+  return true;
+}, {
+  message: "Inches are required",
+  path: ["heightInches"],
 });
 
 export function DetailsStep({ onNext }: { onNext: (data: any) => void }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { gender: "", age: 0, height: 0, weight: 0 },
+    defaultValues: {
+      gender: "",
+      age: undefined,
+      heightUnit: "cm",
+      height: undefined,
+      heightInches: undefined,
+      weightUnit: "kg",
+      weight: undefined
+    },
   });
+
+  const heightUnit = form.watch("heightUnit");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onNext(values);
@@ -43,68 +65,134 @@ export function DetailsStep({ onNext }: { onNext: (data: any) => void }) {
       <h2 className="text-2xl font-bold text-center mb-6">Tell us about yourself</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="gender"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Gender</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Select your gender" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-3 gap-4">
-             <FormField
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gender</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
               control={form.control}
               name="age"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="25" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="height"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Height (cm)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="175" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Weight (kg)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="70" {...field} />
+                    <Input type="number" placeholder="e.g., 25" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <div className="flex justify-end">
+          
+          {/* Height Inputs */}
+          <div className="space-y-2">
+            <FormLabel>Height</FormLabel>
+            <div className="flex gap-2">
+              <div className={cn("grid gap-2", heightUnit === 'ft-in' ? 'grid-cols-2' : 'grid-cols-1 flex-1')}>
+                 <FormField
+                    control={form.control}
+                    name="height"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input type="number" placeholder={heightUnit === 'ft-in' ? 'ft' : 'Height'} {...field} value={field.value || ''} />
+                        </FormControl>
+                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {heightUnit === 'ft-in' && (
+                    <FormField
+                      control={form.control}
+                      name="heightInches"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="number" placeholder="in" {...field} value={field.value || ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+              </div>
+               <FormField
+                  control={form.control}
+                  name="heightUnit"
+                  render={({ field }) => (
+                    <FormItem className="w-[100px]">
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="cm">cm</SelectItem>
+                          <SelectItem value="m">m</SelectItem>
+                          <SelectItem value="ft-in">ft/in</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+            </div>
+          </div>
+          
+          {/* Weight Inputs */}
+           <div className="space-y-2">
+            <FormLabel>Weight</FormLabel>
+             <div className="flex gap-2">
+                <FormField
+                  control={form.control}
+                  name="weight"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 70" {...field} value={field.value || ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="weightUnit"
+                  render={({ field }) => (
+                    <FormItem className="w-[100px]">
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="g">g</SelectItem>
+                          <SelectItem value="lb">lb</SelectItem>
+                          <SelectItem value="oz">oz</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+            </div>
+          </div>
+          
+          <div className="flex justify-end pt-4">
             <Button type="submit">Next</Button>
           </div>
         </form>
