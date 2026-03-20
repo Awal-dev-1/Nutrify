@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AddFoodModal } from '@/components/tracker/add-food-modal';
 import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 import { EmptyState } from '../shared/empty-state';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed } from 'lucide-react';
+import { Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '../ui/progress';
-import { subDays, addDays, format, isToday } from 'date-fns';
+import { format } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/firebase';
 
@@ -54,28 +54,13 @@ const getMealIcon = (mealType: string) => {
 };
 
 export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: DayPlannerProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
   const [mealToAdd, setMealToAdd] = useState<string | null>(null);
   const { userProfile } = useUser();
-  const [[page, direction], setPage] = useState([0, 0]);
-
-  const paginate = (newDirection: number) => {
-    setPage([page + newDirection, newDirection]);
-    setCurrentDate(prevDate => newDirection > 0 ? addDays(prevDate, 1) : subDays(prevDate, 1));
-  };
-
-  const goToToday = () => {
-    const today = new Date();
-    if (currentDate < today) {
-      setPage([page + 1, 1]);
-    } else if (currentDate > today) {
-      setPage([page - 1, -1]);
-    }
-    setCurrentDate(today);
-  }
   
+  // Day View always shows today
+  const currentDate = new Date();
   const currentDayKey = format(currentDate, 'EEEE');
   const userGoals = userProfile?.goals || { dailyCalorieGoal: 2200, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
   const derivedGoals = {
@@ -109,52 +94,21 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
   const carbsProgress = (dailyTotals.carbs / derivedGoals.carbs) * 100;
   const fatProgress = (dailyTotals.fat / derivedGoals.fat) * 100;
 
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-  };
 
   return (
-    <div className="max-w-4xl mx-auto relative overflow-x-hidden min-h-[60vh]">
-      <AnimatePresence initial={false} custom={direction}>
-        <motion.div
-          key={page}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
-          }}
-          className="w-full space-y-6 absolute"
-        >
+    <div className="max-w-4xl mx-auto min-h-[60vh]">
+        <div className="w-full space-y-6">
           {/* Daily Summary Card */}
           <Card className="border-2 shadow-lg">
             <CardHeader>
               <div className="flex justify-between items-center">
                   <CardTitle className="text-lg font-medium flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {format(currentDate, 'EEEE, MMM d')}
+                      Today's Plan ({format(currentDate, 'MMM d')})
                   </CardTitle>
-                  <Button variant="outline" onClick={goToToday} disabled={isToday(currentDate)}>
-                      Today
-                  </Button>
+                  <Badge>Today</Badge>
               </div>
-              <CardDescription>How your planned meals stack up against your goals.</CardDescription>
+              <CardDescription>Your planned meals and macros for today.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
               {/* Calories */}
@@ -194,20 +148,12 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between p-4 border-t">
-              <Button variant="outline" onClick={() => paginate(-1)}>
-                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-              </Button>
-              <Button variant="outline" onClick={() => paginate(1)}>
-                Next <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
           </Card>
           
           {/* Meals Section */}
           {mealsForDay.length === 0 ? (
             <EmptyState 
-              title="No meals planned for this day" 
+              title="No meals planned for today" 
               description="Start planning your day by adding meals."
             >
               <Button onClick={() => handleAddClick('Breakfast')} size="lg">
@@ -296,8 +242,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
               </Accordion>
             </div>
           )}
-        </motion.div>
-      </AnimatePresence>
+        </div>
 
       <AddFoodModal
         isOpen={isAddModalOpen}
