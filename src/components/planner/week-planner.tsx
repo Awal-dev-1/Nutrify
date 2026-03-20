@@ -167,7 +167,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
             }}
-            className="w-full space-y-4 sm:space-y-6 sm:absolute"
+            className="w-full space-y-4 sm:space-y-6 absolute"
           >
             {/* ── Daily Summary Card ── */}
             <Card className="border-2 shadow-lg">
@@ -301,7 +301,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                     className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
                                   >
                                     <div className="flex-grow min-w-0">
-                                      <p className="font-medium truncate text-sm sm:text-base">{meal.foodName}</p>
+                                      <p className="font-medium text-sm sm:text-base">{meal.foodName}</p>
                                       <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                                         <span>{meal.quantity}g</span>
                                         <span className="text-muted-foreground/30">|</span>

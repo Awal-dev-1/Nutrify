@@ -201,7 +201,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                 className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
                               >
                                 <div className="flex-grow min-w-0">
-                                  <p className="font-medium truncate text-sm sm:text-base">{meal.foodName}</p>
+                                  <p className="font-medium text-sm sm:text-base">{meal.foodName}</p>
                                   <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                                     <span>{meal.quantity}g</span>
                                     <span className="text-muted-foreground/30">|</span>
