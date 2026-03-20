@@ -323,6 +323,7 @@ export default function RecognizePage() {
             <AiFoodResultCard
               item={viewedPrediction}
               onAdd={setSelectedFood}
+              imageUrl={preview}
             />
 
             {otherPredictions.length > 0 && (

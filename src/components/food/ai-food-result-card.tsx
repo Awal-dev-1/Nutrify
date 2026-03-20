@@ -1,7 +1,7 @@
-
 'use client';
 
 import type { FC } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Beef, Wheat, Droplets, PlusCircle, Stethoscope } from 'lucide-react';
@@ -9,7 +9,7 @@ import type { FoodItem } from '@/types/food';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
-export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => void; }> = ({ item, onAdd }) => {
+export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => void; imageUrl: string | null; }> = ({ item, onAdd, imageUrl }) => {
   const hasMicros = item.micronutrientBreakdown && 
                     Object.values(item.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
 
@@ -91,8 +91,16 @@ export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => v
                 </CardContent>
             </Card>
         </div>
+        {imageUrl && (
+          <div>
+            <h3 className="text-lg font-semibold mt-4 mb-2">Image Preview</h3>
+            <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden">
+                <Image src={imageUrl} alt={item.foodName} fill className="object-contain" />
+            </div>
+          </div>
+        )}
         {item.healthAnalysis && (
-          <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+          <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 mt-4">
             <Stethoscope className="h-4 w-4 text-blue-600 dark:text-blue-300" />
             <AlertTitle className="text-blue-800 dark:text-blue-200">Health Tip</AlertTitle>
             <AlertDescription className="text-blue-700 dark:text-blue-200/90">
