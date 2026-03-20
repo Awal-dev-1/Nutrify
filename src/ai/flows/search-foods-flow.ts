@@ -41,7 +41,7 @@ User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 CRITICAL INSTRUCTIONS:
 1.  **Speed and Brevity**: Your response MUST be generated as quickly as possible. Keep all text fields concise, except for the Health Analysis and Recipe.
 2.  **Food Queries Only**: If the user's query is clearly not about food (e.g., "a car"), you MUST set 'isFoodQuery' to false and return an empty 'foodItems' array.
-3.  **Handle Specific and Combined Dishes**: If the user asks for a single food ("fufu"), provide info for that item. If they ask for a combined dish ("banku with okra soup"), analyze the entire dish as one.
+3.  **Analyze Mixed Dishes Accurately**: If the query is for a combined dish (e.g., "banku with okra soup"), you MUST identify all main components (like the banku, soup, and any fish or meat) and calculate the total nutritional value for the entire dish as a single item. Do not provide separate entries for each component.
 4.  **Detailed Recipe**: For the \`detailedRecipe\` field, you MUST provide a list of all necessary ingredients with quantities, and a clear, step-by-step guide for the cooking instructions. Be thorough.
 5.  **Provide DETAILED Health Analysis**: For each food item, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
     *   Explain CLEARLY why the food is beneficial or detrimental based on the user's specific goal (e.g., 'lose-weight', 'gain-weight').
