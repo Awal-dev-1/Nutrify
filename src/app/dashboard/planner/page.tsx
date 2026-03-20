@@ -21,7 +21,7 @@ import { PlannerControls } from '@/components/planner/planner-controls';
 import { WeekPlanner } from '@/components/planner/week-planner';
 import { DayPlanner } from '@/components/planner/day-planner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { FoodItem } from '@/types/food';
 
@@ -66,8 +66,7 @@ export default function PlannerPage() {
 
     setIsGenerating(true);
     
-    // Non-blocking clear of the plan
-    clearPlan(db, user.uid);
+    await clearPlan(db, user.uid);
     
     try {
       // These are hardcoded for now, but should come from analytics in a future version.
@@ -103,13 +102,14 @@ export default function PlannerPage() {
       
       const result = await generatePersonalizedMealPlan(input);
       
-      result.plannedMeals.forEach(meal => {
-        addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, meal);
-      });
+      await Promise.all(result.plannedMeals.map(meal => {
+        return addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, meal);
+      }));
 
       toast({
         title: '✨ Plan Generated!',
         description: result.planSummary,
+        duration: 6000,
       });
 
     } catch (err: any) {
@@ -124,9 +124,9 @@ export default function PlannerPage() {
     }
   };
 
-  const handleClearPlan = () => {
+  const handleClearPlan = async () => {
     if (!user || !db) return;
-    clearPlan(db, user.uid);
+    await clearPlan(db, user.uid);
     toast({ title: 'Plan Cleared', description: 'Your meal plan has been reset.' });
   };
 
@@ -174,51 +174,15 @@ export default function PlannerPage() {
       return acc;
     }, {} as Record<string, { calories: number; protein: number; carbs: number; fat: number; }>);
   }, [plannedMeals]);
-
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center items-center h-[500px]">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
-      );
-    }
-    if (error) {
-      return (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error loading plan</AlertTitle>
-          <AlertDescription>{error.message}</AlertDescription>
-        </Alert>
-      );
-    }
-
-    return (
-      view === 'week' ? (
-        <WeekPlanner
-          plannedMeals={plannedMeals || []}
-          summary={mealSummary}
-          onAddMeal={handleAddMeal}
-          onUpdateMeal={handleUpdateMeal}
-          onRemoveMeal={handleRemoveMeal}
-        />
-      ) : (
-         <DayPlanner
-            plannedMeals={plannedMeals || []}
-            summary={mealSummary}
-            onAddMeal={handleAddMeal}
-            onUpdateMeal={handleUpdateMeal}
-            onRemoveMeal={handleRemoveMeal}
-          />
-      )
-    );
-  };
   
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">AI Meal Planner</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Calendar className="h-7 w-7 text-primary" />
+            AI Meal Planner
+          </h1>
           <p className="text-muted-foreground">
             Generate a personalized weekly meal plan or build your own.
           </p>
@@ -235,11 +199,37 @@ export default function PlannerPage() {
           <TabsTrigger value="week">Week View</TabsTrigger>
           <TabsTrigger value="day">Day View</TabsTrigger>
         </TabsList>
+        <TabsContent value="week" className="mt-6">
+            {isLoading ? (
+                <div className="flex justify-center items-center h-[500px]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
+            ) : error ? (
+                <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error loading plan</AlertTitle><AlertDescription>{error.message}</AlertDescription></Alert>
+            ) : (
+                <WeekPlanner
+                    plannedMeals={plannedMeals || []}
+                    summary={mealSummary}
+                    onAddMeal={handleAddMeal}
+                    onUpdateMeal={handleUpdateMeal}
+                    onRemoveMeal={handleRemoveMeal}
+                />
+            )}
+        </TabsContent>
+        <TabsContent value="day" className="mt-6">
+             {isLoading ? (
+                <div className="flex justify-center items-center h-[500px]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
+            ) : error ? (
+                <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error loading plan</AlertTitle><AlertDescription>{error.message}</AlertDescription></Alert>
+            ) : (
+                <DayPlanner
+                    plannedMeals={plannedMeals || []}
+                    summary={mealSummary}
+                    onAddMeal={handleAddMeal}
+                    onUpdateMeal={handleUpdateMeal}
+                    onRemoveMeal={handleRemoveMeal}
+                />
+            )}
+        </TabsContent>
       </Tabs>
-
-      <div className="min-h-[500px]">
-        {renderContent()}
-      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -80,12 +81,13 @@ export const addGeneratedMealToPlan = (
     createdAt: serverTimestamp(),
   };
 
-  addDoc(plannedMealsColRef, newPlannedMeal).catch(error => {
+  return addDoc(plannedMealsColRef, newPlannedMeal).catch(error => {
     errorEmitter.emit('permission-error', new FirestorePermissionError({
       path: plannedMealsColRef.path,
       operation: 'create',
       requestResourceData: newPlannedMeal,
     }));
+    throw error;
   });
 };
 
@@ -124,12 +126,12 @@ export const deletePlannedMeal = (db: Firestore, userId: string, mealId: string)
 };
 
 // Clear all planned meals for a user
-export const clearPlan = (db: Firestore, userId: string) => {
+export const clearPlan = async (db: Firestore, userId: string) => {
   const plannedMealsColRef = collection(db, 'users', userId, 'plannedMeals');
   const q = query(plannedMealsColRef);
   
-  // Non-blocking clear
-  getDocs(q).then(querySnapshot => {
+  try {
+    const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) return;
 
     const batch = writeBatch(db);
@@ -137,16 +139,14 @@ export const clearPlan = (db: Firestore, userId: string) => {
       batch.delete(doc.ref);
     });
     
-    batch.commit().catch(error => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
+    await batch.commit();
+  } catch (error) {
+     const permissionError = new FirestorePermissionError({
         path: plannedMealsColRef.path,
-        operation: 'delete', // Batch delete is a series of deletes
-      }));
-    });
-  }).catch(error => {
-     errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: plannedMealsColRef.path,
-      operation: 'list',
-    }));
-  });
+        operation: 'list', // or 'delete' depending on where it fails
+      });
+      errorEmitter.emit('permission-error', permissionError);
+      // Re-throw so the UI can know the clear failed.
+      throw permissionError;
+  }
 };
