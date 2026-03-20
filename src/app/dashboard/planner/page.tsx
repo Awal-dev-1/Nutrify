@@ -1,293 +1,198 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { PlannedMeal } from '@/types/planner';
+import { addPlannedMeal, updatePlannedMeal, deletePlannedMeal, clearPlan, addGeneratedMealToPlan } from '@/services/plannerService';
+import {
+  generatePersonalizedMealPlan,
+  type GeneratePersonalizedMealPlanInput,
+} from '@/ai/flows/generate-personalized-meal-plan';
+import { useToast } from '@/hooks/use-toast';
+import { PlannerControls } from '@/components/planner/planner-controls';
+import { WeekPlanner } from '@/components/planner/week-planner';
+import { DayPlanner } from '@/components/planner/day-planner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
-import { motion, AnimatePresence } from 'framer-motion';
 
-import { Button } from '@/components/ui/button';
-import { AddFoodModal } from '@/components/tracker/add-food-modal';
-import { EditFoodModal } from '@/components/tracker/edit-food-modal';
-import { EmptyState } from '../shared/empty-state';
-import { Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { Progress } from '../ui/progress';
-import { format } from 'date-fns';
-import { Badge } from '../ui/badge';
-import { useUser } from '@/firebase';
+export default function MealPlannerPage() {
+  const { toast } = useToast();
+  const { user, userProfile, isProfileLoading } = useUser();
+  const db = useFirestore();
 
-interface DayPlannerProps {
-  plannedMeals: (PlannedMeal & { id: string })[];
-  summary: Record<string, any>;
-  onAddMeal: (food: FoodItem, quantity: number, mealType: string, day: string) => void;
-  onUpdateMeal: (id: string, newQuantity: number) => void;
-  onRemoveMeal: (id: string) => void;
-}
+  const [activeTab, setActiveTab] = useState('day');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
-const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+  const plannedMealsQuery = useMemoFirebase(
+    () => user ? query(collection(db, 'users', user.uid, 'plannedMeals'), orderBy('createdAt', 'asc')) : null,
+    [user, db]
+  );
+  const { data: plannedMeals, isLoading: isPlannerLoading } = useCollection<PlannedMeal & { id: string }>(plannedMealsQuery);
 
-const getMealIcon = (mealType: string) => {
-  switch(mealType) {
-    case 'Breakfast': return '🍳';
-    case 'Lunch': return '🥗';
-    case 'Dinner': return '🍽️';
-    case 'Snacks': return '🍪';
-    default: return '🍽️';
-  }
-};
+  const mealSummary = useMemo(() => {
+    if (!plannedMeals) return {};
+    return plannedMeals.reduce((acc, meal) => {
+      if (!acc[meal.day]) {
+        acc[meal.day] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+      }
+      acc[meal.day].calories += meal.calories;
+      acc[meal.day].protein += meal.protein;
+      acc[meal.day].carbs += meal.carbs;
+      acc[meal.day].fat += meal.fat;
+      return acc;
+    }, {} as Record<string, any>);
+  }, [plannedMeals]);
+  
+  const handleGeneratePlan = async () => {
+    if (!user || !db || !userProfile) return;
 
-export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: DayPlannerProps) {
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
-  const [mealToAdd, setMealToAdd] = useState<string | null>(null);
-  const { userProfile } = useUser();
+    if (!userProfile.profile || !userProfile.goals || !userProfile.health) {
+        setGenerationError("Please complete your profile and goals before generating a plan.");
+        return;
+    }
 
-  const currentDate = new Date();
-  const currentDayKey = format(currentDate, 'EEEE');
-  const userGoals = userProfile?.goals || { dailyCalorieGoal: 2200, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
-  const derivedGoals = {
-    calories: userGoals.dailyCalorieGoal,
-    protein: (userGoals.dailyCalorieGoal * (userGoals.proteinPercentageGoal / 100)) / 4,
-    carbs: (userGoals.dailyCalorieGoal * (userGoals.carbsPercentageGoal / 100)) / 4,
-    fat: (userGoals.dailyCalorieGoal * (userGoals.fatPercentageGoal / 100)) / 9,
-  };
+    setIsGenerating(true);
+    setGenerationError(null);
 
-  const handleAddClick = (mealType: string) => {
-    setMealToAdd(mealType);
-    setAddModalOpen(true);
-  };
+    try {
+        const input: GeneratePersonalizedMealPlanInput = {
+            gender: userProfile.profile.gender as any,
+            age: userProfile.profile.age,
+            heightCm: userProfile.profile.heightCm,
+            weightKg: userProfile.profile.weightKg,
+            activityLevel: userProfile.profile.activityLevel as any,
+            goal: userProfile.health.primaryGoal as any,
+            targetCalories: userProfile.goals.dailyCalorieGoal,
+            proteinPercentageGoal: userProfile.goals.proteinPercentageGoal,
+            carbsPercentageGoal: userProfile.goals.carbsPercentageGoal,
+            fatPercentageGoal: userProfile.goals.fatPercentageGoal,
+            dietaryPreferences: userProfile.health.dietaryPreferences || [],
+            // These would ideally come from analytics
+            averageDailyCalories: 2000, 
+            averageDailyProtein: 100,
+            averageDailyCarbs: 250,
+            averageDailyFat: 60,
+            averageDailyIron: 15,
+            averageDailyVitaminA: 700,
+        };
 
-  const handleEditClick = (meal: PlannedMeal & { id: string }) => {
-    setEditingMeal(meal);
-  };
+        await clearPlan(db, user.uid);
+        const result = await generatePersonalizedMealPlan(input);
 
-  const handleAddFood = (food: FoodItem, quantity: number, mealType: string) => {
-    if (mealToAdd) {
-      onAddMeal(food, quantity, mealToAdd, currentDayKey);
+        // Add generated meals to the plan
+        for (const meal of result.plannedMeals) {
+            await addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, {
+                foodName: meal.foodName,
+                quantityGrams: meal.quantityGrams,
+                calories: meal.calories,
+                proteinGrams: meal.proteinGrams,
+                carbsGrams: meal.carbsGrams,
+                fatGrams: meal.fatGrams,
+            });
+        }
+
+        toast({
+            title: "Meal Plan Generated!",
+            description: result.planSummary,
+        });
+
+    } catch (err: any) {
+        setGenerationError(err.message || "An unknown error occurred while generating the plan.");
+    } finally {
+        setIsGenerating(false);
     }
   };
+  
+  const handleClearPlan = async () => {
+    if (!user || !db) return;
+    await clearPlan(db, user.uid);
+    toast({
+        variant: "destructive",
+        title: "Plan Cleared",
+        description: "Your meal plan has been reset.",
+    });
+  };
 
-  const dailyTotals = summary[currentDayKey] || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-  const mealsForDay = plannedMeals.filter((m) => m.day === currentDayKey);
+  const handleAddMeal = (food: FoodItem, quantity: number, mealType: string, day: string) => {
+    if (!user || !db) return;
+    addPlannedMeal(db, user.uid, day, mealType, food, quantity);
+  };
+  
+  const handleUpdateMeal = (id: string, newQuantity: number) => {
+     if (!user || !db || !plannedMeals) return;
+     const meal = plannedMeals.find(m => m.id === id);
+     if(!meal) return;
+     
+     const ratio = newQuantity / meal.quantity;
+     updatePlannedMeal(db, user.uid, id, {
+         quantity: newQuantity,
+         calories: meal.calories * ratio,
+         protein: meal.protein * ratio,
+         carbs: meal.carbs * ratio,
+         fat: meal.fat * ratio,
+     });
+  };
 
-  const calorieProgress = (dailyTotals.calories / derivedGoals.calories) * 100;
-  const proteinProgress = (dailyTotals.protein / derivedGoals.protein) * 100;
-  const carbsProgress = (dailyTotals.carbs / derivedGoals.carbs) * 100;
-  const fatProgress = (dailyTotals.fat / derivedGoals.fat) * 100;
+  const handleRemoveMeal = (id: string) => {
+     if (!user || !db) return;
+     deletePlannedMeal(db, user.uid, id);
+  };
+  
+  const isLoading = isPlannerLoading || isProfileLoading;
 
   return (
-    <div className="max-w-4xl mx-auto min-h-[60vh]">
-      <div className="w-full space-y-4 sm:space-y-6">
-
-        {/* ── Daily Summary Card ── */}
-        <Card className="border-2 shadow-lg">
-          <CardHeader className="pb-3">
-            {/* Title row */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle className="text-base sm:text-lg font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                Today's Plan ({format(currentDate, 'MMM d')})
-              </CardTitle>
-              <Badge>Today</Badge>
-            </div>
-            <CardDescription className="text-xs sm:text-sm pt-1">
-              Your planned meals and macros for today.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="grid gap-5 sm:gap-6">
-            {/* Calories */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-muted-foreground">Calories</span>
-                <span className="font-bold text-primary text-xs sm:text-sm">
-                  {Math.round(dailyTotals.calories)} / {derivedGoals.calories} kcal
-                </span>
-              </div>
-              <Progress value={calorieProgress} className="h-2" />
-            </div>
-
-            {/* Macros: single column on mobile, 3-col on sm+ */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Beef className="h-3.5 w-3.5 text-red-500 shrink-0" />
-                  <span className="font-medium text-muted-foreground">Protein</span>
-                  <span className="font-semibold ml-auto text-xs sm:text-sm">
-                    {Math.round(dailyTotals.protein)}g / {Math.round(derivedGoals.protein)}g
-                  </span>
-                </div>
-                <Progress value={proteinProgress} className="h-1.5" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Wheat className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
-                  <span className="font-medium text-muted-foreground">Carbs</span>
-                  <span className="font-semibold ml-auto text-xs sm:text-sm">
-                    {Math.round(dailyTotals.carbs)}g / {Math.round(derivedGoals.carbs)}g
-                  </span>
-                </div>
-                <Progress value={carbsProgress} className="h-1.5" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Droplets className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                  <span className="font-medium text-muted-foreground">Fat</span>
-                  <span className="font-semibold ml-auto text-xs sm:text-sm">
-                    {Math.round(dailyTotals.fat)}g / {Math.round(derivedGoals.fat)}g
-                  </span>
-                </div>
-                <Progress value={fatProgress} className="h-1.5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── Meals Section ── */}
-        {mealsForDay.length === 0 ? (
-          <EmptyState
-            title="No meals planned for today"
-            description="Start planning your day by adding meals."
-          >
-            <Button onClick={() => handleAddClick('Breakfast')} size="lg">
-              <Plus className="mr-2 h-4 w-4" /> Add First Meal
-            </Button>
-          </EmptyState>
-        ) : (
-          <div className="space-y-3 sm:space-y-4">
-            <Accordion type="multiple" defaultValue={mealTypes} className="space-y-3 sm:space-y-4">
-              {mealTypes.map((mealType) => {
-                const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
-                const totalCalories = mealsForType.reduce((acc, meal) => acc + meal.calories, 0);
-
-                return (
-                  <Card key={mealType} className="overflow-hidden border shadow-lg">
-                    <AccordionItem value={mealType} className="border-0">
-                      <AccordionTrigger className="px-4 sm:px-6 py-3 sm:py-4 hover:no-underline hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between w-full items-center gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <span className="text-lg sm:text-xl">{getMealIcon(mealType)}</span>
-                            <h3 className="font-semibold text-base sm:text-lg truncate">{mealType}</h3>
-                          </div>
-                          <Badge variant="outline" className="px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm shrink-0">
-                            {Math.round(totalCalories)} kcal
-                          </Badge>
-                        </div>
-                      </AccordionTrigger>
-
-                      <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
-                        <div className="space-y-3">
-                          {mealsForType.length > 0 ? (
-                            mealsForType.map(meal => (
-                              <div
-                                key={meal.id}
-                                className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
-                              >
-                                <div className="flex-grow min-w-0">
-                                  <p className="font-medium truncate text-sm sm:text-base">{meal.foodName}</p>
-                                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                                    <span>{meal.quantity}g</span>
-                                    <span className="text-muted-foreground/30">|</span>
-                                    <span>{Math.round(meal.calories)} kcal</span>
-                                  </div>
-                                </div>
-
-                                {/* Always visible on mobile (no hover on touch), hover-only on pointer devices */}
-                                <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => handleEditClick(meal)}
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-destructive hover:text-destructive"
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
-                                        <AlertDialogCancel className="mt-0 w-full sm:w-auto">Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          className="w-full sm:w-auto"
-                                          onClick={() => onRemoveMeal(meal.id)}
-                                        >
-                                          Remove
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
-                              <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
-                              <p className="text-sm text-muted-foreground">No food planned</p>
-                            </div>
-                          )}
-
-                          <Button
-                            variant="outline"
-                            className="w-full mt-2 border-dashed"
-                            onClick={() => handleAddClick(mealType)}
-                          >
-                            <Plus className="h-4 w-4 mr-2" /> Add Food
-                          </Button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Card>
-                );
-              })}
-            </Accordion>
-          </div>
-        )}
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">AI Meal Planner</h1>
+          <p className="text-muted-foreground max-w-2xl">
+            Generate, view, and manage your weekly meal plan.
+          </p>
+        </div>
+        <PlannerControls onGenerate={handleGeneratePlan} onClear={handleClearPlan} isGenerating={isGenerating} />
       </div>
 
-      <AddFoodModal
-        isOpen={isAddModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onAddFood={handleAddFood}
-        mealType={mealToAdd as any}
-      />
-
-      <EditFoodModal
-        isOpen={!!editingMeal}
-        onClose={() => setEditingMeal(null)}
-        onUpdate={(id, qty) => {
-          onUpdateMeal(id, qty);
-          setEditingMeal(null);
-        }}
-        loggedFood={editingMeal ? { logId: editingMeal.id, quantity: editingMeal.quantity } : null}
-      />
+      {generationError && (
+          <Alert variant="destructive">
+            <AlertTitle>Generation Failed</AlertTitle>
+            <AlertDescription>{generationError}</AlertDescription>
+          </Alert>
+      )}
+      
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="day">Day View</TabsTrigger>
+            <TabsTrigger value="week">Week View</TabsTrigger>
+          </TabsList>
+          <TabsContent value="day" className="mt-6">
+            <DayPlanner 
+                plannedMeals={plannedMeals || []} 
+                summary={mealSummary}
+                onAddMeal={handleAddMeal}
+                onUpdateMeal={handleUpdateMeal}
+                onRemoveMeal={handleRemoveMeal}
+            />
+          </TabsContent>
+          <TabsContent value="week" className="mt-6">
+            <WeekPlanner 
+                plannedMeals={plannedMeals || []} 
+                summary={mealSummary}
+                onAddMeal={handleAddMeal}
+                onUpdateMeal={handleUpdateMeal}
+                onRemoveMeal={handleRemoveMeal}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
