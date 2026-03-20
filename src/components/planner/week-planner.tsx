@@ -1,4 +1,4 @@
-'use client';
+git 'use client';
 
 import { useState } from 'react';
 import type { PlannedMeal } from '@/types/planner';
