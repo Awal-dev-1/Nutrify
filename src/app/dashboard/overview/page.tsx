@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
@@ -9,7 +8,7 @@ import { format } from 'date-fns';
 import { getAnalyticsData } from '@/services/analyticsService';
 import type { DailyLog, AnalyticsData } from '@/types/analytics';
 import type { GeneratedRecommendations, RecommendationItem } from '@/types/recommendations';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -297,14 +296,24 @@ const OverviewPage = () => {
                           fontSize: '12px',
                         }}
                         labelFormatter={(label) => format(new Date(label), 'MMMM d, yyyy')}
-                        formatter={(value: number) => [`${value} kcal`, 'Calories']}
+                        formatter={(value: number) => [`${Math.round(value)} kcal`, 'Calories']}
+                      />
+                      <ReferenceLine 
+                        y={derivedGoals.calories} 
+                        label={{ value: 'Goal', position: 'insideTopLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                        stroke="hsl(var(--destructive))" 
+                        strokeDasharray="3 3" 
                       />
                       <Bar 
-                        dataKey="calories" 
-                        fill="hsl(var(--primary))" 
-                        radius={[6, 6, 0, 0]} 
-                        maxBarSize={50}
-                      />
+                        dataKey="calories"
+                        radius={[4, 4, 0, 0]} 
+                        maxBarSize={40}
+                        animationDuration={500}
+                      >
+                         {weeklyData?.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.calories > entry.goal ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
