@@ -119,13 +119,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
     
-    // Set persistence once in the background. We don't need to wait for it.
-    // Errors here are logged but don't block the auth flow.
-    setPersistence(auth, browserSessionPersistence).catch((error) => {
-        console.error("FirebaseProvider: setPersistence error:", error);
-    });
-
-    // The listener for auth changes is now set up immediately.
+    // The listener for auth changes.
     const unsubscribe = onAuthStateChanged(
       auth,
       (firebaseUser) => {
@@ -136,6 +130,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
         setUserAuthState({ user: null, isUserLoading: false, userError: error });
       }
     );
+
+    // Set persistence once in the background. This should only run once.
+    // We don't await this as onAuthStateChanged will report the correct auth state
+    // regardless of persistence. This avoids a potential delay in initial auth state reporting.
+    setPersistence(auth, browserSessionPersistence).catch((error) => {
+        console.error("FirebaseProvider: setPersistence error:", error);
+    });
 
     return () => unsubscribe();
   }, [auth]);

@@ -9,24 +9,23 @@ import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 
 export default function LoginPage() {
-  const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (isUserLoading || isProfileLoading) {
-      return; // Wait for auth and profile state to be determined
+    if (isUserLoading) {
+      return; // Wait for auth state to be determined
     }
 
-    if (user && userProfile) {
-      if (userProfile.onboardingCompleted) {
-        router.push("/dashboard/overview");
-      } else {
-        router.push("/onboarding");
-      }
+    if (user) {
+      // User is logged in, redirect to the dashboard.
+      // The dashboard layout will handle the profile loading and onboarding check.
+      router.push("/dashboard/overview");
     }
-  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
+  }, [user, isUserLoading, router]);
 
-  if (isUserLoading || isProfileLoading || (user && userProfile)) {
+  // Show a loader while checking auth status or if a user is found and we are redirecting.
+  if (isUserLoading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
@@ -46,6 +45,7 @@ export default function LoginPage() {
     );
   }
 
+  // If no user and loading is finished, show the login form.
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10">
       {/* Left Side - Branding (visible on md and up) */}

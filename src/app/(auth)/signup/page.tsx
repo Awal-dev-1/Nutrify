@@ -9,24 +9,22 @@ import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 
 export default function SignUpPage() {
-  const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (isUserLoading || isProfileLoading) {
-      return; // Wait for auth and profile state to be determined
+    if (isUserLoading) {
+      return; // Wait for auth state to be determined
     }
 
-    if (user && userProfile) {
-      if (userProfile.onboardingCompleted) {
-        router.push("/dashboard/overview");
-      } else {
-        router.push("/onboarding");
-      }
+    if (user) {
+      // After signup, the user object exists. Let onboarding/dashboard handle the rest.
+      router.push("/onboarding");
     }
-  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
+  }, [user, isUserLoading, router]);
 
-  if (isUserLoading || isProfileLoading || (user && userProfile)) {
+  // Show a loader while checking auth status or if a user is found and we are redirecting.
+  if (isUserLoading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
