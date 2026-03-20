@@ -20,6 +20,10 @@ const RecommendationItemSchema = z.object({
       sodium: z.number().optional(),
   }).describe("A summary of key micronutrients per 100g."),
   reason: z.string().describe("A concise (1-2 sentences) explanation for why this food was recommended based on the user's goal."),
+  detailedRecipe: z.object({
+    ingredients: z.array(z.string()).describe("A list of all ingredients required, with quantities."),
+    instructions: z.array(z.string()).describe("A step-by-step guide for preparation."),
+  }).describe("A detailed recipe for the food item.").optional(),
 });
 
 const GenerateFoodRecommendationsInputSchema = z.object({
@@ -66,12 +70,13 @@ Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.c
         *   'gain-weight': Prioritize foods higher in calories and protein.
         *   'maintain-weight' or 'eat-healthier': Prioritize balanced, nutrient-dense foods.
     *   Adhere to the user's \`dietaryPreferences\`.
-2.  **Provide Full Nutritional Details**: For each recommended food, you MUST provide the following details, all calculated per 100g:
+2.  **Provide Full Nutritional and Recipe Details**: For each recommended food, you MUST provide the following details:
     *   \`foodId\`: Use the food's name in kebab-case (e.g., 'jollof-rice-with-chicken').
     *   \`name\`: The common name of the food.
     *   \`calories\`, \`protein\`, \`carbs\`, \`fat\`: All in grams per 100g.
-    *   \`micronutrients\`: An object with optional values for \`fiber\`, \`iron\`, \`calcium\`, and \`sodium\`.
+    *   \`micronutrients\`: An object with optional values for \`fiber\`, \`iron\`, \`calcium\`, and \`sodium\`, per 100g.
     *   \`reason\`: A short, encouraging explanation (1-2 sentences) explaining why it's a good choice for their goal.
+    *   \`detailedRecipe\`: A comprehensive recipe including a list of ingredients with quantities and step-by-step instructions.
 3.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal and the recommendations you've provided.
 4.  **Final Output**: Ensure the output strictly adheres to the JSON schema.
 
