@@ -43,6 +43,8 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
+const barColors = ["#3B82F6", "#22C55E", "#EAB308", "#EF4444", "#8B5CF6", "#F97316", "#14B8A6"];
+
 const OverviewPage = () => {
   const { user, userProfile, isProfileLoading } = useUser();
   const db = useFirestore();
@@ -271,16 +273,6 @@ const OverviewPage = () => {
                 <div className="h-[200px] sm:h-[230px] md:h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weeklyData}>
-                      <defs>
-                        <linearGradient id="underGoal" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        </linearGradient>
-                        <linearGradient id="overGoal" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
-                        </linearGradient>
-                      </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                       <XAxis 
                         dataKey="date" 
@@ -323,7 +315,7 @@ const OverviewPage = () => {
                         animationDuration={500}
                       >
                          {weeklyData?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.calories > entry.goal ? "url(#overGoal)" : "url(#underGoal)"} />
+                            <Cell key={`cell-${index}`} fill={barColors[index % barColors.length]} />
                         ))}
                       </Bar>
                     </BarChart>
