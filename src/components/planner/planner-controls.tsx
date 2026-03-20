@@ -23,22 +23,23 @@ interface PlannerControlsProps {
 
 export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerControlsProps) {
   const { toast } = useToast();
-  
+
   const handleSave = () => {
-      toast({
-          title: "Plan Saved!",
-          description: "Your meal plan has been saved."
-      })
-  }
+    toast({
+      title: 'Plan Saved!',
+      description: 'Your meal plan has been saved.',
+    });
+  };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+
       {/* Generate Button */}
-      <Button 
-        variant="default" 
-        onClick={onGenerate} 
+      <Button
+        variant="default"
+        onClick={onGenerate}
         disabled={isGenerating}
-        className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm"
+        className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm"
       >
         {isGenerating ? (
           <>
@@ -56,15 +57,15 @@ export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerCo
       {/* Clear Button with Alert Dialog */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="flex-1 sm:flex-none border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+          <Button
+            variant="outline"
+            className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
           >
-            <Trash2 className="mr-2 h-4 w-4" /> 
+            <Trash2 className="mr-2 h-4 w-4" />
             <span>Clear Plan</span>
           </Button>
         </AlertDialogTrigger>
-        <AlertDialogContent className="sm:max-w-md">
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <div className="p-2 rounded-full bg-destructive/10">
@@ -76,11 +77,11 @@ export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerCo
               This will permanently clear your entire meal plan. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
+            <AlertDialogCancel className="mt-0 w-full sm:w-auto">Cancel</AlertDialogCancel>
+            <AlertDialogAction
               onClick={onClear}
-              className="bg-destructive hover:bg-destructive/90"
+              className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
             >
               Clear Plan
             </AlertDialogAction>
@@ -89,16 +90,14 @@ export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerCo
       </AlertDialog>
 
       {/* Save Button */}
-      <Button 
-        variant="secondary" 
+      <Button
+        variant="secondary"
         onClick={handleSave}
-        className="flex-1 sm:flex-none bg-secondary/80 hover:bg-secondary"
+        className="bg-secondary/80 hover:bg-secondary"
       >
-        <Save className="mr-2 h-4 w-4" /> 
+        <Save className="mr-2 h-4 w-4" />
         <span>Save Plan</span>
       </Button>
     </div>
   );
 }
-
-    

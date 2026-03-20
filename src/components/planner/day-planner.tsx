@@ -58,8 +58,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
   const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
   const [mealToAdd, setMealToAdd] = useState<string | null>(null);
   const { userProfile } = useUser();
-  
-  // Day View always shows today
+
   const currentDate = new Date();
   const currentDayKey = format(currentDate, 'EEEE');
   const userGoals = userProfile?.goals || { dailyCalorieGoal: 2200, proteinPercentageGoal: 30, carbsPercentageGoal: 40, fatPercentageGoal: 30 };
@@ -70,12 +69,11 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
     fat: (userGoals.dailyCalorieGoal * (userGoals.fatPercentageGoal / 100)) / 9,
   };
 
-
   const handleAddClick = (mealType: string) => {
     setMealToAdd(mealType);
     setAddModalOpen(true);
   };
-  
+
   const handleEditClick = (meal: PlannedMeal & { id: string }) => {
     setEditingMeal(meal);
   };
@@ -94,155 +92,185 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
   const carbsProgress = (dailyTotals.carbs / derivedGoals.carbs) * 100;
   const fatProgress = (dailyTotals.fat / derivedGoals.fat) * 100;
 
-
   return (
     <div className="max-w-4xl mx-auto min-h-[60vh]">
-        <div className="w-full space-y-6">
-          {/* Daily Summary Card */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg font-medium flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      Today's Plan ({format(currentDate, 'MMM d')})
-                  </CardTitle>
-                  <Badge>Today</Badge>
-              </div>
-              <CardDescription>Your planned meals and macros for today.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              {/* Calories */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-muted-foreground">Calories</span>
-                  <span className="font-bold text-primary">{Math.round(dailyTotals.calories)} / {derivedGoals.calories} kcal</span>
-                </div>
-                <Progress value={calorieProgress} className="h-2" />
-              </div>
+      <div className="w-full space-y-4 sm:space-y-6">
 
-              {/* Macros */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <Beef className="h-3.5 w-3.5 text-red-500" />
-                    <span className="font-medium text-muted-foreground">Protein</span>
-                    <span className="font-semibold ml-auto">{Math.round(dailyTotals.protein)}g / {Math.round(derivedGoals.protein)}g</span>
-                  </div>
-                  <Progress value={proteinProgress} className="h-1.5" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <Wheat className="h-3.5 w-3.5 text-yellow-600" />
-                    <span className="font-medium text-muted-foreground">Carbs</span>
-                    <span className="font-semibold ml-auto">{Math.round(dailyTotals.carbs)}g / {Math.round(derivedGoals.carbs)}g</span>
-                  </div>
-                  <Progress value={carbsProgress} className="h-1.5" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <Droplets className="h-3.5 w-3.5 text-blue-500" />
-                    <span className="font-medium text-muted-foreground">Fat</span>
-                    <span className="font-semibold ml-auto">{Math.round(dailyTotals.fat)}g / {Math.round(derivedGoals.fat)}g</span>
-                  </div>
-                  <Progress value={fatProgress} className="h-1.5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Meals Section */}
-          {mealsForDay.length === 0 ? (
-            <EmptyState 
-              title="No meals planned for today" 
-              description="Start planning your day by adding meals."
-            >
-              <Button onClick={() => handleAddClick('Breakfast')} size="lg">
-                <Plus className="mr-2 h-4 w-4" /> Add First Meal
-              </Button>
-            </EmptyState>
-          ) : (
-            <div className="space-y-4">
-              <Accordion type="multiple" defaultValue={mealTypes} className="space-y-4">
-                {mealTypes.map((mealType) => {
-                  const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
-                  const totalCalories = mealsForType.reduce((acc, meal) => acc + meal.calories, 0);
-
-                  return (
-                    <Card key={mealType} className="overflow-hidden border shadow-lg">
-                      <AccordionItem value={mealType} className="border-0">
-                        <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-muted/50 transition-colors">
-                          <div className="flex justify-between w-full items-center">
-                            <div className="flex items-center gap-3">
-                              <span className="text-xl">{getMealIcon(mealType)}</span>
-                              <h3 className="font-semibold text-lg">{mealType}</h3>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="px-3 py-1 text-sm">{Math.round(totalCalories)} kcal</Badge>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6 pt-0">
-                          <div className="space-y-3">
-                            {mealsForType.length > 0 ? (
-                              mealsForType.map(meal => (
-                                  <div key={meal.id} className="group relative flex items-center gap-3 p-3 rounded-lg border bg-background hover:shadow-sm">
-                                    <div className="flex-grow min-w-0">
-                                      <p className="font-medium truncate">{meal.foodName}</p>
-                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <span>{meal.quantity}g</span>
-                                        <span className="text-muted-foreground/30">|</span>
-                                        <span>{Math.round(meal.calories)} kcal</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditClick(meal)}>
-                                        <Pencil className="h-3.5 w-3.5" />
-                                      </Button>
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                          </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => onRemoveMeal(meal.id)}>
-                                              Remove
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    </div>
-                                  </div>
-                                )
-                              )
-                            ) : (
-                              <div className="py-8 text-center border-2 border-dashed rounded-lg">
-                                <UtensilsCrossed className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-                                <p className="text-sm text-muted-foreground">No food planned</p>
-                              </div>
-                            )}
-                            <Button 
-                                variant="outline" 
-                                className="w-full mt-2 border-dashed"
-                                onClick={() => handleAddClick(mealType)}
-                              >
-                                <Plus className="h-4 w-4 mr-2" /> Add Food
-                              </Button>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Card>
-                  );
-                })}
-              </Accordion>
+        {/* ── Daily Summary Card ── */}
+        <Card className="border-2 shadow-lg">
+          <CardHeader className="pb-3">
+            {/* Title row */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="text-base sm:text-lg font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                Today's Plan ({format(currentDate, 'MMM d')})
+              </CardTitle>
+              <Badge>Today</Badge>
             </div>
-          )}
-        </div>
+            <CardDescription className="text-xs sm:text-sm pt-1">
+              Your planned meals and macros for today.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="grid gap-5 sm:gap-6">
+            {/* Calories */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-semibold text-muted-foreground">Calories</span>
+                <span className="font-bold text-primary text-xs sm:text-sm">
+                  {Math.round(dailyTotals.calories)} / {derivedGoals.calories} kcal
+                </span>
+              </div>
+              <Progress value={calorieProgress} className="h-2" />
+            </div>
+
+            {/* Macros: single column on mobile, 3-col on sm+ */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Beef className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                  <span className="font-medium text-muted-foreground">Protein</span>
+                  <span className="font-semibold ml-auto text-xs sm:text-sm">
+                    {Math.round(dailyTotals.protein)}g / {Math.round(derivedGoals.protein)}g
+                  </span>
+                </div>
+                <Progress value={proteinProgress} className="h-1.5" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Wheat className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
+                  <span className="font-medium text-muted-foreground">Carbs</span>
+                  <span className="font-semibold ml-auto text-xs sm:text-sm">
+                    {Math.round(dailyTotals.carbs)}g / {Math.round(derivedGoals.carbs)}g
+                  </span>
+                </div>
+                <Progress value={carbsProgress} className="h-1.5" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Droplets className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                  <span className="font-medium text-muted-foreground">Fat</span>
+                  <span className="font-semibold ml-auto text-xs sm:text-sm">
+                    {Math.round(dailyTotals.fat)}g / {Math.round(derivedGoals.fat)}g
+                  </span>
+                </div>
+                <Progress value={fatProgress} className="h-1.5" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Meals Section ── */}
+        {mealsForDay.length === 0 ? (
+          <EmptyState
+            title="No meals planned for today"
+            description="Start planning your day by adding meals."
+          >
+            <Button onClick={() => handleAddClick('Breakfast')} size="lg">
+              <Plus className="mr-2 h-4 w-4" /> Add First Meal
+            </Button>
+          </EmptyState>
+        ) : (
+          <div className="space-y-3 sm:space-y-4">
+            <Accordion type="multiple" defaultValue={mealTypes} className="space-y-3 sm:space-y-4">
+              {mealTypes.map((mealType) => {
+                const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
+                const totalCalories = mealsForType.reduce((acc, meal) => acc + meal.calories, 0);
+
+                return (
+                  <Card key={mealType} className="overflow-hidden border shadow-lg">
+                    <AccordionItem value={mealType} className="border-0">
+                      <AccordionTrigger className="px-4 sm:px-6 py-3 sm:py-4 hover:no-underline hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between w-full items-center gap-2">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <span className="text-lg sm:text-xl">{getMealIcon(mealType)}</span>
+                            <h3 className="font-semibold text-base sm:text-lg truncate">{mealType}</h3>
+                          </div>
+                          <Badge variant="outline" className="px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm shrink-0">
+                            {Math.round(totalCalories)} kcal
+                          </Badge>
+                        </div>
+                      </AccordionTrigger>
+
+                      <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
+                        <div className="space-y-3">
+                          {mealsForType.length > 0 ? (
+                            mealsForType.map(meal => (
+                              <div
+                                key={meal.id}
+                                className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
+                              >
+                                <div className="flex-grow min-w-0">
+                                  <p className="font-medium truncate text-sm sm:text-base">{meal.foodName}</p>
+                                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                                    <span>{meal.quantity}g</span>
+                                    <span className="text-muted-foreground/30">|</span>
+                                    <span>{Math.round(meal.calories)} kcal</span>
+                                  </div>
+                                </div>
+
+                                {/* Always visible on mobile (no hover on touch), hover-only on pointer devices */}
+                                <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => handleEditClick(meal)}
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
+                                        <AlertDialogCancel className="mt-0 w-full sm:w-auto">Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          className="w-full sm:w-auto"
+                                          onClick={() => onRemoveMeal(meal.id)}
+                                        >
+                                          Remove
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
+                              <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
+                              <p className="text-sm text-muted-foreground">No food planned</p>
+                            </div>
+                          )}
+
+                          <Button
+                            variant="outline"
+                            className="w-full mt-2 border-dashed"
+                            onClick={() => handleAddClick(mealType)}
+                          >
+                            <Plus className="h-4 w-4 mr-2" /> Add Food
+                          </Button>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Card>
+                );
+              })}
+            </Accordion>
+          </div>
+        )}
+      </div>
 
       <AddFoodModal
         isOpen={isAddModalOpen}
@@ -250,7 +278,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
         onAddFood={handleAddFood}
         mealType={mealToAdd as any}
       />
-      
+
       <EditFoodModal
         isOpen={!!editingMeal}
         onClose={() => setEditingMeal(null)}

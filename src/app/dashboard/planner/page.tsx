@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -27,7 +26,6 @@ import type { FoodItem } from '@/types/food';
 
 type PlannedMealWithId = PlannedMealType & { id: string };
 
-// Type-safe mapping from profile values to AI schema enums
 const activityLevelMap: Record<string, 'low' | 'moderate' | 'active' | 'very active'> = {
   'low': 'low',
   'moderate': 'moderate',
@@ -65,11 +63,9 @@ export default function PlannerPage() {
     }
 
     setIsGenerating(true);
-    
     await clearPlan(db, user.uid);
-    
+
     try {
-      // These are hardcoded for now, but should come from analytics in a future version.
       const analytics = {
         averageDailyCalories: 2100,
         averageDailyProtein: 100,
@@ -83,7 +79,9 @@ export default function PlannerPage() {
 
       const mappedActivityLevel = activityLevelMap[userProfile.profile.activityLevel] || 'moderate';
       const mappedGoal = goalMap[userProfile.health.primaryGoal] || 'maintain weight';
-      const mappedGender = ['male', 'female', 'other'].includes(userProfile.profile.gender) ? userProfile.profile.gender as 'male' | 'female' | 'other' : 'other';
+      const mappedGender = ['male', 'female', 'other'].includes(userProfile.profile.gender)
+        ? userProfile.profile.gender as 'male' | 'female' | 'other'
+        : 'other';
 
       const input: GeneratePersonalizedMealPlanInput = {
         gender: mappedGender,
@@ -99,19 +97,18 @@ export default function PlannerPage() {
         dietaryPreferences: userProfile.health.dietaryPreferences || [],
         ...analytics
       };
-      
+
       const result = await generatePersonalizedMealPlan(input);
-      
-      await Promise.all(result.plannedMeals.map(meal => {
-        return addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, meal);
-      }));
+
+      await Promise.all(result.plannedMeals.map(meal =>
+        addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, meal)
+      ));
 
       toast({
         title: '✨ Plan Generated!',
         description: result.planSummary,
         duration: 6000,
       });
-
     } catch (err: any) {
       console.error(err);
       toast({
@@ -134,33 +131,28 @@ export default function PlannerPage() {
     if (!user || !db) return;
     addPlannedMeal(db, user.uid, day, mealType, food, quantity);
   };
-  
-  const handleUpdateMeal = (id: string, newQuantity: number) => {
-    if(!user || !db || !plannedMeals) return;
 
+  const handleUpdateMeal = (id: string, newQuantity: number) => {
+    if (!user || !db || !plannedMeals) return;
     const mealToUpdate = plannedMeals.find(m => m.id === id);
     if (!mealToUpdate) return;
-    
     const originalQuantity = mealToUpdate.quantity;
     if (originalQuantity <= 0) return;
-
     const ratio = newQuantity / originalQuantity;
-    const updates = {
+    updatePlannedMeal(db, user.uid, id, {
       quantity: newQuantity,
       calories: mealToUpdate.calories * ratio,
       protein: mealToUpdate.protein * ratio,
       carbs: mealToUpdate.carbs * ratio,
       fat: mealToUpdate.fat * ratio,
-    }
-
-    updatePlannedMeal(db, user.uid, id, updates);
+    });
   };
 
   const handleRemoveMeal = (id: string) => {
     if (!user || !db) return;
     deletePlannedMeal(db, user.uid, id);
   };
-  
+
   const mealSummary = useMemo(() => {
     if (!plannedMeals) return {};
     return plannedMeals.reduce((acc, meal) => {
@@ -174,60 +166,75 @@ export default function PlannerPage() {
       return acc;
     }, {} as Record<string, { calories: number; protein: number; carbs: number; fat: number; }>);
   }, [plannedMeals]);
-  
+
+  // Shared loading/error state — rendered inside whichever tab is active
+  const plannerContent = isLoading ? (
+    <div className="flex justify-center items-center h-64 sm:h-[500px]">
+      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+    </div>
+  ) : error ? (
+    <Alert variant="destructive">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Error loading plan</AlertTitle>
+      <AlertDescription>{error.message}</AlertDescription>
+    </Alert>
+  ) : null;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-1">
+    <div className="space-y-4 sm:space-y-6 w-full min-w-0">
+
+      {/* ── Header: stacks on mobile, side-by-side on sm+ ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Calendar className="h-7 w-7 text-primary" />
-            AI Meal Planner
+            <Calendar className="h-6 w-6 sm:h-7 sm:w-7 text-primary shrink-0" />
+            <span className="truncate">AI Meal Planner</span>
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             Generate a personalized weekly meal plan or build your own.
           </p>
         </div>
-        <PlannerControls
-          onGenerate={handleGeneratePlan}
-          onClear={handleClearPlan}
-          isGenerating={isGenerating}
-        />
+
+        {/* Controls stretch full-width on mobile */}
+        <div className="w-full sm:w-auto shrink-0">
+          <PlannerControls
+            onGenerate={handleGeneratePlan}
+            onClear={handleClearPlan}
+            isGenerating={isGenerating}
+          />
+        </div>
       </div>
 
+      {/* ── Tabs ── */}
       <Tabs value={view} onValueChange={setView} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-sm">
+        {/* Tab list: full-width on mobile, capped on sm+ */}
+        <TabsList className="grid w-full grid-cols-2 sm:max-w-sm">
           <TabsTrigger value="week">Week View</TabsTrigger>
           <TabsTrigger value="day">Day View</TabsTrigger>
         </TabsList>
-        <TabsContent value="week" className="mt-6">
-            {isLoading ? (
-                <div className="flex justify-center items-center h-[500px]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
-            ) : error ? (
-                <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error loading plan</AlertTitle><AlertDescription>{error.message}</AlertDescription></Alert>
-            ) : (
-                <WeekPlanner
-                    plannedMeals={plannedMeals || []}
-                    summary={mealSummary}
-                    onAddMeal={handleAddMeal}
-                    onUpdateMeal={handleUpdateMeal}
-                    onRemoveMeal={handleRemoveMeal}
-                />
-            )}
+
+        <TabsContent value="week" className="mt-4 sm:mt-6">
+          {plannerContent ?? (
+            <WeekPlanner
+              plannedMeals={plannedMeals || []}
+              summary={mealSummary}
+              onAddMeal={handleAddMeal}
+              onUpdateMeal={handleUpdateMeal}
+              onRemoveMeal={handleRemoveMeal}
+            />
+          )}
         </TabsContent>
-        <TabsContent value="day" className="mt-6">
-             {isLoading ? (
-                <div className="flex justify-center items-center h-[500px]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
-            ) : error ? (
-                <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error loading plan</AlertTitle><AlertDescription>{error.message}</AlertDescription></Alert>
-            ) : (
-                <DayPlanner
-                    plannedMeals={plannedMeals || []}
-                    summary={mealSummary}
-                    onAddMeal={handleAddMeal}
-                    onUpdateMeal={handleUpdateMeal}
-                    onRemoveMeal={handleRemoveMeal}
-                />
-            )}
+
+        <TabsContent value="day" className="mt-4 sm:mt-6">
+          {plannerContent ?? (
+            <DayPlanner
+              plannedMeals={plannedMeals || []}
+              summary={mealSummary}
+              onAddMeal={handleAddMeal}
+              onUpdateMeal={handleUpdateMeal}
+              onRemoveMeal={handleRemoveMeal}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
