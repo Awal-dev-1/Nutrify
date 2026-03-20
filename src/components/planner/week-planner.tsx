@@ -330,6 +330,9 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                       <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
                                         <AlertDialogHeader>
                                           <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            This action will permanently remove this item from your meal plan.
+                                          </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                                           <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>

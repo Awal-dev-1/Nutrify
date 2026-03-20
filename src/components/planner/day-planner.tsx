@@ -232,6 +232,9 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                     <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
                                       <AlertDialogHeader>
                                         <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This will permanently remove this item from your meal plan.
+                                        </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
                                         <AlertDialogCancel className="mt-0 w-full sm:w-auto">Cancel</AlertDialogCancel>
