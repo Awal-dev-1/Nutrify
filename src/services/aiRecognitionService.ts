@@ -17,7 +17,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 const compressImage = async (file: File): Promise<File> => {
   const options = {
-    maxSizeMB: 1,
+    maxSizeMB: 0.5,
     maxWidthOrHeight: 1920,
     useWebWorker: true,
   };
