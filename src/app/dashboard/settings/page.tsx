@@ -666,10 +666,6 @@ export default function SettingsPage() {
                   onCheckedChange={setWeeklySummary}
                 />
               </div>
-
-              <Badge variant="secondary" className="w-full py-2 text-center">
-                More notification options coming soon!
-              </Badge>
             </CardContent>
 
             <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
