@@ -65,6 +65,8 @@ import { motion } from 'framer-motion';
 
 type Timeframe = '7d' | '30d' | '90d';
 
+const barColors = ["#3B82F6", "#22C55E", "#EAB308", "#EF4444", "#8B5CF6", "#F97316", "#14B8A6"];
+
 const AnalyticsPage = () => {
   const { user } = useUser();
   const db = useFirestore();
@@ -291,10 +293,13 @@ const AnalyticsPage = () => {
                   <Bar 
                     dataKey="calories" 
                     name="Calories" 
-                    fill="hsl(var(--primary))" 
                     radius={[6, 6, 0, 0]} 
                     maxBarSize={50}
-                  />
+                  >
+                    {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={barColors[index % barColors.length]} />
+                    ))}
+                  </Bar>
                   <Line
                     type="monotone"
                     dataKey="goal"
@@ -750,3 +755,5 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
+
+    
