@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -35,6 +36,7 @@ export interface UserProfile {
     unitPreference?: 'metric' | 'imperial';
     languagePreference?: 'en' | 'tw' | 'ew';
     reminderEnabled?: boolean;
+    weeklySummaryEnabled?: boolean;
   };
   createdAt: any;
   updatedAt?: any;

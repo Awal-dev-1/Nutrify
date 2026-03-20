@@ -92,6 +92,7 @@ export default function SettingsPage() {
       setLanguage(userProfile.preferences?.languagePreference || 'en');
       setUnits(userProfile.preferences?.unitPreference || 'metric');
       setDailyReminder(userProfile.preferences?.reminderEnabled || false);
+      setWeeklySummary(userProfile.preferences?.weeklySummaryEnabled || false);
       setImagePreview(null);
       setProfileImageFile(null);
     }
@@ -151,6 +152,7 @@ export default function SettingsPage() {
     setIsSaving(true);
     const prefs = {
       'preferences.reminderEnabled': dailyReminder,
+      'preferences.weeklySummaryEnabled': weeklySummary,
     };
     updateUserDocument(db, user.uid, prefs);
     toast({ title: 'Notification Preferences Saved!' });
@@ -648,21 +650,20 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Weekly Summary (disabled) */}
-              <div className="flex items-center justify-between p-4 border rounded-lg opacity-60">
+              {/* Weekly Summary */}
+              <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-1 pr-4">
                   <Label htmlFor="weekly-summary" className="text-base font-medium">
                     Weekly Nutrition Summary
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive a summary of your week's nutrition (coming soon)
+                    Receive a summary of your week's nutrition by email.
                   </p>
                 </div>
                 <Switch
                   id="weekly-summary"
                   checked={weeklySummary}
                   onCheckedChange={setWeeklySummary}
-                  disabled
                 />
               </div>
 

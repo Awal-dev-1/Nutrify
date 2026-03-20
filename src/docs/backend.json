@@ -121,6 +121,10 @@
             "reminderEnabled": {
               "type": "boolean",
               "description": "Flag indicating if daily nutrition reminders are enabled for the user."
+            },
+            "weeklySummaryEnabled": {
+              "type": "boolean",
+              "description": "Flag indicating if weekly summary notifications are enabled for the user."
             }
           }
         },
