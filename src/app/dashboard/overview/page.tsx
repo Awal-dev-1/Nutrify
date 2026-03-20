@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
@@ -216,7 +215,7 @@ const OverviewPage = () => {
                         {todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal
                       </span>
                     </div>
-                    <Progress value={calorieProgress} className="h-2 sm:h-2.5" />
+                    <Progress value={calorieProgress} className="h-2 sm:h-2.5" indicatorClassName="bg-orange-500" />
                   </div>
                   <div className="text-center sm:border-l sm:pl-6 py-1 sm:py-2">
                     <p className="text-xs sm:text-sm text-muted-foreground mb-1">Remaining</p>
@@ -237,18 +236,21 @@ const OverviewPage = () => {
                     label="Protein" 
                     value={todayTotals.totalProtein} 
                     goal={derivedGoals.protein} 
+                    color="bg-red-500"
                   />
                   <MacroStat 
                     icon={<Wheat className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />} 
                     label="Carbs" 
                     value={todayTotals.totalCarbs} 
                     goal={derivedGoals.carbs} 
+                    color="bg-yellow-600"
                   />
                   <MacroStat 
                     icon={<Droplets className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />} 
                     label="Fat" 
                     value={todayTotals.totalFat} 
                     goal={derivedGoals.fat} 
+                    color="bg-blue-500"
                   />
                 </div>
               </CardContent>
@@ -495,7 +497,7 @@ const OverviewPage = () => {
 };
 
 // MacroStat — always 3-column so each card is naturally compact on all sizes
-const MacroStat = ({ icon, label, value, goal }: { icon: React.ReactNode, label: string, value: number, goal: number }) => {
+const MacroStat = ({ icon, label, value, goal, color }: { icon: React.ReactNode, label: string, value: number, goal: number, color: string }) => {
   const percentage = goal > 0 ? (value / goal) * 100 : 0;
   
   return (
@@ -511,7 +513,7 @@ const MacroStat = ({ icon, label, value, goal }: { icon: React.ReactNode, label:
       </div>
       <p className="text-base sm:text-lg md:text-xl font-bold">{value.toFixed(0)}g</p>
       <div className="mt-1.5 sm:mt-2 space-y-1">
-        <Progress value={percentage} className="h-1 sm:h-1.5" />
+        <Progress value={percentage} className="h-1 sm:h-1.5" indicatorClassName={color} />
         <p className="text-xs text-muted-foreground">Goal: {goal.toFixed(0)}g</p>
       </div>
     </motion.div>
