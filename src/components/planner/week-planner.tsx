@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { AddFoodModal } from '@/components/tracker/add-food-modal';
 import { EditFoodModal } from '@/components/tracker/edit-food-modal';
-import { EmptyState } from '../shared/empty-state';
+import { EmptyState } from '@/components/shared/empty-state';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed, Sparkles } from 'lucide-react';
 import {
   Accordion,
@@ -331,7 +331,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                         <AlertDialogHeader>
                                           <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
                                           <AlertDialogDescription>
-                                            This action will permanently remove this item from your meal plan.
+                                            This will permanently remove this item from your meal plan.
                                           </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
