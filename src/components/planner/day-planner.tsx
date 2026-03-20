@@ -294,5 +294,3 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
     </div>
   );
 }
-
-    
