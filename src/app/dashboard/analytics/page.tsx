@@ -334,7 +334,7 @@ const AnalyticsPage = () => {
               value={summary.averageCalories} 
               goal={goals.calories} 
               unit="kcal" 
-              color="hsl(var(--primary))"
+              color="hsl(var(--chart-1))"
             />
             <GoalProgressBar 
               label="Protein" 
@@ -348,14 +348,14 @@ const AnalyticsPage = () => {
               value={summary.averageCarbs} 
               goal={goals.carbs} 
               unit="g" 
-              color="hsl(var(--chart-3))"
+              color="hsl(var(--chart-4))"
             />
             <GoalProgressBar 
               label="Fat" 
               value={summary.averageFat} 
               goal={goals.fat} 
               unit="g" 
-              color="hsl(var(--chart-4))"
+              color="hsl(var(--primary))"
             />
           </CardContent>
         </Card>
@@ -648,13 +648,9 @@ const StatCard = ({ title, value, unit, icon, trend }: { title: string; value: s
 const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; value: number; goal: number; unit: string; color: string }) => {
   const percentage = goal > 0 ? (value / goal) * 100 : 0;
   const isOver = percentage > 105;
-  const isUnder = percentage < 95;
 
-  const indicatorColor = isOver
-    ? 'hsl(var(--destructive))'
-    : !isOver && isUnder
-    ? 'hsl(48 96% 53%)' // A vibrant yellow like Tailwind's yellow-500
-    : color;
+  // Simplified color logic: use the provided color, but switch to destructive if over the goal.
+  const indicatorColor = isOver ? 'hsl(var(--destructive))' : color;
   
   return (
     <div className="space-y-1.5">
@@ -755,5 +751,3 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
-
-    
