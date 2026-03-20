@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
@@ -373,8 +374,8 @@ const OverviewPage = () => {
                   <RecommendationSkeleton/>
                 ) : latestRecs.length > 0 ? (
                   <div className="space-y-2 sm:space-y-3">
-                    {latestRecs.slice(0, 2).map((rec, i) => (
-                      <RecommendationItemPreview key={i} rec={rec} />
+                    {latestRecs.slice(0, 2).map((rec) => (
+                      <RecommendationItemPreview key={rec.foodId} rec={rec} />
                     ))}
                     <Button 
                       asChild 

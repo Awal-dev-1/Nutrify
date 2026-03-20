@@ -37,7 +37,17 @@ service cloud.firestore {
         // Validate calorie goal if it's being updated.
         let isCalorieGoalValid = !goals.keys().hasAny(['dailyCalorieGoal']) || (goals.dailyCalorieGoal is number && goals.dailyCalorieGoal > 0);
         
-        return isNameValid && isAgeValid && isCalorieGoalValid;
+        // Validate macro goals if they are being updated.
+        let isProteinGoalValid = !goals.keys().hasAny(['proteinPercentageGoal']) || (goals.proteinPercentageGoal is number && goals.proteinPercentageGoal >= 0 && goals.proteinPercentageGoal <= 100);
+        let isCarbsGoalValid = !goals.keys().hasAny(['carbsPercentageGoal']) || (goals.carbsPercentageGoal is number && goals.carbsPercentageGoal >= 0 && goals.carbsPercentageGoal <= 100);
+        let isFatGoalValid = !goals.keys().hasAny(['fatPercentageGoal']) || (goals.fatPercentageGoal is number && goals.fatPercentageGoal >= 0 && goals.fatPercentageGoal <= 100);
+
+        return isNameValid 
+            && isAgeValid 
+            && isCalorieGoalValid
+            && isProteinGoalValid
+            && isCarbsGoalValid
+            && isFatGoalValid;
     }
 
     // -------------------------------------------------------------------------
