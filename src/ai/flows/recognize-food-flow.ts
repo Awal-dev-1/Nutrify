@@ -47,21 +47,26 @@ User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{
 
 CRITICAL INSTRUCTIONS:
 1.  **Analyze the Image**: Carefully analyze the image provided. First, determine if the image contains food. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **Analyze Mixed Dishes**: If the image contains a mixed dish (e.g., a stew with rice and meat), you MUST identify each primary component. Your final nutritional calculation must be a single, aggregated result for the entire plate as presented. Do not provide separate results for each component.
-3.  **Estimate Portion Size**: You MUST visually estimate the total weight of all food on the plate in the image and provide this value in grams in the \`estimatedWeightGrams\` field. This is the MOST CRITICAL step, as all subsequent nutritional calculations will be based on this weight. Be as precise as possible.
-4.  **Calculate Nutrients for Estimated Portion**: Based on your estimated weight, you MUST calculate a comprehensive nutritional profile. The values for \`calories\`, \`macronutrientBreakdown\`, and \`micronutrientBreakdown\` MUST correspond directly to the \`estimatedWeightGrams\` you provided. This includes:
+2.  **Be Specific with Ghanaian Staples**: Pay very close attention to the visual differences between common Ghanaian staple foods. For example:
+    *   **Banku** is a smooth, slightly sour, fermented corn and cassava dough ball.
+    *   **Fufu** is a soft, sticky, pounded mixture of cassava and plantain, typically served with soup.
+    *   **Kenkey** is a fermented corn dough, often wrapped in corn husks (Fante Kenkey) or plantain leaves (Ga Kenkey), and has a more sour taste.
+    *   Your identification must be precise. Do not just say "dumpling" or "ball food". Use the correct name.
+3.  **Analyze Mixed Dishes**: If the image contains a mixed dish (e.g., a stew with rice and meat), you MUST identify each primary component. Your final nutritional calculation must be a single, aggregated result for the entire plate as presented. Do not provide separate results for each component.
+4.  **Estimate Portion Size**: You MUST visually estimate the total weight of all food on the plate in the image and provide this value in grams in the \`estimatedWeightGrams\` field. This is the MOST CRITICAL step, as all subsequent nutritional calculations will be based on this weight. Be as precise as possible.
+5.  **Calculate Nutrients for Estimated Portion**: Based on your estimated weight, you MUST calculate a comprehensive nutritional profile. The values for \`calories\`, \`macronutrientBreakdown\`, and \`micronutrientBreakdown\` MUST correspond directly to the \`estimatedWeightGrams\` you provided. This includes:
     *   Total \`calories\` for the estimated portion.
     *   \`macronutrientBreakdown\` (protein, carbohydrates, fat).
     *   A detailed \`micronutrientBreakdown\`, including fiber, sugar, iron, calcium, vitaminA, vitaminC, and sodium. If a nutrient is not present, omit it or set it to 0.
-5.  **Provide DETAILED Health Analysis**: For each prediction, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
+6.  **Provide DETAILED Health Analysis**: For each prediction, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
     *   Explain CLEARLY why the food is beneficial or detrimental based on the user's specific goal (e.g., 'lose-weight', 'gain-weight').
     *   Go beyond a single sentence. For 'lose-weight', discuss calorie density, fiber content for satiety, and protein for muscle maintenance. For 'gain-weight', discuss energy density and quality of macronutrients. For 'eat-healthier', discuss the balance of nutrients and vitamin/mineral content.
     *   Be specific. Instead of "good for weight loss", say "This portion of Banku is calorie-dense. While a good energy source, a smaller portion might be better for your weight loss goal. The accompanying Tilapia, however, is an excellent source of lean protein.".
-6.  **Generate DETAILED Recipe**: For each prediction, if applicable, generate a detailed recipe. This MUST include a list of ingredients with specific quantities and a thorough, step-by-step list of preparation instructions.
-7.  **Generate Other Details**: Also provide \`foodHistory\`, \`isGhanaianLocal\` status, and relevant \`tags\`.
-8.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
-9.  **Return JSON**: Return a list of up to 3 potential matches. Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary.
-10. **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+7.  **Generate DETAILED Recipe**: For each prediction, if applicable, generate a detailed recipe. This MUST include a list of ingredients with specific quantities and a thorough, step-by-step list of preparation instructions.
+8.  **Generate Other Details**: Also provide \`foodHistory\`, \`isGhanaianLocal\` status, and relevant \`tags\`.
+9.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
+10. **Return JSON**: Return a list of up to 3 potential matches. Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do not add any commentary.
+11. **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
 
 Image to analyze: {{media url=photoDataUri}}
 

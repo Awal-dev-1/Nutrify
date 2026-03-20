@@ -15,14 +15,21 @@ export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => v
 
   return (
     <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
-      <CardHeader className="bg-primary/5">
-        <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
-        <div className="text-3xl font-extrabold text-primary pt-2">
-            {item.calories.toFixed(0)}{' '}
-            <span className="text-lg font-medium text-muted-foreground">kcal (for ~{item.estimatedWeightGrams}g)</span>
+      <CardHeader className="p-0">
+        {imageUrl && (
+          <div className="relative w-full h-64 bg-muted">
+              <Image src={imageUrl} alt={item.foodName} fill className="object-contain" />
+          </div>
+        )}
+        <div className="p-4 md:p-6">
+            <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
+            <div className="text-3xl font-extrabold text-primary pt-2">
+                {item.calories.toFixed(0)}{' '}
+                <span className="text-lg font-medium text-muted-foreground">kcal (for ~{item.estimatedWeightGrams}g)</span>
+            </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 md:p-6 space-y-4">
+      <CardContent className="p-4 md:p-6 pt-0 space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
             <Card>
                 <CardHeader>
@@ -91,14 +98,7 @@ export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => v
                 </CardContent>
             </Card>
         </div>
-        {imageUrl && (
-          <div>
-            <h3 className="text-lg font-semibold mt-4 mb-2">Image Preview</h3>
-            <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden">
-                <Image src={imageUrl} alt={item.foodName} fill className="object-contain" />
-            </div>
-          </div>
-        )}
+        
         {item.healthAnalysis && (
           <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 mt-4">
             <Stethoscope className="h-4 w-4 text-blue-600 dark:text-blue-300" />
