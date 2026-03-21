@@ -1,3 +1,4 @@
+
 "use client"
 
 import { usePathname } from 'next/navigation'
@@ -60,7 +61,7 @@ const insightLinks = [
 
 export function MainSidebar() {
   const pathname = usePathname()
-  const { user } = useUser()
+  const { user, userProfile } = useUser()
   const { isMobile, setOpenMobile, state } = useSidebar()
   const isCollapsed = state === 'collapsed'
 
@@ -288,9 +289,9 @@ export function MainSidebar() {
               'border-2 border-background shadow-sm transition-all duration-300',
               isCollapsed ? 'h-8 w-8' : 'h-9 w-9',
             )}>
-              <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || ''} />
+              <AvatarImage src={user?.photoURL || userProfile?.profile?.profileImageUrl || ''} alt={userProfile?.name || ''} />
               <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-semibold">
-                {user?.displayName?.charAt(0) || 'U'}
+                {userProfile?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
 
@@ -299,7 +300,7 @@ export function MainSidebar() {
               isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 flex-1',
             )}>
               <p className="text-sm font-semibold truncate leading-tight">
-                {user?.displayName || 'User'}
+                {userProfile?.name || 'User'}
               </p>
               <p className="text-xs text-muted-foreground truncate">
                 {user?.email || 'user@example.com'}
