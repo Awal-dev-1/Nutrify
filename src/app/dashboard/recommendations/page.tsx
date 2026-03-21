@@ -122,7 +122,7 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
             Recommendations based on your goal to <span className="font-semibold text-primary">{data.goal.replace('-', ' ')}</span>.
         </p>
 
@@ -158,7 +158,7 @@ export default function RecommendationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Smart Food Recommendations</h1>
-            <p className="text-muted-foreground max-w-2xl">
+            <p className="text-base text-muted-foreground max-w-2xl">
               Get meal suggestions based on your goals and preferences.
             </p>
         </div>

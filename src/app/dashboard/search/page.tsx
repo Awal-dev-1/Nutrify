@@ -281,7 +281,7 @@ export default function SearchPage() {
 
         {/* Header */}
         <div className="space-y-1 text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent leading-tight">
             AI Food Search
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto sm:mx-0">
@@ -295,33 +295,32 @@ export default function SearchPage() {
             <div className="relative group">
               {/* Sparkles icon — hidden on very small screens to save space */}
               <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 hidden xs:block">
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary group-focus-within:text-primary/80 transition-colors" />
+                <Sparkles className="h-5 w-5 text-primary group-focus-within:text-primary/80 transition-colors" />
               </div>
 
               <Input
                 placeholder="e.g., Banku with tilapia or Fufu..."
                 className={cn(
-                  "w-full h-14 sm:h-16 text-base sm:text-lg",
-                  "pl-4 xs:pl-11 sm:pl-12",
-                  "pr-28 sm:pr-36",
+                  "w-full h-16 text-lg",
+                  "pl-12 pr-36",
                   "bg-background/80 backdrop-blur-sm",
                   "border-2 border-muted focus:border-primary",
-                  "rounded-xl sm:rounded-2xl shadow-lg transition-all"
+                  "rounded-2xl shadow-lg transition-all"
                 )}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
-              <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                 {searchQuery && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-muted shrink-0"
+                    className="h-10 w-10 rounded-full hover:bg-muted shrink-0"
                     onClick={clearSearch}
                   >
-                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <X className="h-4 w-4" />
                   </Button>
                 )}
 
@@ -330,21 +329,21 @@ export default function SearchPage() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all shrink-0",
+                    "h-10 w-10 rounded-full transition-all shrink-0",
                     isRecording && "bg-red-100 text-red-600 animate-pulse dark:bg-red-950"
                   )}
                   onClick={handleMicClick}
                 >
-                  <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <Mic className="h-4 w-4" />
                 </Button>
 
                 <Button
                   type="submit"
                   size="sm"
                   className={cn(
-                    "h-9 sm:h-12 px-3 sm:px-6 rounded-lg sm:rounded-xl shrink-0",
+                    "h-12 px-6 rounded-xl shrink-0",
                     "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
-                    "text-sm sm:text-base"
+                    "text-base"
                   )}
                   disabled={loading || !searchQuery.trim()}
                 >
@@ -371,10 +370,10 @@ export default function SearchPage() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-4"
             >
-              <Skeleton className="h-10 w-48 sm:w-64" />
+              <Skeleton className="h-10 w-64" />
               <div className="grid gap-4 sm:grid-cols-2">
-                <Skeleton className="h-48 sm:h-64 rounded-xl sm:rounded-2xl" />
-                <Skeleton className="h-48 sm:h-64 rounded-xl sm:rounded-2xl" />
+                <Skeleton className="h-64 rounded-2xl" />
+                <Skeleton className="h-64 rounded-2xl" />
               </div>
             </motion.div>
           )}
@@ -398,7 +397,7 @@ export default function SearchPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6 sm:space-y-8"
+              className="space-y-8"
             >
               <RecentSearches
                 recents={recentSearches}
@@ -407,7 +406,7 @@ export default function SearchPage() {
               />
 
               <div className="text-center text-muted-foreground px-4">
-                <p className="text-xs sm:text-sm">
+                <p className="text-sm">
                   Try searching for "Banku and tilapia" or "Jollof rice with chicken"
                 </p>
               </div>
@@ -481,43 +480,43 @@ function FoodDetailsCard({
   return (
     <Card className="border-2 shadow-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-6 border-b">
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border-b">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 truncate">
+            <h2 className="text-2xl font-bold mb-2 truncate">
               {foodItem.foodName}
             </h2>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Scale className="h-4 w-4 shrink-0" />
                 {portionGrams}g serving
               </span>
-              <span className="flex items-center gap-1">
-                <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500 shrink-0" />
+              <span className="flex items-center gap-1.5">
+                <Flame className="h-4 w-4 text-orange-500 shrink-0" />
                 {calculatedNutrients.calories} kcal
               </span>
             </div>
           </div>
 
-          <Badge variant="secondary" className="text-xs sm:text-sm px-2 sm:px-3 py-1 shrink-0 whitespace-nowrap">
-            <Sparkles className="h-3 w-3 mr-1" />
+          <Badge variant="secondary" className="text-sm px-3 py-1 shrink-0 whitespace-nowrap">
+            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
             AI Analyzed
           </Badge>
         </div>
       </div>
 
-      <CardContent className="p-4 sm:p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-3 h-9 sm:h-10">
-            <TabsTrigger value="nutrition" className="text-xs sm:text-sm">Nutrition</TabsTrigger>
-            <TabsTrigger value="analyze" className="text-xs sm:text-sm">Analysis</TabsTrigger>
-            <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
+      <CardContent className="p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 h-10">
+            <TabsTrigger value="nutrition" className="text-sm">Nutrition</TabsTrigger>
+            <TabsTrigger value="analyze" className="text-sm">Analysis</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
           </TabsList>
 
           {/* Nutrition Tab */}
-          <TabsContent value="nutrition" className="space-y-4 sm:space-y-6">
+          <TabsContent value="nutrition" className="space-y-6">
             {/* Portion Control */}
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4">
               <label className="text-sm font-medium block">Adjust portion size</label>
               <Slider
                 value={[portionGrams]}
@@ -525,7 +524,7 @@ function FoodDetailsCard({
                 min={25}
                 max={500}
                 step={25}
-                className="mb-3 sm:mb-4"
+                className="mb-4"
               />
 
               {/* Quick portion buttons — 2 per row on mobile, 4 on wider */}
@@ -536,7 +535,7 @@ function FoodDetailsCard({
                     variant={portionGrams === grams ? "default" : "outline"}
                     size="sm"
                     onClick={() => setPortionGrams(grams)}
-                    className="w-full text-xs sm:text-sm"
+                    className="w-full text-sm"
                   >
                     {label}
                     <span className="ml-1 opacity-70">({grams}g)</span>
@@ -548,7 +547,7 @@ function FoodDetailsCard({
             {/* Macro + Micronutrient panels — stacked on mobile, side-by-side on md+ */}
             <div className="grid gap-4 md:grid-cols-2">
               {/* Macro Visualization */}
-              <div className="bg-muted/30 p-3 sm:p-4 rounded-xl space-y-3">
+              <div className="bg-muted/30 p-4 rounded-xl space-y-3">
                 <h4 className="font-medium text-sm">Macro Balance</h4>
                 <div className="flex h-2 rounded-full overflow-hidden">
                   <div
@@ -582,7 +581,7 @@ function FoodDetailsCard({
               </div>
 
               {/* Micronutrients */}
-              <div className="bg-muted/30 p-3 sm:p-4 rounded-xl space-y-3">
+              <div className="bg-muted/30 p-4 rounded-xl space-y-3">
                 <h4 className="font-medium text-sm">Micronutrients</h4>
                 <ul className="space-y-1 max-h-[120px] overflow-y-auto text-xs pr-1">
                   {foodItem.micronutrientBreakdown &&
@@ -627,7 +626,7 @@ function FoodDetailsCard({
           {/* Analysis Tab */}
           <TabsContent value="analyze" className="space-y-4">
             <div className="bg-primary/5 p-4 rounded-xl">
-              <h4 className="font-medium flex items-center gap-2 mb-2 text-sm sm:text-base">
+              <h4 className="font-medium flex items-center gap-2 mb-2 text-base">
                 <Trophy className="h-4 w-4 text-primary shrink-0" />
                 Health Analysis
               </h4>
@@ -640,7 +639,7 @@ function FoodDetailsCard({
           {/* History Tab */}
           <TabsContent value="history" className="space-y-4">
             <div className="bg-secondary/20 p-4 rounded-xl">
-              <h4 className="font-medium flex items-center gap-2 mb-2 text-sm sm:text-base">
+              <h4 className="font-medium flex items-center gap-2 mb-2 text-base">
                 <Clock className="h-4 w-4 shrink-0" />
                 Food History
               </h4>
@@ -652,12 +651,12 @@ function FoodDetailsCard({
         </Tabs>
 
         {/* Add to Tracker Section */}
-        <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t space-y-3">
+        <div className="mt-6 pt-6 border-t space-y-3">
           {/* Stacks on mobile, side-by-side on sm+ */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex-1">
               <Select value={mealType} onValueChange={(v: any) => setMealType(v)}>
-                <SelectTrigger className="h-11 sm:h-12 w-full">
+                <SelectTrigger className="h-12 w-full">
                   <SelectValue>
                     <div className="flex items-center gap-2">
                       {CurrentMealIcon && (
@@ -687,7 +686,7 @@ function FoodDetailsCard({
 
             <Button
               size="lg"
-              className="h-11 sm:h-12 w-full sm:w-auto px-6 sm:px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+              className="h-12 w-full sm:w-auto px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
               onClick={onAddToTracker}
               disabled={isAdding}
             >

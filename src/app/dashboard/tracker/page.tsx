@@ -374,7 +374,7 @@ const Header: FC<{onClearDay: () => void; date: Date; setDate: (date: Date) => v
               Daily Tracker
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <p className="text-muted-foreground text-lg">
+              <p className="text-lg text-muted-foreground">
                 {format(date, "EEEE, MMMM d")}
               </p>
               {isToday && (
@@ -459,14 +459,14 @@ const CalorieSummaryCard: FC<{ totals: DailyLog; goal: number }> = ({ totals, go
 
   return (
     <Card className="overflow-hidden border shadow-lg">
-      <CardContent className="p-8">
+      <CardContent className="p-6 md:p-8">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold">Daily Calories</h3>
           <Badge variant="outline" className={cn(
-            "rounded-full px-3 py-1",
+            "rounded-full px-3 py-1 text-sm",
             isOverGoal ? "border-destructive text-destructive" : "border-primary text-primary"
           )}>
-            <Flame className="h-3 w-3 mr-1" />
+            <Flame className="h-3.5 w-3.5 mr-1" />
             {Math.round(totals.totalCalories)} / {goal}
           </Badge>
         </div>

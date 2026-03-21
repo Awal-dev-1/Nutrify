@@ -384,7 +384,7 @@ export default function RecognizePage() {
           <ScanLine className="h-8 w-8 text-primary" />
           AI Food Recognition
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-base text-muted-foreground mt-1">
           Upload a food image or use your camera and let our AI do the work.
         </p>
       </div>
