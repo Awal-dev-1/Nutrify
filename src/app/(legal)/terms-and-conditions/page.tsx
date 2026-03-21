@@ -108,7 +108,7 @@ const TermsAndConditionsPage = () => {
             <h2 className="text-2xl font-semibold tracking-tight">10. Governing Law</h2>
             <p>These Terms shall be governed by the laws of:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
-                <li>[Insert Country]</li>
+                <li>Ghana</li>
             </ul>
         </section>
       </div>
