@@ -46,10 +46,10 @@ const mainLinks = [
 ]
 
 const aiLinks = [
-  { href: '/dashboard/search',          label: 'AI Food Search',   icon: Search   },
-  { href: '/dashboard/recognize',       label: 'AI Recognition',   icon: ScanLine },
-  { href: '/dashboard/recommendations', label: 'Recommendations',  icon: Bot      },
-  { href: '/dashboard/planner',         label: 'Meal Planner',     icon: Calendar },
+  { href: '/dashboard/search',          label: 'AI Food Search',  icon: Search   },
+  { href: '/dashboard/recognize',       label: 'AI Recognition',  icon: ScanLine },
+  { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot      },
+  { href: '/dashboard/planner',         label: 'Meal Planner',    icon: Calendar },
 ]
 
 const insightLinks = [
@@ -68,7 +68,6 @@ export function MainSidebar() {
     if (isMobile) setOpenMobile(false)
   }
 
-  /* ── shared nav-link renderer ── */
   const renderLinks = (
     links: { href: string; label: string; icon: any }[],
     groupLabel?: string,
@@ -98,8 +97,9 @@ export function MainSidebar() {
               >
                 <Link href={link.href}>
                   <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-primary')} />
-                  {/* label hidden when collapsed; sidebar tooltip covers it */}
-                  {!isCollapsed && <span>{link.label}</span>}
+                  <span className={cn("whitespace-nowrap transition-opacity duration-200", isCollapsed && "opacity-0")}>
+                    {link.label}
+                  </span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -111,25 +111,39 @@ export function MainSidebar() {
 
   return (
     <>
-      {/* ════════════════════════════════
-          HEADER — logo + toggle inline
-      ════════════════════════════════ */}
-      <SidebarHeader
-        className={cn(
-          'flex h-16 flex-row items-center justify-between border-b px-4'
-        )}
-      >
-        <Logo collapsed={isCollapsed} />
+      {/* ── HEADER ── */}
+      <SidebarHeader className="flex h-16 flex-row items-center justify-between border-b px-4">
+        {/* This div handles the space for the logo, and alignment */}
+        <div className="flex-1">
+          {/* Use relative positioning to stack logos */}
+          <div className="relative h-8">
+            {/* Expanded Logo */}
+            <div
+              className={cn(
+                "absolute inset-0 flex items-center transition-opacity duration-200",
+                isCollapsed ? 'opacity-0' : 'opacity-100'
+              )}
+            >
+              <Logo collapsed={false} />
+            </div>
+            {/* Collapsed Logo ("N") */}
+            <div
+              className={cn(
+                "absolute inset-0 flex items-center justify-center transition-opacity duration-200",
+                isCollapsed ? 'opacity-100' : 'opacity-0'
+              )}
+            >
+              <Logo collapsed={true} />
+            </div>
+          </div>
+        </div>
         <SidebarToggle className="hidden md:inline-flex shrink-0" />
       </SidebarHeader>
 
-      {/* ════════════════════════════════
-          CONTENT
-      ════════════════════════════════ */}
+      {/* ── CONTENT ── */}
       <SidebarContent className={cn('py-4', isCollapsed ? 'px-1' : 'px-2')}>
         <div className="space-y-6">
 
-          {/* Main */}
           {renderLinks(mainLinks, 'Main')}
 
           {/* AI Features */}
@@ -149,7 +163,6 @@ export function MainSidebar() {
                 </div>
               </div>
             ) : (
-              /* collapsed: show section icon as a visual divider */
               <div className="flex justify-center py-2">
                 <div className="p-1.5 rounded-md bg-primary/10">
                   <Brain className="h-4 w-4 text-primary" />
@@ -188,12 +201,9 @@ export function MainSidebar() {
         </div>
       </SidebarContent>
 
-      {/* ════════════════════════════════
-          FOOTER — settings + user
-      ════════════════════════════════ */}
+      {/* ── FOOTER ── */}
       <SidebarFooter className={cn('border-t', isCollapsed ? 'p-2' : 'p-3')}>
 
-        {/* Settings */}
         <SidebarMenu className="mb-2 gap-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -215,13 +225,14 @@ export function MainSidebar() {
                     pathname === '/dashboard/settings' && 'text-primary',
                   )}
                 />
-                {!isCollapsed && <span>Settings</span>}
+                <span className={cn("whitespace-nowrap transition-opacity duration-200", isCollapsed && "opacity-0")}>
+                  Settings
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
-        {/* User profile */}
         <div
           className={cn(
             'rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-2 transition-all hover:shadow-md',
@@ -240,17 +251,14 @@ export function MainSidebar() {
                 {user?.displayName?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
-
-            {!isCollapsed && (
-              <div className="flex-1 overflow-hidden">
+            <div className={cn('flex-1 overflow-hidden whitespace-nowrap transition-opacity duration-200', isCollapsed && 'opacity-0')}>
                 <p className="text-sm font-semibold truncate leading-tight">
                   {user?.displayName || 'User'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {user?.email || 'user@example.com'}
                 </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
