@@ -1,6 +1,6 @@
 'use client';
 
-import { History, Bot } from 'lucide-react';
+import { History, Bot, Flame, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -21,9 +21,9 @@ export function RecentSearches({ recents, isLoading, onRecentClick }: RecentSear
           <Skeleton className="h-4 w-48 mt-1" />
         </CardHeader>
         <CardContent className="space-y-3">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-lg" />
         </CardContent>
       </Card>
     );
@@ -55,10 +55,16 @@ export function RecentSearches({ recents, isLoading, onRecentClick }: RecentSear
             <button
               key={recent.id}
               onClick={() => onRecentClick(recent)}
-              className="w-full text-left p-3 rounded-md bg-muted/50 hover:bg-muted transition-colors flex justify-between items-center"
+              className="w-full text-left p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors flex justify-between items-center group"
             >
-              <span className="font-medium">{recent.foodName}</span>
-              <span className="text-sm text-muted-foreground">{Math.round(recent.calories)} kcal</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{recent.foodName}</p>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                    <Flame className="h-3.5 w-3.5 text-orange-500" />
+                    <span>{Math.round(recent.calories)} kcal</span>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors ml-2" />
             </button>
           ))}
         </div>
