@@ -3,7 +3,7 @@
 // components/landing/cta-banner.tsx
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, CheckCircle } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from 'framer-motion';
 
 export function CtaBanner() {
@@ -41,21 +41,11 @@ export function CtaBanner() {
             commitment, cancel anytime.
           </p>
 
-          {/* Benefits */}
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-2">
-            {["Free forever", "No credit card", "Cancel anytime"].map((benefit) => (
-              <div key={benefit} className="flex items-center gap-1.5 text-small text-primary-foreground/80">
-                <CheckCircle className="h-4 w-4" />
-                {benefit}
-              </div>
-            ))}
-          </div>
-          
           <div className="pt-4 md:pt-6">
             <Button 
               size="lg" 
               asChild 
-              className="bg-white text-primary hover:bg-white/90 px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
+              className="bg-white text-black hover:bg-green-500 hover:text-white px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
               <Link href="/signup">
                 Sign Up for Free
