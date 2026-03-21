@@ -9,7 +9,7 @@ import { generateRecommendations, type RecommendationResult, type Recommendation
 import { useUser, useFirestore } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RecipeDetailModal } from '@/components/recommendations/recipe-detail-modal';
-import { FoodConfirmationModal } => '@/components/recognize/food-confirmation-modal';
+import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import Link from 'next/link';
 
 export default function RecommendationsPage() {
