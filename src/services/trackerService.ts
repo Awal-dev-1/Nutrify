@@ -1,3 +1,4 @@
+
 'use client';
 
 import { doc, getDoc, setDoc, collection, Firestore } from 'firebase/firestore';
@@ -21,7 +22,7 @@ const updateLog = (dailyLogRef: any, dailyLog: DailyLog) => {
 export async function addFoodToLog(
   db: Firestore,
   userId: string,
-  mealType: "Breakfast" | "Lunch" | "Dinner" | "Snacks",
+  mealType: "Breakfast" | "Lunch" | "Dinner",
   foodData: AiFoodItem,
   quantity: number
 ) {
@@ -61,7 +62,7 @@ export async function addFoodToLog(
         totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
         totalSugar: 0, totalCalcium: 0, totalVitaminC: 0,
         waterIntake: 0,
-        meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
+        meals: { Breakfast: [], Lunch: [], Dinner: [] },
       };
     }
   } catch (error) {

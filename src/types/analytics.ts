@@ -1,5 +1,6 @@
 
 
+
 export type LoggedFoodItem = {
     logId: string;
     foodId: string;

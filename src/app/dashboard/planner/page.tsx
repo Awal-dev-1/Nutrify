@@ -21,6 +21,7 @@ import type { FoodItem } from '@/types/food';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
+import { getAnalyticsData } from '@/services/analyticsService';
 
 export default function MealPlannerPage() {
   const { toast } = useToast();
@@ -63,6 +64,9 @@ export default function MealPlannerPage() {
     setGenerationError(null);
 
     try {
+        const analytics = await getAnalyticsData(db, user.uid, '30d');
+        const summary = analytics.summary;
+
         const input: GeneratePersonalizedMealPlanInput = {
             gender: userProfile.profile.gender as any,
             age: userProfile.profile.age,
@@ -75,13 +79,14 @@ export default function MealPlannerPage() {
             carbsPercentageGoal: userProfile.goals.carbsPercentageGoal,
             fatPercentageGoal: userProfile.goals.fatPercentageGoal,
             dietaryPreferences: userProfile.health.dietaryPreferences || [],
-            // These would ideally come from analytics
-            averageDailyCalories: 2000, 
-            averageDailyProtein: 100,
-            averageDailyCarbs: 250,
-            averageDailyFat: 60,
-            averageDailyIron: 15,
-            averageDailyVitaminA: 700,
+            averageDailyCalories: summary.averageCalories > 0 ? summary.averageCalories : 2000,
+            averageDailyProtein: summary.averageProtein > 0 ? summary.averageProtein : 100,
+            averageDailyCarbs: summary.averageCarbs > 0 ? summary.averageCarbs : 250,
+            averageDailyFat: summary.averageFat > 0 ? summary.averageFat : 60,
+            averageDailyIron: summary.averageIron > 0 ? summary.averageIron : 15,
+            averageDailyVitaminA: summary.averageVitaminA > 0 ? summary.averageVitaminA : 700,
+            recentDeficiencies: [],
+            recentExcesses: [],
         };
 
         await clearPlan(db, user.uid);
@@ -161,7 +166,7 @@ export default function MealPlannerPage() {
             <Calendar className="h-6 w-6" />
             AI Meal Planner
           </h1>
-          <p className="text-base text-muted-foreground max-w-2xl">
+          <p className="text-body text-muted-foreground max-w-2xl">
             Generate, view, and manage your weekly meal plan.
           </p>
         </div>

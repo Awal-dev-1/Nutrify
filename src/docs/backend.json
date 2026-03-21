@@ -412,7 +412,7 @@
         },
         "mealType": {
           "type": "string",
-          "description": "e.g., 'Breakfast', 'Lunch'."
+          "description": "e.g., 'Breakfast', 'Lunch', 'Dinner'."
         },
         "quantity": {
           "type": "number",
