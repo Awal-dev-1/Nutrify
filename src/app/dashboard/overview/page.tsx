@@ -176,266 +176,301 @@ const OverviewPage = () => {
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
 
             {/* Today's Summary */}
-            <Card className="border-2 shadow-xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
-                <div className="flex items-start sm:items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
-                      <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
-                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                      </div>
-                      Today's Summary
-                    </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm mt-0.5">
-                      Your real-time progress towards today's goals
-                    </CardDescription>
-                  </div>
-                  {todayTotals.totalCalories > 0 && (
-                    <Badge className={cn(
-                      "shrink-0 rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs",
-                      isOverGoal ? "bg-destructive/10 text-destructive" : "bg-green-500/10 text-green-600"
-                    )}>
-                      {isOverGoal ? "Over goal" : "On track"}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-                {/* Calories row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-center">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-baseline gap-2">
-                      <span className="font-medium flex items-center gap-1.5 text-sm sm:text-base">
-                        <div className="shrink-0 p-1 rounded-full bg-orange-500/10">
-                          <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500" />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="border-2 shadow-xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
+                  <div className="flex items-start sm:items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                        <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
+                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         </div>
-                        Calories
-                      </span>
-                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-                        {todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal
-                      </span>
+                        Today's Summary
+                      </CardTitle>
+                      <CardDescription className="text-xs sm:text-sm mt-0.5">
+                        Your real-time progress towards today's goals
+                      </CardDescription>
                     </div>
-                    <Progress value={calorieProgress} className="h-2 sm:h-2.5" indicatorClassName="bg-orange-500" />
+                    {todayTotals.totalCalories > 0 && (
+                      <Badge className={cn(
+                        "shrink-0 rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs",
+                        isOverGoal ? "bg-destructive/10 text-destructive" : "bg-green-500/10 text-green-600"
+                      )}>
+                        {isOverGoal ? "Over goal" : "On track"}
+                      </Badge>
+                    )}
                   </div>
-                  <div className="text-center sm:border-l sm:pl-6 py-1 sm:py-2">
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-1">Remaining</p>
-                    <p className={cn(
-                      "text-3xl sm:text-4xl font-bold",
-                      calorieRemaining < 0 ? "text-destructive" : "text-primary"
-                    )}>
-                      {Math.round(calorieRemaining)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">kcal left</p>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+                  {/* Calories row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-center">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className="font-medium flex items-center gap-1.5 text-sm sm:text-base">
+                          <div className="shrink-0 p-1 rounded-full bg-orange-500/10">
+                            <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500" />
+                          </div>
+                          Calories
+                        </span>
+                        <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                          {todayTotals.totalCalories.toFixed(0)} / {derivedGoals.calories.toFixed(0)} kcal
+                        </span>
+                      </div>
+                      <Progress value={calorieProgress} className="h-2 sm:h-2.5" indicatorClassName="bg-orange-500" />
+                    </div>
+                    <div className="text-center sm:border-l sm:pl-6 py-1 sm:py-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Remaining</p>
+                      <p className={cn(
+                        "text-3xl sm:text-4xl font-bold",
+                        calorieRemaining < 0 ? "text-destructive" : "text-primary"
+                      )}>
+                        {Math.round(calorieRemaining)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">kcal left</p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Macros */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 pt-3 sm:pt-4 border-t">
-                  <MacroStat 
-                    icon={<Beef className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />} 
-                    label="Protein" 
-                    value={todayTotals.totalProtein} 
-                    goal={derivedGoals.protein} 
-                    color="bg-red-500"
-                  />
-                  <MacroStat 
-                    icon={<Wheat className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />} 
-                    label="Carbs" 
-                    value={todayTotals.totalCarbs} 
-                    goal={derivedGoals.carbs} 
-                    color="bg-yellow-600"
-                  />
-                  <MacroStat 
-                    icon={<Droplets className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />} 
-                    label="Fat" 
-                    value={todayTotals.totalFat} 
-                    goal={derivedGoals.fat} 
-                    color="bg-blue-500"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <MicroNutrientGrid totals={todayTotals} />
+                  {/* Macros */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 pt-3 sm:pt-4 border-t">
+                    <MacroStat 
+                      icon={<Beef className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />} 
+                      label="Protein" 
+                      value={todayTotals.totalProtein} 
+                      goal={derivedGoals.protein} 
+                      color="bg-red-500"
+                    />
+                    <MacroStat 
+                      icon={<Wheat className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />} 
+                      label="Carbs" 
+                      value={todayTotals.totalCarbs} 
+                      goal={derivedGoals.carbs} 
+                      color="bg-yellow-600"
+                    />
+                    <MacroStat 
+                      icon={<Droplets className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />} 
+                      label="Fat" 
+                      value={todayTotals.totalFat} 
+                      goal={derivedGoals.fat} 
+                      color="bg-blue-500"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <MicroNutrientGrid totals={todayTotals} />
+            </motion.div>
 
             {/* Weekly Trend */}
-            <Card className="border-2 shadow-xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
-                  <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
-                    <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Card className="border-2 shadow-xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                    <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
+                      <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                    </div>
+                    Weekly Calorie Trend
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Your calorie intake over the last 7 days
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="h-[200px] sm:h-[230px] md:h-[250px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={weeklyData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis 
+                          dataKey="date" 
+                          tickFormatter={(val) => format(new Date(val), 'EEE')} 
+                          fontSize={11} 
+                          tickLine={false} 
+                          axisLine={false}
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        />
+                        <YAxis 
+                          fontSize={11} 
+                          tickLine={false} 
+                          axisLine={false}
+                          width={40}
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--background))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '12px',
+                            padding: '8px 12px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            fontSize: '12px',
+                          }}
+                          labelFormatter={(label) => format(new Date(label), 'MMMM d, yyyy')}
+                          formatter={(value: number) => [`${Math.round(value)} kcal`, 'Calories']}
+                          cursor={{ fill: 'hsl(var(--accent))', fillOpacity: 0.1, radius: 4 }}
+                        />
+                        <ReferenceLine 
+                          y={derivedGoals.calories} 
+                          label={{ value: 'Goal', position: 'insideTopLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                          stroke="hsl(var(--destructive))" 
+                          strokeDasharray="3 3" 
+                        />
+                        <Bar 
+                          dataKey="calories"
+                          radius={[4, 4, 0, 0]} 
+                          maxBarSize={40}
+                          animationDuration={500}
+                        >
+                          {weeklyData?.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={barColors[index % barColors.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
-                  Weekly Calorie Trend
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Your calorie intake over the last 7 days
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6">
-                <div className="h-[200px] sm:h-[230px] md:h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={weeklyData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                      <XAxis 
-                        dataKey="date" 
-                        tickFormatter={(val) => format(new Date(val), 'EEE')} 
-                        fontSize={11} 
-                        tickLine={false} 
-                        axisLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      />
-                      <YAxis 
-                        fontSize={11} 
-                        tickLine={false} 
-                        axisLine={false}
-                        width={40}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '12px',
-                          padding: '8px 12px',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                          fontSize: '12px',
-                        }}
-                        labelFormatter={(label) => format(new Date(label), 'MMMM d, yyyy')}
-                        formatter={(value: number) => [`${Math.round(value)} kcal`, 'Calories']}
-                        cursor={{ fill: 'hsl(var(--accent))', fillOpacity: 0.1, radius: 4 }}
-                      />
-                      <ReferenceLine 
-                        y={derivedGoals.calories} 
-                        label={{ value: 'Goal', position: 'insideTopLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
-                        stroke="hsl(var(--destructive))" 
-                        strokeDasharray="3 3" 
-                      />
-                      <Bar 
-                        dataKey="calories"
-                        radius={[4, 4, 0, 0]} 
-                        maxBarSize={40}
-                        animationDuration={500}
-                      >
-                         {weeklyData?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={barColors[index % barColors.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
           {/* ── Right Column ── */}
-          {/* On mobile/tablet, this stacks below left column. On lg+, sits beside. */}
           <div className="lg:col-span-1 space-y-4 md:space-y-6">
 
             {/* Quick Actions */}
-            <Card className="border-2 shadow-xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
-                    <Utensils className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  </div>
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 grid grid-cols-2 gap-2 sm:gap-3">
-                <Button 
-                  asChild 
-                  className="h-12 sm:h-14 rounded-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all"
-                >
-                  <Link href="/dashboard/tracker">
-                    <PlusCircle className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> 
-                    <span className="text-xs sm:text-sm">Add Meal</span>
-                  </Link>
-                </Button>
-                <Button 
-                  asChild 
-                  variant="outline" 
-                  className="h-12 sm:h-14 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
-                >
-                  <Link href="/dashboard/search">
-                    <Search className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> 
-                    <span className="text-xs sm:text-sm">Search</span>
-                  </Link>
-                </Button>
-                <Button 
-                  asChild 
-                  variant="secondary" 
-                  className="col-span-2 h-12 sm:h-14 rounded-xl bg-secondary/50 hover:bg-secondary/70 transition-all"
-                >
-                  <Link href="/dashboard/goals">
-                    <Target className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> 
-                    <span className="text-xs sm:text-sm">Update Goals</span>
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Card className="border-2 shadow-xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
+                      <Utensils className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                    </div>
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4 grid grid-cols-2 gap-2 sm:gap-3">
+                  <Button 
+                    asChild 
+                    className="h-12 sm:h-14 rounded-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Link href="/dashboard/tracker">
+                      <PlusCircle className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> 
+                      <span className="text-xs sm:text-sm">Add Meal</span>
+                    </Link>
+                  </Button>
+                  <Button 
+                    asChild 
+                    variant="outline" 
+                    className="h-12 sm:h-14 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
+                  >
+                    <Link href="/dashboard/search">
+                      <Search className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> 
+                      <span className="text-xs sm:text-sm">Search</span>
+                    </Link>
+                  </Button>
+                  <Button 
+                    asChild 
+                    variant="secondary" 
+                    className="col-span-2 h-12 sm:h-14 rounded-xl bg-secondary/50 hover:bg-secondary/70 transition-all"
+                  >
+                    <Link href="/dashboard/goals">
+                      <Target className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> 
+                      <span className="text-xs sm:text-sm">Update Goals</span>
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Smart Suggestions */}
-            <Card className="border-2 shadow-xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
-                    <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  </div>
-                  Smart Suggestions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4">
-                {isRecsLoading ? (
-                  <RecommendationSkeleton/>
-                ) : latestRecs.length > 0 ? (
-                  <div className="space-y-2 sm:space-y-3">
-                    {latestRecs.slice(0, 2).map((rec) => (
-                      <RecommendationItemPreview key={rec.foodId} rec={rec} />
-                    ))}
-                    <Button 
-                      asChild 
-                      variant="secondary" 
-                      className="w-full mt-2 rounded-xl h-10 sm:h-11 text-xs sm:text-sm"
-                    >
-                      <Link href="/dashboard/recommendations">
-                        View All Recommendations
-                        <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center py-4 sm:py-6 space-y-2 sm:space-y-3">
-                    <div className="inline-flex p-2.5 sm:p-3 rounded-full bg-primary/10">
-                      <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-primary/50" />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <Card className="border-2 shadow-xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-primary/10">
+                      <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      No recommendations yet. Generate them on the Recommendations page!
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    Smart Suggestions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4">
+                  {isRecsLoading ? (
+                    <RecommendationSkeleton/>
+                  ) : latestRecs.length > 0 ? (
+                    <div className="space-y-2 sm:space-y-3">
+                      {latestRecs.slice(0, 2).map((rec) => (
+                        <RecommendationItemPreview key={rec.foodId} rec={rec} />
+                      ))}
+                      <Button 
+                        asChild 
+                        variant="secondary" 
+                        className="w-full mt-2 rounded-xl h-10 sm:h-11 text-xs sm:text-sm"
+                      >
+                        <Link href="/dashboard/recommendations">
+                          View All Recommendations
+                          <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 sm:py-6 space-y-2 sm:space-y-3">
+                      <div className="inline-flex p-2.5 sm:p-3 rounded-full bg-primary/10">
+                        <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-primary/50" />
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        No recommendations yet. Generate them on the Recommendations page!
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Hydration Tip */}
-            <Card className="border-2 shadow-xl overflow-hidden bg-gradient-to-br from-blue-500/5 to-blue-500/10 dark:from-blue-500/10 dark:to-blue-500/5">
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-blue-600 dark:text-blue-400">
-                  <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-blue-500/10">
-                    <Droplets className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Card className="border-2 shadow-xl overflow-hidden bg-gradient-to-br from-blue-500/5 to-blue-500/10 dark:from-blue-500/10 dark:to-blue-500/5">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-blue-600 dark:text-blue-400">
+                    <div className="shrink-0 p-1 sm:p-1.5 rounded-lg bg-blue-500/10">
+                      <Droplets className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </div>
+                    Hydration Tip
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                  <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+                    Drinking water before a meal can help with digestion and make you feel fuller, preventing overeating.
+                  </p>
+                  <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600/70 dark:text-blue-400/70">
+                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                    <span>8 glasses recommended daily</span>
                   </div>
-                  Hydration Tip
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-                <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
-                  Drinking water before a meal can help with digestion and make you feel fuller, preventing overeating.
-                </p>
-                <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2 text-xs text-blue-600/70 dark:text-blue-400/70">
-                  <CheckCircle2 className="h-3 w-3 shrink-0" />
-                  <span>8 glasses recommended daily</span>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
 
@@ -502,9 +537,7 @@ const MacroStat = ({ icon, label, value, goal, color }: { icon: React.ReactNode,
   
   return (
     <motion.div 
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      whileHover={{ scale: 1.02 }}
       className="text-center p-2 sm:p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
     >
       <div className="flex items-center justify-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
