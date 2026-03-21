@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -124,10 +125,9 @@ export default function SettingsPage() {
   }, [displayName, initialDisplayName, profileImageFile, isProfileLoading]);
 
   const hasPreferencesChanges = useMemo(() => {
-    if (isProfileLoading || !userProfile) return false;
-    const initialThemeValue = userProfile.preferences?.themePreference || 'system';
-    return language !== initialLanguage || units !== initialUnits || theme !== initialThemeValue;
-  }, [language, initialLanguage, units, initialUnits, theme, userProfile, isProfileLoading]);
+    if (isProfileLoading) return false;
+    return language !== initialLanguage || units !== initialUnits;
+  }, [language, initialLanguage, units, initialUnits, isProfileLoading]);
 
   const hasNotificationsChanges = useMemo(() => {
     if (isProfileLoading) return false;
@@ -149,6 +149,19 @@ export default function SettingsPage() {
   
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
+    if (user && db) {
+      updateUserDocument(db, user.uid, { 'preferences.themePreference': newTheme })
+        .then(() => {
+          toast({ title: 'Theme preference saved!', duration: 3000 });
+        })
+        .catch((error) => {
+          toast({
+            variant: 'destructive',
+            title: 'Error saving theme',
+            description: 'Could not save your theme preference. Please try again.',
+          });
+        });
+    }
   };
 
   const handleProfileSave = async () => {
@@ -174,7 +187,6 @@ export default function SettingsPage() {
     const prefs = {
       'preferences.languagePreference': language,
       'preferences.unitPreference': units,
-      'preferences.themePreference': theme,
     };
     try {
       await updateUserDocument(db, user.uid, prefs);
@@ -863,3 +875,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
