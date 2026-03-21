@@ -47,7 +47,9 @@ User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{
 
 CRITICAL INSTRUCTIONS:
 1.  **Analyze the Image**: First, determine if the image contains food. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **Identify ALL Components (MANDATORY)**: If the image contains a mixed dish (e.g., Banku with Tilapia and pepper sauce), you MUST identify EACH primary component and accompaniment. For each identified item (e.g., Banku, Grilled Tilapia, Shito), return it as a SEPARATE object within the 'predictions' array. Even small garnishes or side salads must be identified as their own item.
+2.  **Component Identification Rule**: Your primary task is to identify every distinct food item.
+    *   **If the image shows a mixed dish** (e.g., Banku with Tilapia and pepper sauce), you MUST identify EACH primary component and accompaniment. Return each item (Banku, Grilled Tilapia, Shito) as a SEPARATE object in the 'predictions' array.
+    *   **If the image shows a single food item** (e.g., just a bowl of fufu, or just a piece of chicken), return only ONE prediction object for that single item. Do not hallucinate accompaniments that are not present.
 3.  **Calculate Nutrients for EACH Component**: For each food component you identify, you MUST:
     a.  Visually estimate its specific weight in the image and provide this value in the \`estimatedWeightGrams\` field.
     b.  Calculate a comprehensive nutritional profile (\`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`) that corresponds DIRECTLY to that estimated weight.
