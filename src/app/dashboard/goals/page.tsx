@@ -449,35 +449,37 @@ const GramDisplay = ({ label, value, color, icon: Icon, total }: {
 };
 
 const GoalsSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
+  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
       <div className="space-y-3 md:space-y-4">
         <div className="flex flex-col xs:flex-row xs:items-center gap-3">
-          <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 rounded-xl" />
+          <Skeleton className="h-12 w-12 md:h-16 md:w-16 rounded-2xl" />
           <div className="flex-1">
-            <Skeleton className="h-6 sm:h-8 md:h-10 w-48 sm:w-56 md:w-64 mb-1.5" />
-            <Skeleton className="h-3.5 sm:h-4 md:h-5 w-56 sm:w-72 md:w-96" />
+            <Skeleton className="h-8 md:h-10 w-56 md:w-64 mb-1.5" />
+            <Skeleton className="h-4 md:h-5 w-72 md:w-96" />
           </div>
         </div>
-        <Skeleton className="h-14 sm:h-16 md:h-20 w-full rounded-lg" />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+
+      <Skeleton className="h-12 w-full rounded-lg" />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          <Skeleton className="h-32 sm:h-40 md:h-48 w-full rounded-xl" />
-          <Skeleton className="h-56 sm:h-64 md:h-80 w-full rounded-xl" />
+          <Skeleton className="h-40 md:h-48 w-full rounded-xl" />
+          <Skeleton className="h-64 md:h-80 w-full rounded-xl" />
         </div>
         <div className="space-y-4 md:space-y-6">
-          <Skeleton className="h-48 sm:h-56 md:h-64 w-full rounded-xl" />
-          <Skeleton className="h-44 sm:h-48 md:h-56 w-full rounded-xl" />
+          <Skeleton className="h-56 md:h-64 w-full rounded-xl" />
+          <Skeleton className="h-48 md:h-56 w-full rounded-xl" />
         </div>
       </div>
-      <Skeleton className="h-14 sm:h-16 md:h-20 w-full rounded-lg" />
+
+      <div className="flex justify-end gap-3 pt-6">
+        <Skeleton className="h-11 w-48 rounded-lg" />
+        <Skeleton className="h-11 w-36 rounded-lg" />
+      </div>
     </div>
   </div>
 );
 
     
-
-    
-
-

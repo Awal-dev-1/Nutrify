@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, type FC } from "react";
@@ -76,6 +77,7 @@ import { format, subDays, addDays } from "date-fns";
 import type { DailyLog, LoggedFoodItem } from "@/types/analytics";
 import type { FoodItem as AiFoodItem } from "@/types/food";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 
@@ -237,15 +239,7 @@ export default function DailyTrackerPage() {
   };
 
   if (isLogLoading) {
-    return (
-      <div className="flex flex-col h-[70vh] items-center justify-center gap-4">
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
-          <Loader2 className="h-12 w-12 animate-spin text-primary relative" />
-        </div>
-        <p className="text-muted-foreground animate-pulse">Loading your daily tracker...</p>
-      </div>
-    );
+    return <TrackerSkeleton />;
   }
 
   return (
@@ -738,3 +732,37 @@ const MicroStat: FC<{ label: string; value: number; unit: string }> = ({ label, 
     </p>
   </div>
 );
+
+const TrackerSkeleton = () => (
+    <div className="space-y-4 sm:space-y-8 animate-pulse">
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-2xl" />
+                <div>
+                    <Skeleton className="h-8 w-40 mb-1" />
+                    <Skeleton className="h-5 w-48" />
+                </div>
+            </div>
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-11 flex-1 rounded-2xl" />
+                <Skeleton className="h-11 w-11 rounded-xl" />
+            </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-8">
+                <Skeleton className="h-48 rounded-lg" />
+                <Skeleton className="h-56 rounded-lg" />
+                <Skeleton className="h-48 rounded-lg" />
+                <div className="space-y-4">
+                    <Skeleton className="h-24 rounded-lg" />
+                    <Skeleton className="h-24 rounded-lg" />
+                </div>
+            </div>
+            <div className="lg:col-span-1">
+                <Skeleton className="h-48 rounded-lg" />
+            </div>
+        </div>
+    </div>
+)
+
+    

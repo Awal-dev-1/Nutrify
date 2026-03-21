@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
@@ -628,108 +629,57 @@ const RecommendationSkeleton = () => (
 );
 
 const DashboardSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8">
+  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 animate-pulse">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 space-y-4 md:space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      {/* Header Skeleton */}
+      <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3">
         <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 rounded-xl" />
           <div>
             <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-64" />
           </div>
         </div>
         <Skeleton className="h-8 w-32 rounded-full" />
       </div>
 
       <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+        {/* Left Column Skeleton */}
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
           <Card className="border-2">
-            <CardHeader className="pb-4">
-              <div className="flex justify-between">
-                <div>
-                  <Skeleton className="h-6 w-40" />
-                  <Skeleton className="h-4 w-56 mt-2" />
-                </div>
-                <Skeleton className="h-6 w-16 rounded-full" />
-              </div>
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-56 mt-2" />
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
               </div>
               <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                <Skeleton className="h-24 w-full rounded-xl" />
-                <Skeleton className="h-24 w-full rounded-xl" />
-                <Skeleton className="h-24 w-full rounded-xl" />
+                <Skeleton className="h-20 w-full rounded-xl" />
+                <Skeleton className="h-20 w-full rounded-xl" />
+                <Skeleton className="h-20 w-full rounded-xl" />
               </div>
             </CardContent>
           </Card>
-
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <Skeleton className="h-6 w-40" />
-            </CardHeader>
-            <CardContent className="p-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-              {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-64 mt-2" />
-            </CardHeader>
-            <CardContent className="p-4">
-              <Skeleton className="h-[250px] w-full rounded-xl" />
-            </CardContent>
-          </Card>
+          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
         </div>
 
+        {/* Right Column Skeleton */}
         <div className="lg:col-span-1 space-y-4 md:space-y-6">
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="p-4 grid grid-cols-2 gap-3">
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl col-span-2" />
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <Skeleton className="h-6 w-40" />
-            </CardHeader>
-            <CardContent className="p-4">
-              <RecommendationSkeleton />
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="p-6">
-              <Skeleton className="h-16 w-full rounded-xl" />
-            </CardContent>
-          </Card>
+          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
         </div>
       </div>
-
-      <Card className="border-2 border-dashed">
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center text-center">
-            <Skeleton className="h-16 w-16 rounded-full mb-4" />
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64 mb-6" />
-            <Skeleton className="h-12 w-32 rounded-xl" />
-          </div>
-        </CardContent>
-      </Card>
+      
+      <Skeleton className="h-40 w-full rounded-xl" />
     </div>
   </div>
 );
 
 export default OverviewPage;
+
+    

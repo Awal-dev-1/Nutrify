@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -15,8 +16,10 @@ import { WeekPlanner } from '@/components/planner/week-planner';
 import { DayPlanner } from '@/components/planner/day-planner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 export default function MealPlannerPage() {
   const { toast } = useToast();
@@ -148,7 +151,10 @@ export default function MealPlannerPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">AI Meal Planner</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
+            <Calendar className="h-6 w-6" />
+            AI Meal Planner
+          </h1>
           <p className="text-base text-muted-foreground max-w-2xl">
             Generate, view, and manage your weekly meal plan.
           </p>
@@ -164,9 +170,7 @@ export default function MealPlannerPage() {
       )}
       
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <PlannerSkeleton />
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -196,3 +200,41 @@ export default function MealPlannerPage() {
     </div>
   );
 }
+
+const PlannerSkeleton = () => (
+    <div className="space-y-8 animate-pulse">
+      <div className="flex sm:items-center sm:justify-between gap-4 flex-col sm:flex-row">
+        <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-5 w-64" />
+        </div>
+        <div className="flex items-center gap-2">
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-28" />
+        </div>
+      </div>
+       <Skeleton className="h-12 w-full rounded-lg" />
+       <Card className="border-2">
+            <CardHeader className="pb-4">
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <Skeleton className="h-8 w-full" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                </div>
+            </CardContent>
+       </Card>
+       <div className="space-y-4">
+        {[1,2,3,4].map(i => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+        ))}
+       </div>
+    </div>
+)
+
+    

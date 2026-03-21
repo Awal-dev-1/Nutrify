@@ -720,7 +720,7 @@ const DaySummaryCard = ({ day, title, icon, color }: { day: AnalyticsData; title
 // Enhanced Analytics Skeleton
 const AnalyticsSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8 animate-pulse">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 rounded-xl" />
@@ -736,18 +736,47 @@ const AnalyticsSkeleton = () => (
         {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 md:h-32 rounded-xl" />)}
       </div>
 
-      <Skeleton className="h-[300px] md:h-[420px] rounded-xl" />
-      <Skeleton className="h-48 md:h-60 rounded-xl" />
+      <Card className="border-2 shadow-lg">
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-3/4" />
+        </CardHeader>
+        <CardContent className="p-6">
+          <Skeleton className="h-[250px] sm:h-[300px] md:h-[350px] w-full" />
+        </CardContent>
+      </Card>
 
+       <Card className="border-2 shadow-lg">
+        <CardHeader>
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+           <Skeleton className="h-8 w-full" />
+        </CardContent>
+      </Card>
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {[1,2,3].map(i => <Skeleton key={i} className="h-[300px] md:h-[350px] rounded-xl" />)}
+        {[1,2].map(i => 
+          <Card key={i} className="border-2 shadow-lg">
+            <CardHeader>
+              <Skeleton className="h-5 w-1/3" />
+              <Skeleton className="h-3 w-1/2" />
+            </CardHeader>
+            <CardContent className="p-4">
+              <Skeleton className="h-[250px] md:h-[300px] w-full" />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {[1,2,3].map(i => <Skeleton key={i} className="h-48 md:h-56 rounded-xl" />)}
-      </div>
     </div>
   </div>
 );
 
 export default AnalyticsPage;
+
+    
