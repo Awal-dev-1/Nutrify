@@ -64,7 +64,7 @@ const TermsAndConditionsPage = () => {
                 <li>Abuse the system</li>
                 <li>Attempt unauthorized access</li>
             </ul>
-            <p>You may delete your account at any time in Settings.</p>
+            <p>You can manage most of these in Settings.</p>
         </section>
 
         <section className="space-y-2">
@@ -109,14 +109,6 @@ const TermsAndConditionsPage = () => {
             <p>These Terms shall be governed by the laws of:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>[Insert Country]</li>
-            </ul>
-        </section>
-
-        <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">11. Contact Information</h2>
-            <p>For questions regarding these Terms:</p>
-            <ul className="list-disc list-inside space-y-1 pl-4">
-                <li>Email: [Insert Support Email]</li>
             </ul>
         </section>
       </div>

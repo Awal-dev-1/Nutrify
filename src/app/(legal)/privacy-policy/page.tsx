@@ -120,15 +120,6 @@ const PrivacyPolicyPage = () => {
           <p>We may update this Privacy Policy from time to time.</p>
           <p>Changes will be reflected with an updated effective date.</p>
         </section>
-  
-        <section className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight">10. Contact Information</h2>
-          <p>If you have questions about this Privacy Policy, contact:</p>
-          <ul className="list-disc list-inside space-y-1 pl-4">
-              <li>Email: [Insert Support Email]</li>
-              <li>Location: [Insert Company Location]</li>
-          </ul>
-        </section>
       </div>
     );
   };
