@@ -58,13 +58,13 @@ export function RecentSearches({ recents, isLoading, onRecentClick }: RecentSear
               className="w-full text-left p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors flex justify-between items-center group"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{recent.foodName}</p>
+                <p className="font-medium">{recent.foodName}</p>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                     <Flame className="h-3.5 w-3.5 text-orange-500" />
                     <span>{Math.round(recent.calories)} kcal</span>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors ml-2" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors ml-2 shrink-0" />
             </button>
           ))}
         </div>

@@ -483,9 +483,7 @@ function FoodDetailsCard({
       <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border-b">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold mb-2 truncate">
-              {foodItem.foodName}
-            </h2>
+            <h2 className="text-2xl font-bold mb-2">{foodItem.foodName}</h2>
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Scale className="h-4 w-4 shrink-0" />
