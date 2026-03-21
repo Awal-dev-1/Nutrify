@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -28,9 +29,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
 import { subDays, addDays, format, isToday, startOfWeek, isSameDay } from 'date-fns';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
 
