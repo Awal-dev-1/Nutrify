@@ -60,6 +60,7 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from '@/components/settings/theme-toggle';
 
 export default function SettingsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -673,32 +674,7 @@ export default function SettingsPage() {
                   {/* Theme */}
                   <div className="space-y-3">
                     <Label className="text-base">Theme</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={theme === 'light' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setTheme('light')}
-                        className="flex-1 rounded-full"
-                      >
-                        <Sun className="mr-2 h-4 w-4" /> Light
-                      </Button>
-                      <Button
-                        variant={theme === 'dark' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setTheme('dark')}
-                        className="flex-1 rounded-full"
-                      >
-                        <Moon className="mr-2 h-4 w-4" /> Dark
-                      </Button>
-                      <Button
-                        variant={theme === 'system' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setTheme('system')}
-                        className="flex-1 rounded-full"
-                      >
-                        System
-                      </Button>
-                    </div>
+                    <ThemeToggle />
                   </div>
 
                   {/* Language */}
