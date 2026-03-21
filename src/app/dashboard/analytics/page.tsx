@@ -65,8 +65,6 @@ import { motion } from 'framer-motion';
 
 type Timeframe = '7d' | '30d' | '90d';
 
-const barColors = ["#3B82F6", "#22C55E", "#EAB308", "#EF4444", "#8B5CF6", "#F97316", "#14B8A6"];
-
 const AnalyticsPage = () => {
   const { user } = useUser();
   const db = useFirestore();
@@ -124,10 +122,10 @@ const AnalyticsPage = () => {
                 <BarChart3 className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <h1 className="text-h2 font-bold tracking-tight">
                   Analytics & Insights
                 </h1>
-                <p className="text-sm md:text-base text-muted-foreground mt-0.5">
+                <p className="text-body text-muted-foreground mt-0.5">
                   Your nutritional journey over the last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days
                 </p>
               </div>
@@ -183,10 +181,10 @@ const AnalyticsPage = () => {
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              <h1 className="text-h2 font-bold tracking-tight">
                 Analytics & Insights
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground flex items-center gap-1 mt-0.5">
+              <p className="text-body text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Calendar className="h-3.5 w-3.5" />
                 Last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days • {chartData.length} days logged
               </p>
@@ -223,21 +221,21 @@ const AnalyticsPage = () => {
             title="Goal Achievement" 
             value={`${summary.goalAchievementRate.toFixed(0)}%`} 
             unit="of days" 
-            icon={<Target className="h-4 w-4 text-green-500" />}
+            icon={<Target className="h-4 w-4 text-chart-2" />}
             trend={summary.goalAchievementRate > 70 ? 'good' : summary.goalAchievementRate > 40 ? 'average' : 'low'}
           />
           <StatCard 
             title="Consistency Score" 
             value={`${summary.consistencyScore.toFixed(0)}%`} 
             unit="stability" 
-            icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
+            icon={<TrendingUp className="h-4 w-4 text-chart-1" />}
             trend={summary.consistencyScore > 70 ? 'good' : summary.consistencyScore > 40 ? 'average' : 'low'}
           />
           <StatCard 
             title="Avg. Daily Protein" 
             value={summary.averageProtein.toFixed(0)} 
             unit="g" 
-            icon={<Beef className="h-4 w-4 text-red-500" />}
+            icon={<Beef className="h-4 w-4 text-chart-5" />}
             trend={(summary.averageProtein / goals.protein) > 0.8 ? 'good' : 'average'}
           />
         </div>
@@ -297,7 +295,7 @@ const AnalyticsPage = () => {
                     maxBarSize={50}
                   >
                     {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={barColors[index % barColors.length]} />
+                        <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
                     ))}
                   </Bar>
                   <Line
@@ -554,16 +552,16 @@ const AnalyticsPage = () => {
             <DaySummaryCard 
               day={summary.lowestCalorieDay} 
               title="Best Calorie Day" 
-              icon={<Award className="h-4 w-4 text-green-500" />} 
-              color="green"
+              icon={<Award className="h-4 w-4 text-chart-2" />} 
+              variant="good"
             />
           )}
           {summary.highestCalorieDay && (
             <DaySummaryCard 
               day={summary.highestCalorieDay} 
               title="Highest Intake Day" 
-              icon={<AlertTriangle className="h-4 w-4 text-orange-500" />}
-              color="orange"
+              icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
+              variant="bad"
             />
           )}
           
@@ -605,10 +603,10 @@ const AnalyticsPage = () => {
 
 // Enhanced Stat Card Component
 const StatCard = ({ title, value, unit, icon, trend }: { title: string; value: string; unit?: string; icon: React.ReactNode; trend?: 'good' | 'average' | 'low' }) => {
-  const trendColors = {
-    good: 'text-green-500',
-    average: 'text-yellow-500',
-    low: 'text-red-500',
+  const trendClasses = {
+    good: { bg: 'bg-chart-2/10', text: 'text-chart-2' },
+    average: { bg: 'bg-chart-4/10', text: 'text-chart-4' },
+    low: { bg: 'bg-destructive/10', text: 'text-destructive' },
   };
 
   return (
@@ -620,20 +618,20 @@ const StatCard = ({ title, value, unit, icon, trend }: { title: string; value: s
       <Card className="border-2 shadow-lg hover:shadow-xl transition-all overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-primary/5 to-transparent">
           <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">{title}</CardTitle>
-          <div className={cn("p-1.5 rounded-lg", trend && `bg-${trendColors[trend]}/10`)}>
+          <div className={cn("p-1.5 rounded-lg", trend && trendClasses[trend].bg)}>
             {icon}
           </div>
         </CardHeader>
         <CardContent className="p-4">
-          <div className="text-xl md:text-2xl lg:text-3xl font-bold">
+          <div className="text-h3 font-bold">
             {value}
             {unit && <span className="text-xs md:text-sm font-normal text-muted-foreground ml-1">{unit}</span>}
           </div>
           {trend && (
             <div className="flex items-center gap-1 mt-1">
-              {trend === 'good' && <TrendUp className="h-3 w-3 text-green-500" />}
-              {trend === 'low' && <TrendingDown className="h-3 w-3 text-red-500" />}
-              <span className={cn("text-xs", trendColors[trend])}>
+              {trend === 'good' && <TrendUp className="h-3 w-3 text-chart-2" />}
+              {trend === 'low' && <TrendingDown className="h-3 w-3 text-destructive" />}
+              <span className={cn("text-xs", trendClasses[trend].text)}>
                 {trend === 'good' ? 'On track' : trend === 'average' ? 'Moderate' : 'Needs improvement'}
               </span>
             </div>
@@ -681,11 +679,16 @@ const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; v
 
 
 // Enhanced Day Summary Card
-const DaySummaryCard = ({ day, title, icon, color }: { day: AnalyticsData; title: string; icon: React.ReactNode; color: string }) => {
+const DaySummaryCard = ({ day, title, icon, variant }: { day: AnalyticsData; title: string; icon: React.ReactNode; variant: 'good' | 'bad' }) => {
+  const variantClasses = {
+    good: 'text-chart-2',
+    bad: 'text-destructive',
+  }
+  
   return (
     <Card className="border-2 shadow-lg hover:shadow-xl transition-all overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3">
-        <CardTitle className={cn("flex items-center gap-2 text-sm md:text-base font-semibold", `text-${color}-600`)}>
+        <CardTitle className={cn("flex items-center gap-2 text-sm md:text-base font-semibold", variantClasses[variant])}>
           {icon} {title}
         </CardTitle>
         <CardDescription className="text-xs flex items-center gap-1">
@@ -701,15 +704,15 @@ const DaySummaryCard = ({ day, title, icon, color }: { day: AnalyticsData; title
           </div>
           <div className="p-2 rounded-lg bg-muted/30">
             <p className="text-xs text-muted-foreground">Protein</p>
-            <p className="font-bold text-red-500">{day.protein.toFixed(0)}g</p>
+            <p className="font-bold text-chart-2">{day.protein.toFixed(0)}g</p>
           </div>
           <div className="p-2 rounded-lg bg-muted/30">
             <p className="text-xs text-muted-foreground">Carbs</p>
-            <p className="font-bold text-yellow-600">{day.carbs.toFixed(0)}g</p>
+            <p className="font-bold text-chart-4">{day.carbs.toFixed(0)}g</p>
           </div>
           <div className="p-2 rounded-lg bg-muted/30">
             <p className="text-xs text-muted-foreground">Fat</p>
-            <p className="font-bold text-blue-500">{day.fat.toFixed(0)}g</p>
+            <p className="font-bold text-chart-1">{day.fat.toFixed(0)}g</p>
           </div>
         </div>
       </CardContent>
@@ -778,5 +781,3 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
-
-    

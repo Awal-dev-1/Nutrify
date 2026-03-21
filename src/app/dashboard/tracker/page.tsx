@@ -323,11 +323,11 @@ const Header: FC<{ onClearDay: () => void; date: Date; setDate: (date: Date) => 
           <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
         </div>
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent truncate">
+          <h1 className="text-h2 font-bold tracking-tight">
             Daily Tracker
           </h1>
           <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-sm sm:text-lg text-muted-foreground truncate">
+            <p className="text-body text-muted-foreground truncate">
               {format(date, "EEEE, MMMM d")}
             </p>
             {isToday && (
@@ -419,12 +419,12 @@ const CalorieSummaryCard: FC<{ totals: DailyLog; goal: number }> = ({ totals, go
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="p-3 sm:p-4 rounded-xl bg-muted/30">
               <p className="text-xs sm:text-sm text-muted-foreground mb-1">Consumed</p>
-              <p className="text-xl sm:text-2xl font-bold">{Math.round(totals.totalCalories)}</p>
+              <p className="text-h3 font-bold">{Math.round(totals.totalCalories)}</p>
               <p className="text-xs text-muted-foreground mt-1">kcal</p>
             </div>
             <div className="p-3 sm:p-4 rounded-xl bg-primary/5">
               <p className="text-xs sm:text-sm text-muted-foreground mb-1">Remaining</p>
-              <p className="text-xl sm:text-2xl font-bold text-primary">{Math.round(remainingCalories)}</p>
+              <p className="text-h3 font-bold text-primary">{Math.round(remainingCalories)}</p>
               <p className="text-xs text-muted-foreground mt-1">kcal</p>
             </div>
           </div>
@@ -458,9 +458,9 @@ const MacroPieChart: FC<{ totals: DailyLog }> = ({ totals }) => {
   }
 
   const data = [
-    { name: "Protein", value: proteinCalories, color: "#ef4444" },
-    { name: "Carbs", value: carbsCalories, color: "#eab308" },
-    { name: "Fat", value: fatCalories, color: "#3b82f6" },
+    { name: "Protein", value: proteinCalories, color: "hsl(var(--chart-2))" },
+    { name: "Carbs", value: carbsCalories, color: "hsl(var(--chart-4))" },
+    { name: "Fat", value: fatCalories, color: "hsl(var(--chart-1))" },
   ];
 
   return (
@@ -530,7 +530,7 @@ const MealSections: FC<{
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg sm:text-xl font-semibold">Today's Meals</h2>
+        <h2 className="text-h3 font-semibold">Today's Meals</h2>
         {totalMealsCount > 0 && (
           <Badge variant="secondary" className="rounded-full px-3 sm:px-4 py-1 text-xs sm:text-sm">
             {totalMealsCount} {totalMealsCount === 1 ? "item" : "items"}
@@ -790,5 +790,3 @@ const TrackerSkeleton = () => (
         </div>
     </div>
 )
-
-    
