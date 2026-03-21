@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -212,8 +211,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
 
                       <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
                         <div className="space-y-3">
-                          {mealsForType.length > 0 ? (
-                            mealsForType.map(meal => (
+                          {mealsForType.map(meal => (
                               <div
                                 key={meal.id}
                                 className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
@@ -227,7 +225,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                   </div>
                                 </div>
 
-                                {/* Always visible on mobile (no hover on touch), hover-only on pointer devices */}
+                                {/* Action buttons: always visible on mobile (touch), hover-only on pointer devices */}
                                 <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                                   <Button
                                     variant="ghost"
@@ -254,7 +252,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                           This will permanently remove this item from your meal plan.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
-                                      <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
+                                      <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:gap-0">
                                         <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                         <AlertDialogAction
                                           className="w-full sm:w-auto"
@@ -267,12 +265,12 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                   </AlertDialog>
                                 </div>
                               </div>
-                            ))
-                          ) : (
-                            <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
-                              <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
-                              <p className="text-sm text-muted-foreground">No food planned</p>
-                            </div>
+                            ))}
+                          {mealsForType.length === 0 && (
+                              <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
+                                <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
+                                <p className="text-sm text-muted-foreground">No food planned</p>
+                              </div>
                           )}
 
                           <Button
@@ -289,7 +287,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                 );
               })}
             </Accordion>
-          </div>
+          </motion.div>
         )}
       </div>
 
@@ -312,5 +310,3 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
     </div>
   );
 }
-
-    

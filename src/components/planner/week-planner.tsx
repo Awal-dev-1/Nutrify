@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -295,8 +294,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
 
                           <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
                             <div className="space-y-3">
-                              {mealsForType.length > 0 ? (
-                                mealsForType.map(meal => (
+                                {mealsForType.map(meal => (
                                   <div
                                     key={meal.id}
                                     className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
@@ -337,7 +335,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                               This will permanently remove this item from your meal plan.
                                             </AlertDialogDescription>
                                           </AlertDialogHeader>
-                                          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:gap-0">
                                             <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                             <AlertDialogAction
                                               className="w-full sm:w-auto"
@@ -350,14 +348,13 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                       </AlertDialog>
                                     </div>
                                   </div>
-                                ))
-                              ) : (
-                                <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
-                                  <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
-                                  <p className="text-sm text-muted-foreground">No food planned</p>
-                                </div>
-                              )}
-
+                                ))}
+                                {mealsForType.length === 0 && (
+                                    <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
+                                        <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
+                                        <p className="text-sm text-muted-foreground">No food planned</p>
+                                    </div>
+                                )}
                               <Button
                                 variant="outline"
                                 className="w-full mt-2 border-dashed"
