@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,7 +58,42 @@ export function DetailsStep({ onNext }: { onNext: (data: any) => void }) {
   const heightUnit = form.watch("heightUnit");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    onNext(values);
+    let heightCm = 0;
+    switch (values.heightUnit) {
+      case 'cm':
+        heightCm = values.height;
+        break;
+      case 'm':
+        heightCm = values.height * 100;
+        break;
+      case 'ft-in':
+        heightCm = (values.height * 30.48) + ((values.heightInches || 0) * 2.54);
+        break;
+    }
+
+    let weightKg = 0;
+    switch (values.weightUnit) {
+      case 'kg':
+        weightKg = values.weight;
+        break;
+      case 'g':
+        weightKg = values.weight / 1000;
+        break;
+      case 'lb':
+        weightKg = values.weight * 0.453592;
+        break;
+      case 'oz':
+        weightKg = values.weight * 0.0283495;
+        break;
+    }
+    
+    // Pass processed, consistent data to the next step
+    onNext({
+        gender: values.gender,
+        age: values.age,
+        heightCm: Math.round(heightCm),
+        weightKg: parseFloat(weightKg.toFixed(2)),
+    });
   }
 
   return (

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -24,6 +25,7 @@ export const signup = async (
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
+  // This update is for Firebase Auth user profile, not Firestore
   await updateProfile(user, { displayName: name });
 
   const userRef = doc(db, 'users', user.uid);
@@ -35,13 +37,21 @@ export const signup = async (
     createdAt: serverTimestamp(),
   };
 
-  setDoc(userRef, userProfileData).catch(error => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: userRef.path,
-      operation: 'create',
-      requestResourceData: userProfileData,
-    }));
-  });
+  try {
+    // This is a critical step, so we await it to ensure it completes.
+    await setDoc(userRef, userProfileData);
+  } catch (error) {
+    // If creating the Firestore doc fails, we should roll back the auth user creation
+    // to prevent an inconsistent state (auth user exists, but no profile doc).
+    await deleteUser(user).catch(deleteError => {
+      // Log if the cleanup fails, but the primary error is the setDoc failure.
+      console.error("Failed to cleanup auth user after signup failure:", deleteError);
+    });
+    
+    // Bubble up the original error to the UI so it can be handled.
+    // The error handler in the signup form will now catch this.
+    throw error;
+  }
 
   return user;
 };

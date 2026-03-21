@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -45,25 +46,35 @@ export default function OnboardingPage() {
         toast({
             variant: "destructive",
             title: "Error",
-            description: "Could not save your profile. Please try again."
+            description: "User session not found. Please try logging in again."
         });
+        router.push('/login');
         return;
     };
-    setStep(totalSteps + 1); // Loading step
-    
-    // Fire-and-forget the database update.
-    completeOnboarding(db, user.uid, formData as any);
-    
-    // Add a small delay to allow the loading animation to play,
-    // giving the user feedback that the process has completed.
-    await new Promise(resolve => setTimeout(resolve, 1500));
-      
-    toast({
-        title: "Profile Created!",
-        description: "Welcome to Nutrify! Your personalized dashboard is ready."
-    });
-    
-    router.push("/dashboard/overview");
+    setStep(totalSteps + 1); // Go to Loading step
+
+    try {
+        // Await the critical update to ensure it completes successfully.
+        await completeOnboarding(db, user.uid, formData as any);
+
+        // Success path
+        toast({
+            title: "Profile Created!",
+            description: "Welcome to Nutrify! Your personalized dashboard is ready."
+        });
+        router.push("/dashboard/overview");
+
+    } catch (error) {
+        // Error path
+        console.error("Onboarding failed:", error);
+        toast({
+            variant: "destructive",
+            title: "Setup Failed",
+            description: "Could not save your profile. Please review your details and try again."
+        });
+        // Go back to the summary step so the user can try again.
+        setStep(totalSteps); 
+    }
   };
 
   const stepsComponents = [
