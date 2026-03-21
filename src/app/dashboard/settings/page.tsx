@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -29,6 +28,7 @@ import {
   Ruler,
   Clock,
   Shield,
+  Laptop,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -124,15 +124,15 @@ export default function SettingsPage() {
   }, [displayName, initialDisplayName, profileImageFile, isProfileLoading]);
 
   const hasPreferencesChanges = useMemo(() => {
-    if (isProfileLoading) return false;
-    return language !== initialLanguage || units !== initialUnits;
-  }, [language, initialLanguage, units, initialUnits, isProfileLoading]);
+    if (isProfileLoading || !userProfile) return false;
+    const initialThemeValue = userProfile.preferences?.themePreference || 'system';
+    return language !== initialLanguage || units !== initialUnits || theme !== initialThemeValue;
+  }, [language, initialLanguage, units, initialUnits, theme, userProfile, isProfileLoading]);
 
   const hasNotificationsChanges = useMemo(() => {
     if (isProfileLoading) return false;
     return dailyReminder !== initialDailyReminder || weeklySummary !== initialWeeklySummary;
   }, [dailyReminder, initialDailyReminder, weeklySummary, initialWeeklySummary, isProfileLoading]);
-
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -145,6 +145,10 @@ export default function SettingsPage() {
         const objectUrl = URL.createObjectURL(file);
         setImagePreview(objectUrl);
     }
+  };
+  
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
   };
 
   const handleProfileSave = async () => {
@@ -170,6 +174,7 @@ export default function SettingsPage() {
     const prefs = {
       'preferences.languagePreference': language,
       'preferences.unitPreference': units,
+      'preferences.themePreference': theme,
     };
     try {
       await updateUserDocument(db, user.uid, prefs);
@@ -670,6 +675,27 @@ export default function SettingsPage() {
                 </CardHeader>
                 
                 <CardContent className="p-4 md:p-6 space-y-6">
+                  <div className="space-y-3">
+                    <Label className="text-base">Theme</Label>
+                    <Tabs
+                      value={theme}
+                      onValueChange={handleThemeChange}
+                      className="w-full"
+                    >
+                      <TabsList className="grid w-full grid-cols-3 h-auto p-1.5">
+                        <TabsTrigger value="light" className="flex flex-col items-center gap-1.5 p-2 h-full">
+                          <Sun className="h-5 w-5" /> Light
+                        </TabsTrigger>
+                        <TabsTrigger value="dark" className="flex flex-col items-center gap-1.5 p-2 h-full">
+                          <Moon className="h-5 w-5" /> Dark
+                        </TabsTrigger>
+                        <TabsTrigger value="system" className="flex flex-col items-center gap-1.5 p-2 h-full">
+                          <Laptop className="h-5 w-5" /> System
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  
                   {/* Language */}
                   <div className="space-y-3">
                     <Label htmlFor="language" className="text-base">Language</Label>
