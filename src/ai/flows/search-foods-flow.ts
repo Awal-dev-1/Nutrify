@@ -41,16 +41,17 @@ User's health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 CRITICAL INSTRUCTIONS:
 1.  **Speed and Brevity**: Your response MUST be generated as quickly as possible. Keep all text fields concise, except for the Health Analysis and Recipe.
 2.  **Food Queries Only**: If the user's query is clearly not about food (e.g., "a car"), you MUST set 'isFoodQuery' to false and return an empty 'foodItems' array.
-3.  **Analyze Mixed Dishes Accurately**: If the query is for a combined dish (e.g., "banku with okra soup"), you MUST identify all main components (like the banku, soup, and any fish or meat) and calculate the total nutritional value for the entire dish as a single item. Do not provide separate entries for each component.
-4.  **Detailed Recipe**: For the \`detailedRecipe\` field, you MUST provide a list of all necessary ingredients with quantities, and a clear, step-by-step guide for the cooking instructions. Be thorough.
-5.  **Provide DETAILED Health Analysis**: For each food item, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
+3.  **Prioritize Local Names**: When a user queries a local Ghanaian dish like "beans and plantain", you MUST identify it by its proper local name, which is "Red Red". Similarly, use correct names like "Fufu", "Banku", and "Kenkey". Do not use generic descriptions if a common local name exists.
+4.  **Analyze Mixed Dishes Accurately**: If the query is for a combined dish (e.g., "banku with okra soup"), you MUST identify all main components (like the banku, soup, and any fish or meat) and calculate the total nutritional value for the entire dish as a single item. Do not provide separate entries for each component.
+5.  **Detailed Recipe**: For the \`detailedRecipe\` field, you MUST provide a list of all necessary ingredients with quantities, and a clear, step-by-step guide for the cooking instructions. Be thorough.
+6.  **Provide DETAILED Health Analysis**: For each food item, you MUST generate a detailed and personalized \`healthAnalysis\`. This is the most important part.
     *   Explain CLEARLY why the food is beneficial or detrimental based on the user's specific goal (e.g., 'lose-weight', 'gain-weight').
     *   Go beyond a single sentence. For 'lose-weight', discuss calorie density, fiber content for satiety, and protein for muscle maintenance. For 'gain-weight', discuss energy density and quality of macronutrients. For 'eat-healthier', discuss the balance of nutrients and vitamin/mineral content.
     *   Be specific. Instead of "good for weight loss", say "This portion of Banku is calorie-dense. While a good energy source, a smaller portion might be better for your weight loss goal. The accompanying Tilapia, however, is an excellent source of lean protein.".
-6.  **Standardized Nutrient Data**: Since this is a text search without an image, all nutritional data MUST be standardized for a 100-gram portion. This provides a consistent baseline for users to compare foods. Therefore, you MUST set the 'estimatedWeightGrams' field to exactly 100.
-7.  **Dietary Tags**: Generate an array of relevant dietary tags.
-8.  **Local Food**: Determine if the food is a local Ghanaian or other West African dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly.
-9.  **History**: Keep \`foodHistory\` to 1-2 sentences maximum.
+7.  **Standardized Nutrient Data**: Since this is a text search without an image, all nutritional data MUST be standardized for a 100-gram portion. This provides a consistent baseline for users to compare foods. Therefore, you MUST set the 'estimatedWeightGrams' field to exactly 100.
+8.  **Dietary Tags**: Generate an array of relevant dietary tags.
+9.  **Local Food**: Determine if the food is a local Ghanaian or other West African dish or ingredient and set the \`isGhanaianLocal\` boolean field accordingly.
+10. **History**: Keep \`foodHistory\` to 1-2 sentences maximum.
 
 For each food item that EXACTLY matches the query, you must provide:
 - foodName
