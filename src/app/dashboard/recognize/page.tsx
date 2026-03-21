@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, type FC } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
 import Image from 'next/image';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Camera, VideoOff, Flame, Beef, Wheat, Droplets, PlusCircle } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Camera, VideoOff } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
+import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
 import { useToast } from '@/hooks/use-toast';
@@ -16,13 +17,6 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
-
-interface TotalNutrients {
-  calories: number;
-  protein: number;
-  carbohydrates: number;
-  fat: number;
-}
 
 export default function RecognizePage() {
   const { user, userProfile } = useUser();
@@ -35,7 +29,6 @@ export default function RecognizePage() {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
-  const [totalNutrients, setTotalNutrients] = useState<TotalNutrients | null>(null);
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -112,7 +105,6 @@ export default function RecognizePage() {
           setStatus('idle');
           setError(null);
           setPredictions(null);
-          setTotalNutrients(null);
           setFile(capturedFile);
         }
       }, 'image/jpeg', 0.95);
@@ -125,7 +117,6 @@ export default function RecognizePage() {
     setStatus('analyzing');
     setError(null);
     setPredictions(null);
-    setTotalNutrients(null);
 
     try {
       const scanResults = await runAiScan(db, user, file, userProfile?.health?.primaryGoal);
@@ -141,12 +132,6 @@ export default function RecognizePage() {
       }
 
       setPredictions(scanResults.predictions);
-      if (scanResults.predictions.length > 0) {
-        // Use the totalNutrients object directly from the AI response
-        if (scanResults.totalNutrients) {
-            setTotalNutrients(scanResults.totalNutrients);
-        }
-      }
       setStatus('completed');
     } catch (err: any) {
       console.error('AI Scan failed:', err);
@@ -161,7 +146,6 @@ export default function RecognizePage() {
     setStatus('idle');
     setError(null);
     setPredictions(null);
-    setTotalNutrients(null);
     setSelectedFood(null);
     setIsCameraOpen(false);
   };
@@ -169,17 +153,12 @@ export default function RecognizePage() {
   const renderContent = () => {
     switch (status) {
       case 'idle': {
-        /* ── Camera view ── */
         if (isCameraOpen) {
           return (
-            // Full-screen on mobile, contained card on md+
             <div className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[70vh] md:rounded-xl overflow-hidden">
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-
-                {/* Overlay controls */}
                 <div className="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                  {/* Close */}
                   <div className="flex justify-end">
                     <Button
                       variant="ghost"
@@ -190,8 +169,6 @@ export default function RecognizePage() {
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
-
-                  {/* Shutter */}
                   <div className="flex items-center justify-center pb-8 safe-area-pb">
                     <button
                       onClick={handleCapture}
@@ -201,8 +178,6 @@ export default function RecognizePage() {
                     />
                   </div>
                 </div>
-
-                {/* Permission denied overlay */}
                 {hasCameraPermission === false && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-6 text-center gap-3">
                     <VideoOff className="h-10 w-10" />
@@ -217,13 +192,11 @@ export default function RecognizePage() {
           );
         }
 
-        /* ── Image preview + actions ── */
         if (preview) {
           return (
             <div className="w-full max-w-2xl mx-auto space-y-4">
               <Card className="overflow-hidden">
                 <CardContent className="p-0">
-                  {/* Responsive height: shorter on phones, taller on md+ */}
                   <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[60vh] bg-black/90">
                     <Image
                       src={preview}
@@ -234,8 +207,6 @@ export default function RecognizePage() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Stacked on mobile, inline on sm+ */}
               <div className="flex flex-col sm:flex-row justify-center gap-2">
                 <Button size="lg" onClick={handleAnalyze} className="w-full sm:w-auto">
                   <Sparkles className="mr-2 h-4 w-4" /> Analyze Image
@@ -248,11 +219,9 @@ export default function RecognizePage() {
           );
         }
 
-        /* ── Upload / camera selector ── */
         return (
           <div className="w-full max-w-2xl mx-auto space-y-4">
             <ImageUploader onFileSelect={handleFileSelect} />
-
             {isMobile && (
               <div className="space-y-4">
                 <div className="relative flex items-center">
@@ -260,7 +229,6 @@ export default function RecognizePage() {
                   <span className="mx-4 shrink-0 text-muted-foreground text-sm">OR</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-
                 <Button
                   variant="secondary"
                   className="w-full"
@@ -269,13 +237,12 @@ export default function RecognizePage() {
                 >
                   <Camera className="mr-2 h-4 w-4" /> Use Camera
                 </Button>
-
                 {hasCameraPermission === false && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Camera Disabled</AlertTitle>
                     <AlertDescription>
-                      You have previously denied camera access. Please enable it in your browser settings to use this feature.
+                      You have previously denied camera access. Please enable it in your browser settings.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -328,36 +295,16 @@ export default function RecognizePage() {
             </Alert>
           );
         }
+        
+        const mainPrediction = predictions[0];
 
         return (
-          <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in-50">
-            {/* The main image preview */}
-            <Card className="overflow-hidden shadow-lg">
-                <CardContent className="p-0">
-                    <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[60vh] bg-black/90">
-                        {preview && <Image src={preview} alt="Analyzed food" fill className="object-contain" />}
-                    </div>
-                </CardContent>
-            </Card>
-            
-            {/* The total summary */}
-            {totalNutrients && (
-                <TotalNutrientsCard totalNutrients={totalNutrients} />
-            )}
-
-            {/* The list of identified items */}
-            <div className="space-y-4">
-                <h3 className="text-xl font-semibold px-1">Identified Items</h3>
-                {predictions.map((pred) => (
-                    <IdentifiedItemCard 
-                        key={pred.foodName}
-                        item={pred}
-                        onAdd={setSelectedFood} 
-                    />
-                ))}
-            </div>
-
-            {/* The reset button */}
+          <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in-50">
+            <AiFoodResultCard 
+                item={mainPrediction} 
+                onAdd={() => setSelectedFood(mainPrediction)} 
+                imageUrl={preview} 
+            />
             <div className="flex justify-center pt-2 pb-4">
                 <Button variant="outline" onClick={resetState} className="w-full sm:w-auto">
                     <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
@@ -388,10 +335,7 @@ export default function RecognizePage() {
   };
 
   return (
-    // Reduced vertical padding on mobile
     <div className="space-y-4 sm:space-y-8 px-0">
-
-      {/* Header hidden when camera open on mobile */}
       <div className={cn(isCameraOpen && 'hidden md:block')}>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2 text-primary">
           <ScanLine className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
@@ -401,14 +345,10 @@ export default function RecognizePage() {
           Upload a food image or use your camera and let our AI do the work.
         </p>
       </div>
-
-      {/* Min-height shorter on mobile so content isn't pushed way down */}
       <div className="min-h-[300px] sm:min-h-[400px] flex items-start sm:items-center justify-center">
         {renderContent()}
       </div>
-
       <canvas ref={canvasRef} className="hidden" />
-
       <FoodConfirmationModal
         isOpen={!!selectedFood}
         onClose={() => setSelectedFood(null)}
@@ -416,76 +356,4 @@ export default function RecognizePage() {
       />
     </div>
   );
-}
-
-
-const TotalNutrientsCard: FC<{ totalNutrients: TotalNutrients }> = ({ totalNutrients }) => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Total Meal Summary</CardTitle>
-        <CardDescription>Combined nutritional estimate for all items in the image.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div>
-          <Flame className="mx-auto h-6 w-6 text-orange-500" />
-          <p className="font-bold text-xl">{totalNutrients.calories.toFixed(0)}</p>
-          <p className="text-xs text-muted-foreground">kcal</p>
-        </div>
-        <div>
-          <Beef className="mx-auto h-6 w-6 text-red-500" />
-          <p className="font-bold text-xl">{totalNutrients.protein.toFixed(1)}g</p>
-          <p className="text-xs text-muted-foreground">Protein</p>
-        </div>
-        <div>
-          <Wheat className="mx-auto h-6 w-6 text-yellow-600" />
-          <p className="font-bold text-xl">{totalNutrients.carbohydrates.toFixed(1)}g</p>
-          <p className="text-xs text-muted-foreground">Carbs</p>
-        </div>
-        <div>
-          <Droplets className="mx-auto h-6 w-6 text-blue-500" />
-          <p className="font-bold text-xl">{totalNutrients.fat.toFixed(1)}g</p>
-          <p className="text-xs text-muted-foreground">Fat</p>
-        </div>
-      </CardContent>
-    </Card>
-);
-
-const IdentifiedItemCard: FC<{ item: AIPrediction; onAdd: (item: AIPrediction) => void; }> = ({ item, onAdd }) => {
-  return (
-    <Card className="border-2 hover:border-primary/20 transition-all">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-            <CardTitle className="text-lg">{item.foodName}</CardTitle>
-            <Button size="sm" variant="outline" onClick={() => onAdd(item)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add
-            </Button>
-        </div>
-        <CardDescription>
-            Estimated Portion: ~{item.estimatedWeightGrams}g
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-         <div className="p-2 rounded-lg bg-muted/50">
-          <Flame className="mx-auto h-5 w-5 text-orange-500 mb-1" />
-          <p className="font-bold text-lg">{item.calories.toFixed(0)}</p>
-          <p className="text-xs text-muted-foreground">kcal</p>
-        </div>
-        <div className="p-2 rounded-lg bg-muted/50">
-          <Beef className="mx-auto h-5 w-5 text-red-500 mb-1" />
-          <p className="font-bold text-lg">{item.macronutrientBreakdown.protein.toFixed(1)}g</p>
-          <p className="text-xs text-muted-foreground">Protein</p>
-        </div>
-        <div className="p-2 rounded-lg bg-muted/50">
-          <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1" />
-          <p className="font-bold text-lg">{item.macronutrientBreakdown.carbohydrates.toFixed(1)}g</p>
-          <p className="text-xs text-muted-foreground">Carbs</p>
-        </div>
-        <div className="p-2 rounded-lg bg-muted/50">
-          <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1" />
-          <p className="font-bold text-lg">{item.macronutrientBreakdown.fat.toFixed(1)}g</p>
-          <p className="text-xs text-muted-foreground">Fat</p>
-        </div>
-      </CardContent>
-    </Card>
-  )
 }
