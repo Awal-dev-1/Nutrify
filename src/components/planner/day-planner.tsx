@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -41,14 +42,13 @@ interface DayPlannerProps {
   onRemoveMeal: (id: string) => void;
 }
 
-const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
 
 const getMealIcon = (mealType: string) => {
   switch(mealType) {
     case 'Breakfast': return '🍳';
     case 'Lunch': return '🥗';
     case 'Dinner': return '🍽️';
-    case 'Snacks': return '🍪';
     default: return '🍽️';
   }
 };
@@ -167,128 +167,121 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
         </motion.div>
 
         {/* ── Meals Section ── */}
-        {mealsForDay.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <EmptyState
-              title="No meals planned for today"
-              description="Start planning your day by adding meals."
-            >
-              <Button onClick={() => handleAddClick('Breakfast')} size="lg">
-                <Plus className="mr-2 h-4 w-4" /> Add First Meal
-              </Button>
-            </EmptyState>
-          </motion.div>
-        ) : (
-          <motion.div
-            className="space-y-3 sm:space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Accordion type="multiple" defaultValue={mealTypes} className="space-y-3 sm:space-y-4">
-              {mealTypes.map((mealType) => {
-                const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
-                const totalCalories = mealsForType.reduce((acc, meal) => acc + meal.calories, 0);
+        <motion.div
+          className="space-y-3 sm:space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <Accordion type="multiple" defaultValue={mealTypes} className="space-y-3 sm:space-y-4">
+            {mealTypes.map((mealType) => {
+              const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
+              const totalCalories = mealsForType.reduce((acc, meal) => acc + meal.calories, 0);
 
-                return (
-                  <Card key={mealType} className="overflow-hidden border shadow-lg">
-                    <AccordionItem value={mealType} className="border-0">
-                      <AccordionTrigger className="px-4 sm:px-6 py-3 sm:py-4 hover:no-underline hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between w-full items-center gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <span className="text-lg sm:text-xl">{getMealIcon(mealType)}</span>
-                            <h3 className="font-semibold text-base sm:text-lg truncate">{mealType}</h3>
-                          </div>
-                          <Badge variant="outline" className="px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm shrink-0">
-                            {Math.round(totalCalories)} kcal
-                          </Badge>
+              return (
+                <Card key={mealType} className="overflow-hidden border shadow-lg">
+                  <AccordionItem value={mealType} className="border-0">
+                    <AccordionTrigger className="px-4 sm:px-6 py-3 sm:py-4 hover:no-underline hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between w-full items-center gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <span className="text-lg sm:text-xl">{getMealIcon(mealType)}</span>
+                          <h3 className="font-semibold text-base sm:text-lg truncate">{mealType}</h3>
                         </div>
-                      </AccordionTrigger>
+                        <Badge variant="outline" className="px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm shrink-0">
+                          {Math.round(totalCalories)} kcal
+                        </Badge>
+                      </div>
+                    </AccordionTrigger>
 
-                      <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
-                        <div className="space-y-3">
-                          {mealsForType.map(meal => (
-                              <div
-                                key={meal.id}
-                                className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
-                              >
-                                <div className="flex-grow min-w-0">
-                                  <p className="font-medium text-sm sm:text-base">{meal.foodName}</p>
-                                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                                    <span>{meal.quantity}g</span>
-                                    <span className="text-muted-foreground/30">|</span>
-                                    <span>{Math.round(meal.calories)} kcal</span>
-                                  </div>
+                    <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
+                      <div className="space-y-3">
+                        {mealsForType.map(meal => (
+                            <div
+                              key={meal.id}
+                              className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
+                            >
+                              <div className="flex-grow min-w-0">
+                                <p className="font-medium text-sm sm:text-base">{meal.foodName}</p>
+                                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                                  <span>{meal.quantity}g</span>
+                                  <span className="text-muted-foreground/30">|</span>
+                                  <span>{Math.round(meal.calories)} kcal</span>
                                 </div>
+                              </div>
 
-                                {/* Action buttons: always visible on mobile (touch), hover-only on pointer devices */}
-                                <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => handleEditClick(meal)}
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                              {/* Action buttons: always visible on mobile (touch), hover-only on pointer devices */}
+                              <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleEditClick(meal)}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will permanently remove this item from your meal plan.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:gap-0">
+                                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        className="w-full sm:w-auto"
+                                        onClick={() => onRemoveMeal(meal.id)}
                                       >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Remove {meal.foodName}?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          This will permanently remove this item from your meal plan.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:gap-0">
-                                        <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          className="w-full sm:w-auto"
-                                          onClick={() => onRemoveMeal(meal.id)}
-                                        >
-                                          Remove
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
+                                        Remove
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </div>
-                            ))}
-                          {mealsForType.length === 0 && (
-                              <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
-                                <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
-                                <p className="text-sm text-muted-foreground">No food planned</p>
-                              </div>
-                          )}
+                            </div>
+                          ))}
+                        {mealsForType.length === 0 && (
+                            <div className="py-6 sm:py-8 text-center border-2 border-dashed rounded-lg">
+                              <UtensilsCrossed className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 text-muted-foreground/50" />
+                              <p className="text-sm text-muted-foreground">No food planned</p>
+                            </div>
+                        )}
 
-                          <Button
-                            variant="outline"
-                            className="w-full mt-2 border-dashed"
-                            onClick={() => handleAddClick(mealType)}
-                          >
-                            <Plus className="h-4 w-4 mr-2" /> Add Food
-                          </Button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Card>
-                );
-              })}
-            </Accordion>
-          </motion.div>
-        )}
+                        <Button
+                          variant="outline"
+                          className="w-full mt-2 border-dashed"
+                          onClick={() => handleAddClick(mealType)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add Food
+                        </Button>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Card>
+              );
+            })}
+          </Accordion>
+           {mealsForDay.length === 0 && (
+             <EmptyState
+                title="No meals planned for today"
+                description="Start planning your day by adding meals."
+              >
+                <Button onClick={() => handleAddClick('Breakfast')} size="lg">
+                  <Plus className="mr-2 h-4 w-4" /> Add First Meal
+                </Button>
+              </EmptyState>
+           )}
+        </motion.div>
       </div>
 
       <AddFoodModal

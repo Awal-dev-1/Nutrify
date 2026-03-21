@@ -68,7 +68,6 @@ const MEAL_TYPES = [
   { value: 'Breakfast', label: 'Breakfast', icon: Coffee, color: 'text-amber-500' },
   { value: 'Lunch', label: 'Lunch', icon: Sun, color: 'text-orange-500' },
   { value: 'Dinner', label: 'Dinner', icon: Moon, color: 'text-indigo-500' },
-  { value: 'Snacks', label: 'Snacks', icon: Cookie, color: 'text-pink-500' },
 ] as const;
 
 // Quick portion suggestions with labels

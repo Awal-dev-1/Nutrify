@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating a personalized weekly meal plan based on user's dietary goals, preferences, and tracked nutrient intake.
@@ -13,7 +14,7 @@ import { z } from 'genkit';
 // A single planned meal item. This will be part of a flat list.
 const PlannedMealItemSchema = z.object({
   day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).describe('The day of the week for the meal.'),
-  mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']).describe("The type of meal (e.g., 'Breakfast')."),
+  mealType: z.enum(['Breakfast', 'Lunch', 'Dinner']).describe("The type of meal (e.g., 'Breakfast')."),
   foodName: z.string().describe('Name of the food item.'),
   quantityGrams: z.number().describe('The recommended quantity of this food item in grams.'),
   calories: z.number().describe('Calories for this food item at the recommended quantity.'),

@@ -182,7 +182,7 @@ export default function FoodDetailsPage() {
                 )}
                 {food.tags && food.tags.length > 0 && <Badge variant="outline">{food.tags[0]}</Badge>}
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{food.foodName}</h1>
+              <h1 className="text-h1 font-bold tracking-tight">{food.foodName}</h1>
               <div className="text-5xl font-extrabold text-primary">
                 {calculatedNutrients?.calories.toFixed(0)}{' '}
                 <span className="text-2xl font-medium text-muted-foreground">kcal</span>
@@ -329,7 +329,6 @@ export default function FoodDetailsPage() {
                         <SelectItem value="Breakfast">Breakfast</SelectItem>
                         <SelectItem value="Lunch">Lunch</SelectItem>
                         <SelectItem value="Dinner">Dinner</SelectItem>
-                        <SelectItem value="Snacks">Snacks</SelectItem>
                     </SelectContent>
                 </Select>
                 <Button onClick={handleAdd} className="w-full" size="lg">Add to Tracker</Button>

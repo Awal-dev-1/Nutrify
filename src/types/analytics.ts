@@ -36,7 +36,6 @@ export type DailyLog = {
       Breakfast: LoggedFoodItem[];
       Lunch: LoggedFoodItem[];
       Dinner: LoggedFoodItem[];
-      Snacks: LoggedFoodItem[];
     };
 };
   

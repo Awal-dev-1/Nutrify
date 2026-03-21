@@ -382,12 +382,6 @@
               "items": {
                 "$ref": "#/backend/entities/LoggedFoodItem"
               }
-            },
-            "Snacks": {
-              "type": "array",
-              "items": {
-                "$ref": "#/backend/entities/LoggedFoodItem"
-              }
             }
           }
         }

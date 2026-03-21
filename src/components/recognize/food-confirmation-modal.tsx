@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -35,7 +36,7 @@ interface FoodConfirmationModalProps {
 
 export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirmationModalProps) {
   const [quantity, setQuantity] = useState(100);
-  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks'>('Lunch');
+  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner'>('Lunch');
   const [isAdding, setIsAdding] = useState(false);
 
   const { user } = useUser();
@@ -176,7 +177,6 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
                     <SelectItem value="Breakfast">Breakfast</SelectItem>
                     <SelectItem value="Lunch">Lunch</SelectItem>
                     <SelectItem value="Dinner">Dinner</SelectItem>
-                    <SelectItem value="Snacks">Snacks</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
