@@ -19,7 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Calendar } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 export default function MealPlannerPage() {
   const { toast } = useToast();
@@ -236,5 +236,3 @@ const PlannerSkeleton = () => (
        </div>
     </div>
 )
-
-    
