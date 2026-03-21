@@ -164,7 +164,7 @@ export default function RecommendationsPage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
+            <h1 className="text-h1 font-bold tracking-tight text-primary flex items-center gap-2">
                 <Sparkles className="h-6 w-6" />
                 Smart Food Recommendations
             </h1>

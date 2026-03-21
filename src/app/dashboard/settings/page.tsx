@@ -400,7 +400,7 @@ export default function SettingsPage() {
             <Settings className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-primary">Settings</h1>
+            <h1 className="text-h1 font-bold text-primary">Settings</h1>
             <p className="text-sm md:text-base text-muted-foreground">
               Manage your account, preferences, and privacy.
             </p>

@@ -344,7 +344,7 @@ export default function RecognizePage() {
   return (
     <div className="space-y-4 sm:space-y-8 px-0">
       <div className={cn(isCameraOpen && 'hidden md:block')}>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2 text-primary">
+        <h1 className="text-h1 font-bold tracking-tight flex items-center gap-2 text-primary">
           <ScanLine className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
           AI Food Recognition
         </h1>
