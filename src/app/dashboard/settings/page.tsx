@@ -29,7 +29,6 @@ import {
   Ruler,
   Clock,
   Shield,
-  HelpCircle,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -192,6 +191,39 @@ export default function SettingsPage() {
       router.push('/');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Logout Failed', description: error.message });
+    }
+  };
+
+  const handleDownloadData = () => {
+    if (!userProfile) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not find profile data to download.',
+      });
+      return;
+    }
+    try {
+      const dataStr = JSON.stringify(userProfile, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `nutrify_data_${userProfile.id}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({
+        title: 'Download Started',
+        description: 'Your data is being downloaded.',
+      });
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Download Failed',
+        description: 'An unexpected error occurred while preparing your data.',
+      });
     }
   };
 
@@ -715,11 +747,8 @@ export default function SettingsPage() {
                     <FileBadge className="mr-2 h-4 w-4" /> View Terms & Conditions
                   </Link>
                 </Button>
-                <Button variant="secondary" className="w-full justify-start h-11 rounded-full">
+                <Button variant="secondary" className="w-full justify-start h-11 rounded-full" onClick={handleDownloadData}>
                   <Download className="mr-2 h-4 w-4" /> Download My Data
-                </Button>
-                <Button variant="ghost" className="w-full justify-start h-11 rounded-full">
-                  <HelpCircle className="mr-2 h-4 w-4" /> Contact Support
                 </Button>
               </div>
             </CardContent>
