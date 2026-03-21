@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -245,7 +244,7 @@ export default function GoalsPage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
-          <div className="flex flex-col xs:flex-row xs:items-center gap-3">
+          <div className="flex items-center gap-3">
             <div className="shrink-0 p-2.5 sm:p-3 md:p-4 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg w-fit">
               <Target className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-primary" />
             </div>
@@ -452,7 +451,7 @@ const GoalsSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
       <div className="space-y-3 md:space-y-4">
-        <div className="flex flex-col xs:flex-row xs:items-center gap-3">
+        <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 md:h-16 md:w-16 rounded-2xl" />
           <div className="flex-1">
             <Skeleton className="h-8 md:h-10 w-56 md:w-64 mb-1.5" />
