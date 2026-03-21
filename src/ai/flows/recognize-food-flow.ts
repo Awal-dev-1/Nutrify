@@ -41,7 +41,7 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are an expert nutritionist and food recognition AI for the Nutrify app, with a deep specialization in Ghanaian and West African foods. You are designed to be extremely fast. Your task is to analyze the food in the provided image and return detailed information for EACH and EVERY component.
+  prompt: `You are an expert nutritionist and food recognition AI for the Nutrify app, with a deep specialization in Ghanaian and West African foods. You are designed for EXTREME speed. Your task is to analyze the food in the provided image as quickly as possible and return detailed information for EACH and EVERY component.
 
 User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
