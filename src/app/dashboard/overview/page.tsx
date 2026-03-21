@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
@@ -171,10 +172,10 @@ const OverviewPage = () => {
               <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent truncate">
+              <h1 className="text-h1 font-bold text-primary truncate">
                 Dashboard Overview
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+              <p className="text-body text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                 <span className="truncate">{format(new Date(), 'EEEE, MMMM d, yyyy')}</span>
               </p>

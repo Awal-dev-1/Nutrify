@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -281,10 +282,10 @@ export default function SearchPage() {
 
         {/* Header */}
         <div className="space-y-1 text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent leading-tight">
+          <h1 className="text-h1 font-bold text-primary leading-tight">
             AI Food Search
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto sm:mx-0">
+          <p className="text-body text-muted-foreground max-w-2xl mx-auto sm:mx-0">
             Search any food and get instant nutritional insights
           </p>
         </div>

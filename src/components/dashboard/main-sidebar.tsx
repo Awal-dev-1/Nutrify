@@ -71,8 +71,7 @@ export function MainSidebar() {
 
   const renderLinks = (
     links: { href: string; label: string; icon: any }[],
-    groupLabel?: string,
-    isInsight?: boolean,
+    groupLabel?: string
   ) => (
     <div className="space-y-0.5">
       {groupLabel && !isCollapsed && (
@@ -98,8 +97,9 @@ export function MainSidebar() {
                   'py-2.5 transition-all duration-200',
                   // When collapsed: centre the icon
                   isCollapsed && 'justify-center px-0',
-                  isActive  && 'bg-primary/10 text-primary font-medium shadow-sm',
-                  !isActive && (isInsight ? 'text-primary/80 hover:bg-primary/5 hover:text-primary' : 'hover:bg-muted/50 hover:text-foreground'),
+                  isActive
+                    ? 'bg-primary/10 text-primary font-medium shadow-sm'
+                    : 'hover:bg-muted/50 hover:text-foreground',
                 )}
                 onClick={handleCloseMobileSidebar}
               >
@@ -110,7 +110,7 @@ export function MainSidebar() {
                     isCollapsed && 'justify-center',
                   )}
                 >
-                  <Icon className={cn('h-4 w-4 shrink-0 transition-all duration-200', (isActive || isInsight) && 'text-primary', !isActive && isInsight && 'opacity-80')} />
+                  <Icon className={cn('h-4 w-4 shrink-0 transition-all duration-200', isActive && 'text-primary')} />
 
                   {/* Label: slides + fades out when collapsing */}
                   <span className={cn(
@@ -207,32 +207,7 @@ export function MainSidebar() {
           </div>
 
           {/* Insights */}
-          <div className="space-y-1">
-            <div className={cn('transition-all duration-300 overflow-hidden', isCollapsed ? 'h-10' : 'h-auto')}>
-              {!isCollapsed ? (
-                <div className="relative mb-1">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg blur-sm" />
-                  <div className="relative bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1 rounded-md bg-primary/10">
-                        <PieChart className="h-3.5 w-3.5 text-primary" />
-                      </div>
-                      <p className="text-small font-semibold text-primary uppercase tracking-wider flex-1 transition-all duration-300">
-                        Insights
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-center py-2">
-                  <div className="p-1.5 rounded-md bg-primary/10">
-                    <PieChart className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-              )}
-            </div>
-            {renderLinks(insightLinks, undefined, true)}
-          </div>
+          {renderLinks(insightLinks, 'Insights')}
 
         </div>
       </SidebarContent>

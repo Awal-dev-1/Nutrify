@@ -323,7 +323,7 @@ const Header: FC<{ onClearDay: () => void; date: Date; setDate: (date: Date) => 
           <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
         </div>
         <div className="min-w-0">
-          <h1 className="text-h2 font-bold tracking-tight">
+          <h1 className="text-h1 font-bold tracking-tight text-primary">
             Daily Tracker
           </h1>
           <div className="flex items-center gap-2 mt-0.5">

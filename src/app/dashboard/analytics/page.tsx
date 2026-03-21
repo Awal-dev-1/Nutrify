@@ -122,7 +122,7 @@ const AnalyticsPage = () => {
                 <BarChart3 className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-h2 font-bold tracking-tight">
+                <h1 className="text-h1 font-bold tracking-tight text-primary">
                   Analytics & Insights
                 </h1>
                 <p className="text-body text-muted-foreground mt-0.5">
@@ -181,7 +181,7 @@ const AnalyticsPage = () => {
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-h2 font-bold tracking-tight">
+              <h1 className="text-h1 font-bold tracking-tight text-primary">
                 Analytics & Insights
               </h1>
               <p className="text-body text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -332,28 +332,28 @@ const AnalyticsPage = () => {
               value={summary.averageCalories} 
               goal={goals.calories} 
               unit="kcal" 
-              color="hsl(var(--chart-1))"
+              color="var(--chart-1)"
             />
             <GoalProgressBar 
               label="Protein" 
               value={summary.averageProtein} 
               goal={goals.protein} 
               unit="g" 
-              color="hsl(var(--chart-2))"
+              color="var(--chart-2)"
             />
             <GoalProgressBar 
               label="Carbs" 
               value={summary.averageCarbs} 
               goal={goals.carbs} 
               unit="g" 
-              color="hsl(var(--chart-3))"
+              color="var(--chart-3)"
             />
             <GoalProgressBar 
               label="Fat" 
               value={summary.averageFat} 
               goal={goals.fat} 
               unit="g" 
-              color="hsl(var(--chart-4))"
+              color="var(--chart-4)"
             />
           </CardContent>
         </Card>
@@ -648,13 +648,13 @@ const GoalProgressBar = ({ label, value, goal, unit, color }: { label: string; v
   const isOver = percentage > 105;
 
   // Simplified color logic: use the provided color, but switch to destructive if over the goal.
-  const indicatorColor = isOver ? 'hsl(var(--destructive))' : color;
+  const indicatorColor = isOver ? 'hsl(var(--destructive))' : `hsl(${color})`;
   
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between items-center text-xs md:text-sm">
         <span className="font-medium flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
           {label}
         </span>
         <span className="text-muted-foreground">
