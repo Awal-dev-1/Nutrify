@@ -4,14 +4,16 @@ import type { FC } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Beef, Wheat, Droplets, PlusCircle, Stethoscope } from 'lucide-react';
-import type { FoodItem } from '@/types/food';
+import { Beef, Wheat, Droplets, PlusCircle, Stethoscope, Sparkles } from 'lucide-react';
+import type { AIPrediction } from '@/types/ai';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 
-export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => void; imageUrl: string | null; }> = ({ item, onAdd, imageUrl }) => {
+export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPrediction) => void; imageUrl: string | null; }> = ({ item, onAdd, imageUrl }) => {
   const hasMicros = item.micronutrientBreakdown && 
                     Object.values(item.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
+  const confidencePercent = item.confidence * 100;
 
   return (
     <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
@@ -22,7 +24,15 @@ export const AiFoodResultCard: FC<{ item: FoodItem; onAdd: (item: FoodItem) => v
           </div>
         )}
         <div className="p-4 md:p-6">
-            <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
+            <div className="flex flex-wrap items-center gap-4 justify-between">
+                <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
+                {confidencePercent < 90 && (
+                    <Badge variant="secondary" className="text-xs sm:text-sm">
+                        <Sparkles className="h-3 w-3 mr-1.5" />
+                        {confidencePercent.toFixed(0)}% Confidence
+                    </Badge>
+                )}
+            </div>
             <div className="text-3xl font-extrabold text-primary pt-2">
                 {item.calories.toFixed(0)}{' '}
                 <span className="text-lg font-medium text-muted-foreground">kcal (for ~{item.estimatedWeightGrams}g)</span>

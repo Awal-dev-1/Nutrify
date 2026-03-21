@@ -47,26 +47,18 @@ User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{
 
 CRITICAL INSTRUCTIONS:
 1.  **Analyze the Image**: First, determine if the image contains food. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **CRITICAL: Differentiate Ghanaian Staples**: Your ability to correctly identify staple foods and dishes is essential. Do NOT confuse them.
-    *   **Fufu**: Look for a soft, smooth, white or off-white, sticky, rounded mass. It is almost always served sitting in a bowl of soup. If you see a white ball in soup, it is highly likely to be Fufu.
-    *   **Banku**: This is a fermented corn and cassava dough. It is smoother than Kenkey, typically grayish-white, and has a slightly sour taste. It's often served as a round ball alongside stew, soup, or a pepper sauce with fish. Pay attention to its smoother, slightly glossy surface compared to Kenkey.
-    *   **Kenkey**: This is also a fermented corn dough but it is steamed in corn husks (Fante Kenkey) or plantain leaves (Ga Kenkey). Look for the distinctive shape and texture left by the leaves. It is denser and has a more sour aroma than Banku.
-    *   **"Red Red"**: This is a bean stew, usually made with black-eyed peas, cooked in red palm oil which gives it a distinct color. It is almost always served with pieces of fried ripe plantain. If you see a reddish bean stew with fried plantain, you must identify it as "Red Red".
-    *   Under no circumstances should you mistake these dishes. Your identification must be precise. Do not use generic terms like "dumpling" or "bean stew". Use the correct Ghanaian name.
-3.  **Include Local Names**: If a food has a well-known local Ghanaian name, include it in parentheses in the 'foodName' field. For example, for "Red Red", you should return the name as "Red Red (Gobe)".
-4.  **Identify ALL Components**: If the image contains a mixed dish (e.g., Banku with Tilapia and pepper sauce), you MUST identify EACH primary component and accompaniment. For each identified item (e.g., Banku, Grilled Tilapia, Shito), return it as a SEPARATE object within the 'predictions' array.
-5.  **Calculate Nutrients for EACH Component**: For each food component you identify, you MUST:
+2.  **Identify ALL Components**: If the image contains a mixed dish (e.g., Banku with Tilapia and pepper sauce), you MUST identify EACH primary component and accompaniment. For each identified item (e.g., Banku, Grilled Tilapia, Shito), return it as a SEPARATE object within the 'predictions' array.
+3.  **Calculate Nutrients for EACH Component**: For each food component you identify, you MUST:
     a.  Visually estimate its specific weight in the image and provide this value in the \`estimatedWeightGrams\` field.
     b.  Calculate a comprehensive nutritional profile (\`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`) that corresponds DIRECTLY to that estimated weight.
-6.  **Provide DETAILED Health Analysis**: For each prediction (i.e., each food component), you MUST generate a detailed and personalized \`healthAnalysis\`.
-    *   Explain CLEARLY why the food is beneficial or detrimental based on the user's specific goal (e.g., 'lose-weight', 'gain-weight').
-    *   Go beyond a single sentence. For 'lose-weight', discuss calorie density, fiber content for satiety, and protein for muscle maintenance. For 'gain-weight', discuss energy density and quality of macronutrients. For 'eat-healthier', discuss the balance of nutrients and vitamin/mineral content.
-    *   Be specific. Instead of "good for weight loss", say "This portion of Banku is calorie-dense. While a good energy source, a smaller portion might be better for your weight loss goal. The accompanying Tilapia, however, is an excellent source of lean protein.".
-7.  **Generate DETAILED Recipe**: For each prediction, if applicable, generate a detailed recipe. This MUST include a list of ingredients with specific quantities and a thorough, step-by-step list of preparation instructions.
-8.  **Generate Other Details**: For each component, also provide \`foodHistory\`, \`isGhanaianLocal\` status, and relevant \`tags\`.
-9.  **Provide Confidence Score**: For each prediction, provide a confidence score between 0.0 and 1.0.
-10. **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. The 'predictions' array should contain one object for each food component identified. Do not add any commentary.
-11. **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+4.  **Provide DETAILED Analysis for EACH component**:
+    a.  For each prediction, provide a confidence score between 0.0 and 1.0.
+    b.  If the food has a well-known local Ghanaian name, include it in parentheses in the 'foodName' field. For example, for "Red Red", you should return the name as "Red Red (Gobe)".
+    c.  Provide a detailed and personalized \`healthAnalysis\`. For 'lose-weight', discuss calorie density and satiety. For 'gain-weight', discuss energy density. For 'eat-healthier', discuss nutrient balance.
+    d.  Provide a detailed recipe in \`detailedRecipe\`.
+5.  **Differentiate Ghanaian Staples**: Do NOT confuse staple foods. Fufu is a soft, sticky mass in soup. Banku is smoother than Kenkey. Kenkey is denser and steamed in leaves. "Red Red" is bean stew with fried plantain. Use the correct Ghanaian names.
+6.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty "predictions" array.
+7.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema.
 
 Image to analyze: {{media url=photoDataUri}}
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, type FC } from 'react';
 import Image from 'next/image';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff, Flame, Beef, Wheat, Droplets } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -17,6 +17,13 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
+
+interface TotalNutrients {
+  calories: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
+}
 
 export default function RecognizePage() {
   const { user, userProfile } = useUser();
@@ -29,6 +36,7 @@ export default function RecognizePage() {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
+  const [totalNutrients, setTotalNutrients] = useState<TotalNutrients | null>(null);
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
   const [viewedPrediction, setViewedPrediction] = useState<AIPrediction | null>(null);
 
@@ -107,6 +115,7 @@ export default function RecognizePage() {
           setError(null);
           setPredictions(null);
           setViewedPrediction(null);
+          setTotalNutrients(null);
           setFile(capturedFile);
         }
       }, 'image/jpeg', 0.95);
@@ -120,6 +129,7 @@ export default function RecognizePage() {
     setError(null);
     setPredictions(null);
     setViewedPrediction(null);
+    setTotalNutrients(null);
 
     try {
       const scanResults = await runAiScan(db, user, file, userProfile?.health?.primaryGoal);
@@ -135,7 +145,18 @@ export default function RecognizePage() {
       }
 
       setPredictions(scanResults.predictions);
-      setViewedPrediction(scanResults.predictions.length > 0 ? scanResults.predictions[0] : null);
+      if (scanResults.predictions.length > 0) {
+        setViewedPrediction(scanResults.predictions[0]);
+        // Calculate totals client-side from the returned predictions
+        const totals = scanResults.predictions.reduce((acc, pred) => {
+            acc.calories += pred.calories;
+            acc.protein += pred.macronutrientBreakdown.protein;
+            acc.carbohydrates += pred.macronutrientBreakdown.carbohydrates;
+            acc.fat += pred.macronutrientBreakdown.fat;
+            return acc;
+        }, { calories: 0, protein: 0, carbohydrates: 0, fat: 0 });
+        setTotalNutrients(totals);
+      }
       setStatus('completed');
     } catch (err: any) {
       console.error('AI Scan failed:', err);
@@ -151,6 +172,7 @@ export default function RecognizePage() {
     setError(null);
     setPredictions(null);
     setViewedPrediction(null);
+    setTotalNutrients(null);
     setSelectedFood(null);
     setIsCameraOpen(false);
   };
@@ -322,6 +344,10 @@ export default function RecognizePage() {
 
         return (
           <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in-50">
+            {predictions.length > 1 && totalNutrients && (
+                <TotalNutrientsCard totalNutrients={totalNutrients} />
+            )}
+
             <AiFoodResultCard
               item={viewedPrediction}
               onAdd={setSelectedFood}
@@ -412,3 +438,35 @@ export default function RecognizePage() {
     </div>
   );
 }
+
+
+const TotalNutrientsCard: FC<{ totalNutrients: TotalNutrients }> = ({ totalNutrients }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Total Meal Summary</CardTitle>
+        <CardDescription>Combined nutritional estimate for all items in the image.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div>
+          <Flame className="mx-auto h-6 w-6 text-orange-500" />
+          <p className="font-bold text-xl">{totalNutrients.calories.toFixed(0)}</p>
+          <p className="text-xs text-muted-foreground">kcal</p>
+        </div>
+        <div>
+          <Beef className="mx-auto h-6 w-6 text-red-500" />
+          <p className="font-bold text-xl">{totalNutrients.protein.toFixed(1)}g</p>
+          <p className="text-xs text-muted-foreground">Protein</p>
+        </div>
+        <div>
+          <Wheat className="mx-auto h-6 w-6 text-yellow-600" />
+          <p className="font-bold text-xl">{totalNutrients.carbohydrates.toFixed(1)}g</p>
+          <p className="text-xs text-muted-foreground">Carbs</p>
+        </div>
+        <div>
+          <Droplets className="mx-auto h-6 w-6 text-blue-500" />
+          <p className="font-bold text-xl">{totalNutrients.fat.toFixed(1)}g</p>
+          <p className="text-xs text-muted-foreground">Fat</p>
+        </div>
+      </CardContent>
+    </Card>
+);
