@@ -1,4 +1,3 @@
-
 "use client"
 
 import { usePathname } from 'next/navigation'
@@ -210,13 +209,13 @@ export function MainSidebar() {
             <div className={cn('transition-all duration-300 overflow-hidden', isCollapsed ? 'h-10' : 'h-auto')}>
               {!isCollapsed ? (
                 <div className="relative mb-1">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/5 via-blue-500/10 to-blue-500/5 rounded-lg blur-sm" />
-                  <div className="relative bg-gradient-to-r from-blue-500/5 to-transparent rounded-lg p-3">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg blur-sm" />
+                  <div className="relative bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-3">
                     <div className="flex items-center gap-2">
-                      <div className="p-1 rounded-md bg-blue-500/10">
-                        <PieChart className="h-3.5 w-3.5 text-blue-500" />
+                      <div className="p-1 rounded-md bg-primary/10">
+                        <PieChart className="h-3.5 w-3.5 text-primary" />
                       </div>
-                      <p className="text-small font-semibold text-blue-500 uppercase tracking-wider flex-1 transition-all duration-300">
+                      <p className="text-small font-semibold text-primary uppercase tracking-wider flex-1 transition-all duration-300">
                         Insights
                       </p>
                     </div>
@@ -224,8 +223,8 @@ export function MainSidebar() {
                 </div>
               ) : (
                 <div className="flex justify-center py-2">
-                  <div className="p-1.5 rounded-md bg-blue-500/10">
-                    <PieChart className="h-4 w-4 text-blue-500" />
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <PieChart className="h-4 w-4 text-primary" />
                   </div>
                 </div>
               )}
