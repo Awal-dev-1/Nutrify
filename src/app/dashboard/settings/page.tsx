@@ -60,7 +60,6 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeToggle } from '@/components/settings/theme-toggle';
 
 export default function SettingsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -671,12 +670,6 @@ export default function SettingsPage() {
                 </CardHeader>
                 
                 <CardContent className="p-4 md:p-6 space-y-6">
-                  {/* Theme */}
-                  <div className="space-y-3">
-                    <Label className="text-base">Theme</Label>
-                    <ThemeToggle />
-                  </div>
-
                   {/* Language */}
                   <div className="space-y-3">
                     <Label htmlFor="language" className="text-base">Language</Label>

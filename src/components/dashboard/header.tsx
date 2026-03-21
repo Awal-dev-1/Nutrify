@@ -28,6 +28,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
+import { ThemeToggle } from './theme-toggle'
 
 
 export function DashboardHeader() {
@@ -68,7 +69,8 @@ export function DashboardHeader() {
           {format(new Date(), "EEEE, MMMM d, yyyy")}
         </p>
       </div>
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-1">
+        <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
