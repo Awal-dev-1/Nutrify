@@ -22,23 +22,23 @@ interface PlannerControlsProps {
 
 export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerControlsProps) {
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <Button onClick={onGenerate} disabled={isGenerating}>
+    <div className="flex items-center gap-2">
+      <Button onClick={onGenerate} disabled={isGenerating} className="whitespace-nowrap">
         {isGenerating ? (
-          <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
         ) : (
-          <Sparkles className="h-4 w-4 sm:mr-2" />
+          <Sparkles className="h-4 w-4 mr-2" />
         )}
         <span className="hidden sm:inline">Generate Plan</span>
-        <span className="inline sm:hidden">Generate</span>
+        <span className="sm:hidden">Generate</span>
       </Button>
-      
+
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="destructive">
-            <Trash2 className="h-4 w-4 sm:mr-2" />
+          <Button variant="destructive" className="whitespace-nowrap">
+            <Trash2 className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Clear Plan</span>
-            <span className="inline sm:hidden">Clear</span>
+            <span className="sm:hidden">Clear</span>
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
@@ -57,10 +57,10 @@ export function PlannerControls({ onGenerate, onClear, isGenerating }: PlannerCo
         </AlertDialogContent>
       </AlertDialog>
 
-      <Button variant="outline" disabled>
-        <Save className="h-4 w-4 sm:mr-2" />
+      <Button variant="outline" disabled className="whitespace-nowrap">
+        <Save className="h-4 w-4 mr-2" />
         <span className="hidden sm:inline">Save Plan</span>
-        <span className="inline sm:hidden">Save</span>
+        <span className="sm:hidden">Save</span>
       </Button>
     </div>
   );

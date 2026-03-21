@@ -42,7 +42,6 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
   const router = useRouter();
 
   useEffect(() => {
-    // Reset state when modal opens or food item changes
     if (isOpen && foodItem) {
       setQuantity(foodItem.estimatedWeightGrams || 100);
       setMealType('Lunch');
@@ -54,33 +53,29 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
     if (!foodItem || !user || !db) return;
     setIsAdding(true);
     try {
-      // The addFoodToLog service expects nutrients per 100g.
-      // We need to normalize the data from our portion-based AI result
-      // back to a 100g-equivalent FoodItem.
       const per100gRatio = 100 / (foodItem.estimatedWeightGrams || 100);
       const foodDataForService: FoodItem = {
-          ...foodItem,
-          // We don't need to pass estimatedWeightGrams to the service
-          estimatedWeightGrams: 100,
-          calories: foodItem.calories * per100gRatio,
-          macronutrientBreakdown: {
-              protein: foodItem.macronutrientBreakdown.protein * per100gRatio,
-              carbohydrates: foodItem.macronutrientBreakdown.carbohydrates * per100gRatio,
-              fat: foodItem.macronutrientBreakdown.fat * per100gRatio,
-          },
-          micronutrientBreakdown: {
-              fiber: (foodItem.micronutrientBreakdown?.fiber || 0) * per100gRatio,
-              sugar: (foodItem.micronutrientBreakdown?.sugar || 0) * per100gRatio,
-              iron: (foodItem.micronutrientBreakdown?.iron || 0) * per100gRatio,
-              calcium: (foodItem.micronutrientBreakdown?.calcium || 0) * per100gRatio,
-              vitaminA: (foodItem.micronutrientBreakdown?.vitaminA || 0) * per100gRatio,
-              vitaminC: (foodItem.micronutrientBreakdown?.vitaminC || 0) * per100gRatio,
-              sodium: (foodItem.micronutrientBreakdown?.sodium || 0) * per100gRatio,
-          }
+        ...foodItem,
+        estimatedWeightGrams: 100,
+        calories: foodItem.calories * per100gRatio,
+        macronutrientBreakdown: {
+          protein: foodItem.macronutrientBreakdown.protein * per100gRatio,
+          carbohydrates: foodItem.macronutrientBreakdown.carbohydrates * per100gRatio,
+          fat: foodItem.macronutrientBreakdown.fat * per100gRatio,
+        },
+        micronutrientBreakdown: {
+          fiber: (foodItem.micronutrientBreakdown?.fiber || 0) * per100gRatio,
+          sugar: (foodItem.micronutrientBreakdown?.sugar || 0) * per100gRatio,
+          iron: (foodItem.micronutrientBreakdown?.iron || 0) * per100gRatio,
+          calcium: (foodItem.micronutrientBreakdown?.calcium || 0) * per100gRatio,
+          vitaminA: (foodItem.micronutrientBreakdown?.vitaminA || 0) * per100gRatio,
+          vitaminC: (foodItem.micronutrientBreakdown?.vitaminC || 0) * per100gRatio,
+          sodium: (foodItem.micronutrientBreakdown?.sodium || 0) * per100gRatio,
+        },
       };
 
       await addFoodToLog(db, user.uid, mealType, foodDataForService, quantity);
-      
+
       toast({
         title: 'Success!',
         description: `${foodItem.foodName} has been added to your tracker.`,
@@ -98,66 +93,92 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
       setIsAdding(false);
     }
   };
-  
-  const calculatedNutrients = foodItem ? {
-      calories: (foodItem.calories / (foodItem.estimatedWeightGrams || 1)) * quantity,
-      protein: (foodItem.macronutrientBreakdown.protein / (foodItem.estimatedWeightGrams || 1)) * quantity,
-      carbs: (foodItem.macronutrientBreakdown.carbohydrates / (foodItem.estimatedWeightGrams || 1)) * quantity,
-      fat: (foodItem.macronutrientBreakdown.fat / (foodItem.estimatedWeightGrams || 1)) * quantity,
-  } : null;
+
+  const calculatedNutrients = foodItem
+    ? {
+        calories: (foodItem.calories / (foodItem.estimatedWeightGrams || 1)) * quantity,
+        protein: (foodItem.macronutrientBreakdown.protein / (foodItem.estimatedWeightGrams || 1)) * quantity,
+        carbs: (foodItem.macronutrientBreakdown.carbohydrates / (foodItem.estimatedWeightGrams || 1)) * quantity,
+        fat: (foodItem.macronutrientBreakdown.fat / (foodItem.estimatedWeightGrams || 1)) * quantity,
+      }
+    : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      {/* max-w-[90vw] prevents the dialog clipping on narrow phones */}
+      <DialogContent className="max-w-[90vw] sm:max-w-md w-full">
         <DialogHeader>
-          <DialogTitle>Confirm & Add Food</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">Confirm &amp; Add Food</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Verify the details for {foodItem?.foodName} and add it to your daily tracker.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
+        <div className="py-3 sm:py-4 space-y-3 sm:space-y-4">
           {foodItem && calculatedNutrients && (
-            <div className="space-y-4 animate-in fade-in-50">
-              <div className='p-4 rounded-lg border bg-muted/50'>
-                <h3 className="font-bold">{foodItem.foodName}</h3>
-                <p className="text-xs text-muted-foreground">Nutritional estimate for {quantity}g</p>
-                <div className='mt-3 flex justify-around text-center'>
-                    <div>
-                        <Flame className='mx-auto h-5 w-5 text-orange-500' />
-                        <p className='font-bold text-lg'>{calculatedNutrients.calories.toFixed(0)}</p>
-                        <p className='text-xs text-muted-foreground'>kcal</p>
-                    </div>
-                    <div>
-                        <Beef className='mx-auto h-5 w-5 text-red-500' />
-                        <p className='font-bold text-lg'>{calculatedNutrients.protein.toFixed(1)}g</p>
-                        <p className='text-xs text-muted-foreground'>Protein</p>
-                    </div>
-                    <div>
-                        <Wheat className='mx-auto h-5 w-5 text-yellow-600' />
-                        <p className='font-bold text-lg'>{calculatedNutrients.carbs.toFixed(1)}g</p>
-                        <p className='text-xs text-muted-foreground'>Carbs</p>
-                    </div>
-                    <div>
-                        <Droplets className='mx-auto h-5 w-5 text-blue-500' />
-                        <p className='font-bold text-lg'>{calculatedNutrients.fat.toFixed(1)}g</p>
-                        <p className='text-xs text-muted-foreground'>Fat</p>
-                    </div>
+            <div className="space-y-3 sm:space-y-4 animate-in fade-in-50">
+
+              {/* Nutrient summary card */}
+              <div className="p-3 sm:p-4 rounded-lg border bg-muted/50">
+                <h3 className="font-bold text-sm sm:text-base truncate">{foodItem.foodName}</h3>
+                <p className="text-xs text-muted-foreground">
+                  Nutritional estimate for {quantity}g
+                </p>
+
+                {/* Macro row — 4 equal cols, smaller text on mobile */}
+                <div className="mt-3 grid grid-cols-4 gap-1 text-center">
+                  <div>
+                    <Flame className="mx-auto h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                    <p className="font-bold text-sm sm:text-lg leading-tight">
+                      {calculatedNutrients.calories.toFixed(0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">kcal</p>
+                  </div>
+                  <div>
+                    <Beef className="mx-auto h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+                    <p className="font-bold text-sm sm:text-lg leading-tight">
+                      {calculatedNutrients.protein.toFixed(1)}g
+                    </p>
+                    <p className="text-xs text-muted-foreground">Protein</p>
+                  </div>
+                  <div>
+                    <Wheat className="mx-auto h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
+                    <p className="font-bold text-sm sm:text-lg leading-tight">
+                      {calculatedNutrients.carbs.toFixed(1)}g
+                    </p>
+                    <p className="text-xs text-muted-foreground">Carbs</p>
+                  </div>
+                  <div>
+                    <Droplets className="mx-auto h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                    <p className="font-bold text-sm sm:text-lg leading-tight">
+                      {calculatedNutrients.fat.toFixed(1)}g
+                    </p>
+                    <p className="text-xs text-muted-foreground">Fat</p>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium">Quantity (grams)</label>
+
+              {/* Quantity input */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="quantity" className="text-sm font-medium">
+                  Quantity (grams)
+                </label>
                 <Input
                   id="quantity"
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(Number(e.target.value) || 0)}
+                  className="h-9 sm:h-10"
                 />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="mealType" className="text-sm font-medium">Meal</label>
+
+              {/* Meal type select */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="mealType" className="text-sm font-medium">
+                  Meal
+                </label>
                 <Select value={mealType} onValueChange={(v) => setMealType(v as any)}>
-                  <SelectTrigger id="mealType">
+                  <SelectTrigger id="mealType" className="h-9 sm:h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -172,12 +193,24 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
           )}
         </div>
 
-        <DialogFooter>
-          <Button onClick={onClose} variant="outline" disabled={isAdding}>
+        {/* Footer: stacked on mobile, inline on sm+ */}
+        <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:gap-0">
+          <Button
+            onClick={onClose}
+            variant="outline"
+            disabled={isAdding}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
-          <Button onClick={handleAddToTracker} disabled={isAdding || !foodItem}>
-            {isAdding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+          <Button
+            onClick={handleAddToTracker}
+            disabled={isAdding || !foodItem}
+            className="w-full sm:w-auto"
+          >
+            {isAdding
+              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              : <Plus className="mr-2 h-4 w-4" />}
             Add to Tracker
           </Button>
         </DialogFooter>

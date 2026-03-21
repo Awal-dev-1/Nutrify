@@ -54,38 +54,49 @@ export function ImageUploader({ onFileSelect, disabled }: ImageUploaderProps) {
     e.stopPropagation();
     setIsDragging(false);
     if (disabled) return;
-
     const files = e.dataTransfer.files;
-    if (files && files[0]) {
-      handleFile(files[0]);
-    }
+    if (files && files[0]) handleFile(files[0]);
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-3 sm:space-y-4">
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         className={cn(
-          "relative flex flex-col items-center justify-center w-full p-12 border-2 border-dashed rounded-lg transition-colors duration-200",
-          isDragging ? "border-primary bg-primary/10" : "border-border",
-          disabled ? "cursor-not-allowed bg-muted/50" : "cursor-pointer hover:border-primary/50"
+          // Reduced padding on mobile so it doesn't take up the whole viewport
+          'relative flex flex-col items-center justify-center w-full',
+          'p-8 sm:p-12',
+          'border-2 border-dashed rounded-lg transition-colors duration-200',
+          isDragging ? 'border-primary bg-primary/10' : 'border-border',
+          disabled
+            ? 'cursor-not-allowed bg-muted/50'
+            : 'cursor-pointer hover:border-primary/50',
         )}
         onClick={() => fileInputRef.current?.click()}
       >
-        <div className="flex flex-col items-center justify-center text-center space-y-3">
-          <div className={cn("p-4 rounded-full bg-muted/80 transition-colors", isDragging && "bg-primary/20 text-primary")}>
-            <UploadCloud className="w-10 h-10 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-3">
+          {/* Icon: smaller on mobile */}
+          <div className={cn(
+            'p-3 sm:p-4 rounded-full bg-muted/80 transition-colors',
+            isDragging && 'bg-primary/20 text-primary',
+          )}>
+            <UploadCloud className="w-7 h-7 sm:w-10 sm:h-10 text-muted-foreground" />
           </div>
-          <p className="text-lg font-semibold">
-            Drag & drop an image or click to upload
+
+          {/* Primary label: shorter copy on mobile where drag isn't available */}
+          <p className="text-base sm:text-lg font-semibold leading-snug">
+            <span className="hidden sm:inline">Drag &amp; drop an image or click to upload</span>
+            <span className="sm:hidden">Tap to upload an image</span>
           </p>
-          <p className="text-sm text-muted-foreground">
-            PNG, JPG, or WEBP (Max {MAX_FILE_SIZE_MB}MB)
+
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            PNG, JPG, or WEBP &mdash; max {MAX_FILE_SIZE_MB}MB
           </p>
         </div>
+
         <input
           ref={fileInputRef}
           type="file"
@@ -100,7 +111,7 @@ export function ImageUploader({ onFileSelect, disabled }: ImageUploaderProps) {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Upload Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="text-sm">{error}</AlertDescription>
         </Alert>
       )}
     </div>
