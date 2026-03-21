@@ -59,7 +59,7 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
-      <SidebarTrigger />
+      <SidebarTrigger className="md:hidden" />
       <div className="flex flex-col">
         <h1 className="text-sm md:text-xl font-semibold">
           {greeting}, {userProfile?.name || 'User'}!

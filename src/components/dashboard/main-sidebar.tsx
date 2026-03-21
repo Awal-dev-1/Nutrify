@@ -29,6 +29,7 @@ import {
   SidebarContent,
   SidebarFooter,
   useSidebar,
+  SidebarToggle,
 } from '@/components/ui/sidebar'
 import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
@@ -110,10 +111,11 @@ export function MainSidebar() {
   return (
     <>
       <SidebarHeader className={cn(
-        "p-4",
-        isCollapsed && "flex justify-center"
+        "p-4 flex items-center",
+        isCollapsed ? "justify-center" : "justify-between"
       )}>
-        <Logo />
+        {!isCollapsed && <Logo />}
+        <SidebarToggle className="hidden md:block"/>
       </SidebarHeader>
 
       <SidebarContent className={cn(
