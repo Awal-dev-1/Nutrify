@@ -1,3 +1,4 @@
+
 "use client"
 
 import { usePathname } from 'next/navigation'
@@ -71,6 +72,7 @@ export function MainSidebar() {
   const renderLinks = (
     links: { href: string; label: string; icon: any }[],
     groupLabel?: string,
+    isInsight?: boolean,
   ) => (
     <div className="space-y-0.5">
       {groupLabel && !isCollapsed && (
@@ -97,7 +99,7 @@ export function MainSidebar() {
                   // When collapsed: centre the icon
                   isCollapsed && 'justify-center px-0',
                   isActive  && 'bg-primary/10 text-primary font-medium shadow-sm',
-                  !isActive && 'hover:bg-muted/50 hover:text-foreground',
+                  !isActive && (isInsight ? 'text-primary/80 hover:bg-primary/5 hover:text-primary' : 'hover:bg-muted/50 hover:text-foreground'),
                 )}
                 onClick={handleCloseMobileSidebar}
               >
@@ -108,7 +110,7 @@ export function MainSidebar() {
                     isCollapsed && 'justify-center',
                   )}
                 >
-                  <Icon className={cn('h-4 w-4 shrink-0 transition-all duration-200', isActive && 'text-primary')} />
+                  <Icon className={cn('h-4 w-4 shrink-0 transition-all duration-200', (isActive || isInsight) && 'text-primary', !isActive && isInsight && 'opacity-80')} />
 
                   {/* Label: slides + fades out when collapsing */}
                   <span className={cn(
@@ -229,7 +231,7 @@ export function MainSidebar() {
                 </div>
               )}
             </div>
-            {renderLinks(insightLinks)}
+            {renderLinks(insightLinks, undefined, true)}
           </div>
 
         </div>
