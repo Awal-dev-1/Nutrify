@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,13 +45,6 @@ export default function RecommendationsPage() {
       setIsLoading(false);
     }
   };
-
-  // Fetch on mount if user profile is loaded
-  useEffect(() => {
-    if (user && db && userProfile) {
-        fetchRecommendations();
-    }
-  }, [user, db, userProfile]);
 
   const handleViewRecipe = (foodId: string) => {
     setSelectedFoodId(foodId);
@@ -217,5 +209,3 @@ const RecommendationsPageSkeleton = () => (
         </div>
     </div>
 )
-
-    
