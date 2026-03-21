@@ -3,12 +3,9 @@
 
 import { useState } from 'react';
 import type { PlannedMeal } from '@/types/planner';
-import type { FoodItem } from '@/types/food';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
-import { AddFoodModal } from '@/components/tracker/add-food-modal';
-import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed, Sparkles } from 'lucide-react';
 import {
@@ -38,8 +35,8 @@ import { cn } from '@/lib/utils';
 interface WeekPlannerProps {
     plannedMeals: (PlannedMeal & { id: string })[];
     summary: Record<string, {calories: number, protein: number, carbs: number, fat: number}>;
-    onAddMeal: (food: FoodItem, quantity: number, mealType: string, day: string) => void;
-    onUpdateMeal: (id: string, newQuantity: number) => void;
+    onAddMealClick: (day: string, mealType: string) => void;
+    onEditMealClick: (meal: PlannedMeal & { id: string }) => void;
     onRemoveMeal: (id: string) => void;
 }
 
@@ -54,12 +51,9 @@ const getMealIcon = (mealType: string) => {
   }
 };
 
-export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: WeekPlannerProps) {
+export function WeekPlanner({ plannedMeals, summary, onAddMealClick, onEditMealClick, onRemoveMeal }: WeekPlannerProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [direction, setDirection] = useState(0);
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
-  const [mealToAdd, setMealToAdd] = useState<string | null>(null);
   const { userProfile } = useUser();
   
   const paginate = (days: number) => {
@@ -86,21 +80,6 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
     protein: (userGoals.dailyCalorieGoal * (userGoals.proteinPercentageGoal / 100)) / 4,
     carbs: (userGoals.dailyCalorieGoal * (userGoals.carbsPercentageGoal / 100)) / 4,
     fat: (userGoals.dailyCalorieGoal * (userGoals.fatPercentageGoal / 100)) / 9,
-  };
-
-  const handleAddClick = (mealType: string) => {
-    setMealToAdd(mealType);
-    setAddModalOpen(true);
-  };
-  
-  const handleEditClick = (meal: PlannedMeal & { id: string }) => {
-    setEditingMeal(meal);
-  };
-
-  const handleAddFood = (food: FoodItem, quantity: number, mealType: string) => {
-    if (mealToAdd) {
-      onAddMeal(food, quantity, mealToAdd, currentDayKey);
-    }
   };
 
   const dailyTotals = summary[currentDayKey] || { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -135,15 +114,9 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
         title="Your meal plan is empty" 
         description="Generate a new plan with AI or add your first meal to get started."
       >
-        <Button onClick={() => handleAddClick('Breakfast')} size="lg">
+        <Button onClick={() => onAddMealClick(currentDayKey, 'Breakfast')} size="lg">
           <Plus className="mr-2 h-4 w-4" /> Add a Meal
         </Button>
-        <AddFoodModal
-          isOpen={isAddModalOpen}
-          onClose={() => setAddModalOpen(false)}
-          onAddFood={handleAddFood}
-          mealType={mealToAdd as any}
-        />
       </EmptyState>
     )
   }
@@ -298,13 +271,12 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                                     </div>
                                   </div>
 
-                                  {/* Action buttons: always visible on mobile (touch), hover-only on pointer devices */}
                                   <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                                     <Button
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8"
-                                      onClick={() => handleEditClick(meal)}
+                                      onClick={() => onEditMealClick(meal)}
                                     >
                                       <Pencil className="h-3.5 w-3.5" />
                                     </Button>
@@ -348,7 +320,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                             <Button
                               variant="outline"
                               className="w-full mt-2 border-dashed"
-                              onClick={() => handleAddClick(mealType)}
+                              onClick={() => onAddMealClick(currentDayKey, mealType)}
                             >
                               <Plus className="h-4 w-4 mr-2" /> Add Food
                             </Button>
@@ -364,7 +336,7 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
                   title="No meals planned for this day"
                   description="Start planning your day by adding meals."
                 >
-                  <Button onClick={() => handleAddClick('Breakfast')} size="lg">
+                  <Button onClick={() => onAddMealClick(currentDayKey, 'Breakfast')} size="lg">
                     <Plus className="mr-2 h-4 w-4" /> Add First Meal
                   </Button>
                 </EmptyState>
@@ -373,23 +345,6 @@ export function WeekPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, on
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <AddFoodModal
-        isOpen={isAddModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onAddFood={handleAddFood}
-        mealType={mealToAdd as any}
-      />
-
-      <EditFoodModal
-        isOpen={!!editingMeal}
-        onClose={() => setEditingMeal(null)}
-        onUpdate={(id, qty) => {
-          onUpdateMeal(id, qty);
-          setEditingMeal(null);
-        }}
-        loggedFood={editingMeal ? { logId: editingMeal.id, quantity: editingMeal.quantity } : null}
-      />
     </div>
   );
 }

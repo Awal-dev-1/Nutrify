@@ -22,6 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { getAnalyticsData } from '@/services/analyticsService';
+import { AddFoodModal } from '@/components/tracker/add-food-modal';
+import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 
 export default function MealPlannerPage() {
   const { toast } = useToast();
@@ -31,6 +33,12 @@ export default function MealPlannerPage() {
   const [activeTab, setActiveTab] = useState('day');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // State for modals
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
+  const [addMealContext, setAddMealContext] = useState<{ day: string, mealType: string } | null>(null);
+
 
   const plannedMealsQuery = useMemoFirebase(
     () => user ? query(collection(db, 'users', user.uid, 'plannedMeals'), orderBy('createdAt', 'asc')) : null,
@@ -92,7 +100,6 @@ export default function MealPlannerPage() {
         await clearPlan(db, user.uid);
         const result = await generatePersonalizedMealPlan(input);
 
-        // Add generated meals to the plan
         for (const meal of result.plannedMeals) {
             await addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, {
                 foodName: meal.foodName,
@@ -126,9 +133,14 @@ export default function MealPlannerPage() {
     });
   };
 
-  const handleAddMeal = (food: FoodItem, quantity: number, mealType: string, day: string) => {
-    if (!user || !db) return;
-    addPlannedMeal(db, user.uid, day, mealType, food, quantity);
+  const handleOpenAddModal = (day: string, mealType: string) => {
+    setAddMealContext({ day, mealType });
+    setAddModalOpen(true);
+  };
+  
+  const handleAddMeal = (food: FoodItem, quantity: number, mealType: string) => {
+    if (!user || !db || !addMealContext) return;
+    addPlannedMeal(db, user.uid, addMealContext.day, mealType, food, quantity);
   };
   
   const handleUpdateMeal = (id: string, newQuantity: number) => {
@@ -144,6 +156,7 @@ export default function MealPlannerPage() {
          carbs: meal.carbs * ratio,
          fat: meal.fat * ratio,
      });
+     setEditingMeal(null);
   };
 
   const handleRemoveMeal = (id: string) => {
@@ -192,8 +205,8 @@ export default function MealPlannerPage() {
             <DayPlanner 
                 plannedMeals={plannedMeals || []} 
                 summary={mealSummary}
-                onAddMeal={handleAddMeal}
-                onUpdateMeal={handleUpdateMeal}
+                onAddMealClick={handleOpenAddModal}
+                onEditMealClick={setEditingMeal}
                 onRemoveMeal={handleRemoveMeal}
             />
           </TabsContent>
@@ -201,13 +214,27 @@ export default function MealPlannerPage() {
             <WeekPlanner 
                 plannedMeals={plannedMeals || []} 
                 summary={mealSummary}
-                onAddMeal={handleAddMeal}
-                onUpdateMeal={handleUpdateMeal}
+                onAddMealClick={handleOpenAddModal}
+                onEditMealClick={setEditingMeal}
                 onRemoveMeal={handleRemoveMeal}
             />
           </TabsContent>
         </Tabs>
       )}
+      
+      <AddFoodModal
+        isOpen={isAddModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onAddFood={handleAddMeal}
+        mealType={addMealContext?.mealType as any}
+      />
+      
+      <EditFoodModal
+        isOpen={!!editingMeal}
+        onClose={() => setEditingMeal(null)}
+        onUpdate={handleUpdateMeal}
+        loggedFood={editingMeal ? { logId: editingMeal.id, quantity: editingMeal.quantity } : null}
+      />
     </motion.div>
   );
 }

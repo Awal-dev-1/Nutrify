@@ -1,3 +1,4 @@
+
 'use client';
 
 import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
@@ -64,13 +65,11 @@ export const updateUserProfileAndPhoto = async (
 
   const userDocRef = doc(db, 'users', user.uid);
   try {
+    // This is a user-facing blocking action, so we await it.
     await updateDoc(userDocRef, firestoreUpdates);
   } catch (error) {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: userDocRef.path,
-      operation: 'update',
-      requestResourceData: firestoreUpdates,
-    }));
+    // We re-throw the error so the calling UI component can handle it (e.g., show a toast).
+    // Using the errorEmitter here is not ideal because the UI is actively waiting.
     throw error;
   }
 };

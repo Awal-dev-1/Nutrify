@@ -3,12 +3,9 @@
 
 import { useState } from 'react';
 import type { PlannedMeal } from '@/types/planner';
-import type { FoodItem } from '@/types/food';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
-import { AddFoodModal } from '@/components/tracker/add-food-modal';
-import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed } from 'lucide-react';
 import {
@@ -37,8 +34,8 @@ import { useUser } from '@/firebase';
 interface DayPlannerProps {
   plannedMeals: (PlannedMeal & { id: string })[];
   summary: Record<string, any>;
-  onAddMeal: (food: FoodItem, quantity: number, mealType: string, day: string) => void;
-  onUpdateMeal: (id: string, newQuantity: number) => void;
+  onAddMealClick: (day: string, mealType: string) => void;
+  onEditMealClick: (meal: PlannedMeal & { id: string }) => void;
   onRemoveMeal: (id: string) => void;
 }
 
@@ -53,10 +50,7 @@ const getMealIcon = (mealType: string) => {
   }
 };
 
-export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onRemoveMeal }: DayPlannerProps) {
-  const [isAddModalOpen, setAddModalOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
-  const [mealToAdd, setMealToAdd] = useState<string | null>(null);
+export function DayPlanner({ plannedMeals, summary, onAddMealClick, onEditMealClick, onRemoveMeal }: DayPlannerProps) {
   const { userProfile } = useUser();
 
   const currentDate = new Date();
@@ -67,21 +61,6 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
     protein: (userGoals.dailyCalorieGoal * (userGoals.proteinPercentageGoal / 100)) / 4,
     carbs: (userGoals.dailyCalorieGoal * (userGoals.carbsPercentageGoal / 100)) / 4,
     fat: (userGoals.dailyCalorieGoal * (userGoals.fatPercentageGoal / 100)) / 9,
-  };
-
-  const handleAddClick = (mealType: string) => {
-    setMealToAdd(mealType);
-    setAddModalOpen(true);
-  };
-
-  const handleEditClick = (meal: PlannedMeal & { id: string }) => {
-    setEditingMeal(meal);
-  };
-
-  const handleAddFood = (food: FoodItem, quantity: number, mealType: string) => {
-    if (mealToAdd) {
-      onAddMeal(food, quantity, mealToAdd, currentDayKey);
-    }
   };
 
   const dailyTotals = summary[currentDayKey] || { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -209,13 +188,12 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                 </div>
                               </div>
 
-                              {/* Action buttons: always visible on mobile (touch), hover-only on pointer devices */}
                               <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  onClick={() => handleEditClick(meal)}
+                                  onClick={() => onEditMealClick(meal)}
                                 >
                                   <Pencil className="h-3.5 w-3.5" />
                                 </Button>
@@ -260,7 +238,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                         <Button
                           variant="outline"
                           className="w-full mt-2 border-dashed"
-                          onClick={() => handleAddClick(mealType)}
+                          onClick={() => onAddMealClick(currentDayKey, mealType)}
                         >
                           <Plus className="h-4 w-4 mr-2" /> Add Food
                         </Button>
@@ -276,30 +254,13 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                 title="No meals planned for today"
                 description="Start planning your day by adding meals."
               >
-                <Button onClick={() => handleAddClick('Breakfast')} size="lg">
+                <Button onClick={() => onAddMealClick(currentDayKey, 'Breakfast')} size="lg">
                   <Plus className="mr-2 h-4 w-4" /> Add First Meal
                 </Button>
               </EmptyState>
            )}
         </motion.div>
       </div>
-
-      <AddFoodModal
-        isOpen={isAddModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onAddFood={handleAddFood}
-        mealType={mealToAdd as any}
-      />
-
-      <EditFoodModal
-        isOpen={!!editingMeal}
-        onClose={() => setEditingMeal(null)}
-        onUpdate={(id, qty) => {
-          onUpdateMeal(id, qty);
-          setEditingMeal(null);
-        }}
-        loggedFood={editingMeal ? { logId: editingMeal.id, quantity: editingMeal.quantity } : null}
-      />
     </div>
   );
 }
