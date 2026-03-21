@@ -147,15 +147,10 @@ export default function RecognizePage() {
       setPredictions(scanResults.predictions);
       if (scanResults.predictions.length > 0) {
         setViewedPrediction(scanResults.predictions[0]);
-        // Calculate totals client-side from the returned predictions
-        const totals = scanResults.predictions.reduce((acc, pred) => {
-            acc.calories += pred.calories;
-            acc.protein += pred.macronutrientBreakdown.protein;
-            acc.carbohydrates += pred.macronutrientBreakdown.carbohydrates;
-            acc.fat += pred.macronutrientBreakdown.fat;
-            return acc;
-        }, { calories: 0, protein: 0, carbohydrates: 0, fat: 0 });
-        setTotalNutrients(totals);
+        // Use the totalNutrients object directly from the AI response
+        if (scanResults.totalNutrients) {
+            setTotalNutrients(scanResults.totalNutrients);
+        }
       }
       setStatus('completed');
     } catch (err: any) {
