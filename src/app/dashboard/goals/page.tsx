@@ -250,7 +250,7 @@ export default function GoalsPage() {
               <Target className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Nutrition Goals
               </h1>
               <p className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground mt-0.5">
@@ -479,4 +479,5 @@ const GoalsSkeleton = () => (
     
 
     
+
 

@@ -9,7 +9,7 @@ import { generateRecommendations, type RecommendationResult, type Recommendation
 import { useUser, useFirestore } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RecipeDetailModal } from '@/components/recommendations/recipe-detail-modal';
-import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
+import { FoodConfirmationModal } => '@/components/recognize/food-confirmation-modal';
 import Link from 'next/link';
 
 export default function RecommendationsPage() {
@@ -157,7 +157,7 @@ export default function RecommendationsPage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Smart Food Recommendations</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">Smart Food Recommendations</h1>
             <p className="text-base text-muted-foreground max-w-2xl">
               Get meal suggestions based on your goals and preferences.
             </p>

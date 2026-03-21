@@ -380,7 +380,7 @@ export default function RecognizePage() {
     <div className="space-y-8">
       {/* This header is hidden when the camera is open on mobile */}
       <div className={cn(isCameraOpen && 'md:block hidden')}>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2 text-primary">
           <ScanLine className="h-8 w-8 text-primary" />
           AI Food Recognition
         </h1>

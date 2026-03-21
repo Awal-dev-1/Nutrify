@@ -148,7 +148,7 @@ export default function MealPlannerPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">AI Meal Planner</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">AI Meal Planner</h1>
           <p className="text-base text-muted-foreground max-w-2xl">
             Generate, view, and manage your weekly meal plan.
           </p>

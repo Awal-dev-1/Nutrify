@@ -124,7 +124,7 @@ const AnalyticsPage = () => {
                 <BarChart3 className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Analytics & Insights
                 </h1>
                 <p className="text-sm md:text-base text-muted-foreground mt-0.5">
@@ -183,7 +183,7 @@ const AnalyticsPage = () => {
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Analytics & Insights
               </h1>
               <p className="text-sm md:text-base text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -348,14 +348,14 @@ const AnalyticsPage = () => {
               value={summary.averageCarbs} 
               goal={goals.carbs} 
               unit="g" 
-              color="hsl(var(--chart-4))"
+              color="hsl(var(--chart-3))"
             />
             <GoalProgressBar 
               label="Fat" 
               value={summary.averageFat} 
               goal={goals.fat} 
               unit="g" 
-              color="hsl(var(--primary))"
+              color="hsl(var(--chart-4))"
             />
           </CardContent>
         </Card>

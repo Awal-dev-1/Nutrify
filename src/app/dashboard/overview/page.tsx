@@ -154,7 +154,7 @@ const OverviewPage = () => {
               <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent truncate">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent truncate">
                 Dashboard Overview
               </h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -164,7 +164,7 @@ const OverviewPage = () => {
             </div>
           </div>
           <Badge variant="outline" className="shrink-0 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm whitespace-nowrap">
-            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5 text-primary" />
+            <Sparkles className="h-3 w-3 sm:h-3.5 w-3.5 mr-1 sm:mr-1.5 text-primary" />
             Your daily snapshot
           </Badge>
         </div>
