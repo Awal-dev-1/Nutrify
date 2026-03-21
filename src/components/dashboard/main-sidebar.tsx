@@ -19,6 +19,7 @@ import {
   PieChart,
   Activity,
   Flame,
+  Menu,
 } from 'lucide-react'
 
 import {
@@ -31,6 +32,8 @@ import {
   useSidebar,
   SidebarToggle,
 } from '@/components/ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -58,7 +61,7 @@ const insightLinks = [
 export function MainSidebar() {
   const pathname = usePathname()
   const { user } = useUser();
-  const { isMobile, setOpenMobile, state } = useSidebar();
+  const { isMobile, setOpenMobile, state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
 
   const handleCloseMobileSidebar = () => {
@@ -114,8 +117,22 @@ export function MainSidebar() {
         "p-4 flex items-center",
         isCollapsed ? "justify-center" : "justify-between"
       )}>
-        {!isCollapsed && <Logo />}
-        <SidebarToggle className="hidden md:block"/>
+        {isCollapsed ? (
+           <Tooltip>
+             <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="group/collapsed-header relative flex h-10 w-10 items-center justify-center rounded-lg">
+                  <Logo collapsed className="transition-transform duration-300 group-hover/collapsed-header:rotate-[-30deg] group-hover/collapsed-header:scale-75" />
+                  <Menu className="absolute h-5 w-5 opacity-0 transition-opacity duration-300 group-hover/collapsed-header:opacity-100" />
+                </Button>
+             </TooltipTrigger>
+             <TooltipContent side="right">Expand Sidebar</TooltipContent>
+           </Tooltip>
+        ) : (
+          <>
+            <Logo />
+            <SidebarToggle className="hidden md:block"/>
+          </>
+        )}
       </SidebarHeader>
 
       <SidebarContent className={cn(
