@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { RecipeDetailModal } from '@/components/recommendations/recipe-detail-mo
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
 
 export default function RecommendationsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -94,16 +96,22 @@ export default function RecommendationsPage() {
     
     if (!data || data.recommendations.length === 0) {
       return (
-        <EmptyState
-          icon={<Lightbulb className="h-16 w-16 text-muted-foreground" />}
-          title="No recommendations yet"
-          description="Click the button to get AI-powered meal suggestions based on your goals."
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <Button onClick={fetchRecommendations} size="lg" disabled={isLoading}>
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate Recommendations
-          </Button>
-        </EmptyState>
+          <EmptyState
+            icon={<Lightbulb className="h-16 w-16 text-muted-foreground" />}
+            title="No recommendations yet"
+            description="Click the button to get AI-powered meal suggestions based on your goals."
+          >
+            <Button onClick={fetchRecommendations} size="lg" disabled={isLoading}>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Generate Recommendations
+            </Button>
+          </EmptyState>
+        </motion.div>
       );
     }
     
@@ -114,25 +122,37 @@ export default function RecommendationsPage() {
         </p>
 
         {data.insightTips && data.insightTips.length > 0 && (
-          <Alert>
-            <Lightbulb className="h-4 w-4" />
-            <AlertTitle>Insightful Tips</AlertTitle>
-            <AlertDescription>
-              <ul className="list-disc list-inside space-y-1">
-                {data.insightTips.map((tip, index) => <li key={index}>{tip}</li>)}
-              </ul>
-            </AlertDescription>
-          </Alert>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Alert>
+              <Lightbulb className="h-4 w-4" />
+              <AlertTitle>Insightful Tips</AlertTitle>
+              <AlertDescription>
+                <ul className="list-disc list-inside space-y-1">
+                  {data.insightTips.map((tip, index) => <li key={index}>{tip}</li>)}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
         )}
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {data.recommendations.map((rec) => (
-            <RecommendationCard
+          {data.recommendations.map((rec, index) => (
+            <motion.div
               key={rec.foodId}
-              recommendation={rec}
-              onViewRecipe={() => handleViewRecipe(rec.foodId)}
-              onAddToCart={() => handleAddToCart(rec)}
-            />
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+            >
+              <RecommendationCard
+                recommendation={rec}
+                onViewRecipe={() => handleViewRecipe(rec.foodId)}
+                onAddToCart={() => handleAddToCart(rec)}
+              />
+            </motion.div>
           ))}
         </div>
       </div>
@@ -209,3 +229,5 @@ const RecommendationsPageSkeleton = () => (
         </div>
     </div>
 )
+
+    

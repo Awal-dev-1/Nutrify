@@ -57,6 +57,7 @@ import type { FoodItem } from '@/types/food';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion } from 'framer-motion';
 
 
 export default function FoodDetailsPage() {
@@ -144,7 +145,12 @@ export default function FoodDetailsPage() {
   return (
     <div className="space-y-6">
       {/* 1. Top Navigation */}
-      <div className="flex justify-between items-center">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-between items-center"
+      >
         <Button variant="ghost" asChild>
           <Link href="/dashboard/search">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -156,49 +162,60 @@ export default function FoodDetailsPage() {
           <Heart className="h-5 w-5" />
           <span className="sr-only">Favorite</span>
         </Button>
-      </div>
+      </motion.div>
 
       {/* 2. Food Header */}
-      <Card>
-        <div className="p-6">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              {food.isGhanaianLocal && (
-                <Badge variant="secondary">
-                  <Leaf className="mr-1.5 h-3.5 w-3.5 text-green-600" />
-                  Ghanaian Local
-                </Badge>
-              )}
-              {food.tags && food.tags.length > 0 && <Badge variant="outline">{food.tags[0]}</Badge>}
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{food.foodName}</h1>
-             <div className="text-5xl font-extrabold text-primary">
-              {calculatedNutrients?.calories.toFixed(0)}{' '}
-              <span className="text-2xl font-medium text-muted-foreground">kcal</span>
-            </div>
-             <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="flex flex-col items-center gap-1">
-                    <Beef className="h-6 w-6 text-red-500" />
-                    <span className="font-bold">{calculatedNutrients?.protein.toFixed(1)}g</span>
-                    <span className="text-xs text-muted-foreground">Protein</span>
-                </div>
-                 <div className="flex flex-col items-center gap-1">
-                    <Wheat className="h-6 w-6 text-yellow-600" />
-                    <span className="font-bold">{calculatedNutrients?.carbs.toFixed(1)}g</span>
-                    <span className="text-xs text-muted-foreground">Carbs</span>
-                </div>
-                 <div className="flex flex-col items-center gap-1">
-                    <Droplets className="h-6 w-6 text-blue-500" />
-                    <span className="font-bold">{calculatedNutrients?.fat.toFixed(1)}g</span>
-                    <span className="text-xs text-muted-foreground">Fat</span>
-                </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <Card>
+          <div className="p-6">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {food.isGhanaianLocal && (
+                  <Badge variant="secondary">
+                    <Leaf className="mr-1.5 h-3.5 w-3.5 text-green-600" />
+                    Ghanaian Local
+                  </Badge>
+                )}
+                {food.tags && food.tags.length > 0 && <Badge variant="outline">{food.tags[0]}</Badge>}
+              </div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{food.foodName}</h1>
+              <div className="text-5xl font-extrabold text-primary">
+                {calculatedNutrients?.calories.toFixed(0)}{' '}
+                <span className="text-2xl font-medium text-muted-foreground">kcal</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                      <Beef className="h-6 w-6 text-red-500" />
+                      <span className="font-bold">{calculatedNutrients?.protein.toFixed(1)}g</span>
+                      <span className="text-xs text-muted-foreground">Protein</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                      <Wheat className="h-6 w-6 text-yellow-600" />
+                      <span className="font-bold">{calculatedNutrients?.carbs.toFixed(1)}g</span>
+                      <span className="text-xs text-muted-foreground">Carbs</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                      <Droplets className="h-6 w-6 text-blue-500" />
+                      <span className="font-bold">{calculatedNutrients?.fat.toFixed(1)}g</span>
+                      <span className="text-xs text-muted-foreground">Fat</span>
+                  </div>
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        <motion.div
+          className="lg:col-span-2 space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
            {/* 4. & 5. Nutrition & Chart */}
           <Card>
             <CardHeader>
@@ -282,9 +299,14 @@ export default function FoodDetailsPage() {
                </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
-        <div className="lg:col-span-1 space-y-6">
+        <motion.div
+          className="lg:col-span-1 space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
           {/* 3. Portion Size Controller */}
           <Card>
             <CardHeader><CardTitle>Adjust Portion</CardTitle></CardHeader>
@@ -328,7 +350,7 @@ export default function FoodDetailsPage() {
                 </CardContent>
             </Card>
             )}
-        </div>
+        </motion.div>
       </div>
       <FoodConfirmationModal
         isOpen={isModalOpen}
@@ -359,3 +381,5 @@ const FoodDetailsSkeleton = () => (
     </div>
   </div>
 );
+
+    

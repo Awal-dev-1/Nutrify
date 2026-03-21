@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FC } from 'react';
@@ -15,7 +16,7 @@ export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPredicti
                     Object.values(item.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
 
   return (
-    <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
+    <Card className="overflow-hidden border-2 border-primary/10 shadow-lg">
       <CardHeader className="p-0">
         {imageUrl && (
           <div className="relative w-full h-64 bg-muted">
@@ -124,3 +125,5 @@ export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPredicti
     </Card>
   );
 };
+
+    

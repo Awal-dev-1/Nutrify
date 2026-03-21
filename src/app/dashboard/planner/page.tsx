@@ -20,6 +20,7 @@ import { Loader2, Calendar } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 
 export default function MealPlannerPage() {
   const { toast } = useToast();
@@ -148,7 +149,12 @@ export default function MealPlannerPage() {
   const isLoading = isPlannerLoading || isProfileLoading;
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      className="space-y-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
@@ -197,7 +203,7 @@ export default function MealPlannerPage() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -236,3 +242,5 @@ const PlannerSkeleton = () => (
        </div>
     </div>
 )
+
+    

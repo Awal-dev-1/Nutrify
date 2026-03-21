@@ -78,6 +78,7 @@ import type { DailyLog, LoggedFoodItem } from "@/types/analytics";
 import type { FoodItem as AiFoodItem } from "@/types/food";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from 'framer-motion';
 
 type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 
@@ -244,37 +245,62 @@ export default function DailyTrackerPage() {
 
   return (
     <div className="space-y-4 sm:space-y-8">
-      <Header onClearDay={clearDay} date={date} setDate={setDate} />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Header onClearDay={clearDay} date={date} setDate={setDate} />
+      </motion.div>
 
       {!dailyLog || Object.values(meals).flat().length === 0 ? (
-        <EmptyState
-          icon={<ClipboardX className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />}
-          title="No meals logged yet"
-          description="Start tracking your nutrition by adding your first meal of the day."
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Button onClick={() => openAddModal("Breakfast")} size="lg" className="mt-4 shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Add Your First Meal
-          </Button>
-        </EmptyState>
+          <EmptyState
+            icon={<ClipboardX className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />}
+            title="No meals logged yet"
+            description="Start tracking your nutrition by adding your first meal of the day."
+          >
+            <Button onClick={() => openAddModal("Breakfast")} size="lg" className="mt-4 shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Add Your First Meal
+            </Button>
+          </EmptyState>
+        </motion.div>
       ) : (
         // Stack on mobile, side-by-side on lg+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-8">
-            <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
-            <MacroPieChart totals={dailyTotals} />
-            <MicroNutrientGrid totals={dailyTotals} />
-            <MealSections
-              meals={meals}
-              onAddFoodClick={openAddModal}
-              onEditFoodClick={openEditModal}
-              onDeleteFoodClick={handleDeleteFood}
-            />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+              <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+              <MacroPieChart totals={dailyTotals} />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
+              <MicroNutrientGrid totals={dailyTotals} />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+              <MealSections
+                meals={meals}
+                onAddFoodClick={openAddModal}
+                onEditFoodClick={openEditModal}
+                onDeleteFoodClick={handleDeleteFood}
+              />
+            </motion.div>
           </div>
           {/* Water tracker: natural flow on mobile, sticky on lg+ */}
-          <div className="lg:col-span-1">
+          <motion.div
+            className="lg:col-span-1"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
-          </div>
+          </motion.div>
         </div>
       )}
 
@@ -584,7 +610,7 @@ const LoggedFoodItemComponent: FC<{
         {/* Name + macros */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
-            <h4 className="font-semibold text-sm sm:text-base truncate">{loggedFood.name}</h4>
+            <h4 className="font-semibold text-sm sm:text-base">{loggedFood.name}</h4>
             <Badge variant="secondary" className="rounded-full text-xs px-2 shrink-0">
               {loggedFood.quantity}g
             </Badge>

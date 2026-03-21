@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef, type FC } from 'react';
@@ -15,6 +16,7 @@ import type { AIPrediction } from '@/types/ai';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
@@ -299,7 +301,12 @@ export default function RecognizePage() {
         const mainPrediction = predictions[0];
 
         return (
-          <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in-50">
+          <motion.div
+            className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <AiFoodResultCard 
                 item={mainPrediction} 
                 onAdd={() => setSelectedFood(mainPrediction)} 
@@ -310,7 +317,7 @@ export default function RecognizePage() {
                     <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
                 </Button>
             </div>
-          </div>
+          </motion.div>
         );
       }
 
@@ -357,3 +364,5 @@ export default function RecognizePage() {
     </div>
   );
 }
+
+    

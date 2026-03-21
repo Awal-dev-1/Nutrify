@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -97,81 +98,98 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
       <div className="w-full space-y-4 sm:space-y-6">
 
         {/* ── Daily Summary Card ── */}
-        <Card className="border-2 shadow-lg">
-          <CardHeader className="pb-3">
-            {/* Title row */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle className="text-base sm:text-lg font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                Today's Plan ({format(currentDate, 'MMM d')})
-              </CardTitle>
-              <Badge>Today</Badge>
-            </div>
-            <CardDescription className="text-xs sm:text-sm pt-1">
-              Your planned meals and macros for today.
-            </CardDescription>
-          </CardHeader>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="pb-3">
+              {/* Title row */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-base sm:text-lg font-medium flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Today's Plan ({format(currentDate, 'MMM d')})
+                </CardTitle>
+                <Badge>Today</Badge>
+              </div>
+              <CardDescription className="text-xs sm:text-sm pt-1">
+                Your planned meals and macros for today.
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent className="grid gap-5 sm:gap-6">
-            {/* Calories */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-muted-foreground">Calories</span>
-                <span className="font-bold text-primary text-xs sm:text-sm">
-                  {Math.round(dailyTotals.calories)} / {derivedGoals.calories} kcal
-                </span>
+            <CardContent className="grid gap-5 sm:gap-6">
+              {/* Calories */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-muted-foreground">Calories</span>
+                  <span className="font-bold text-primary text-xs sm:text-sm">
+                    {Math.round(dailyTotals.calories)} / {derivedGoals.calories} kcal
+                  </span>
+                </div>
+                <Progress value={calorieProgress} className="h-2" />
               </div>
-              <Progress value={calorieProgress} className="h-2" />
-            </div>
 
-            {/* Macros: single column on mobile, 3-col on sm+ */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Beef className="h-3.5 w-3.5 text-red-500 shrink-0" />
-                  <span className="font-medium text-muted-foreground">Protein</span>
-                  <span className="font-semibold ml-auto text-xs sm:text-sm">
-                    {Math.round(dailyTotals.protein)}g / {Math.round(derivedGoals.protein)}g
-                  </span>
+              {/* Macros: single column on mobile, 3-col on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Beef className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                    <span className="font-medium text-muted-foreground">Protein</span>
+                    <span className="font-semibold ml-auto text-xs sm:text-sm">
+                      {Math.round(dailyTotals.protein)}g / {Math.round(derivedGoals.protein)}g
+                    </span>
+                  </div>
+                  <Progress value={proteinProgress} className="h-1.5" />
                 </div>
-                <Progress value={proteinProgress} className="h-1.5" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Wheat className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
-                  <span className="font-medium text-muted-foreground">Carbs</span>
-                  <span className="font-semibold ml-auto text-xs sm:text-sm">
-                    {Math.round(dailyTotals.carbs)}g / {Math.round(derivedGoals.carbs)}g
-                  </span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Wheat className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
+                    <span className="font-medium text-muted-foreground">Carbs</span>
+                    <span className="font-semibold ml-auto text-xs sm:text-sm">
+                      {Math.round(dailyTotals.carbs)}g / {Math.round(derivedGoals.carbs)}g
+                    </span>
+                  </div>
+                  <Progress value={carbsProgress} className="h-1.5" />
                 </div>
-                <Progress value={carbsProgress} className="h-1.5" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Droplets className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                  <span className="font-medium text-muted-foreground">Fat</span>
-                  <span className="font-semibold ml-auto text-xs sm:text-sm">
-                    {Math.round(dailyTotals.fat)}g / {Math.round(derivedGoals.fat)}g
-                  </span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Droplets className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                    <span className="font-medium text-muted-foreground">Fat</span>
+                    <span className="font-semibold ml-auto text-xs sm:text-sm">
+                      {Math.round(dailyTotals.fat)}g / {Math.round(derivedGoals.fat)}g
+                    </span>
+                  </div>
+                  <Progress value={fatProgress} className="h-1.5" />
                 </div>
-                <Progress value={fatProgress} className="h-1.5" />
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* ── Meals Section ── */}
         {mealsForDay.length === 0 ? (
-          <EmptyState
-            title="No meals planned for today"
-            description="Start planning your day by adding meals."
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Button onClick={() => handleAddClick('Breakfast')} size="lg">
-              <Plus className="mr-2 h-4 w-4" /> Add First Meal
-            </Button>
-          </EmptyState>
+            <EmptyState
+              title="No meals planned for today"
+              description="Start planning your day by adding meals."
+            >
+              <Button onClick={() => handleAddClick('Breakfast')} size="lg">
+                <Plus className="mr-2 h-4 w-4" /> Add First Meal
+              </Button>
+            </EmptyState>
+          </motion.div>
         ) : (
-          <div className="space-y-3 sm:space-y-4">
+          <motion.div
+            className="space-y-3 sm:space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             <Accordion type="multiple" defaultValue={mealTypes} className="space-y-3 sm:space-y-4">
               {mealTypes.map((mealType) => {
                 const mealsForType = mealsForDay.filter(m => m.mealType === mealType);
@@ -237,7 +255,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
-                                        <AlertDialogCancel className="mt-0 w-full sm:w-auto">Cancel</AlertDialogCancel>
+                                        <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                         <AlertDialogAction
                                           className="w-full sm:w-auto"
                                           onClick={() => onRemoveMeal(meal.id)}
@@ -294,3 +312,5 @@ export function DayPlanner({ plannedMeals, summary, onAddMeal, onUpdateMeal, onR
     </div>
   );
 }
+
+    
