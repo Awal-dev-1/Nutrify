@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { useTheme } from 'next-themes';
 import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
+import { motion } from 'framer-motion';
 
 export default function DashboardLayout({
   children,
@@ -64,9 +65,14 @@ export default function DashboardLayout({
       </Sidebar>
       <SidebarInset>
         <DashboardHeader />
-        <main className="min-h-[calc(100vh-4rem)] bg-background p-4 lg:p-6">
+        <motion.main
+          className="min-h-[calc(100vh-4rem)] bg-background p-4 lg:p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ease: "easeInOut", duration: 0.5 }}
+        >
             {children}
-        </main>
+        </motion.main>
       </SidebarInset>
     </SidebarProvider>
   );

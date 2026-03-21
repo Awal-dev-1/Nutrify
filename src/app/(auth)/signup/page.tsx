@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Loader2, Leaf } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
+import { motion } from "framer-motion";
 
 export default function SignUpPage() {
   const { user, isUserLoading } = useUser();
@@ -45,7 +46,12 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10">
+    <motion.div
+      className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       {/* Left Side - Branding (visible on md and up) */}
       <div className="hidden md:flex md:w-5/12 lg:w-1/2 relative bg-gradient-to-br from-primary/5 via-primary/5 to-background items-center justify-center p-6 lg:p-8 overflow-hidden">
         {/* Decorative elements */}
@@ -87,6 +93,6 @@ export default function SignUpPage() {
         
         <SignUpForm />
       </div>
-    </div>
+    </motion.div>
   );
 }
