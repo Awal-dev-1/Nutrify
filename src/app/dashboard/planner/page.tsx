@@ -242,5 +242,3 @@ const PlannerSkeleton = () => (
        </div>
     </div>
 )
-
-    
