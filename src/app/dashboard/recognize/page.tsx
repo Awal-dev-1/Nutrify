@@ -7,7 +7,16 @@ import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Camera, VideoOff } from 'lucide-react';
+import {
+  Loader2,
+  Sparkles,
+  ScanLine,
+  AlertCircle,
+  RefreshCw,
+  X,
+  Camera,
+  VideoOff,
+} from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
@@ -52,7 +61,7 @@ export default function RecognizePage() {
     if (!isCameraOpen) {
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
         videoRef.current.srcObject = null;
       }
       return;
@@ -62,7 +71,9 @@ export default function RecognizePage() {
 
     const getCameraStream = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+        });
         setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -83,7 +94,7 @@ export default function RecognizePage() {
 
     return () => {
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       }
     };
   }, [isCameraOpen, toast]);
@@ -101,15 +112,19 @@ export default function RecognizePage() {
       canvas.height = video.videoHeight;
       const context = canvas.getContext('2d');
       context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const capturedFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
-          setStatus('idle');
-          setError(null);
-          setPredictions(null);
-          setFile(capturedFile);
-        }
-      }, 'image/jpeg', 0.95);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const capturedFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+            setStatus('idle');
+            setError(null);
+            setPredictions(null);
+            setFile(capturedFile);
+          }
+        },
+        'image/jpeg',
+        0.95
+      );
     }
   };
 
@@ -121,13 +136,19 @@ export default function RecognizePage() {
     setPredictions(null);
 
     try {
-      const scanResults = await runAiScan(db, user, file, userProfile?.health?.primaryGoal);
+      const scanResults = await runAiScan(
+        db,
+        user,
+        file,
+        userProfile?.health?.primaryGoal
+      );
 
       if (!scanResults.isFood) {
         toast({
           variant: 'destructive',
           title: 'Not a food item',
-          description: 'This does not appear to be a food item. Our AI is only meant for food items.',
+          description:
+            'This does not appear to be a food item. Our AI is only meant for food items.',
         });
         resetState();
         return;
@@ -154,32 +175,51 @@ export default function RecognizePage() {
 
   const renderContent = () => {
     switch (status) {
+      // ── IDLE ──────────────────────────────────────────────────────────────
       case 'idle': {
         if (isCameraOpen) {
           return (
+            /*
+             * Mobile: full-screen overlay (fixed inset-0)
+             * Tablet/Desktop: inline card, capped width, rounded
+             */
             <div className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
-              <div className="relative w-full h-full md:h-[70vh] md:rounded-xl overflow-hidden">
-                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+              <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  playsInline
+                />
+
+                {/* Overlay controls */}
                 <div className="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                  <div className="flex justify-end">
+                  {/* Close */}
+                  <div className="flex justify-end pt-safe">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsCameraOpen(false)}
-                      className="bg-black/40 text-white hover:bg-black/60 rounded-full w-10 h-10"
+                      className="bg-black/40 text-white hover:bg-black/60 rounded-full w-11 h-11 min-h-[44px] min-w-[44px]"
+                      aria-label="Close camera"
                     >
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
-                  <div className="flex items-center justify-center pb-8 safe-area-pb">
+
+                  {/* Shutter — 44px min for touch compliance, larger on desktop */}
+                  <div className="flex items-center justify-center pb-8 pb-safe">
                     <button
                       onClick={handleCapture}
                       disabled={hasCameraPermission !== true}
-                      className="w-16 h-16 rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition disabled:opacity-50"
+                      className="w-16 h-16 min-h-[44px] min-w-[44px] rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition disabled:opacity-50"
                       aria-label="Capture image"
                     />
                   </div>
                 </div>
+
+                {/* Permission denied overlay */}
                 {hasCameraPermission === false && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-6 text-center gap-3">
                     <VideoOff className="h-10 w-10" />
@@ -196,10 +236,16 @@ export default function RecognizePage() {
 
         if (preview) {
           return (
-            <div className="w-full max-w-2xl mx-auto space-y-4">
-              <Card className="overflow-hidden">
+            <div className="w-full max-w-4xl mx-auto space-y-4">
+              <Card className="overflow-hidden shadow-lg">
                 <CardContent className="p-0">
-                  <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[60vh] bg-black/90">
+                  {/*
+                   * Image area heights:
+                   * xs/mobile:  40vh  — compact, leaves room for buttons
+                   * sm:         50vh
+                   * md+:        60vh
+                   */}
+                  <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
                     <Image
                       src={preview}
                       alt="Selected food"
@@ -209,11 +255,22 @@ export default function RecognizePage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Action buttons — stack on mobile, side-by-side sm+ */}
               <div className="flex flex-col sm:flex-row justify-center gap-2">
-                <Button size="lg" onClick={handleAnalyze} className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  onClick={handleAnalyze}
+                  className="w-full sm:w-auto min-h-[44px]"
+                >
                   <Sparkles className="mr-2 h-4 w-4" /> Analyze Image
                 </Button>
-                <Button size="lg" variant="ghost" onClick={() => setFile(null)} className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  onClick={() => setFile(null)}
+                  className="w-full sm:w-auto min-h-[44px]"
+                >
                   <X className="mr-2 h-4 w-4" /> Change Image
                 </Button>
               </div>
@@ -221,30 +278,36 @@ export default function RecognizePage() {
           );
         }
 
+        // Default upload view
         return (
-          <div className="w-full max-w-2xl mx-auto space-y-4">
+          <div className="w-full max-w-4xl mx-auto space-y-4">
             <ImageUploader onFileSelect={handleFileSelect} />
+
+            {/* Camera option — mobile only */}
             {isMobile && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="relative flex items-center">
-                  <div className="flex-grow border-t border-gray-300" />
+                  <div className="flex-grow border-t border-border" />
                   <span className="mx-4 shrink-0 text-muted-foreground text-sm">OR</span>
-                  <div className="flex-grow border-t border-gray-300" />
+                  <div className="flex-grow border-t border-border" />
                 </div>
+
                 <Button
                   variant="secondary"
-                  className="w-full"
+                  className="w-full min-h-[44px]"
                   onClick={() => setIsCameraOpen(true)}
                   disabled={hasCameraPermission === false}
                 >
                   <Camera className="mr-2 h-4 w-4" /> Use Camera
                 </Button>
+
                 {hasCameraPermission === false && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Camera Disabled</AlertTitle>
-                    <AlertDescription>
-                      You have previously denied camera access. Please enable it in your browser settings.
+                    <AlertDescription className="text-sm">
+                      You have previously denied camera access. Please enable it in your browser
+                      settings.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -254,12 +317,13 @@ export default function RecognizePage() {
         );
       }
 
+      // ── ANALYZING ─────────────────────────────────────────────────────────
       case 'analyzing': {
         return (
-          <div className="w-full max-w-2xl mx-auto">
-            <Card className="overflow-hidden">
+          <div className="w-full max-w-4xl mx-auto">
+            <Card className="overflow-hidden shadow-lg">
               <CardContent className="p-0">
-                <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[60vh] bg-black/90">
+                <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
                   {preview && (
                     <Image
                       src={preview}
@@ -268,12 +332,14 @@ export default function RecognizePage() {
                       className="object-contain opacity-50"
                     />
                   )}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 gap-3 bg-black/50">
-                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                    <h3 className="text-lg sm:text-xl font-semibold text-white">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 sm:p-8 gap-3 bg-black/50">
+                    <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-primary animate-spin" />
+                    <h3 className="text-base sm:text-lg md:text-xl font-semibold text-white">
                       AI is analyzing your food...
                     </h3>
-                    <p className="text-sm sm:text-base text-white/80">This may take a few moments.</p>
+                    <p className="text-sm sm:text-base text-white/80">
+                      This may take a few moments.
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -282,53 +348,68 @@ export default function RecognizePage() {
         );
       }
 
+      // ── COMPLETED ─────────────────────────────────────────────────────────
       case 'completed': {
         if (!predictions || predictions.length === 0) {
           return (
-            <Alert className="max-w-2xl mx-auto">
+            <Alert className="max-w-4xl mx-auto">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>No Food Detected</AlertTitle>
-              <AlertDescription>
-                The AI couldn't identify any food in the image. Try a clearer picture or a different angle.
-                <Button variant="outline" onClick={resetState} className="mt-4 w-full">
+              <AlertDescription className="text-sm">
+                The AI couldn't identify any food in the image. Try a clearer picture or a
+                different angle.
+                <Button
+                  variant="outline"
+                  onClick={resetState}
+                  className="mt-4 w-full min-h-[44px]"
+                >
                   <RefreshCw className="mr-2 h-4 w-4" /> Try Again
                 </Button>
               </AlertDescription>
             </Alert>
           );
         }
-        
+
         const mainPrediction = predictions[0];
 
         return (
           <motion.div
-            className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6"
+            className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <AiFoodResultCard 
-                item={mainPrediction} 
-                onAdd={() => setSelectedFood(mainPrediction)} 
-                imageUrl={preview} 
+            <AiFoodResultCard
+              item={mainPrediction}
+              onAdd={() => setSelectedFood(mainPrediction)}
+              imageUrl={preview}
             />
-            <div className="flex justify-center pt-2 pb-4">
-                <Button variant="outline" onClick={resetState} className="w-full sm:w-auto">
-                    <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
-                </Button>
+            <div className="flex justify-center pb-4">
+              <Button
+                variant="outline"
+                onClick={resetState}
+                className="w-full sm:w-auto min-h-[44px]"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
+              </Button>
             </div>
           </motion.div>
         );
       }
 
+      // ── FAILED ────────────────────────────────────────────────────────────
       case 'failed': {
         return (
-          <Alert variant="destructive" className="max-w-2xl mx-auto">
+          <Alert variant="destructive" className="max-w-4xl mx-auto">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Analysis Failed</AlertTitle>
-            <AlertDescription>
+            <AlertDescription className="text-sm">
               {error || 'An unexpected error occurred.'}
-              <Button variant="destructive" onClick={resetState} className="mt-4 w-full">
+              <Button
+                variant="destructive"
+                onClick={resetState}
+                className="mt-4 w-full min-h-[44px]"
+              >
                 <RefreshCw className="mr-2 h-4 w-4" /> Try Again
               </Button>
             </AlertDescription>
@@ -342,20 +423,35 @@ export default function RecognizePage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-8 px-0">
+    /*
+     * Outer wrapper: safe-area padding for notched/foldable phones,
+     * no extra horizontal padding (cards are self-contained)
+     */
+    <div className="space-y-4 sm:space-y-6 md:space-y-8 px-0 pb-safe">
+      {/* Page header — hidden when camera is full-screen on mobile */}
       <div className={cn(isCameraOpen && 'hidden md:block')}>
         <h1 className="text-h1 font-bold tracking-tight flex items-center gap-2 text-primary">
-          <ScanLine className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
+          <ScanLine className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary shrink-0" />
           AI Food Recognition
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+        <p className="text-body text-muted-foreground mt-1">
           Upload a food image or use your camera and let our AI do the work.
         </p>
       </div>
-      <div className="min-h-[300px] sm:min-h-[400px] flex items-start sm:items-center justify-center">
+
+      {/*
+       * Content area:
+       * - min-height keeps layout stable as status changes
+       * - items-start on mobile (content flows from top),
+       *   items-center from sm+ (vertically centered in the space)
+       */}
+      <div className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px] flex items-start sm:items-center justify-center">
         {renderContent()}
       </div>
-      <canvas ref={canvasRef} className="hidden" />
+
+      {/* Hidden canvas for camera capture */}
+      <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+
       <FoodConfirmationModal
         isOpen={!!selectedFood}
         onClose={() => setSelectedFood(null)}
