@@ -41,7 +41,7 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are a Professional Nutritional Vision AI for the Nutrify app, specializing in Ghanaian and West African foods. You are designed for EXTREME speed. Your task is to analyze the food in the provided image with high-level precision. You must "deconstruct" the meal, identifying every individual component.
+  prompt: `You are a Professional Nutritional Vision AI for the Nutrify app. You are designed for EXTREME speed. Your task is to analyze the food in the provided image with high-level precision. You must "deconstruct" the meal, identifying every individual component.
 
 User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
@@ -58,15 +58,12 @@ User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{
 
 4.  **Detailed Analysis (For EACH item)**:
     a.  Provide a confidence score (0.0 to 1.0). For items with lower confidence, this is especially important.
-    b.  If the food has a well-known local Ghanaian name, you MUST include it in parentheses in the 'foodName' field. For example, for "Red Red", return "Red Red (Gobe)".
-    c.  Provide a detailed and personalized \`healthAnalysis\` based on the user's goal.
-    d.  Provide a detailed recipe in \`detailedRecipe\`.
+    b.  Provide a detailed and personalized \`healthAnalysis\` based on the user's goal.
+    c.  Provide a detailed recipe in \`detailedRecipe\`.
 
-5.  **Differentiate Ghanaian Staples**: Do NOT confuse staple foods. Fufu is soft and dough-like. Banku is smoother. Kenkey is dense and steamed in leaves. Your identification must be precise.
+5.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty 'predictions' array.
 
-6.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty 'predictions' array.
-
-7.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do NOT add a "Meal Summary" or any other fields not defined in the schema. The user interface will calculate the totals.
+6.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema. Do NOT add a "Meal Summary" or any other fields not defined in the schema. The user interface will calculate the totals.
 
 Image to analyze: {{media url=photoDataUri}}
 
