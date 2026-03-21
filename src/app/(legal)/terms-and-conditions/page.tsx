@@ -1,19 +1,19 @@
 const TermsAndConditionsPage = () => {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight border-b pb-4">Terms and Conditions</h1>
+        <h1 className="text-h2 font-bold tracking-tight border-b pb-4">Terms and Conditions</h1>
         <div className="text-muted-foreground">
             <p><strong>Platform Name:</strong> Nutrify</p>
         </div>
 
         <section className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight">1. Acceptance of Terms</h2>
+          <h2 className="text-h3 font-semibold tracking-tight">1. Acceptance of Terms</h2>
           <p>By accessing or using Nutrify, you agree to these Terms and Conditions.</p>
           <p>If you do not agree, you should not use the platform.</p>
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">2. Description of Service</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">2. Description of Service</h2>
             <p>Nutrify provides:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Food tracking</li>
@@ -26,7 +26,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">3. Not Medical Advice</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">3. Not Medical Advice</h2>
             <p>Nutrify does not provide medical advice.</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Nutritional information is estimated</li>
@@ -36,7 +36,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">4. User Responsibilities</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">4. User Responsibilities</h2>
             <p>You agree to:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Provide accurate information</li>
@@ -47,7 +47,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">5. AI Limitations</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">5. AI Limitations</h2>
             <p>AI food recognition and recommendations:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>May contain errors</li>
@@ -57,7 +57,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">6. Account Termination</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">6. Account Termination</h2>
             <p>We reserve the right to suspend or terminate accounts that:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Violate these terms</li>
@@ -68,7 +68,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">7. Intellectual Property</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">7. Intellectual Property</h2>
             <p>All system content, design, branding, and software are owned by Nutrify.</p>
             <p>You may not:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
@@ -81,7 +81,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">8. Limitation of Liability</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">8. Limitation of Liability</h2>
             <p>Nutrify is not responsible for:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Inaccurate AI results</li>
@@ -93,7 +93,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">9. Modifications to the Service</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">9. Modifications to the Service</h2>
             <p>We may:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Update features</li>
@@ -105,7 +105,7 @@ const TermsAndConditionsPage = () => {
         </section>
 
         <section className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">10. Governing Law</h2>
+            <h2 className="text-h3 font-semibold tracking-tight">10. Governing Law</h2>
             <p>These Terms shall be governed by the laws of:</p>
             <ul className="list-disc list-inside space-y-1 pl-4">
                 <li>Country</li>

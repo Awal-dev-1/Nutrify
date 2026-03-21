@@ -16,6 +16,14 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        h1: ['clamp(1.8rem, 5vw, 3rem)', { lineHeight: '1.2' }],
+        h2: ['clamp(1.5rem, 4vw, 2.4rem)', { lineHeight: '1.3' }],
+        h3: ['clamp(1.3rem, 3vw, 2rem)', { lineHeight: '1.4' }],
+        h4: ['clamp(1.1rem, 2.5vw, 1.6rem)', { lineHeight: '1.5' }],
+        body: ['clamp(0.95rem, 2vw, 1.1rem)', { lineHeight: '1.6' }],
+        small: ['clamp(0.8rem, 1.5vw, 0.95rem)', { lineHeight: '1.7' }],
+      },
       fontFamily: {
         body: ['var(--font-inter)', 'sans-serif'],
         headline: ['var(--font-inter)', 'sans-serif'],

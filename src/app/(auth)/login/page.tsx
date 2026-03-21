@@ -30,14 +30,14 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
-          <Logo className="justify-center text-2xl" />
+          <Logo className="justify-center text-h3" />
           <div className="relative flex justify-center items-center h-16">
             <div className="absolute h-16 w-16 bg-primary/10 rounded-full blur-2xl animate-pulse"></div>
             <Loader2 className="h-10 w-10 animate-spin text-primary relative" />
           </div>
           <div className="space-y-1">
             <p className="font-medium text-foreground">Finalizing your login...</p>
-            <p className="text-sm text-muted-foreground animate-pulse">
+            <p className="text-small text-muted-foreground animate-pulse">
               Please wait while we prepare your dashboard.
             </p>
           </div>
@@ -70,16 +70,16 @@ export default function LoginPage() {
           {/* Brand */}
           <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
             <Leaf className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium text-primary">Nutrify</span>
+            <span className="text-small font-medium text-primary">Nutrify</span>
           </div>
           
           {/* Hero Content */}
-          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
+          <h1 className="text-h2 font-bold tracking-tight">
             Welcome Back to{" "}
             <span className="text-primary">Healthy Living</span>
           </h1>
           
-          <p className="text-base text-muted-foreground/90 leading-relaxed">
+          <p className="text-body text-muted-foreground/90 leading-relaxed">
             Track your nutrition, discover local foods, and get personalized
             AI-powered recommendations to reach your health goals.
           </p>

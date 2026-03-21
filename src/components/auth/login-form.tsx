@@ -71,7 +71,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
+        <CardTitle className="text-h3">Login</CardTitle>
         <CardDescription>
           Welcome back! Please enter your details.
         </CardDescription>
@@ -99,7 +99,7 @@ export function LoginForm() {
                 <FormItem>
                    <div className="flex items-center justify-between">
                     <FormLabel>Password</FormLabel>
-                    <Link href="#" className="text-sm font-medium text-primary hover:underline">
+                    <Link href="#" className="text-small font-medium text-primary hover:underline">
                       Forgot password?
                     </Link>
                   </div>
@@ -116,7 +116,7 @@ export function LoginForm() {
             </Button>
           </form>
         </Form>
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-4 text-center text-small">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="underline">
             Sign up

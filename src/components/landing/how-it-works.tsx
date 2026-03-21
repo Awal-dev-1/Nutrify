@@ -34,14 +34,14 @@ export function HowItWorks() {
     <section id="how-it-works" className="py-16 md:py-24 lg:py-32 bg-gradient-to-b from-secondary/5 to-background">
       <div className="container px-4">
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-xs sm:text-sm text-blue-500">
+          <div className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-small text-blue-500">
             <CheckCircle className="h-3.5 w-3.5 mr-2" />
             Simple Process
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+          <h2 className="text-h1 font-bold tracking-tight">
             A Simpler Path to Health
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground/90 max-w-2xl mx-auto">
+          <p className="text-body text-muted-foreground/90 max-w-2xl mx-auto">
             Getting started with your nutrition journey is as easy as one, two,
             three.
           </p>
@@ -66,7 +66,7 @@ export function HowItWorks() {
                 >
                   {/* Step number */}
                   <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-300" />
-                  <div className="absolute top-4 right-4 text-5xl md:text-6xl font-bold text-primary/5 select-none">
+                  <div className="absolute top-4 right-4 text-h1 font-bold text-primary/5 select-none">
                     {index + 1}
                   </div>
                   
@@ -79,17 +79,17 @@ export function HowItWorks() {
                   </CardHeader>
                   
                   <CardContent className="text-center space-y-3 md:space-y-4 px-3 md:px-6 pb-6">
-                    <CardTitle className="text-lg md:text-xl lg:text-2xl font-bold">
+                    <CardTitle className="text-h3 font-bold">
                       {step.title}
                     </CardTitle>
-                    <p className="text-xs sm:text-sm md:text-base text-muted-foreground/80 leading-relaxed">
+                    <p className="text-small text-muted-foreground/80 leading-relaxed">
                       {step.description}
                     </p>
                     
                     {/* Benefits list */}
                     <div className="pt-2 space-y-1.5">
                       {step.benefits.map((benefit, i) => (
-                        <div key={i} className="flex items-center justify-center gap-1.5 text-xs md:text-sm text-muted-foreground">
+                        <div key={i} className="flex items-center justify-center gap-1.5 text-small text-muted-foreground">
                           <CheckCircle className="h-3 w-3 text-green-500" />
                           {benefit}
                         </div>
@@ -111,7 +111,7 @@ export function HowItWorks() {
 
         {/* Bottom accent */}
         <div className="mt-12 md:mt-16 text-center">
-          <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full">
+          <div className="inline-flex items-center gap-2 text-small text-muted-foreground bg-muted/30 px-4 py-2 rounded-full">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             Start your journey in minutes — no credit card required
           </div>

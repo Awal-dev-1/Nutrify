@@ -61,10 +61,10 @@ export function DashboardHeader() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="flex flex-col">
-        <h1 className="text-base md:text-lg font-semibold">
+        <h1 className="text-body font-semibold">
           {greeting}, {userProfile?.name || 'User'}!
         </h1>
-        <p className="text-xs md:text-sm text-muted-foreground">
+        <p className="text-small text-muted-foreground">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
         </p>
       </div>
@@ -81,7 +81,7 @@ export function DashboardHeader() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{userProfile?.name}</p>
+                <p className="text-small font-medium leading-none">{userProfile?.name}</p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user?.email}
                 </p>

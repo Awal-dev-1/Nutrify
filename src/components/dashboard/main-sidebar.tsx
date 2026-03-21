@@ -76,7 +76,7 @@ export function MainSidebar() {
     <div className="space-y-0.5">
       {groupLabel && !isCollapsed && (
         <p className={cn(
-          'text-xs font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider',
+          'text-small font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider',
           'transition-all duration-300',
           isCollapsed ? 'opacity-0 -translate-x-2' : 'opacity-100 translate-x-0',
         )}>
@@ -188,7 +188,7 @@ export function MainSidebar() {
                       <div className="p-1 rounded-md bg-primary/10">
                         <Brain className="h-3.5 w-3.5 text-primary" />
                       </div>
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wider flex-1 transition-all duration-300">
+                      <p className="text-small font-semibold text-primary uppercase tracking-wider flex-1 transition-all duration-300">
                         AI Features
                       </p>
                     </div>
@@ -216,7 +216,7 @@ export function MainSidebar() {
                       <div className="p-1 rounded-md bg-blue-500/10">
                         <PieChart className="h-3.5 w-3.5 text-blue-500" />
                       </div>
-                      <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider flex-1 transition-all duration-300">
+                      <p className="text-small font-semibold text-blue-500 uppercase tracking-wider flex-1 transition-all duration-300">
                         Insights
                       </p>
                     </div>
@@ -299,7 +299,7 @@ export function MainSidebar() {
               'overflow-hidden transition-all duration-300',
               isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 flex-1',
             )}>
-              <p className="text-sm font-semibold truncate leading-tight">
+              <p className="text-small font-semibold truncate leading-tight">
                 {userProfile?.name || 'User'}
               </p>
               <p className="text-xs text-muted-foreground truncate">

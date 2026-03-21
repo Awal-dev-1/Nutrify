@@ -76,7 +76,7 @@ export function SignUpForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle className="text-2xl">Create an Account</CardTitle>
+        <CardTitle className="text-h3">Create an Account</CardTitle>
         <CardDescription>
           Join Nutrify to start your health journey today.
         </CardDescription>
@@ -169,7 +169,7 @@ export function SignUpForm() {
             </Button>
           </form>
         </Form>
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-4 text-center text-small">
           Already have an account?{" "}
           <Link href="/login" className="underline">
             Login

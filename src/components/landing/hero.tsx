@@ -36,7 +36,7 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs sm:text-sm border border-white/20"
+            className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-small"
           >
             <Camera className="h-3.5 w-3.5 mr-2" />
             AI-Powered Nutrition Tracking
@@ -48,7 +48,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight"
+            className="text-h1 font-bold tracking-tight leading-tight"
           >
             Eat Smart.
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-300 via-green-400 to-green-500 mt-2">
@@ -61,7 +61,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4"
+            className="text-body text-white/90 max-w-3xl mx-auto leading-relaxed px-4"
           >
             Discover the rich world of Ghanaian cuisine and take control of your
             health. Nutrify helps you understand, track, and improve your diet
@@ -78,7 +78,7 @@ export function Hero() {
             <Button 
               size="lg" 
               asChild 
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 transition-all duration-300 px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-full group"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 transition-all duration-300 px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full group"
             >
               <Link href="/signup">
                 Get Started for Free
@@ -89,7 +89,7 @@ export function Hero() {
               size="lg" 
               variant="outline" 
               asChild 
-              className="border-white/20 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/30 px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-full transition-all duration-300"
+              className="border-white/20 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/30 px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full transition-all duration-300"
             >
               <Link href="/login">Login</Link>
             </Button>

@@ -118,7 +118,7 @@ export default function OnboardingPage() {
           {/* Progress Header */}
           {showProgress && (
             <CardHeader className="space-y-4 pb-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-body">
                 <span className="font-medium text-primary">{stepTitles[step]}</span>
                 <span className="text-muted-foreground">Step {step} of {totalSteps}</span>
               </div>
@@ -185,7 +185,7 @@ export default function OnboardingPage() {
               </Button>
               
               {/* Step-specific hint */}
-              <p className="text-xs text-muted-foreground hidden md:block">
+              <p className="text-small text-muted-foreground hidden md:block">
                 Press Enter to continue
               </p>
               
@@ -201,7 +201,7 @@ export default function OnboardingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-center mt-8 text-sm text-muted-foreground"
+            className="text-center mt-8 text-body text-muted-foreground"
           >
             <p>Your information is secure and never shared</p>
           </motion.div>

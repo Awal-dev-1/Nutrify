@@ -63,14 +63,14 @@ export function Features() {
       <div className="container px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs sm:text-sm text-primary">
+          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-small text-primary">
             <Sparkles className="h-3.5 w-3.5 mr-2" />
             Powerful Features
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+          <h2 className="text-h1 font-bold tracking-tight">
             Everything You Need to Succeed
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground/90 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-body text-muted-foreground/90 max-w-2xl mx-auto leading-relaxed">
             Nutrify is packed with powerful features to make healthy eating
             simple and effective.
           </p>
@@ -101,10 +101,10 @@ export function Features() {
                 </CardHeader>
                 
                 <CardContent className="relative space-y-2 md:space-y-3 px-3 md:px-6 pb-4 md:pb-6">
-                  <CardTitle className="text-base md:text-lg lg:text-xl font-bold group-hover:text-primary transition-colors duration-300">
+                  <CardTitle className="text-h4 font-bold group-hover:text-primary transition-colors duration-300">
                     {feature.title}
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm md:text-base leading-relaxed text-muted-foreground/80">
+                  <CardDescription className="text-small leading-relaxed text-muted-foreground/80">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
