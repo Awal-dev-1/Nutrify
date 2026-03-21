@@ -1,8 +1,6 @@
 import type { FoodItem } from './food';
 
-export type AIPrediction = FoodItem & {
-  confidence: number;
-};
+export type AIPrediction = FoodItem;
 
 export type AIScan = {
   id: string;

@@ -98,22 +98,17 @@ export const runAiScan = async (
 
   // Now, process the result.
   if (aiResult.isFood && aiResult.predictions.length > 0) {
-    const rawPredictions = aiResult.predictions;
-
-    // Filter and sort the predictions
-    const filteredPredictions = rawPredictions
-      .filter((p) => p.confidence >= 0.6)
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 3);
+    // The AI now only returns absolute identifications. No filtering is needed.
+    const finalPredictions = aiResult.predictions;
 
     // If there are valid predictions, save the history in the background.
-    if (filteredPredictions.length > 0) {
+    if (finalPredictions.length > 0) {
       // IMPORTANT: This is a "fire-and-forget" call. We do NOT await it.
-      saveHistoryInBackground(db, user, compressedFile, filteredPredictions);
+      saveHistoryInBackground(db, user, compressedFile, finalPredictions);
     }
 
-    // Immediately return the filtered predictions to the UI.
-    return { ...aiResult, predictions: filteredPredictions };
+    // Immediately return the predictions to the UI.
+    return { ...aiResult, predictions: finalPredictions };
   }
 
   // If it's not food or there are no predictions, return the result immediately.

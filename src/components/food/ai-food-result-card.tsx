@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge';
 export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPrediction) => void; imageUrl: string | null; }> = ({ item, onAdd, imageUrl }) => {
   const hasMicros = item.micronutrientBreakdown && 
                     Object.values(item.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
-  const confidencePercent = item.confidence * 100;
 
   return (
     <Card className="overflow-hidden border-2 border-primary/10 shadow-lg animate-in fade-in-50 duration-500">
@@ -26,12 +25,10 @@ export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPredicti
         <div className="p-4 md:p-6">
             <div className="flex flex-wrap items-center gap-4 justify-between">
                 <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
-                {confidencePercent < 90 && (
-                    <Badge variant="secondary" className="text-xs sm:text-sm">
-                        <Sparkles className="h-3 w-3 mr-1.5" />
-                        {confidencePercent.toFixed(0)}% Confidence
-                    </Badge>
-                )}
+                <Badge variant="secondary" className="text-xs sm:text-sm">
+                    <Sparkles className="h-3 w-3 mr-1.5" />
+                    AI Analyzed
+                </Badge>
             </div>
             <div className="text-3xl font-extrabold text-primary pt-2">
                 {item.calories.toFixed(0)}{' '}

@@ -21,9 +21,7 @@ const RecognizeFoodInputSchema = z.object({
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
-const AIPredictionSchema = FoodItemSchema.extend({
-    confidence: z.number().min(0).max(1).describe("The AI's confidence in this prediction, from 0 to 1."),
-});
+const AIPredictionSchema = FoodItemSchema;
 export type AIPrediction = z.infer<typeof AIPredictionSchema>;
 
 const TotalNutrientsSchema = z.object({
@@ -48,24 +46,20 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are a Professional Nutritional Vision AI. Your task is to analyze the food in the provided image with high-level precision. You must "deconstruct" the meal, identifying every individual component.
+  prompt: `You are a senior developer building an advanced food analyzer. Your task is to analyze the uploaded image and identify every food item present, including all components of mixed dishes.
 
---- CRITICAL INSTRUCTIONS ---
-1.  **Analyze Image for Food**: First, determine if the image contains food. If it is clearly not food (e.g., a car, an animal), you MUST set 'isFood' to false and return an empty 'predictions' array and no 'totalNutrients'.
+--- INSTRUCTIONS ---
+1.  **Analyze Image for Food**: First, determine if the image contains food. If it is not food, you MUST set 'isFood' to false and return an empty 'predictions' array.
 
-2.  **Identify Everything (Deconstruction Rule)**: Your primary task is to identify every single distinct food item and visible ingredient. For complex dishes (e.g., stews, salads), you MUST identify EACH primary component. Return each item as a SEPARATE object in the 'predictions' array. Do not just name the dish; break it down.
+2.  **Deconstruct Mixed Foods**: For complex dishes, break them down into their individual components and list each item separately in the 'predictions' array.
 
-3.  **Portion & Nutrient Estimation (For EACH item)**: For each food component you identify, you MUST:
-    a.  Visually estimate its specific weight in the image and provide this value in the \`estimatedWeightGrams\` field.
-    b.  Calculate a comprehensive nutritional profile (\`calories\`, \`macronutrientBreakdown\` - protein, carbs, fat) that corresponds DIRECTLY to that estimated weight.
+3.  **Absolute Identification**: The output must be accurate and absolute. Do not provide suggestions, confidence scores, or partial guesses. Only list food items that you can identify with high certainty as being present in the image. If you cannot identify any food, return an empty 'predictions' array.
 
-4.  **Confidence Score**: For each item, provide a confidence score (0.0 to 1.0). This is especially important for items you are less certain about.
+4.  **Calculate Nutrition for Each Item**: For every food item you identify, you MUST calculate its nutritional information (calories, protein, fat, carbs) as accurately as possible for the estimated portion size.
 
-5.  **Calculate Total Summary**: After identifying all individual items, you MUST calculate the total nutritional summary for the entire meal. Combine the calories, protein, carbohydrates, and fat from all predictions and provide the result in the \`totalNutrients\` object.
+5.  **Calculate Total Summary**: After identifying all individual items, you MUST combine the nutrients of all items to give a total nutritional summary for the entire meal in the 'totalNutrients' object.
 
-6.  **No Results**: If it is food, but you cannot confidently identify it, return 'isFood' as true but with an empty 'predictions' array and no 'totalNutrients'.
-
-7.  **Return JSON**: Your entire output must be a single JSON object that strictly adheres to the provided output schema.
+6.  **Structured Output**: Present the results in a clear, structured JSON format adhering to the output schema, showing each food, its individual nutrients, and the total nutrients for the meal.
 
 Image to analyze: {{media url=photoDataUri}}
 

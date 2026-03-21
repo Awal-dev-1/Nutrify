@@ -354,9 +354,9 @@ export default function RecognizePage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                     <Lightbulb className="h-5 w-5 text-yellow-500 shrink-0" />
-                    Not quite right?
+                    Other Identified Items
                   </CardTitle>
-                  <CardDescription>Here are other suggestions from the AI.</CardDescription>
+                  <CardDescription>Select another item to view its details.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   {otherPredictions.map((pred) => (
@@ -367,7 +367,7 @@ export default function RecognizePage() {
                       onClick={() => setViewedPrediction(pred)}
                       className="text-sm"
                     >
-                      {pred.foodName} ({(pred.confidence * 100).toFixed(0)}%)
+                      {pred.foodName}
                     </Button>
                   ))}
                 </CardContent>
