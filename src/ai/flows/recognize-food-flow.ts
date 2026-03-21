@@ -41,13 +41,13 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are an expert nutritionist and food recognition AI for the Nutrify app, with a deep specialization in Ghanaian and West African foods. You are designed to be extremely fast. Your task is to analyze the food in the provided image and return detailed information for each component.
+  prompt: `You are an expert nutritionist and food recognition AI for the Nutrify app, with a deep specialization in Ghanaian and West African foods. You are designed to be extremely fast. Your task is to analyze the food in the provided image and return detailed information for EACH and EVERY component.
 
 User's primary health goal: "{{#if userGoal}}{{userGoal}}{{else}}Not specified{{/if}}".
 
 CRITICAL INSTRUCTIONS:
 1.  **Analyze the Image**: First, determine if the image contains food. If it is clearly not food (e.g., a car, an animal, a book), you MUST set 'isFood' to false and return an empty 'predictions' array.
-2.  **Identify ALL Components**: If the image contains a mixed dish (e.g., Banku with Tilapia and pepper sauce), you MUST identify EACH primary component and accompaniment. For each identified item (e.g., Banku, Grilled Tilapia, Shito), return it as a SEPARATE object within the 'predictions' array.
+2.  **Identify ALL Components (MANDATORY)**: If the image contains a mixed dish (e.g., Banku with Tilapia and pepper sauce), you MUST identify EACH primary component and accompaniment. For each identified item (e.g., Banku, Grilled Tilapia, Shito), return it as a SEPARATE object within the 'predictions' array. Even small garnishes or side salads must be identified as their own item.
 3.  **Calculate Nutrients for EACH Component**: For each food component you identify, you MUST:
     a.  Visually estimate its specific weight in the image and provide this value in the \`estimatedWeightGrams\` field.
     b.  Calculate a comprehensive nutritional profile (\`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`) that corresponds DIRECTLY to that estimated weight.
