@@ -1,3 +1,4 @@
+
 'use client';
 
 import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
@@ -20,11 +21,12 @@ export const updateUserDocument = (
     updatedAt: serverTimestamp()
   };
 
-  updateDoc(userRef, updatesWithTimestamp).catch(error => {
+  return updateDoc(userRef, updatesWithTimestamp).catch(error => {
     errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: userRef.path,
         operation: 'update',
         requestResourceData: updatesWithTimestamp,
     }));
+    throw error;
   });
 };

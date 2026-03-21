@@ -69,19 +69,26 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { setTheme, theme } = useTheme();
 
+  // Current State
   const [displayName, setDisplayName] = useState('');
-  const [initialDisplayName, setInitialDisplayName] = useState('');
   const [language, setLanguage] = useState('en');
   const [units, setUnits] = useState('metric');
   const [dailyReminder, setDailyReminder] = useState(false);
   const [weeklySummary, setWeeklySummary] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Initial State for Change Detection
+  const [initialDisplayName, setInitialDisplayName] = useState('');
+  const [initialLanguage, setInitialLanguage] = useState('en');
+  const [initialUnits, setInitialUnits] = useState('metric');
+  const [initialDailyReminder, setInitialDailyReminder] = useState(false);
+  const [initialWeeklySummary, setInitialWeeklySummary] = useState(false);
+  
+  const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
-  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -89,10 +96,23 @@ export default function SettingsPage() {
       const name = userProfile.name || '';
       setDisplayName(name);
       setInitialDisplayName(name);
-      setLanguage(userProfile.preferences?.languagePreference || 'en');
-      setUnits(userProfile.preferences?.unitPreference || 'metric');
-      setDailyReminder(userProfile.preferences?.reminderEnabled || false);
-      setWeeklySummary(userProfile.preferences?.weeklySummaryEnabled || false);
+
+      const lang = userProfile.preferences?.languagePreference || 'en';
+      setLanguage(lang);
+      setInitialLanguage(lang);
+
+      const unitsPref = userProfile.preferences?.unitPreference || 'metric';
+      setUnits(unitsPref);
+      setInitialUnits(unitsPref);
+
+      const daily = userProfile.preferences?.reminderEnabled || false;
+      setDailyReminder(daily);
+      setInitialDailyReminder(daily);
+
+      const weekly = userProfile.preferences?.weeklySummaryEnabled || false;
+      setWeeklySummary(weekly);
+      setInitialWeeklySummary(weekly);
+
       setImagePreview(null);
       setProfileImageFile(null);
     }
@@ -102,6 +122,16 @@ export default function SettingsPage() {
     if (isProfileLoading) return false;
     return displayName !== initialDisplayName || profileImageFile !== null;
   }, [displayName, initialDisplayName, profileImageFile, isProfileLoading]);
+
+  const hasPreferencesChanges = useMemo(() => {
+    if (isProfileLoading) return false;
+    return language !== initialLanguage || units !== initialUnits;
+  }, [language, initialLanguage, units, initialUnits, isProfileLoading]);
+
+  const hasNotificationsChanges = useMemo(() => {
+    if (isProfileLoading) return false;
+    return dailyReminder !== initialDailyReminder || weeklySummary !== initialWeeklySummary;
+  }, [dailyReminder, initialDailyReminder, weeklySummary, initialWeeklySummary, isProfileLoading]);
 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,11 +153,10 @@ export default function SettingsPage() {
     try {
       await updateUserProfileAndPhoto(db, auth, displayName, profileImageFile);
       toast({ title: 'Profile Saved!', description: 'Your profile has been successfully updated.' });
+      setInitialDisplayName(displayName);
       setProfileImageFile(null);
       setImagePreview(null);
       if(fileInputRef.current) fileInputRef.current.value = "";
-      // The userProfile hook will cause a re-render with the new data,
-      // which will reset initialDisplayName via the useEffect.
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error Saving Profile', description: error.message });
     } finally {
@@ -135,28 +164,42 @@ export default function SettingsPage() {
     }
   };
 
-  const handlePreferencesSave = () => {
-    if (!user || !db) return;
+  const handlePreferencesSave = async () => {
+    if (!user || !db || !hasPreferencesChanges) return;
     setIsSaving(true);
     const prefs = {
       'preferences.languagePreference': language,
       'preferences.unitPreference': units,
     };
-    updateUserDocument(db, user.uid, prefs);
-    toast({ title: 'Preferences Saved!' });
-    setIsSaving(false);
+    try {
+      await updateUserDocument(db, user.uid, prefs);
+      toast({ title: 'Preferences Saved!' });
+      setInitialLanguage(language);
+      setInitialUnits(units);
+    } catch(error: any) {
+      toast({ variant: "destructive", title: "Error Saving", description: "Could not save preferences." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleNotificationsSave = () => {
-    if (!user || !db) return;
+  const handleNotificationsSave = async () => {
+    if (!user || !db || !hasNotificationsChanges) return;
     setIsSaving(true);
     const prefs = {
       'preferences.reminderEnabled': dailyReminder,
       'preferences.weeklySummaryEnabled': weeklySummary,
     };
-    updateUserDocument(db, user.uid, prefs);
-    toast({ title: 'Notification Preferences Saved!' });
-    setIsSaving(false);
+    try {
+      await updateUserDocument(db, user.uid, prefs);
+      toast({ title: 'Notification Preferences Saved!' });
+      setInitialDailyReminder(dailyReminder);
+      setInitialWeeklySummary(weeklySummary);
+    } catch(error: any) {
+      toast({ variant: "destructive", title: "Error Saving", description: "Could not save notification settings." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handlePasswordReset = async () => {
@@ -704,7 +747,7 @@ export default function SettingsPage() {
                 <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
                   <Button 
                     onClick={handlePreferencesSave} 
-                    disabled={isSaving}
+                    disabled={isSaving || !hasPreferencesChanges}
                     className="w-full sm:w-auto rounded-full px-6"
                   >
                     {isSaving ? (
@@ -769,7 +812,7 @@ export default function SettingsPage() {
                 <CardFooter className="border-t bg-muted/10 p-4 md:p-6">
                   <Button 
                     onClick={handleNotificationsSave} 
-                    disabled={isSaving}
+                    disabled={isSaving || !hasNotificationsChanges}
                     className="w-full sm:w-auto rounded-full px-6"
                   >
                     {isSaving ? (
@@ -825,5 +868,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
