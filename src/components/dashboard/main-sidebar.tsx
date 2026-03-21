@@ -61,7 +61,7 @@ const insightLinks = [
 export function MainSidebar() {
   const pathname = usePathname()
   const { user } = useUser();
-  const { isMobile, setOpenMobile, state, toggleSidebar } = useSidebar();
+  const { isMobile, setOpenMobile, state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
   const handleCloseMobileSidebar = () => {
@@ -113,26 +113,9 @@ export function MainSidebar() {
 
   return (
     <>
-      <SidebarHeader className={cn(
-        "p-4 flex items-center",
-        isCollapsed ? "justify-center" : "justify-between"
-      )}>
-        {isCollapsed ? (
-           <Tooltip>
-             <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="group/collapsed-header relative flex h-10 w-10 items-center justify-center rounded-lg">
-                  <Logo collapsed className="transition-transform duration-300 group-hover/collapsed-header:rotate-[-30deg] group-hover/collapsed-header:scale-75" />
-                  <Menu className="absolute h-5 w-5 opacity-0 transition-opacity duration-300 group-hover/collapsed-header:opacity-100" />
-                </Button>
-             </TooltipTrigger>
-             <TooltipContent side="right">Expand Sidebar</TooltipContent>
-           </Tooltip>
-        ) : (
-          <>
-            <Logo />
-            <SidebarToggle className="hidden md:block"/>
-          </>
-        )}
+      <SidebarHeader className="p-4 flex items-center justify-between">
+        <Logo collapsed={isCollapsed} />
+        <SidebarToggle className="hidden md:block"/>
       </SidebarHeader>
 
       <SidebarContent className={cn(
