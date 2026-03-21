@@ -6,9 +6,8 @@ import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Lightbulb, Camera, VideoOff, Flame, Beef, Wheat, Droplets } from 'lucide-react';
+import { Loader2, Sparkles, ScanLine, AlertCircle, RefreshCw, X, Camera, VideoOff, Flame, Beef, Wheat, Droplets, PlusCircle } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
-import { AiFoodResultCard } from '@/components/food/ai-food-result-card';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { runAiScan } from '@/services/aiRecognitionService';
 import type { AIPrediction } from '@/types/ai';
@@ -38,7 +37,6 @@ export default function RecognizePage() {
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
   const [totalNutrients, setTotalNutrients] = useState<TotalNutrients | null>(null);
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
-  const [viewedPrediction, setViewedPrediction] = useState<AIPrediction | null>(null);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -114,7 +112,6 @@ export default function RecognizePage() {
           setStatus('idle');
           setError(null);
           setPredictions(null);
-          setViewedPrediction(null);
           setTotalNutrients(null);
           setFile(capturedFile);
         }
@@ -128,7 +125,6 @@ export default function RecognizePage() {
     setStatus('analyzing');
     setError(null);
     setPredictions(null);
-    setViewedPrediction(null);
     setTotalNutrients(null);
 
     try {
@@ -146,7 +142,6 @@ export default function RecognizePage() {
 
       setPredictions(scanResults.predictions);
       if (scanResults.predictions.length > 0) {
-        setViewedPrediction(scanResults.predictions[0]);
         // Use the totalNutrients object directly from the AI response
         if (scanResults.totalNutrients) {
             setTotalNutrients(scanResults.totalNutrients);
@@ -166,7 +161,6 @@ export default function RecognizePage() {
     setStatus('idle');
     setError(null);
     setPredictions(null);
-    setViewedPrediction(null);
     setTotalNutrients(null);
     setSelectedFood(null);
     setIsCameraOpen(false);
@@ -320,7 +314,7 @@ export default function RecognizePage() {
       }
 
       case 'completed': {
-        if (!predictions || predictions.length === 0 || !viewedPrediction) {
+        if (!predictions || predictions.length === 0) {
           return (
             <Alert className="max-w-2xl mx-auto">
               <AlertCircle className="h-4 w-4" />
@@ -335,49 +329,39 @@ export default function RecognizePage() {
           );
         }
 
-        const otherPredictions = predictions.filter(p => p.foodName !== viewedPrediction.foodName);
-
         return (
           <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in-50">
-            {predictions.length > 1 && totalNutrients && (
+            {/* The main image preview */}
+            <Card className="overflow-hidden shadow-lg">
+                <CardContent className="p-0">
+                    <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[60vh] bg-black/90">
+                        {preview && <Image src={preview} alt="Analyzed food" fill className="object-contain" />}
+                    </div>
+                </CardContent>
+            </Card>
+            
+            {/* The total summary */}
+            {totalNutrients && (
                 <TotalNutrientsCard totalNutrients={totalNutrients} />
             )}
 
-            <AiFoodResultCard
-              item={viewedPrediction}
-              onAdd={setSelectedFood}
-              imageUrl={preview}
-            />
+            {/* The list of identified items */}
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold px-1">Identified Items</h3>
+                {predictions.map((pred) => (
+                    <IdentifiedItemCard 
+                        key={pred.foodName}
+                        item={pred}
+                        onAdd={setSelectedFood} 
+                    />
+                ))}
+            </div>
 
-            {otherPredictions.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5 text-yellow-500 shrink-0" />
-                    Other Identified Items
-                  </CardTitle>
-                  <CardDescription>Select another item to view its details.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
-                  {otherPredictions.map((pred) => (
-                    <Button
-                      key={pred.foodName}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setViewedPrediction(pred)}
-                      className="text-sm"
-                    >
-                      {pred.foodName}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
+            {/* The reset button */}
             <div className="flex justify-center pt-2 pb-4">
-              <Button variant="outline" onClick={resetState} className="w-full sm:w-auto">
-                <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
-              </Button>
+                <Button variant="outline" onClick={resetState} className="w-full sm:w-auto">
+                    <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
+                </Button>
             </div>
           </div>
         );
@@ -465,3 +449,43 @@ const TotalNutrientsCard: FC<{ totalNutrients: TotalNutrients }> = ({ totalNutri
       </CardContent>
     </Card>
 );
+
+const IdentifiedItemCard: FC<{ item: AIPrediction; onAdd: (item: AIPrediction) => void; }> = ({ item, onAdd }) => {
+  return (
+    <Card className="border-2 hover:border-primary/20 transition-all">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+            <CardTitle className="text-lg">{item.foodName}</CardTitle>
+            <Button size="sm" variant="outline" onClick={() => onAdd(item)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add
+            </Button>
+        </div>
+        <CardDescription>
+            Estimated Portion: ~{item.estimatedWeightGrams}g
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+         <div className="p-2 rounded-lg bg-muted/50">
+          <Flame className="mx-auto h-5 w-5 text-orange-500 mb-1" />
+          <p className="font-bold text-lg">{item.calories.toFixed(0)}</p>
+          <p className="text-xs text-muted-foreground">kcal</p>
+        </div>
+        <div className="p-2 rounded-lg bg-muted/50">
+          <Beef className="mx-auto h-5 w-5 text-red-500 mb-1" />
+          <p className="font-bold text-lg">{item.macronutrientBreakdown.protein.toFixed(1)}g</p>
+          <p className="text-xs text-muted-foreground">Protein</p>
+        </div>
+        <div className="p-2 rounded-lg bg-muted/50">
+          <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1" />
+          <p className="font-bold text-lg">{item.macronutrientBreakdown.carbohydrates.toFixed(1)}g</p>
+          <p className="text-xs text-muted-foreground">Carbs</p>
+        </div>
+        <div className="p-2 rounded-lg bg-muted/50">
+          <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1" />
+          <p className="font-bold text-lg">{item.macronutrientBreakdown.fat.toFixed(1)}g</p>
+          <p className="text-xs text-muted-foreground">Fat</p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
