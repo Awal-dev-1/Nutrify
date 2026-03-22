@@ -235,7 +235,7 @@ export default function MealPlannerPage() {
       className="space-y-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
@@ -282,22 +282,34 @@ export default function MealPlannerPage() {
             <TabsTrigger value="week">Week View</TabsTrigger>
           </TabsList>
           <TabsContent value="day" className="mt-6">
-            <DayPlanner 
-                plannedMeals={mealsToDisplay} 
-                summary={mealSummary}
-                onAddMealClick={handleOpenAddModal}
-                onEditMealClick={setEditingMeal}
-                onRemoveMeal={handleRemoveMeal}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <DayPlanner 
+                  plannedMeals={mealsToDisplay} 
+                  summary={mealSummary}
+                  onAddMealClick={handleOpenAddModal}
+                  onEditMealClick={setEditingMeal}
+                  onRemoveMeal={handleRemoveMeal}
+              />
+            </motion.div>
           </TabsContent>
           <TabsContent value="week" className="mt-6">
-            <WeekPlanner 
-                plannedMeals={mealsToDisplay}
-                summary={mealSummary}
-                onAddMealClick={handleOpenAddModal}
-                onEditMealClick={setEditingMeal}
-                onRemoveMeal={handleRemoveMeal}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <WeekPlanner 
+                  plannedMeals={mealsToDisplay}
+                  summary={mealSummary}
+                  onAddMealClick={handleOpenAddModal}
+                  onEditMealClick={setEditingMeal}
+                  onRemoveMeal={handleRemoveMeal}
+              />
+            </motion.div>
           </TabsContent>
         </Tabs>
       )}

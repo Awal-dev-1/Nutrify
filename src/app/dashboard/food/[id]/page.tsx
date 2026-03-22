@@ -148,7 +148,7 @@ export default function FoodDetailsPage() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2 }}
         className="flex justify-between items-center"
       >
         <Button variant="ghost" asChild>
@@ -168,7 +168,7 @@ export default function FoodDetailsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
+        transition={{ duration: 0.2, delay: 0.05 }}
       >
         <Card>
           <div className="p-6">
@@ -214,7 +214,7 @@ export default function FoodDetailsPage() {
           className="lg:col-span-2 space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+          transition={{ duration: 0.2, delay: 0.1 }}
         >
            {/* 4. & 5. Nutrition & Chart */}
           <Card>
@@ -319,7 +319,7 @@ export default function FoodDetailsPage() {
           className="lg:col-span-1 space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
+          transition={{ duration: 0.2, delay: 0.15 }}
         >
           {/* 3. Portion Size Controller */}
           <Card>

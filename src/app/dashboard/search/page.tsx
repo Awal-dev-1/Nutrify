@@ -373,9 +373,10 @@ export default function SearchPage() {
         <AnimatePresence mode="wait">
           {loading && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
               className="space-y-4"
             >
               <Skeleton className="h-10 w-64" />
@@ -388,9 +389,10 @@ export default function SearchPage() {
 
           {error && !loading && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
               <Alert variant="destructive" className="max-w-3xl">
                 <AlertCircle className="h-4 w-4" />
@@ -402,9 +404,10 @@ export default function SearchPage() {
 
           {!hasSearched && !loading && !error && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
               className="space-y-8"
             >
               <RecentSearches
@@ -423,9 +426,10 @@ export default function SearchPage() {
 
           {result && !loading && !error && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
               <FoodDetailsCard
                 foodItem={result}

@@ -18,7 +18,7 @@ export function CtaBanner() {
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.7 }}
+        transition={{ duration: 0.4 }}
         className="container relative px-4 py-16 md:py-24 lg:py-32"
       >
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">

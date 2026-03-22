@@ -99,7 +99,7 @@ export default function RecommendationsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.2 }}
         >
           <EmptyState
             icon={<Lightbulb className="h-16 w-16 text-muted-foreground" />}
@@ -125,7 +125,7 @@ export default function RecommendationsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            transition={{ duration: 0.2, delay: 0.05 }}
           >
             <Alert>
               <Lightbulb className="h-4 w-4" />
@@ -145,7 +145,7 @@ export default function RecommendationsPage() {
               key={rec.foodId}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+              transition={{ duration: 0.2, delay: 0.1 + index * 0.05 }}
             >
               <RecommendationCard
                 recommendation={rec}
@@ -229,5 +229,3 @@ const RecommendationsPageSkeleton = () => (
         </div>
     </div>
 )
-
-    

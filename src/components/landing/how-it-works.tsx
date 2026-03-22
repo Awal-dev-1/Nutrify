@@ -58,8 +58,7 @@ export function HowItWorks() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
-                className="h-full"
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <Card 
                   className="relative border-0 bg-gradient-to-b from-card to-card/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden group h-full"

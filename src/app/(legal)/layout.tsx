@@ -28,7 +28,7 @@ export default function LegalLayout({
         className="container py-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ ease: "easeInOut", duration: 0.3 }}
+        transition={{ ease: "easeInOut", duration: 0.2 }}
       >
         <div className="max-w-4xl mx-auto bg-card p-8 rounded-lg shadow-sm">
           {children}

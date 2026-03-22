@@ -35,7 +35,7 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-small"
           >
             <Camera className="h-3.5 w-3.5 mr-2" />
@@ -47,7 +47,7 @@ export function Hero() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             className="text-h1 font-bold tracking-tight leading-tight"
           >
             Eat Smart.
@@ -60,7 +60,7 @@ export function Hero() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
             className="text-body text-white/90 max-w-3xl mx-auto leading-relaxed px-4"
           >
             Discover the rich world of Ghanaian cuisine and take control of your
@@ -72,7 +72,7 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
             className="flex flex-col sm:flex-row justify-center gap-4 pt-4 px-4"
           >
             <Button 
