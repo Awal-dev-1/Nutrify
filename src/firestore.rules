@@ -58,7 +58,8 @@ service cloud.firestore {
       allow get, delete: if isOwner(userId);
       allow list: if false;
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && isValidUserUpdate();
+      // Allow update if it's the onboarding completion OR a valid subsequent update.
+      allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && (resource.data.onboardingCompleted == false || isValidUserUpdate());
 
       /**
        * @description Manages a user's private daily nutrition logs.
