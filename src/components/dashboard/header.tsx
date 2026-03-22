@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from 'next/link'
@@ -55,7 +56,7 @@ export function DashboardHeader() {
   const handleLogout = async () => {
     setTheme('system');
     await logout(auth);
-    router.push('/');
+    window.location.assign('/');
   }
 
   return (

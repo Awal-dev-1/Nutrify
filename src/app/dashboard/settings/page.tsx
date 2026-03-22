@@ -289,8 +289,8 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       await deleteUserAccount(auth, db);
-      toast({ title: "Account Deleted", description: "Your account has been permanently deleted." });
-      router.push('/');
+      toast({ title: 'Account Deleted', description: 'Your account has been permanently deleted.' });
+      window.location.assign('/');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message });
     } finally {
@@ -302,7 +302,7 @@ export default function SettingsPage() {
     try {
       setTheme('system');
       await logout(auth);
-      router.push('/');
+      window.location.assign('/');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Logout Failed', description: error.message });
     }
