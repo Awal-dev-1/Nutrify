@@ -30,23 +30,28 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (isUserLoading || isProfileLoading) {
-      return;
+      return; // Wait for auth and profile state to be resolved
     }
-    if (!user) {
+    
+    // If there is no user, or the user is anonymous, redirect to login.
+    if (!user || user.isAnonymous) {
       router.push('/login');
       return;
     }
     
+    // If there is a real user, but they haven't completed onboarding, redirect them.
     if (userProfile && !userProfile.onboardingCompleted) {
       router.push('/onboarding');
       return;
     }
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
   
-  // Determine if we should show the loading screen
+  // Determine if we should show the loading screen.
+  // This covers initial load, or if a redirect is about to happen.
   const showLoading = isUserLoading || 
                       isProfileLoading || 
                       !user || 
+                      user.isAnonymous ||
                       (userProfile && !userProfile.onboardingCompleted);
 
   if (showLoading) {

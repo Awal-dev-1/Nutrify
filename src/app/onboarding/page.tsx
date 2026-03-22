@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -44,9 +44,28 @@ export default function OnboardingPage() {
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState({});
   const router = useRouter();
-  const { user } = useUser();
+  const { user, userProfile, isUserLoading, isProfileLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Wait for user status to be resolved
+    if (isUserLoading || isProfileLoading) {
+      return;
+    }
+
+    // If no user or an anonymous user, they shouldn't be here. Go to signup.
+    if (!user || user.isAnonymous) {
+      router.push('/signup');
+      return;
+    }
+
+    // If the user has already completed onboarding, redirect to the dashboard.
+    if (userProfile && userProfile.onboardingCompleted) {
+      router.push('/dashboard/overview');
+      return;
+    }
+  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
 
   const handleNext = (data: any) => {
     setDirection(1);
@@ -102,6 +121,16 @@ export default function OnboardingPage() {
     <SummaryStep formData={formData} onFinish={handleFinish} />,
     <LoadingStep />
   ];
+  
+  // Render a loading state while we check the user's status to prevent UI flicker
+  const showPageLoading = isUserLoading || isProfileLoading || !user || user.isAnonymous || (userProfile && userProfile.onboardingCompleted);
+  if (showPageLoading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <LoadingStep />
+        </div>
+    );
+  }
 
   const showProgress = step > 0 && step <= totalSteps;
   const progressValue = ((step) / totalSteps) * 100;

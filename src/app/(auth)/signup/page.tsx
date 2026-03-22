@@ -15,24 +15,27 @@ export default function SignUpPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Wait until user and profile status are known.
     if (isUserLoading || isProfileLoading) {
-      return; // Wait for auth and profile state
+      return;
     }
 
+    // If a real (non-anonymous) user is logged in, redirect them.
     if (user && !user.isAnonymous) {
       if (userProfile && userProfile.onboardingCompleted) {
-        // Already onboarded, go to dashboard
+        // If onboarded, go to the dashboard.
         router.push("/dashboard/overview");
       } else {
-        // New user or hasn't onboarded, go to onboarding
+        // If signed up but not onboarded, go to onboarding.
         router.push("/onboarding");
       }
     }
+    // If anonymous or no user, stay on this page to show the form.
   }, [user, isUserLoading, userProfile, isProfileLoading, router]);
 
+  // Show a loader while we determine the user's status and redirect if necessary.
   const showLoading = isUserLoading || isProfileLoading || (user && !user.isAnonymous);
 
-  // Show a loader while checking auth/profile status or if a non-anonymous user is found and we are redirecting.
   if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">

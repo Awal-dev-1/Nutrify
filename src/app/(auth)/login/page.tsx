@@ -15,24 +15,27 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Wait until user and profile status are known.
     if (isUserLoading || isProfileLoading) {
-      return; // Wait for auth and profile state
+      return;
     }
 
+    // If a real (non-anonymous) user is logged in, redirect them.
     if (user && !user.isAnonymous) {
       if (userProfile && userProfile.onboardingCompleted) {
+        // If onboarded, go to the dashboard.
         router.push("/dashboard/overview");
       } else if (userProfile) {
-        // User exists but hasn't onboarded
+        // If not onboarded, go to onboarding.
         router.push("/onboarding");
       }
-      // If user exists but userProfile doesn't yet, we wait. isProfileLoading should handle this.
+      // If userProfile doesn't exist yet, the loading state will prevent a flash of content.
     }
   }, [user, isUserLoading, userProfile, isProfileLoading, router]);
 
+  // Show a loader while we determine the user's status and redirect if necessary.
   const showLoading = isUserLoading || isProfileLoading || (user && !user.isAnonymous);
 
-  // Show a loader while checking auth/profile status or if a non-anonymous user is found and we are redirecting.
   if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
@@ -53,7 +56,7 @@ export default function LoginPage() {
     );
   }
 
-  // If no user (or an anonymous user) and loading is finished, show the login form.
+  // If loading is finished and no redirect is needed, show the login form.
   return (
     <motion.div
       className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10"
