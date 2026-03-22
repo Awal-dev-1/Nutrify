@@ -75,12 +75,17 @@ export default function MealPlannerPage() {
         const analytics = await getAnalyticsData(db, user.uid, '30d');
         const summary = analytics.summary;
 
+        // Correct for legacy 'very-active' value
+        const activityLevel = userProfile.profile.activityLevel === 'very-active' 
+            ? 'very active' 
+            : userProfile.profile.activityLevel;
+
         const input: GeneratePersonalizedMealPlanInput = {
             gender: userProfile.profile.gender as any,
             age: userProfile.profile.age,
             heightCm: userProfile.profile.heightCm,
             weightKg: userProfile.profile.weightKg,
-            activityLevel: userProfile.profile.activityLevel as any,
+            activityLevel: activityLevel as any,
             goal: userProfile.health.primaryGoal as any,
             targetCalories: userProfile.goals.dailyCalorieGoal,
             proteinPercentageGoal: userProfile.goals.proteinPercentageGoal,
