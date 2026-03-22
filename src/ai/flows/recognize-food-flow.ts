@@ -81,6 +81,7 @@ const recognizeFoodFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await recognizeFoodPrompt(input, {
+      model: 'googleai/gemini-pro-vision', // Explicitly use a vision-capable model
       config: {
         temperature: 0.2,
         safetySettings: [
