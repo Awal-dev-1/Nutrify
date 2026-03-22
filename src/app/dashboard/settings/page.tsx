@@ -72,6 +72,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Separator } from '@/components/ui/separator';
 
 
 const passwordFormSchema = z.object({
