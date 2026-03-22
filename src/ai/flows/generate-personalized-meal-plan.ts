@@ -69,59 +69,27 @@ const generatePersonalizedMealPlanPrompt = ai.definePrompt({
   name: 'generatePersonalizedMealPlanPrompt',
   input: { schema: GeneratePersonalizedMealPlanInputSchema },
   output: { schema: GeneratePersonalizedMealPlanOutputSchema },
-  prompt: `You are an expert nutritionist and meal planner for "Nutrify", a smart nutrition platform with a deep focus on Ghanaian and broader West African cuisine. You are designed to be extremely fast. Generate the plan as quickly as possible.
-Your task is to generate a personalized weekly meal plan based on the user's details, goals, preferences, and recent nutrient intake.
-The plan should be balanced, culturally appropriate, and help the user achieve their health goals.
+  prompt: `You are an expert nutritionist and meal planner for "Nutrify", a smart nutrition platform with a deep focus on Ghanaian and broader West African cuisine. You are designed to be extremely fast.
 
-Here is the user's information:
+--- CRITICAL INSTRUCTIONS ---
+1.  **MANDATORY GHANAIAN FOCUS**: Your entire plan MUST be composed of primarily Ghanaian and other West African dishes. This is the most important instruction.
+2.  **GENERATE PLAN QUICKLY**: Generate the full 7-day plan as quickly as possible.
+3.  **FLAT LIST STRUCTURE**: The output must be a single flat array called 'plannedMeals'. Do NOT nest meals inside day objects.
+4.  **PROVIDE NUTRIENTS**: For each meal item, you must provide the 'day', 'mealType', 'foodName', 'quantityGrams', 'calories', 'proteinGrams', 'carbsGrams', and 'fatGrams'.
+5.  **ALIGN WITH GOALS**: The overall plan must align with the user's dietary goals and preferences, and address any nutrient deficiencies.
+6.  **CONCISE SUMMARY**: Provide a brief 'planSummary'.
 
---- User Profile ---
+--- USER DATA ---
 Gender: {{{gender}}}
 Age: {{{age}}} years
-Height: {{{heightCm}}} cm
-Weight: {{{weightKg}}} kg
 Activity Level: {{{activityLevel}}}
-
---- Dietary Goals ---
 Overall Goal: {{{goal}}}
-{{#if targetCalories}}Target Daily Calories: {{{targetCalories}}} kcal{{/if}}
-Target Macronutrient Distribution (Percentages): Protein {{{proteinPercentageGoal}}}%, Carbs {{{carbsPercentageGoal}}}%, Fat {{{fatPercentageGoal}}}%
-{{#if ironTargetMg}}Target Iron: {{{ironTargetMg}}} mg{{/if}}
-{{#if vitaminATargetMcg}}Target Vitamin A: {{{vitaminATargetMcg}}} mcg{{/if}}
+Target Daily Calories: {{#if targetCalories}}{{{targetCalories}}} kcal{{else}}Not specified{{/if}}
+Target Macros (P/C/F %): {{{proteinPercentageGoal}}}/{{{carbsPercentageGoal}}}/{{{fatPercentageGoal}}}
+Dietary Preferences: {{#if dietaryPreferences.length}}{{#each dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+Average Daily Intake (Calories): {{{averageDailyCalories}}} kcal
 
---- Dietary Preferences ---
-{{#if dietaryPreferences.length}}
-Preferences: {{#each dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-{{else}}
-No specific dietary preferences.
-{{/if}}
-
---- Recent Nutrient Intake (Daily Average) ---
-Calories: {{{averageDailyCalories}}} kcal
-Protein: {{{averageDailyProtein}}} g
-Carbs: {{{averageDailyCarbs}}} g
-Fat: {{{averageDailyFat}}} g
-Iron: {{{averageDailyIron}}} mg
-Vitamin A: {{{averageDailyVitaminA}}} mcg
-{{#if recentDeficiencies.length}}
-Recent Deficiencies Noted: {{#each recentDeficiencies}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-{{/if}}
-{{#if recentExcesses.length}}
-Recent Excesses Noted: {{#each recentExcesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-{{/if}}
-
---- Instructions for Meal Plan Generation ---
-1.  Generate a FLAT LIST of meal items for a full 7-day week (Monday to Sunday).
-2.  For each item in the list, you must specify the 'day' (e.g., 'Monday'), 'mealType' (e.g., 'Breakfast'), 'foodName', 'quantityGrams', and estimated nutritional information ('calories', 'proteinGrams', etc.).
-3.  Do NOT nest meals inside days. The output must be a single array called 'plannedMeals'.
-4.  Ensure the plan aligns with the user's \`Overall Goal\` and any specified \`Target Daily Calories\`, \`Target Macronutrient Distribution\`, and target micronutrients.
-5.  Incorporate \`Dietary Preferences\`. For example, if 'Vegan' is selected, all meals must be vegan.
-6.  Address any \`Recent Deficiencies\` by recommending foods rich in those nutrients. Avoid foods causing \`Recent Excesses\`.
-7.  Your primary focus should be on creating a plan rich in Ghanaian and other West African dishes. Ensure the plan uses healthy, whole foods.
-8.  The total calories for each day should be consistent with the user's goals.
-9.  Provide a concise \`planSummary\` explaining how the meal plan meets the user's specific needs and goals.
-
-Generate the output in JSON format according to the provided schema.`,
+Generate the output in the required JSON format.`,
 });
 
 const generatePersonalizedMealPlanFlow = ai.defineFlow(
@@ -131,14 +99,25 @@ const generatePersonalizedMealPlanFlow = ai.defineFlow(
     outputSchema: GeneratePersonalizedMealPlanOutputSchema,
   },
   async (input) => {
-    const { output } = await generatePersonalizedMealPlanPrompt(input, {
+    // Round numeric inputs to avoid overly long prompts
+    const cleanInput = {
+      ...input,
+      averageDailyCalories: Math.round(input.averageDailyCalories),
+      averageDailyProtein: Math.round(input.averageDailyProtein),
+      averageDailyCarbs: Math.round(input.averageDailyCarbs),
+      averageDailyFat: Math.round(input.averageDailyFat),
+      averageDailyIron: parseFloat(input.averageDailyIron.toFixed(1)),
+      averageDailyVitaminA: Math.round(input.averageDailyVitaminA),
+    };
+
+    const { output } = await generatePersonalizedMealPlanPrompt(cleanInput, {
       config: {
         temperature: 0.2,
         safetySettings: [
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_ONLY_HIGH',
-          },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
         ],
       },
     });
