@@ -766,34 +766,60 @@ const WaterTracker: FC<{ intake: number; setIntake: (intake: number) => void; go
 };
 
 // ── Micronutrient Grid ────────────────────────────────────────────────────────
-const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => (
-  <Card className="border shadow-lg">
-    <CardHeader className="pb-3">
-      <CardTitle className="text-base sm:text-lg">Micronutrients</CardTitle>
-    </CardHeader>
-    <CardContent>
-      {/* 2 cols on mobile, 3 on md+ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-        <MicroStat label="Fiber"     value={totals.totalFiber}    unit="g"  />
-        <MicroStat label="Sugar"     value={totals.totalSugar}    unit="g"  />
-        <MicroStat label="Sodium"    value={totals.totalSodium}   unit="mg" />
-        <MicroStat label="Calcium"   value={totals.totalCalcium}  unit="mg" />
-        <MicroStat label="Iron"      value={totals.totalIron}     unit="mg" />
-        <MicroStat label="Vitamin D" value={totals.totalVitaminD} unit="µg" />
-        <MicroStat label="Magnesium" value={totals.totalMagnesium} unit="mg" />
-        <MicroStat label="Potassium" value={totals.totalPotassium} unit="mg" />
-        <MicroStat label="Zinc"      value={totals.totalZinc}      unit="mg" />
-      </div>
-    </CardContent>
-  </Card>
-);
+const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
+  const micros = [
+    { label: 'Fiber', value: totals.totalFiber, unit: 'g' },
+    { label: 'Sugar', value: totals.totalSugar, unit: 'g' },
+    { label: 'Sodium', value: totals.totalSodium, unit: 'mg' },
+    { label: 'Iron', value: totals.totalIron, unit: 'mg' },
+    { label: 'Calcium', value: totals.totalCalcium, unit: 'mg' },
+    { label: 'Magnesium', value: totals.totalMagnesium, unit: 'mg' },
+    { label: 'Potassium', value: totals.totalPotassium, unit: 'mg' },
+    { label: 'Zinc', value: totals.totalZinc, unit: 'mg' },
+    { label: 'Vitamin A', value: totals.totalVitaminA, unit: 'µg' },
+    { label: 'Vitamin C', value: totals.totalVitaminC, unit: 'mg' },
+    { label: 'Vitamin D', value: totals.totalVitaminD, unit: 'µg' },
+    { label: 'Vitamin E', value: totals.totalVitaminE, unit: 'mg' },
+    { label: 'Vitamin K', value: totals.totalVitaminK, unit: 'µg' },
+    { label: 'Thiamine (B1)', value: totals.totalVitaminB1, unit: 'mg' },
+    { label: 'Riboflavin (B2)', value: totals.totalVitaminB2, unit: 'mg' },
+    { label: 'Niacin (B3)', value: totals.totalVitaminB3, unit: 'mg' },
+    { label: 'Vitamin B6', value: totals.totalVitaminB6, unit: 'mg' },
+    { label: 'Vitamin B12', value: totals.totalVitaminB12, unit: 'µg' },
+    { label: 'Folate', value: totals.totalFolate, unit: 'µg' },
+  ].filter(m => m.value > 0);
+
+  return (
+    <Card className="border shadow-lg">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Salad className="h-4 w-4 text-primary" />
+          Micronutrient Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {micros.length > 0 ? (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
+            {micros.map(micro => (
+              <MicroStat key={micro.label} label={micro.label} value={micro.value} unit={micro.unit} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No micronutrient data logged for this day.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const MicroStat: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-  <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 border text-center hover:shadow-md transition-shadow">
-    <p className="text-xs text-muted-foreground mb-1">{label}</p>
-    <p className="text-base sm:text-lg font-bold">
-      {Math.round(value)}
-      <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-0.5">{unit}</span>
+  <div className="p-2 rounded-lg bg-muted/30 text-center">
+    <p className="text-[10px] truncate text-muted-foreground">{label}</p>
+    <p className="font-bold text-sm">
+      {value.toFixed(1)}
+      <span className="text-xs font-normal text-muted-foreground ml-0.5">{unit}</span>
     </p>
   </div>
 );
