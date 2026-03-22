@@ -18,7 +18,12 @@ const RecognizeFoodInputSchema = z.object({
     .describe(
       "A photo of a food item, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
-  userGoal: z.string().optional().describe("The user's primary health goal (e.g., 'lose-weight')."),
+  userProfile: z.object({
+    health: z.object({
+      primaryGoal: z.string().optional(),
+      dietaryPreferences: z.array(z.string()).optional(),
+    }).optional(),
+  }).optional().describe("The user's profile, including goals and dietary preferences/restrictions."),
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
@@ -39,25 +44,28 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are a senior developer and professional nutritional vision AI. Your task is to analyze the uploaded food image with high-level precision.
+  prompt: `You are a professional nutritional vision AI for the Nutrify app. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown based on the user's health profile.
 
---- INSTRUCTIONS ---
-1.  **Holistic Meal Identification**: Analyze the image to identify all visible food items and ingredients.
-    
-2.  **Combine into a Single Description**: Do NOT list foods separately. Instead, combine all identified components into a single descriptive sentence that clearly represents the full meal. For example: "Beans and gari with pepper stew, fried plantain, and fish". This single sentence will be the \`foodName\` of the result.
-    
-3.  **Calculate Total Nutrition for the Entire Dish**: Based on this combined meal identification, you must calculate the total estimated nutritional values for the *entire* dish visible in the image. Your calculation must include:
-      *   A single \`calories\` value for the whole meal.
-      *   A \`macronutrientBreakdown\` object with total protein, carbohydrates, and fat.
-      *   A \`micronutrientBreakdown\` object with total vitamin A, vitamin C, iron, calcium, and other relevant vitamins and minerals.
-        
-4.  **Estimate Total Weight**: Provide an \`estimatedWeightGrams\` for the entire meal shown.
-    
-5.  **Accuracy is Paramount**: Ensure your analysis is accurate and complete, reflecting everything visible. Do not provide suggestions, alternatives, or uncertainty. Only output what is actually present.
-    
-6.  **Structured Output**: Your output must contain a single prediction in the \`predictions\` array that represents the entire meal.
+--- USER PROFILE ---
+Primary Goal: {{#if userProfile.health.primaryGoal}}{{userProfile.health.primaryGoal}}{{else}}Not specified{{/if}}
+Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.length}}{{#each userProfile.health.dietaryPreferences}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
 
-Image to analyze: {{media url=photoDataUri}}
+--- IMAGE TO ANALYZE ---
+{{media url=photoDataUri}}
+
+--- CRITICAL INSTRUCTIONS ---
+1.  **Identify the Meal**: First, identify all food items in the image. Combine them into a single, descriptive \`foodName\` (e.g., "Banku with grilled tilapia and shito").
+2.  **Estimate Portion**: Estimate the total weight of the entire meal in the image and set \`estimatedWeightGrams\`.
+3.  **Calculate Total Nutrition**: Calculate the total nutritional values for the *entire* dish visible in the image (\`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`).
+4.  **Analyze and Classify**: Based on the user's ENTIRE profile (goal, preferences, allergies, etc.), you MUST classify the food into one of three categories and set the \`suitability\` field: 'Suitable', 'Moderately Suitable', or 'Not Suitable'.
+    *   **Not Suitable**: If the food directly violates a stated restriction (e.g., meat for a Vegan). This is a hard failure.
+    *   **Moderately Suitable**: If the food is generally okay but has some drawbacks for the user (e.g., high in calories for a weight loss goal).
+    *   **Suitable**: If the food aligns well with the user's goals and restrictions.
+5.  **Generate Detailed Health Analysis**: You MUST generate a comprehensive \`healthAnalysis\` string. It must:
+    *   Start by clearly stating your classification and the primary reason (e.g., "This meal is **Moderately Suitable** because while it provides good protein, the portion size is high in calories for your weight loss goal.").
+    *   Explain the "why" in detail, referencing specific ingredients and your nutritional estimates.
+    *   Provide actionable advice. If not fully suitable, suggest a modification (e.g., "Consider asking for less oil on the plantain") or a future alternative.
+6.  **Complete All Fields**: Ensure the output contains a single prediction in the \`predictions\` array that represents the entire meal and includes all required fields from the schema, especially \`suitability\` and \`healthAnalysis\`.
 
 Provide your response in the specified JSON format.`,
 });

@@ -25,6 +25,8 @@ import {
   Leaf,
   Trophy,
   Utensils,
+  CheckCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -176,8 +178,7 @@ export default function SearchPage() {
     setPortionGrams(100);
 
     try {
-      const userGoal = userProfile?.health?.primaryGoal;
-      const response = await searchFoods({ query, userGoal });
+      const response = await searchFoods({ query, userProfile });
 
       if (!response.isFoodQuery) {
         toast({
@@ -447,6 +448,29 @@ export default function SearchPage() {
   );
 }
 
+const SuitabilityBadge = ({ suitability }: { suitability?: 'Suitable' | 'Moderately Suitable' | 'Not Suitable' }) => {
+  if (!suitability) return null;
+
+  const variants = {
+    'Suitable': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800',
+    'Moderately Suitable': 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800',
+    'Not Suitable': 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800',
+  };
+  const Icon = {
+    'Suitable': CheckCircle,
+    'Moderately Suitable': AlertTriangle,
+    'Not Suitable': AlertCircle,
+  }[suitability];
+
+  return (
+    <Badge className={cn('text-sm px-3 py-1 shrink-0 whitespace-nowrap gap-1.5', variants[suitability])}>
+      <Icon className="h-3.5 w-3.5" />
+      {suitability}
+    </Badge>
+  );
+};
+
+
 interface FoodDetailsCardProps {
   foodItem: FoodItem;
   portionGrams: number;
@@ -468,7 +492,7 @@ function FoodDetailsCard({
   onAddToPlanner,
   isAdding,
 }: FoodDetailsCardProps) {
-  const [activeTab, setActiveTab] = useState('nutrition');
+  const [activeTab, setActiveTab] = useState('analyze');
 
   const calculatedNutrients = useMemo(() => {
     const ratio = portionGrams / 100;
@@ -509,20 +533,30 @@ function FoodDetailsCard({
             </div>
           </div>
 
-          <Badge variant="secondary" className="text-sm px-3 py-1 shrink-0 whitespace-nowrap">
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            AI Analyzed
-          </Badge>
+          <SuitabilityBadge suitability={foodItem.suitability} />
         </div>
       </div>
 
       <CardContent className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 h-10">
-            <TabsTrigger value="nutrition" className="text-sm">Nutrition</TabsTrigger>
             <TabsTrigger value="analyze" className="text-sm">Analysis</TabsTrigger>
+            <TabsTrigger value="nutrition" className="text-sm">Nutrition</TabsTrigger>
             <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
           </TabsList>
+
+          {/* Analysis Tab */}
+          <TabsContent value="analyze" className="space-y-4">
+            <div className="bg-primary/5 p-4 rounded-xl">
+              <h4 className="font-medium flex items-center gap-2 mb-2 text-base">
+                <Trophy className="h-4 w-4 text-primary shrink-0" />
+                Health Analysis
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {foodItem.healthAnalysis}
+              </p>
+            </div>
+          </TabsContent>
 
           {/* Nutrition Tab */}
           <TabsContent value="nutrition" className="space-y-6">
@@ -631,19 +665,6 @@ function FoodDetailsCard({
                   )}
                 </ul>
               </div>
-            </div>
-          </TabsContent>
-
-          {/* Analysis Tab */}
-          <TabsContent value="analyze" className="space-y-4">
-            <div className="bg-primary/5 p-4 rounded-xl">
-              <h4 className="font-medium flex items-center gap-2 mb-2 text-base">
-                <Trophy className="h-4 w-4 text-primary shrink-0" />
-                Health Analysis
-              </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {foodItem.healthAnalysis}
-              </p>
             </div>
           </TabsContent>
 

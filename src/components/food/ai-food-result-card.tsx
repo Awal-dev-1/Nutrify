@@ -5,10 +5,33 @@ import type { FC } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Beef, Wheat, Droplets, PlusCircle, Stethoscope, Sparkles, Utensils } from 'lucide-react';
+import { Beef, Wheat, Droplets, PlusCircle, Stethoscope, Sparkles, Utensils, CheckCircle, AlertTriangle, AlertCircle as AlertCircleIcon } from 'lucide-react';
 import type { AIPrediction } from '@/types/ai';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+
+const SuitabilityBadge: FC<{ suitability?: 'Suitable' | 'Moderately Suitable' | 'Not Suitable' }> = ({ suitability }) => {
+  if (!suitability) return null;
+
+  const variants = {
+    'Suitable': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800',
+    'Moderately Suitable': 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800',
+    'Not Suitable': 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800',
+  };
+  const Icon = {
+    'Suitable': CheckCircle,
+    'Moderately Suitable': AlertTriangle,
+    'Not Suitable': AlertCircleIcon,
+  }[suitability];
+
+  return (
+    <Badge className={cn('text-xs sm:text-sm px-3 py-1 shrink-0 whitespace-nowrap gap-1.5', variants[suitability])}>
+      <Icon className="h-3.5 w-3.5" />
+      {suitability}
+    </Badge>
+  );
+};
 
 
 export const AiFoodResultCard: FC<{
@@ -31,10 +54,7 @@ export const AiFoodResultCard: FC<{
         <div className="p-4 md:p-6">
             <div className="flex flex-wrap items-center gap-4 justify-between">
                 <CardTitle className="text-2xl font-bold">{item.foodName}</CardTitle>
-                <Badge variant="secondary" className="text-xs sm:text-sm">
-                    <Sparkles className="h-3 w-3 mr-1.5" />
-                    AI Analyzed
-                </Badge>
+                <SuitabilityBadge suitability={item.suitability} />
             </div>
             <div className="text-3xl font-extrabold text-primary pt-2">
                 {item.calories.toFixed(0)}{' '}
@@ -43,6 +63,15 @@ export const AiFoodResultCard: FC<{
         </div>
       </CardHeader>
       <CardContent className="p-4 md:p-6 pt-0 space-y-4">
+        {item.healthAnalysis && (
+          <Alert className="bg-primary/5 border-primary/10 mt-4">
+            <Stethoscope className="h-4 w-4 text-primary" />
+            <AlertTitle className="text-primary">Personalized Analysis</AlertTitle>
+            <AlertDescription className="text-primary/90">
+              {item.healthAnalysis}
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="grid md:grid-cols-2 gap-4">
             <Card>
                 <CardHeader>
@@ -111,16 +140,6 @@ export const AiFoodResultCard: FC<{
                 </CardContent>
             </Card>
         </div>
-        
-        {item.healthAnalysis && (
-          <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 mt-4">
-            <Stethoscope className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-            <AlertTitle className="text-blue-800 dark:text-blue-200">Health Tip</AlertTitle>
-            <AlertDescription className="text-blue-700 dark:text-blue-200/90">
-              {item.healthAnalysis}
-            </AlertDescription>
-          </Alert>
-        )}
       </CardContent>
        <CardFooter className="flex-col sm:flex-row gap-2">
         <Button className="w-full" variant="secondary" onClick={() => onAddToPlan(item)}>

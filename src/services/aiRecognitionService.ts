@@ -14,6 +14,7 @@ import type { AIPrediction } from '@/types/ai';
 import type { User } from 'firebase/auth';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import type { UserProfile } from '@/firebase';
 
 const compressImage = async (file: File): Promise<File> => {
   const options = {
@@ -79,7 +80,7 @@ export const runAiScan = async (
   db: Firestore,
   user: User,
   file: File,
-  userGoal?: string
+  userProfile?: UserProfile | null
 ): Promise<RecognizeFoodOutput> => {
   // First, compress the image (this is fast)
   const compressedFile = await compressImage(file);
@@ -94,7 +95,7 @@ export const runAiScan = async (
   const photoDataUri = await dataUriPromise;
 
   // The main blocking call: get the AI analysis
-  const aiResult = await recognizeFood({ photoDataUri, userGoal });
+  const aiResult = await recognizeFood({ photoDataUri, userProfile: userProfile || undefined });
 
   // Now, process the result.
   if (aiResult.isFood && aiResult.predictions.length > 0) {

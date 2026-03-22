@@ -143,7 +143,7 @@ export default function RecognizePage() {
         db,
         user,
         file,
-        userProfile?.health?.primaryGoal
+        userProfile
       );
 
       if (!scanResults.isFood) {
