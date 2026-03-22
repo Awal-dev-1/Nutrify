@@ -9,6 +9,7 @@ import { addPlannedMeal, updatePlannedMeal, deletePlannedMeal, clearPlan, addGen
 import {
   generatePersonalizedMealPlan,
   type GeneratePersonalizedMealPlanInput,
+  type GeneratePersonalizedMealPlanOutput,
 } from '@/ai/flows/generate-personalized-meal-plan';
 import { useToast } from '@/hooks/use-toast';
 import { PlannerControls } from '@/components/planner/planner-controls';
@@ -16,7 +17,7 @@ import { WeekPlanner } from '@/components/planner/week-planner';
 import { DayPlanner } from '@/components/planner/day-planner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Calendar } from 'lucide-react';
+import { Loader2, Calendar, Sparkles } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -25,6 +26,18 @@ import { getAnalyticsData } from '@/services/analyticsService';
 import { AddFoodModal } from '@/components/tracker/add-food-modal';
 import { EditFoodModal } from '@/components/tracker/edit-food-modal';
 
+type DisplayMeal = {
+  id?: string; // Optional for preview meals
+  foodName: string;
+  day: string;
+  mealType: string;
+  quantity: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
 export default function MealPlannerPage() {
   const { toast } = useToast();
   const { user, userProfile, isProfileLoading } = useUser();
@@ -32,23 +45,40 @@ export default function MealPlannerPage() {
 
   const [activeTab, setActiveTab] = useState('day');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [previewPlan, setPreviewPlan] = useState<GeneratePersonalizedMealPlanOutput | null>(null);
 
   // State for modals
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<(PlannedMeal & { id: string }) | null>(null);
   const [addMealContext, setAddMealContext] = useState<{ day: string, mealType: string } | null>(null);
 
-
   const plannedMealsQuery = useMemoFirebase(
     () => user ? query(collection(db, 'users', user.uid, 'plannedMeals'), orderBy('createdAt', 'asc')) : null,
     [user, db]
   );
-  const { data: plannedMeals, isLoading: isPlannerLoading } = useCollection<PlannedMeal & { id: string }>(plannedMealsQuery);
+  const { data: savedMeals, isLoading: isPlannerLoading } = useCollection<PlannedMeal & { id: string }>(plannedMealsQuery);
+
+  const mealsToDisplay: DisplayMeal[] = useMemo(() => {
+    if (previewPlan) {
+      return previewPlan.plannedMeals.map(m => ({
+        foodName: m.foodName,
+        day: m.day,
+        mealType: m.mealType,
+        quantity: m.quantityGrams,
+        calories: m.calories,
+        protein: m.proteinGrams || 0,
+        carbs: m.carbsGrams || 0,
+        fat: m.fatGrams || 0,
+      }));
+    }
+    return savedMeals || [];
+  }, [previewPlan, savedMeals]);
 
   const mealSummary = useMemo(() => {
-    if (!plannedMeals) return {};
-    return plannedMeals.reduce((acc, meal) => {
+    if (!mealsToDisplay) return {};
+    return mealsToDisplay.reduce((acc, meal) => {
       if (!acc[meal.day]) {
         acc[meal.day] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
       }
@@ -58,7 +88,7 @@ export default function MealPlannerPage() {
       acc[meal.day].fat += meal.fat;
       return acc;
     }, {} as Record<string, any>);
-  }, [plannedMeals]);
+  }, [mealsToDisplay]);
   
   const handleGeneratePlan = async () => {
     if (!user || !db || !userProfile) return;
@@ -70,17 +100,16 @@ export default function MealPlannerPage() {
 
     setIsGenerating(true);
     setGenerationError(null);
+    setPreviewPlan(null);
 
     try {
         const analytics = await getAnalyticsData(db, user.uid, '30d');
         const summary = analytics.summary;
 
-        // Correct for legacy 'very-active' value
         const activityLevel = userProfile.profile.activityLevel === 'very-active' 
             ? 'very active' 
             : userProfile.profile.activityLevel;
         
-        // Correct for hyphenated goal values, which the AI schema expects with a space.
         const goalForAI = userProfile.health.primaryGoal.replace('-', ' ');
 
         const input: GeneratePersonalizedMealPlanInput = {
@@ -107,10 +136,26 @@ export default function MealPlannerPage() {
             recentExcesses: [],
         };
 
-        await clearPlan(db, user.uid);
         const result = await generatePersonalizedMealPlan(input);
+        setPreviewPlan(result);
+        toast({
+            title: "Preview Generated!",
+            description: "A new meal plan is ready for you to review and save.",
+        });
 
-        for (const meal of result.plannedMeals) {
+    } catch (err: any) {
+        setGenerationError(err.message || "An unknown error occurred while generating the plan.");
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+
+  const handleSavePlan = async () => {
+    if (!user || !db || !previewPlan) return;
+    setIsSaving(true);
+    try {
+        await clearPlan(db, user.uid);
+        for (const meal of previewPlan.plannedMeals) {
             await addGeneratedMealToPlan(db, user.uid, meal.day, meal.mealType, {
                 foodName: meal.foodName,
                 quantityGrams: meal.quantityGrams,
@@ -120,22 +165,31 @@ export default function MealPlannerPage() {
                 fatGrams: meal.fatGrams,
             });
         }
-
+        setPreviewPlan(null);
         toast({
-            title: "Meal Plan Generated!",
-            description: result.planSummary,
+            title: "Plan Saved!",
+            description: "Your new meal plan has been saved successfully.",
         });
-
-    } catch (err: any) {
-        setGenerationError(err.message || "An unknown error occurred while generating the plan.");
+    } catch(err: any) {
+        setGenerationError(err.message || "An unknown error occurred while saving the plan.");
     } finally {
-        setIsGenerating(false);
+        setIsSaving(false);
     }
-  };
+  }
+
+  const handleDiscardPreview = () => {
+    setPreviewPlan(null);
+    toast({
+        variant: "destructive",
+        title: "Preview Discarded",
+        description: "The generated plan has been discarded.",
+    });
+  }
   
   const handleClearPlan = async () => {
     if (!user || !db) return;
     await clearPlan(db, user.uid);
+    setPreviewPlan(null);
     toast({
         variant: "destructive",
         title: "Plan Cleared",
@@ -154,8 +208,8 @@ export default function MealPlannerPage() {
   };
   
   const handleUpdateMeal = (id: string, newQuantity: number) => {
-     if (!user || !db || !plannedMeals) return;
-     const meal = plannedMeals.find(m => m.id === id);
+     if (!user || !db || !savedMeals) return;
+     const meal = savedMeals.find(m => m.id === id);
      if(!meal) return;
      
      const ratio = newQuantity / meal.quantity;
@@ -193,8 +247,24 @@ export default function MealPlannerPage() {
             Generate, view, and manage your weekly meal plan.
           </p>
         </div>
-        <PlannerControls onGenerate={handleGeneratePlan} onClear={handleClearPlan} isGenerating={isGenerating} />
+        <PlannerControls 
+          onGenerate={handleGeneratePlan} 
+          onClear={handleClearPlan} 
+          isGenerating={isGenerating}
+          onSave={handleSavePlan}
+          isSaving={isSaving}
+          onDiscard={handleDiscardPreview}
+          isPreviewing={!!previewPlan}
+        />
       </div>
+
+      {previewPlan && (
+        <Alert>
+            <Sparkles className="h-4 w-4" />
+            <AlertTitle>Plan Preview</AlertTitle>
+            <AlertDescription>{previewPlan.planSummary || "You are currently viewing a generated plan. Save it to make it permanent, or discard it to keep your old plan."}</AlertDescription>
+        </Alert>
+      )}
 
       {generationError && (
           <Alert variant="destructive">
@@ -213,7 +283,7 @@ export default function MealPlannerPage() {
           </TabsList>
           <TabsContent value="day" className="mt-6">
             <DayPlanner 
-                plannedMeals={plannedMeals || []} 
+                plannedMeals={mealsToDisplay} 
                 summary={mealSummary}
                 onAddMealClick={handleOpenAddModal}
                 onEditMealClick={setEditingMeal}
@@ -222,7 +292,7 @@ export default function MealPlannerPage() {
           </TabsContent>
           <TabsContent value="week" className="mt-6">
             <WeekPlanner 
-                plannedMeals={plannedMeals || []} 
+                plannedMeals={mealsToDisplay}
                 summary={mealSummary}
                 onAddMealClick={handleOpenAddModal}
                 onEditMealClick={setEditingMeal}
@@ -257,7 +327,6 @@ const PlannerSkeleton = () => (
             <Skeleton className="h-5 w-64" />
         </div>
         <div className="flex items-center gap-2">
-            <Skeleton className="h-10 w-28" />
             <Skeleton className="h-10 w-28" />
             <Skeleton className="h-10 w-28" />
         </div>

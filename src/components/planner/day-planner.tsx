@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/firebase';
 
 interface DayPlannerProps {
-  plannedMeals: (PlannedMeal & { id: string })[];
+  plannedMeals: (Partial<PlannedMeal> & { id?: string })[];
   summary: Record<string, any>;
   onAddMealClick: (day: string, mealType: string) => void;
   onEditMealClick: (meal: PlannedMeal & { id: string }) => void;
@@ -174,9 +174,9 @@ export function DayPlanner({ plannedMeals, summary, onAddMealClick, onEditMealCl
 
                     <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
                       <div className="space-y-3">
-                        {mealsForType.map(meal => (
+                        {mealsForType.map((meal, index) => (
                             <div
-                              key={meal.id}
+                              key={meal.id || index}
                               className="group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border bg-background hover:shadow-sm"
                             >
                               <div className="flex-grow min-w-0">
@@ -193,7 +193,8 @@ export function DayPlanner({ plannedMeals, summary, onAddMealClick, onEditMealCl
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  onClick={() => onEditMealClick(meal)}
+                                  onClick={() => onEditMealClick(meal as PlannedMeal & { id: string })}
+                                  disabled={!meal.id}
                                 >
                                   <Pencil className="h-3.5 w-3.5" />
                                 </Button>
@@ -203,6 +204,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMealClick, onEditMealCl
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8 text-destructive hover:text-destructive"
+                                      disabled={!meal.id}
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
@@ -218,7 +220,7 @@ export function DayPlanner({ plannedMeals, summary, onAddMealClick, onEditMealCl
                                       <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                       <AlertDialogAction
                                         className="w-full sm:w-auto"
-                                        onClick={() => onRemoveMeal(meal.id)}
+                                        onClick={() => onRemoveMeal(meal.id!)}
                                       >
                                         Remove
                                       </AlertDialogAction>
