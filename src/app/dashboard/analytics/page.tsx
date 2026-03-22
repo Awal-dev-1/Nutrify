@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type FC } from 'react';
 import {
   Bar,
   Line,
@@ -42,7 +42,7 @@ import {
   Droplets,
   Shield,
   Eye,
-  Wind,
+  Salad,
   Target,
   TrendingUp,
   Award,
@@ -64,6 +64,64 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 type Timeframe = '7d' | '30d' | '90d';
+
+const MicroAverageStat: FC<{ label: string; value: number; unit: string }> = ({
+  label,
+  value,
+  unit,
+}) => (
+  <div className="p-2 sm:p-3 rounded-lg bg-muted/50 text-center transition-colors hover:bg-muted">
+    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{label}</p>
+    <p className="font-bold text-sm sm:text-base">
+      {value.toFixed(1)} <span className="text-xs font-normal">{unit}</span>
+    </p>
+  </div>
+);
+
+const AverageMicronutrientCard: FC<{ summary: AnalyticsSummary }> = ({ summary }) => {
+    const micros = [
+        { label: 'Fiber', value: summary.averageFiber, unit: 'g' },
+        { label: 'Sugar', value: summary.averageSugar, unit: 'g' },
+        { label: 'Sodium', value: summary.averageSodium, unit: 'mg' },
+        { label: 'Iron', value: summary.averageIron, unit: 'mg' },
+        { label: 'Calcium', value: summary.averageCalcium, unit: 'mg' },
+        { label: 'Magnesium', value: summary.averageMagnesium, unit: 'mg' },
+        { label: 'Potassium', value: summary.averagePotassium, unit: 'mg' },
+        { label: 'Zinc', value: summary.averageZinc, unit: 'mg' },
+        { label: 'Vitamin A', value: summary.averageVitaminA, unit: 'µg' },
+        { label: 'Vitamin C', value: summary.averageVitaminC, unit: 'mg' },
+        { label: 'Vitamin D', value: summary.averageVitaminD, unit: 'µg' },
+        { label: 'Vitamin E', value: summary.averageVitaminE, unit: 'mg' },
+        { label: 'Vitamin K', value: summary.averageVitaminK, unit: 'µg' },
+        { label: 'Vitamin B1', value: summary.averageVitaminB1, unit: 'mg' },
+        { label: 'Vitamin B2', value: summary.averageVitaminB2, unit: 'mg' },
+        { label: 'Vitamin B3', value: summary.averageVitaminB3, unit: 'mg' },
+        { label: 'Vitamin B6', value: summary.averageVitaminB6, unit: 'mg' },
+        { label: 'Vitamin B12', value: summary.averageVitaminB12, unit: 'µg' },
+        { label: 'Folate', value: summary.averageFolate, unit: 'µg' },
+    ].filter(m => m.value > 0);
+
+    return (
+        <Card className="border-2 shadow-xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Salad className="h-4 w-4 text-primary" />
+                </div>
+                Average Micronutrient Intake
+              </CardTitle>
+              <CardDescription className="text-xs md:text-sm">
+                Your average daily values over the selected period.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 md:p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                {micros.map(micro => (
+                    <MicroAverageStat key={micro.label} {...micro} />
+                ))}
+            </CardContent>
+        </Card>
+    );
+};
 
 const AnalyticsPage = () => {
   const { user } = useUser();
@@ -360,7 +418,7 @@ const AnalyticsPage = () => {
         </Card>
 
         {/* Trend Charts - Responsive Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 gap-4 md:gap-6">
           {/* Macronutrient Trends */}
           <Card className="border-2 shadow-xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
@@ -418,133 +476,9 @@ const AnalyticsPage = () => {
               </div>
             </CardContent>
           </Card>
+          
+          <AverageMicronutrientCard summary={summary} />
 
-          {/* Mineral & Salt Trends */}
-          <Card className="border-2 shadow-xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Shield className="h-4 w-4 text-primary" />
-                </div>
-                Mineral & Salt Trends
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm">
-                Daily iron, sodium, and calcium intake
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 md:p-4">
-              <div className="h-[250px] md:h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={(str) => format(new Date(str), 'MMM d')} 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      interval="preserveStartEnd"
-                    />
-                    <YAxis 
-                      unit="mg" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      width={30}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '11px',
-                      }}
-                      labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
-                      iconSize={8}
-                    />
-                    <Line type="monotone" dataKey="iron" name="Iron" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="sodium" name="Sodium" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="calcium" name="Calcium" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Fiber, Sugar & Vitamin A Trends */}
-          <Card className="border-2 shadow-xl overflow-hidden lg:col-span-2">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Eye className="h-4 w-4 text-primary" />
-                </div>
-                Fiber, Sugar & Vitamin A Trends
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm">
-                Daily fiber, sugar, and Vitamin A intake
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 md:p-4">
-              <div className="h-[250px] md:h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={(str) => format(new Date(str), 'MMM d')} 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      interval="preserveStartEnd"
-                    />
-                    <YAxis 
-                      yAxisId="left" 
-                      unit="g" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      width={30}
-                    />
-                    <YAxis 
-                      yAxisId="right" 
-                      orientation="right" 
-                      unit="µg" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      width={30}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '11px',
-                      }}
-                      labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
-                      iconSize={8}
-                    />
-                    <Line yAxisId="left" type="monotone" dataKey="fiber" name="Fiber" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
-                    <Line yAxisId="left" type="monotone" dataKey="sugar" name="Sugar" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
-                    <Line yAxisId="right" type="monotone" dataKey="vitaminA" name="Vitamin A" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Insights Grid - Responsive */}
@@ -723,8 +657,8 @@ const DaySummaryCard = ({ day, title, icon, variant }: { day: AnalyticsData; tit
 
 // Enhanced Analytics Skeleton
 const AnalyticsSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8 animate-pulse">
+  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 rounded-xl" />
@@ -763,18 +697,27 @@ const AnalyticsSkeleton = () => (
         </CardContent>
       </Card>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {[1,2].map(i => 
-          <Card key={i} className="border-2 shadow-lg">
-            <CardHeader>
-              <Skeleton className="h-5 w-1/3" />
-              <Skeleton className="h-3 w-1/2" />
-            </CardHeader>
-            <CardContent className="p-4">
-              <Skeleton className="h-[250px] md:h-[300px] w-full" />
-            </CardContent>
-          </Card>
-        )}
+      <div className="grid grid-cols-1 gap-4 md:gap-6">
+        <Card className="border-2 shadow-lg">
+          <CardHeader>
+            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-3 w-1/2" />
+          </CardHeader>
+          <CardContent className="p-4">
+            <Skeleton className="h-[250px] md:h-[300px] w-full" />
+          </CardContent>
+        </Card>
+        <Card className="border-2 shadow-lg">
+          <CardHeader>
+            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-3 w-1/2" />
+          </CardHeader>
+          <CardContent className="p-4 grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {Array.from({ length: 18 }).map((_, i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
+              ))}
+          </CardContent>
+        </Card>
       </div>
 
     </div>
