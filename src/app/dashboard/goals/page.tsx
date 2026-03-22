@@ -71,8 +71,12 @@ export default function GoalsPage() {
 
   // Profile state
   const [profileData, setProfileData] = useState({
-      activityLevel: userProfile?.profile?.activityLevel || '',
-      primaryGoal: userProfile?.health?.primaryGoal || '',
+      activityLevel: '',
+      primaryGoal: '',
+      age: 0,
+      gender: '',
+      heightCm: 0,
+      weightKg: 0,
   });
 
   const [initialState, setInitialState] = useState<any>(null);
@@ -89,6 +93,10 @@ export default function GoalsPage() {
         profile: {
           activityLevel: userProfile.profile?.activityLevel || '',
           primaryGoal: userProfile.health?.primaryGoal || '',
+          age: userProfile.profile?.age || 0,
+          gender: userProfile.profile?.gender || '',
+          heightCm: userProfile.profile?.heightCm || 0,
+          weightKg: userProfile.profile?.weightKg || 0,
         }
       };
       setCalories(initial.calories);
@@ -161,7 +169,11 @@ export default function GoalsPage() {
         'goals.carbsPercentageGoal': macros.carbs,
         'goals.fatPercentageGoal': macros.fat,
         'profile.activityLevel': profileData.activityLevel,
-        'health.primaryGoal': profileData.primaryGoal
+        'health.primaryGoal': profileData.primaryGoal,
+        'profile.age': Number(profileData.age),
+        'profile.gender': profileData.gender,
+        'profile.heightCm': Number(profileData.heightCm),
+        'profile.weightKg': Number(profileData.weightKg),
     };
     try {
         await updateUserGoalsAndProfile(db, user.uid, updates);
@@ -186,8 +198,14 @@ export default function GoalsPage() {
     if (!initialState) return false;
     if (calories !== initialState.calories) return true;
     if (macros.protein !== initialState.macros.protein || macros.carbs !== initialState.macros.carbs || macros.fat !== initialState.macros.fat) return true;
-    if (profileData.activityLevel !== initialState.profile.activityLevel ||
-        profileData.primaryGoal !== initialState.profile.primaryGoal) return true;
+    if (
+        profileData.activityLevel !== initialState.profile.activityLevel ||
+        profileData.primaryGoal !== initialState.profile.primaryGoal ||
+        profileData.age !== initialState.profile.age ||
+        profileData.gender !== initialState.profile.gender ||
+        profileData.heightCm !== initialState.profile.heightCm ||
+        profileData.weightKg !== initialState.profile.weightKg
+    ) return true;
     return false;
   }, [calories, macros, profileData, initialState]);
 
@@ -195,10 +213,11 @@ export default function GoalsPage() {
     setProfileData(prev => {
         const newProfileData = { ...prev, [field]: value };
         
-        if (newProfileData.primaryGoal && (userProfile?.profile?.weightKg || 0) > 0 && newProfileData.activityLevel) {
+        // Recalculate recommended goals when a relevant profile field changes
+        if (newProfileData.primaryGoal && (newProfileData.weightKg || 0) > 0 && newProfileData.activityLevel) {
             const recommended = calculateRecommendedGoals({
                 primaryGoal: newProfileData.primaryGoal,
-                weightKg: userProfile!.profile!.weightKg,
+                weightKg: newProfileData.weightKg,
                 activityLevel: newProfileData.activityLevel
             });
     
@@ -327,28 +346,61 @@ export default function GoalsPage() {
                         <CardDescription className="text-xs sm:text-sm">These details help us calculate your recommended nutritional targets.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-5 md:p-6">
-                        <div className="space-y-4 max-w-md">
-                             <h3 className="font-medium text-muted-foreground">Health & Activity</h3>
-                            <div className="space-y-2"><Label>Primary Goal</Label>
-                                <Select value={profileData.primaryGoal} onValueChange={(v) => handleProfileFieldChange('primaryGoal', v)}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="lose-weight">Lose Weight</SelectItem>
-                                        <SelectItem value="maintain-weight">Maintain Weight</SelectItem>
-                                        <SelectItem value="gain-weight">Gain Weight</SelectItem>
-                                        <SelectItem value="eat-healthier">Eat Healthier</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        <div className="space-y-6 max-w-lg">
+                            <div className="space-y-4">
+                                <h3 className="font-medium text-muted-foreground">Physical Details</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Gender</Label>
+                                        <Select value={profileData.gender} onValueChange={(v) => handleProfileFieldChange('gender', v)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="age">Age</Label>
+                                        <Input id="age" type="number" value={profileData.age || ''} onChange={(e) => handleProfileFieldChange('age', Number(e.target.value))} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="height">Height (cm)</Label>
+                                        <Input id="height" type="number" value={profileData.heightCm || ''} onChange={(e) => handleProfileFieldChange('heightCm', Number(e.target.value))} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="weight">Weight (kg)</Label>
+                                        <Input id="weight" type="number" value={profileData.weightKg || ''} onChange={(e) => handleProfileFieldChange('weightKg', Number(e.target.value))} />
+                                    </div>
+                                </div>
                             </div>
-                            <div className="space-y-2"><Label>Activity Level</Label>
-                                <RadioGroup value={profileData.activityLevel} onValueChange={(v) => handleProfileFieldChange('activityLevel', v)} className="grid grid-cols-2 gap-2">
-                                    {(['low', 'moderate', 'active', 'very active'] as const).map(level => (
-                                        <Label key={level} className="p-2 border rounded-md cursor-pointer hover:bg-accent has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:checked]:border-primary text-center text-xs transition-colors">
-                                            <RadioGroupItem value={level} className="sr-only" />
-                                            <span className="capitalize">{level}</span>
-                                        </Label>
-                                    ))}
-                                </RadioGroup>
+                            <Separator />
+                            <div className="space-y-4">
+                                <h3 className="font-medium text-muted-foreground">Health & Activity</h3>
+                                <div className="space-y-2"><Label>Primary Goal</Label>
+                                    <Select value={profileData.primaryGoal} onValueChange={(v) => handleProfileFieldChange('primaryGoal', v)}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="lose-weight">Lose Weight</SelectItem>
+                                            <SelectItem value="maintain-weight">Maintain Weight</SelectItem>
+                                            <SelectItem value="gain-weight">Gain Weight</SelectItem>
+                                            <SelectItem value="eat-healthier">Eat Healthier</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2"><Label>Activity Level</Label>
+                                    <RadioGroup value={profileData.activityLevel} onValueChange={(v) => handleProfileFieldChange('activityLevel', v)} className="grid grid-cols-2 gap-2">
+                                        {(['low', 'moderate', 'active', 'very active'] as const).map(level => (
+                                            <Label key={level} className="p-2 border rounded-md cursor-pointer hover:bg-accent has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:checked]:border-primary text-center text-xs transition-colors">
+                                                <RadioGroupItem value={level} className="sr-only" />
+                                                <span className="capitalize">{level}</span>
+                                            </Label>
+                                        ))}
+                                    </RadioGroup>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
