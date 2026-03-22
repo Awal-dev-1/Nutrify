@@ -80,7 +80,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from 'framer-motion';
 
-type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
+type MealType = "Breakfast" | "Lunch" | "Dinner";
 
 export default function DailyTrackerPage() {
   const { toast } = useToast();
@@ -110,7 +110,7 @@ export default function DailyTrackerPage() {
   };
 
   const meals = useMemo(() => {
-    return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] };
+    return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [] };
   }, [dailyLog]);
 
   const dailyTotals = useMemo(() => {
@@ -261,7 +261,7 @@ export default function DailyTrackerPage() {
   const clearDay = () => {
     if (dailyLogRef) {
       const emptyLog: DailyLog = {
-        date: dateKey, meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
+        date: dateKey, meals: { Breakfast: [], Lunch: [], Dinner: [] },
         waterIntake: 0, totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
         totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
         totalSugar: 0, totalCalcium: 0, totalVitaminC: 0, totalVitaminD: 0,
@@ -285,7 +285,7 @@ export default function DailyTrackerPage() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2 }}
       >
         <Header onClearDay={clearDay} date={date} setDate={setDate} />
       </motion.div>
@@ -294,7 +294,7 @@ export default function DailyTrackerPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
+          transition={{ duration: 0.2, delay: 0.05 }}
         >
           <EmptyState
             icon={<ClipboardX className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />}
@@ -311,16 +311,16 @@ export default function DailyTrackerPage() {
         // Stack on mobile, side-by-side on lg+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.05 }}>
               <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.1 }}>
               <MacroPieChart totals={dailyTotals} />
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.15 }}>
               <MicroNutrientGrid totals={dailyTotals} />
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
               <MealSections
                 meals={meals}
                 onAddFoodClick={openAddModal}
@@ -334,7 +334,7 @@ export default function DailyTrackerPage() {
             className="lg:col-span-1"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            transition={{ duration: 0.2, delay: 0.1 }}
           >
             <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
           </motion.div>
@@ -550,14 +550,13 @@ const MealSections: FC<{
   onEditFoodClick: (food: LoggedFoodItem) => void;
   onDeleteFoodClick: (logId: string) => void;
 }> = ({ meals, onAddFoodClick, onEditFoodClick, onDeleteFoodClick }) => {
-  const mealOrder: MealType[] = ["Breakfast", "Lunch", "Dinner", "Snacks"];
+  const mealOrder: MealType[] = ["Breakfast", "Lunch", "Dinner"];
 
   const getMealIcon = (mealType: MealType) => {
     switch (mealType) {
       case "Breakfast": return <Coffee className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />;
       case "Lunch":     return <Sun    className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />;
       case "Dinner":    return <Moon   className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />;
-      case "Snacks":    return <Cookie className="h-4 w-4 sm:h-5 sm:w-5 text-pink-500" />;
       default:          return <UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5" />;
     }
   };

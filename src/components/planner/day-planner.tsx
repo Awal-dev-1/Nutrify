@@ -39,14 +39,13 @@ interface DayPlannerProps {
   onRemoveMeal: (id: string) => void;
 }
 
-const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
 
 const getMealIcon = (mealType: string) => {
   switch(mealType) {
     case 'Breakfast': return '🍳';
     case 'Lunch': return '🥗';
     case 'Dinner': return '🍽️';
-    case 'Snacks': return '🍪';
     default: return '🍽️';
   }
 };
