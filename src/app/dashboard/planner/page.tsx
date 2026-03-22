@@ -79,6 +79,9 @@ export default function MealPlannerPage() {
         const activityLevel = userProfile.profile.activityLevel === 'very-active' 
             ? 'very active' 
             : userProfile.profile.activityLevel;
+        
+        // Correct for hyphenated goal values, which the AI schema expects with a space.
+        const goalForAI = userProfile.health.primaryGoal.replace('-', ' ');
 
         const input: GeneratePersonalizedMealPlanInput = {
             gender: userProfile.profile.gender as any,
@@ -86,7 +89,7 @@ export default function MealPlannerPage() {
             heightCm: userProfile.profile.heightCm,
             weightKg: userProfile.profile.weightKg,
             activityLevel: activityLevel as any,
-            goal: userProfile.health.primaryGoal as any,
+            goal: goalForAI as any,
             targetCalories: userProfile.goals.dailyCalorieGoal,
             proteinPercentageGoal: userProfile.goals.proteinPercentageGoal,
             carbsPercentageGoal: userProfile.goals.carbsPercentageGoal,
