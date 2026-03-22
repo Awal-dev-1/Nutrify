@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { signup } from "@/services/authService";
+import { signup, signInWithGoogle } from "@/services/authService";
 import { useAuth, useFirestore, useToast } from "@/hooks";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -35,12 +36,22 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg role="img" viewBox="0 0 24 24" {...props}>
+      <path
+        fill="currentColor"
+        d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.05 1.05-2.36 1.67-4.66 1.67-3.86 0-6.99-3.14-6.99-7s3.13-7 6.99-7c2.03 0 3.45.78 4.27 1.58l2.5-2.5C17.96 2.67 15.22 1 12.48 1 7.03 1 3 5.03 3 10.5S7.03 20 12.48 20c2.9 0 5.25-.97 6.92-2.63 1.8-1.75 2.56-4.25 2.56-6.75 0-.64-.06-1.28-.18-1.89H12.48z"
+      />
+    </svg>
+);
+
 export function SignUpForm() {
   const router = useRouter();
   const auth = useAuth();
   const db = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,6 +83,23 @@ export function SignUpForm() {
       setIsLoading(false);
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+        await signInWithGoogle(auth, db);
+    } catch (error: any) {
+        if (error.code !== 'auth/popup-closed-by-user') {
+            toast({
+                variant: "destructive",
+                title: "Sign-Up Failed",
+                description: "Could not sign up with Google. Please try again.",
+            });
+        }
+    } finally {
+        setIsGoogleLoading(false);
+    }
+  };
 
   return (
     <Card className="w-full max-w-sm">
@@ -163,12 +191,35 @@ export function SignUpForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Account
             </Button>
           </form>
         </Form>
+        <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                Or continue with
+                </span>
+            </div>
+        </div>
+        <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading || isGoogleLoading}
+        >
+            {isGoogleLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <GoogleIcon className="mr-2 h-4 w-4" />
+            )}
+            Google
+        </Button>
         <div className="mt-4 text-center text-small">
           Already have an account?{" "}
           <Link href="/login" className="underline">

@@ -12,8 +12,10 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, Firestore, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, Firestore, deleteDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -120,4 +122,40 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
 
   // Once the database document is gone, delete the auth user.
   await deleteUser(user);
+};
+
+// 7. Sign in with Google
+export const signInWithGoogle = async (auth: Auth, db: Firestore) => {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Check if the user document already exists in Firestore
+    const userDocRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (!docSnap.exists()) {
+      // If the user is new, create a profile document for them
+      const userProfileData = {
+        id: user.uid,
+        name: user.displayName || 'Google User',
+        email: user.email,
+        onboardingCompleted: false, // New users need to go through onboarding
+        createdAt: serverTimestamp(),
+        profile: {
+          profileImageUrl: user.photoURL,
+        },
+      };
+      await setDoc(userDocRef, userProfileData);
+    }
+    // If the document exists, it's a returning user, so no need to do anything.
+    // The auth state change will handle the redirect.
+    return user;
+  } catch (error) {
+    // Handle errors, such as the user closing the popup.
+    console.error("Error during Google sign-in:", error);
+    // Re-throw the error so the UI can handle it (e.g., show a toast).
+    throw error;
+  }
 };
