@@ -7,8 +7,11 @@ import Link from 'next/link';
 import { useUser, useFirestore, useAuth, type UserProfile } from '@/firebase';
 import { updateUserDocument } from '@/services/userService';
 import { updateUserProfileAndPhoto } from '@/services/profileService';
-import { logout, resetPassword, deleteUserAccount } from '@/services/authService';
+import { logout, resetPassword, deleteUserAccount, changeUserPassword } from '@/services/authService';
 import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import {
   User,
   Palette,
@@ -61,6 +64,25 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+
+const passwordFormSchema = z.object({
+  currentPassword: z.string().min(1, { message: "Current password is required." }),
+  newPassword: z.string().min(8, { message: "New password must be at least 8 characters." }),
+  confirmPassword: z.string()
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "New passwords do not match.",
+  path: ["confirmPassword"]
+});
+
 
 export default function SettingsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -88,9 +110,19 @@ export default function SettingsPage() {
   
   const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
   useEffect(() => {
     if (userProfile) {
@@ -216,6 +248,26 @@ export default function SettingsPage() {
       toast({ variant: "destructive", title: "Error Saving", description: "Could not save notification settings." });
     } finally {
       setIsSaving(false);
+    }
+  };
+  
+  const onPasswordSubmit = async (values: z.infer<typeof passwordFormSchema>) => {
+    setIsChangingPassword(true);
+    try {
+      await changeUserPassword(auth, values.currentPassword, values.newPassword);
+      toast({ title: "Password Changed", description: "Your password has been successfully updated." });
+      passwordForm.reset();
+    } catch (error: any) {
+      let description = "An unexpected error occurred.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = "The current password you entered is incorrect. Please try again.";
+        passwordForm.setError("currentPassword", { type: "manual", message: "Incorrect password" });
+      } else {
+        description = error.message || description;
+      }
+      toast({ variant: "destructive", title: "Password Change Failed", description });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -549,34 +601,73 @@ export default function SettingsPage() {
                   <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b p-4 md:p-6">
                     <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                       <KeyRound className="h-5 w-5 text-primary" />
-                      Account Security
+                      Password & Security
                     </CardTitle>
                     <CardDescription className="text-sm">
                       Manage your password and account access.
                     </CardDescription>
                   </CardHeader>
                   
-                  <CardContent className="p-4 md:p-6 space-y-4">
-                    {/* Password Reset */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg bg-muted/20">
-                      <div className="space-y-1">
-                        <h3 className="font-medium">Password Reset</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Send a password reset link to your email.
-                        </p>
-                      </div>
-                      <Button 
-                        variant="secondary" 
-                        onClick={handlePasswordReset}
-                        className="w-full sm:w-auto rounded-full"
-                      >
-                        Send Reset Email
-                      </Button>
-                    </div>
+                  <CardContent className="p-4 md:p-6 space-y-6">
+                    {/* Change Password Form */}
+                    <Form {...passwordForm}>
+                      <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                        <FormField
+                          control={passwordForm.control}
+                          name="currentPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Current Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={passwordForm.control}
+                          name="newPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>New Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={passwordForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Confirm New Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
+                           <Button type="submit" disabled={isChangingPassword} className="w-full sm:w-auto rounded-full">
+                              {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                              Change Password
+                            </Button>
+                            <Button type="button" variant="link" onClick={handlePasswordReset} className="text-sm h-auto p-0">
+                                Forgot your password?
+                            </Button>
+                        </div>
+                      </form>
+                    </Form>
+                    
+                    <Separator />
 
                     {/* Logout */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg">
-                      <div className="space-y-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
                         <h3 className="font-medium">Logout</h3>
                         <p className="text-sm text-muted-foreground">
                           End your current session on this device.
@@ -875,5 +966,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

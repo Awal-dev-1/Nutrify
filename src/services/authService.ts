@@ -9,6 +9,9 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   deleteUser,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, Firestore, deleteDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -72,7 +75,28 @@ export const resetPassword = async (auth: Auth, email: string) => {
   await sendPasswordResetEmail(auth, email);
 };
 
-// 5. Account Deletion
+// 5. Change Password (when user is authenticated)
+export const changeUserPassword = async (
+  auth: Auth,
+  currentPassword: string,
+  newPassword: string
+) => {
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    throw new Error("No authenticated user found or user has no email.");
+  }
+
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+
+  // Re-authenticate before changing the password
+  await reauthenticateWithCredential(user, credential);
+
+  // If re-authentication is successful, update the password
+  await updatePassword(user, newPassword);
+};
+
+
+// 6. Account Deletion
 export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const user = auth.currentUser;
   if (!user) {
