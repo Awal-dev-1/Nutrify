@@ -820,3 +820,5 @@
     "reasoning": "The recommended Firestore structure prioritizes security, scalability, and query performance. Storing user-specific data under `/users/{userId}` ensures strong ownership and simplifies security rules. The new `/users/{userId}/dailyLogs/{date}` collection is specifically designed for analytics performance. By storing pre-aggregated daily totals in a single document per day (identified by date), the application can fetch analytics data for a date range (e.g., 7 or 30 days) with a single, efficient query, rather than needing to read and aggregate hundreds of individual food log documents on the client. This dramatically improves performance and reduces cost at scale."
   }
 }
+
+    
