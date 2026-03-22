@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,7 +56,10 @@ export function LoginForm() {
         description = "No account found with this email address. You need to create an account.";
       } else if (error.code === 'auth/wrong-password') {
         description = "Incorrect password. Please try again.";
-      } else {
+      } else if (error.code === 'auth/operation-not-allowed') {
+        description = "Email/password accounts are not enabled. Please contact support.";
+      }
+      else {
         description = error.message || description;
       }
 
@@ -87,7 +91,7 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="mohammed@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

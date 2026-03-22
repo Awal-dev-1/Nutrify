@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,10 +75,18 @@ export function SignUpForm() {
       });
       // Do not redirect here, the layout will handle it.
     } catch (error: any) {
+      let description = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/email-already-in-use') {
+          description = "An account with this email already exists. Please login instead.";
+      } else if (error.code === 'auth/operation-not-allowed') {
+          description = "Email/password accounts are not enabled. Please contact support.";
+      } else {
+          description = error.message || description;
+      }
       toast({
         variant: "destructive",
         title: "Sign Up Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     } finally {
       setIsLoading(false);
@@ -115,7 +124,7 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="mohammed@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
