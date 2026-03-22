@@ -433,10 +433,10 @@ export default function GoalsPage() {
                                 </div>
                                 <div className="space-y-2"><Label>Activity Level</Label>
                                     <RadioGroup value={profileData.activityLevel} onValueChange={(v) => handleProfileFieldChange('activityLevel', v)} className="grid grid-cols-2 gap-2">
-                                        {(['low', 'moderate', 'active', 'very active'] as const).map(level => (
+                                        {(['low', 'moderate', 'active', 'very-active'] as const).map(level => (
                                             <Label key={level} className="p-2 border rounded-md cursor-pointer hover:bg-accent has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:checked]:border-primary text-center text-xs transition-colors">
                                                 <RadioGroupItem value={level} className="sr-only" />
-                                                <span className="capitalize">{level}</span>
+                                                <span className="capitalize">{level.replace('-', ' ')}</span>
                                             </Label>
                                         ))}
                                     </RadioGroup>

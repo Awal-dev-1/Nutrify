@@ -29,7 +29,7 @@ const GeneratePersonalizedMealPlanInputSchema = z.object({
   age: z.number().min(0).max(120).describe("User's age in years."),
   heightCm: z.number().min(50).max(250).describe("User's height in centimeters."),
   weightKg: z.number().min(20).max(300).describe("User's weight in kilograms."),
-  activityLevel: z.enum(['low', 'moderate', 'active', 'very active']).describe("User's physical activity level."),
+  activityLevel: z.enum(['low', 'moderate', 'active', 'very-active']).describe("User's physical activity level."),
 
   // Dietary Goals (Flattened)
   goal: z.enum(['lose weight', 'maintain weight', 'gain weight', 'eat healthier']).describe('Overall dietary goal.'),
@@ -86,7 +86,7 @@ Activity Level: {{{activityLevel}}}
 Overall Goal: {{{goal}}}
 Target Daily Calories: {{#if targetCalories}}{{{targetCalories}}} kcal{{else}}Not specified{{/if}}
 Target Macros (P/C/F %): {{{proteinPercentageGoal}}}/{{{carbsPercentageGoal}}}/{{{fatPercentageGoal}}}
-Dietary Preferences: {{#if dietaryPreferences.length}}{{#each dietaryPreferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+Dietary Preferences: {{#if dietaryPreferences.length}}{{#each dietaryPreferences}}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
 Average Daily Intake (Calories): {{{averageDailyCalories}}} kcal
 
 Generate the output in the required JSON format.`,

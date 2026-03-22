@@ -24,10 +24,7 @@ export const calculateRecommendedGoals = (data: GoalCalculationData) => {
     switch (data.activityLevel) {
         case 'moderate': dailyCalorieGoal *= 1.2; break;
         case 'active': dailyCalorieGoal *= 1.4; break;
-        case 'very-active': // Handle legacy value
-        case 'very active': // Handle correct value
-            dailyCalorieGoal *= 1.6; 
-            break;
+        case 'very-active': dailyCalorieGoal *= 1.6; break;
     }
 
     switch (data.primaryGoal) {

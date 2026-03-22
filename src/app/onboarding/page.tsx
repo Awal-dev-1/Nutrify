@@ -22,8 +22,26 @@ import { cn } from "@/lib/utils";
 
 const totalSteps = 5;
 
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 30 : -30,
+    opacity: 0,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? 30 : -30,
+    opacity: 0,
+  }),
+};
+
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState({});
   const router = useRouter();
   const { user } = useUser();
@@ -31,6 +49,7 @@ export default function OnboardingPage() {
   const { toast } = useToast();
 
   const handleNext = (data: any) => {
+    setDirection(1);
     setFormData((prev) => ({ ...prev, ...data }));
     if (step < totalSteps + 1) {
       setStep((prev) => prev + 1);
@@ -38,6 +57,7 @@ export default function OnboardingPage() {
   };
 
   const handleBack = () => {
+    setDirection(-1);
     setStep((prev) => prev - 1);
   };
 
@@ -54,10 +74,8 @@ export default function OnboardingPage() {
     setStep(totalSteps + 1); // Go to Loading step
 
     try {
-        // Await the critical update to ensure it completes successfully.
         await completeOnboarding(db, user.uid, formData as any);
 
-        // Success path
         toast({
             title: "Profile Created!",
             description: "Welcome to Nutrify! Your personalized dashboard is ready."
@@ -65,14 +83,12 @@ export default function OnboardingPage() {
         router.push("/dashboard/overview");
 
     } catch (error) {
-        // Error path
         console.error("Onboarding failed:", error);
         toast({
             variant: "destructive",
             title: "Setup Failed",
             description: "Could not save your profile. Please review your details and try again."
         });
-        // Go back to the summary step so the user can try again.
         setStep(totalSteps); 
     }
   };
@@ -90,7 +106,6 @@ export default function OnboardingPage() {
   const showProgress = step > 0 && step <= totalSteps;
   const progressValue = ((step) / totalSteps) * 100;
 
-  // Step titles for better context
   const stepTitles = [
     "Welcome",
     "Your Details",
@@ -103,13 +118,11 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/30 overflow-hidden">
-      {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
       </div>
 
-      {/* Main Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -117,7 +130,6 @@ export default function OnboardingPage() {
         className="w-full max-w-2xl px-4 relative z-10"
       >
         <Card className="border-2 shadow-xl overflow-hidden backdrop-blur-sm bg-background/95">
-          {/* Header with Logo/Brand */}
           {step === 0 && (
             <div className="pt-8 flex justify-center">
               <div className="flex items-center px-4 py-2 rounded-full bg-primary/10">
@@ -126,7 +138,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Progress Header */}
           {showProgress && (
             <CardHeader className="space-y-4 pb-2">
               <div className="flex items-center justify-between text-body">
@@ -134,7 +145,6 @@ export default function OnboardingPage() {
                 <span className="text-muted-foreground">Step {step} of {totalSteps}</span>
               </div>
               
-              {/* Custom Progress Bar */}
               <div className="relative h-2 w-full bg-muted rounded-full overflow-hidden">
                 <motion.div
                   className="absolute left-0 top-0 h-full bg-primary rounded-full"
@@ -144,7 +154,6 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              {/* Step Indicators */}
               <div className="flex justify-between pt-1">
                 {Array.from({ length: totalSteps }).map((_, i) => (
                   <div
@@ -163,15 +172,19 @@ export default function OnboardingPage() {
             </CardHeader>
           )}
 
-          {/* Content Area with Animation */}
-          <CardContent className="p-6 md:p-8 min-h-[400px] flex items-center justify-center">
-            <AnimatePresence mode="wait">
+          <CardContent className="p-6 md:p-8 min-h-[400px] flex items-center justify-center overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={step}
-                initial={{ opacity: 0, x: step > 0 ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30, duration: 0.3 },
+                  opacity: { duration: 0.2 }
+                }}
                 className="w-full"
               >
                 {stepsComponents[step]}
@@ -179,7 +192,6 @@ export default function OnboardingPage() {
             </AnimatePresence>
           </CardContent>
 
-          {/* Footer Navigation */}
           {step > 0 && step <= totalSteps && (
             <CardFooter className="flex justify-between p-6 pt-0 border-t mt-4">
               <Button
@@ -195,18 +207,15 @@ export default function OnboardingPage() {
                 Back
               </Button>
               
-              {/* Step-specific hint */}
               <p className="text-small text-muted-foreground hidden md:block">
                 Press Enter to continue
               </p>
               
-              {/* Placeholder for right side - actual Next button is in each step */}
               <div className="w-[72px]" />
             </CardFooter>
           )}
         </Card>
 
-        {/* Trust indicators */}
         {step === 0 && (
           <motion.div
             initial={{ opacity: 0 }}

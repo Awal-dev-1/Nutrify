@@ -10,7 +10,7 @@ const activityLevels = [
   { id: 'low', label: 'Low', description: 'Little to no exercise' },
   { id: 'moderate', label: 'Moderate', description: 'Exercise 2-3 days/week' },
   { id: 'active', label: 'Active', description: 'Exercise 4-5 days/week' },
-  { id: 'very active', label: 'Very Active', description: 'Intense exercise daily' },
+  { id: 'very-active', label: 'Very Active', description: 'Intense exercise daily' },
 ];
 
 export function ActivityStep({ onNext }: { onNext: (data: any) => void }) {
