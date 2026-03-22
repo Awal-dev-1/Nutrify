@@ -204,7 +204,7 @@ const OverviewPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
             >
               <Card className="border-2 shadow-xl overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
@@ -304,7 +304,7 @@ const OverviewPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
             >
               <MicroNutrientGrid totals={todayTotals} />
             </motion.div>
@@ -313,7 +313,7 @@ const OverviewPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
             >
               <Card className="border-2 shadow-xl overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
@@ -401,7 +401,7 @@ const OverviewPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
             >
               <Card className="border-2 shadow-xl overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
@@ -451,7 +451,7 @@ const OverviewPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
             >
               <Card className="border-2 shadow-xl overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
@@ -499,7 +499,7 @@ const OverviewPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.3, delay: 0.6 }}
             >
               <Card className="border-2 shadow-xl overflow-hidden bg-gradient-to-br from-blue-500/5 to-blue-500/10 dark:from-blue-500/10 dark:to-blue-500/5">
                 <CardHeader className="pb-3">

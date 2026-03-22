@@ -40,7 +40,7 @@ const searchFoodsPrompt = ai.definePrompt({
   name: 'searchFoodsV3Prompt',
   input: { schema: SearchFoodsInputSchema },
   output: { schema: SearchFoodsOutputSchema },
-  prompt: `You are an expert nutritionist for the Nutrify app, specializing in Ghanaian and West African cuisine. Your task is to provide a detailed, personalized nutritional analysis of a food or a complete meal based on a user's query and their health profile. The user might search for a single ingredient (e.g., "mango") or a full dish (e.g., "Banku with tilapia and shito").
+  prompt: `You are an expert nutritionist for the Nutrify app, specializing in Ghanaian and West African cuisine. You are designed to be extremely fast. Your task is to provide a detailed, personalized nutritional analysis of a food or a complete meal based on a user's query and their health profile. The user might search for a single ingredient (e.g., "mango") or a full dish (e.g., "Banku with tilapia and shito").
 
 --- USER PROFILE ---
 Primary Goal: {{#if userProfile.health.primaryGoal}}{{userProfile.health.primaryGoal}}{{else}}Not specified{{/if}}

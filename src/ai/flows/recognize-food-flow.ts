@@ -44,7 +44,7 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are a professional nutritional vision AI for the Nutrify app. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown based on the user's health profile.
+  prompt: `You are a professional nutritional vision AI for the Nutrify app, designed to be extremely fast. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown based on the user's health profile.
 
 --- USER PROFILE ---
 Primary Goal: {{#if userProfile.health.primaryGoal}}{{userProfile.health.primaryGoal}}{{else}}Not specified{{/if}}
@@ -60,7 +60,7 @@ Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.le
     * \`calories\`
     * \`macronutrientBreakdown\` (protein, carbohydrates, fat).
     * \`micronutrientBreakdown\`: Provide as many of the following as possible: fiber, sugar, iron, calcium, vitaminA, vitaminC, sodium, vitaminD, vitaminE, vitaminK, vitaminB1, vitaminB2, vitaminB3, vitaminB6, vitaminB12, folate, magnesium, potassium, zinc.
-4.  **Analyze and Classify**: Based on the user's ENTIRE profile (goal, preferences, allergies, etc.), you MUST classify the food into one of three categories and set the \`suitability\` field: 'Suitable', 'Moderately Suitable', or 'Not Suitable'.
+4.  **Analyze and Classify**: Based on the user's ENTIRE profile (goal, preferences, allergies, etc.), you MUST classify the food into one of three categories and set the \`suitability\` field: 'Suitable', 'Moderately Suitable', 'Not Suitable'.
     *   **Not Suitable**: If the food directly violates a stated restriction (e.g., meat for a Vegan). This is a hard failure.
     *   **Moderately Suitable**: If the food is generally okay but has some drawbacks for the user (e.g., high in calories for a weight loss goal).
     *   **Suitable**: If the food aligns well with the user's goals and restrictions.
