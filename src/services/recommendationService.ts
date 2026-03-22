@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -13,6 +14,7 @@ import type { UserProfile } from '@/firebase';
 import {
   generateFoodRecommendations,
   type GenerateFoodRecommendationsOutput,
+  type GenerateFoodRecommendationsInput,
 } from '@/ai/flows/generate-food-recommendations';
 import type { FoodItem } from '@/types/food';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -25,11 +27,26 @@ export interface Recommendation {
   protein: number;
   carbs: number;
   fat: number;
-  micronutrients: {
-      fiber?: number;
-      iron?: number;
-      calcium?: number;
-      sodium?: number;
+  micronutrients?: {
+    fiber?: number;
+    sugar?: number;
+    iron?: number;
+    calcium?: number;
+    vitaminA?: number;
+    vitaminC?: number;
+    sodium?: number;
+    vitaminD?: number;
+    vitaminE?: number;
+    vitaminK?: number;
+    vitaminB1?: number;
+    vitaminB2?: number;
+    vitaminB3?: number;
+    vitaminB6?: number;
+    vitaminB12?: number;
+    folate?: number;
+    magnesium?: number;
+    potassium?: number;
+    zinc?: number;
   };
   reason: string;
   detailedRecipe?: {

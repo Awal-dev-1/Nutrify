@@ -15,11 +15,26 @@ const RecommendationItemSchema = z.object({
   carbs: z.number().describe("Carbohydrates in grams per 100g."),
   fat: z.number().describe("Fat in grams per 100g."),
   micronutrients: z.object({
-      fiber: z.number().optional(),
-      iron: z.number().optional(),
-      calcium: z.number().optional(),
-      sodium: z.number().optional(),
-  }).describe("A summary of key micronutrients per 100g."),
+    fiber: z.number().optional(),
+    sugar: z.number().optional(),
+    iron: z.number().optional(),
+    calcium: z.number().optional(),
+    vitaminA: z.number().optional(),
+    vitaminC: z.number().optional(),
+    sodium: z.number().optional(),
+    vitaminD: z.number().optional(),
+    vitaminE: z.number().optional(),
+    vitaminK: z.number().optional(),
+    vitaminB1: z.number().optional(),
+    vitaminB2: z.number().optional(),
+    vitaminB3: z.number().optional(),
+    vitaminB6: z.number().optional(),
+    vitaminB12: z.number().optional(),
+    folate: z.number().optional(),
+    magnesium: z.number().optional(),
+    potassium: z.number().optional(),
+    zinc: z.number().optional(),
+  }).describe("A summary of key micronutrients per 100g.").optional(),
   reason: z.string().describe("A concise (1-2 sentences) explanation for why this food was recommended based on the user's goal."),
   detailedRecipe: z.object({
     ingredients: z.array(z.string()).describe("A list of all ingredients required, with quantities."),
@@ -75,7 +90,7 @@ Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.c
     *   \`foodId\`: Use the food's name in kebab-case (e.g., 'jollof-rice-with-chicken').
     *   \`name\`: The common name of the food.
     *   \`calories\`, \`protein\`, \`carbs\`, \`fat\`: All in grams per 100g.
-    *   \`micronutrients\`: An object with optional values for \`fiber\`, \`iron\`, \`calcium\`, and \`sodium\`, per 100g.
+    *   \`micronutrients\`: An object with as many values as possible for fiber, sugar, iron, calcium, vitaminA, vitaminC, sodium, vitaminD, vitaminE, vitaminK, B-vitamins, magnesium, potassium, and zinc.
     *   \`reason\`: A short, encouraging explanation (1-2 sentences) explaining why it's a good choice for their goal.
     *   \`detailedRecipe\`: A comprehensive recipe including a list of ingredients with quantities and step-by-step instructions.
 3.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal and the recommendations you've provided.

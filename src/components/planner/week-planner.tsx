@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed, Sparkles, Cookie } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -40,13 +40,14 @@ interface WeekPlannerProps {
     onRemoveMeal: (id: string) => void;
 }
 
-const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
+const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
 
 const getMealIcon = (mealType: string) => {
   switch(mealType) {
     case 'Breakfast': return '🍳';
     case 'Lunch': return '🥗';
     case 'Dinner': return '🍽️';
+    case 'Snacks': return '🍪';
     default: return '🍽️';
   }
 };

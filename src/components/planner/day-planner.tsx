@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
-import { Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed } from 'lucide-react';
+import { Plus, Trash2, Pencil, Calendar, Utensils, Beef, Wheat, Droplets, Flame, UtensilsCrossed, Cookie } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -39,13 +39,14 @@ interface DayPlannerProps {
   onRemoveMeal: (id: string) => void;
 }
 
-const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
+const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
 
 const getMealIcon = (mealType: string) => {
   switch(mealType) {
     case 'Breakfast': return '🍳';
     case 'Lunch': return '🥗';
     case 'Dinner': return '🍽️';
+    case 'Snacks': return '🍪';
     default: return '🍽️';
   }
 };

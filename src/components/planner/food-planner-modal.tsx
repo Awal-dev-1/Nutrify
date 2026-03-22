@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,7 +38,7 @@ const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sat
 export function FoodPlannerModal({ isOpen, onClose, foodItem }: FoodPlannerModalProps) {
   const [quantity, setQuantity] = useState(100);
   const [day, setDay] = useState('Monday');
-  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner'>('Lunch');
+  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks'>('Lunch');
   const [isAdding, setIsAdding] = useState(false);
 
   const { user } = useUser();
@@ -112,6 +113,7 @@ export function FoodPlannerModal({ isOpen, onClose, foodItem }: FoodPlannerModal
                   <SelectItem value="Breakfast">Breakfast</SelectItem>
                   <SelectItem value="Lunch">Lunch</SelectItem>
                   <SelectItem value="Dinner">Dinner</SelectItem>
+                  <SelectItem value="Snacks">Snacks</SelectItem>
                 </SelectContent>
               </Select>
             </div>

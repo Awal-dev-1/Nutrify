@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type MealType = "Breakfast" | "Lunch" | "Dinner";
+type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 
 interface AddFoodModalProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
     try {
       const response = await searchFoods({
         query: searchQuery,
-        userGoal: userProfile?.health?.primaryGoal,
+        userProfile: userProfile ? { health: userProfile.health } : undefined,
       });
 
       if (!response.isFoodQuery || response.foodItems.length === 0) {
