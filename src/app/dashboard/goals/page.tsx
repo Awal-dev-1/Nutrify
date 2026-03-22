@@ -50,12 +50,30 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
 
 const MACRO_COLORS = {
   protein: 'hsl(var(--chart-2))',
   carbs: 'hsl(var(--chart-3))',
   fat: 'hsl(var(--chart-4))',
 };
+
+const preferenceGroups = {
+  "Common Diets": [
+    'Vegetarian', 'Vegan', 'Pescatarian', 'Flexitarian', 'Omnivore (no restrictions)'
+  ],
+  "Health & Medical Diets": [
+    'Gluten-Free', 'Lactose-Free / Dairy-Free', 'Low-Carb', 'Keto', 'Paleo', 'Low-Fat', 'Low-Sodium', 'Diabetic-Friendly', 'Heart-Healthy'
+  ],
+  "Allergies & Intolerances": [
+    'Nut-Free', 'Peanut-Free', 'Shellfish-Free', 'Egg-Free', 'Soy-Free', 'Wheat-Free'
+  ],
+  "Religious & Cultural Diets": [
+    'Halal', 'Kosher'
+  ],
+};
+
 
 export default function GoalsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -77,6 +95,7 @@ export default function GoalsPage() {
       gender: '',
       heightCm: 0,
       weightKg: 0,
+      dietaryPreferences: [] as string[],
   });
 
   const [initialState, setInitialState] = useState<any>(null);
@@ -97,6 +116,7 @@ export default function GoalsPage() {
           gender: userProfile.profile?.gender || '',
           heightCm: userProfile.profile?.heightCm || 0,
           weightKg: userProfile.profile?.weightKg || 0,
+          dietaryPreferences: userProfile.health?.dietaryPreferences || [],
         }
       };
       setCalories(initial.calories);
@@ -174,6 +194,7 @@ export default function GoalsPage() {
         'profile.gender': profileData.gender,
         'profile.heightCm': Number(profileData.heightCm),
         'profile.weightKg': Number(profileData.weightKg),
+        'health.dietaryPreferences': profileData.dietaryPreferences,
     };
     try {
         await updateUserGoalsAndProfile(db, user.uid, updates);
@@ -204,7 +225,8 @@ export default function GoalsPage() {
         profileData.age !== initialState.profile.age ||
         profileData.gender !== initialState.profile.gender ||
         profileData.heightCm !== initialState.profile.heightCm ||
-        profileData.weightKg !== initialState.profile.weightKg
+        profileData.weightKg !== initialState.profile.weightKg ||
+        JSON.stringify(profileData.dietaryPreferences.sort()) !== JSON.stringify((initialState.profile.dietaryPreferences || []).sort())
     ) return true;
     return false;
   }, [calories, macros, profileData, initialState]);
@@ -232,6 +254,24 @@ export default function GoalsPage() {
         return newProfileData;
     });
   }
+
+  const handlePreferenceSelect = (preference: string) => {
+    setProfileData(prev => {
+        const currentPrefs = prev.dietaryPreferences || [];
+        let newPrefs;
+        if (preference === 'Omnivore (no restrictions)') {
+            newPrefs = currentPrefs.includes(preference) ? [] : ['Omnivore (no restrictions)'];
+        } else {
+            let tempPrefs = currentPrefs.filter(p => p !== 'Omnivore (no restrictions)');
+            if (tempPrefs.includes(preference)) {
+                newPrefs = tempPrefs.filter(p => p !== preference);
+            } else {
+                newPrefs = [...tempPrefs, preference];
+            }
+        }
+        return { ...prev, dietaryPreferences: newPrefs };
+    });
+  };
 
   if (isProfileLoading || !initialState) return <GoalsSkeleton />;
 
@@ -346,7 +386,7 @@ export default function GoalsPage() {
                         <CardDescription className="text-xs sm:text-sm">These details help us calculate your recommended nutritional targets.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-5 md:p-6">
-                        <div className="space-y-6 max-w-lg">
+                        <div className="space-y-6 max-w-2xl">
                             <div className="space-y-4">
                                 <h3 className="font-medium text-muted-foreground">Physical Details</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -401,6 +441,34 @@ export default function GoalsPage() {
                                         ))}
                                     </RadioGroup>
                                 </div>
+                            </div>
+                            <Separator />
+                             <div className="space-y-4">
+                                <h3 className="font-medium text-muted-foreground">Dietary Preferences</h3>
+                                <Accordion type="multiple" defaultValue={['Common Diets']} className="w-full">
+                                    {Object.entries(preferenceGroups).map(([groupName, preferences]) => (
+                                    <AccordionItem value={groupName} key={groupName}>
+                                        <AccordionTrigger className="font-semibold">{groupName}</AccordionTrigger>
+                                        <AccordionContent>
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            {preferences.map((pref) => (
+                                            <Badge
+                                                key={pref}
+                                                onClick={() => handlePreferenceSelect(pref)}
+                                                variant={profileData.dietaryPreferences.includes(pref) ? 'default' : 'secondary'}
+                                                className={cn(
+                                                "text-sm px-3 py-1 cursor-pointer transition-all hover:scale-105",
+                                                profileData.dietaryPreferences.includes(pref) ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                                )}
+                                            >
+                                                {pref}
+                                            </Badge>
+                                            ))}
+                                        </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    ))}
+                                </Accordion>
                             </div>
                         </div>
                     </CardContent>
