@@ -26,6 +26,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
+import { FoodPlannerModal } from '@/components/planner/food-planner-modal';
+import type { FoodItem } from '@/types/food';
 
 type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
 
@@ -41,6 +43,7 @@ export default function RecognizePage() {
   const [error, setError] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
   const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
+  const [plannerFood, setPlannerFood] = useState<FoodItem | null>(null);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -170,6 +173,7 @@ export default function RecognizePage() {
     setError(null);
     setPredictions(null);
     setSelectedFood(null);
+    setPlannerFood(null);
     setIsCameraOpen(false);
   };
 
@@ -374,7 +378,7 @@ export default function RecognizePage() {
 
         return (
           <motion.div
-            className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6"
+            className="w-full md:max-w-4xl lg:max-w-5xl mx-auto space-y-4 sm:space-y-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -382,6 +386,7 @@ export default function RecognizePage() {
             <AiFoodResultCard
               item={mainPrediction}
               onAdd={() => setSelectedFood(mainPrediction)}
+              onAddToPlan={() => setPlannerFood(mainPrediction)}
               imageUrl={preview}
             />
             <div className="flex justify-center pb-4">
@@ -456,6 +461,11 @@ export default function RecognizePage() {
         isOpen={!!selectedFood}
         onClose={() => setSelectedFood(null)}
         foodItem={selectedFood}
+      />
+      <FoodPlannerModal
+        isOpen={!!plannerFood}
+        onClose={() => setPlannerFood(null)}
+        foodItem={plannerFood}
       />
     </div>
   );

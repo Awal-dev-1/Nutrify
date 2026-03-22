@@ -24,6 +24,7 @@ import {
   Beef,
   Leaf,
   Trophy,
+  Utensils,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,8 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { FoodPlannerModal } from '@/components/planner/food-planner-modal';
+import { Label } from '@/components/ui/label';
 
 // Meal type configuration with icons and colors
 const MEAL_TYPES = [
@@ -91,6 +94,7 @@ export default function SearchPage() {
   const [portionGrams, setPortionGrams] = useState(100);
   const [mealType, setMealType] = useState<(typeof MEAL_TYPES)[number]['value']>('Lunch');
   const [isAdding, setIsAdding] = useState(false);
+  const [plannerModalOpen, setPlannerModalOpen] = useState(false);
 
   // Voice search state
   const [isRecording, setIsRecording] = useState(false);
@@ -426,11 +430,18 @@ export default function SearchPage() {
                 mealType={mealType}
                 setMealType={setMealType}
                 onAddToTracker={handleAddToTracker}
+                onAddToPlanner={() => setPlannerModalOpen(true)}
                 isAdding={isAdding}
               />
             </motion.div>
           )}
         </AnimatePresence>
+        
+        <FoodPlannerModal
+          isOpen={plannerModalOpen}
+          onClose={() => setPlannerModalOpen(false)}
+          foodItem={result}
+        />
       </div>
     </div>
   );
@@ -443,6 +454,7 @@ interface FoodDetailsCardProps {
   mealType: typeof MEAL_TYPES[number]['value'];
   setMealType: (type: typeof MEAL_TYPES[number]['value']) => void;
   onAddToTracker: () => void;
+  onAddToPlanner: () => void;
   isAdding: boolean;
 }
 
@@ -453,6 +465,7 @@ function FoodDetailsCard({
   mealType,
   setMealType,
   onAddToTracker,
+  onAddToPlanner,
   isAdding,
 }: FoodDetailsCardProps) {
   const [activeTab, setActiveTab] = useState('nutrition');
@@ -648,11 +661,10 @@ function FoodDetailsCard({
           </TabsContent>
         </Tabs>
 
-        {/* Add to Tracker Section */}
-        <div className="mt-6 pt-6 border-t space-y-3">
-          {/* Stacks on mobile, side-by-side on sm+ */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="flex-1">
+        {/* Add to Actions Section */}
+        <div className="mt-6 pt-6 border-t space-y-4">
+          <div className="space-y-2">
+              <Label>Add to Daily Log</Label>
               <Select value={mealType} onValueChange={(v: any) => setMealType(v)}>
                 <SelectTrigger className="h-12 w-full">
                   <SelectValue>
@@ -680,25 +692,33 @@ function FoodDetailsCard({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <Button
-              size="lg"
-              className="h-12 w-full sm:w-auto px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
-              onClick={onAddToTracker}
-              disabled={isAdding}
-            >
-              {isAdding ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              Add to Log
-            </Button>
           </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="h-12 w-full"
+                onClick={onAddToPlanner}
+              >
+                <Utensils className="h-4 w-4 mr-2" />
+                Add to Plan
+              </Button>
+              <Button
+                size="lg"
+                className="h-12 w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+                onClick={onAddToTracker}
+                disabled={isAdding}
+              >
+                {isAdding ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                Add to Log
+              </Button>
+          </div>
           <p className="text-xs text-center text-muted-foreground">
-            This will add {calculatedNutrients.calories} kcal to your daily tracker
+            Add this food to your daily tracker or save it to your weekly meal plan.
           </p>
         </div>
       </CardContent>

@@ -5,13 +5,18 @@ import type { FC } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Beef, Wheat, Droplets, PlusCircle, Stethoscope, Sparkles } from 'lucide-react';
+import { Beef, Wheat, Droplets, PlusCircle, Stethoscope, Sparkles, Utensils } from 'lucide-react';
 import type { AIPrediction } from '@/types/ai';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
 
-export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPrediction) => void; imageUrl: string | null; }> = ({ item, onAdd, imageUrl }) => {
+export const AiFoodResultCard: FC<{
+  item: AIPrediction;
+  onAdd: (item: AIPrediction) => void;
+  onAddToPlan: (item: AIPrediction) => void;
+  imageUrl: string | null;
+}> = ({ item, onAdd, onAddToPlan, imageUrl }) => {
   const hasMicros = item.micronutrientBreakdown && 
                     Object.values(item.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
 
@@ -117,7 +122,10 @@ export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPredicti
           </Alert>
         )}
       </CardContent>
-       <CardFooter>
+       <CardFooter className="flex-col sm:flex-row gap-2">
+        <Button className="w-full" variant="secondary" onClick={() => onAddToPlan(item)}>
+            <Utensils className="mr-2 h-4 w-4" /> Add to Meal Plan
+        </Button>
         <Button className="w-full" onClick={() => onAdd(item)}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add to Daily Tracker
         </Button>
@@ -125,5 +133,3 @@ export const AiFoodResultCard: FC<{ item: AIPrediction; onAdd: (item: AIPredicti
     </Card>
   );
 };
-
-    
