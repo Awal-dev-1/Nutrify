@@ -100,13 +100,20 @@ export function SignUpForm() {
     try {
         await signInWithGoogle(auth, db);
     } catch (error: any) {
-        if (error.code !== 'auth/popup-closed-by-user') {
-            toast({
-                variant: "destructive",
-                title: "Sign-Up Failed",
-                description: "Could not sign up with Google. Please try again.",
-            });
+        if (error.code === 'auth/popup-closed-by-user') {
+            return; // User cancelled, do nothing.
         }
+        
+        let description = "Could not sign up with Google. Please try again.";
+        if (error.code === 'auth/operation-not-allowed') {
+            description = "Google Sign-In is not enabled for this project. Please contact support.";
+        }
+
+        toast({
+            variant: "destructive",
+            title: "Sign-Up Failed",
+            description: description,
+        });
     } finally {
         setIsGoogleLoading(false);
     }
