@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for searching food items using a fully AI-driven approach.
@@ -79,6 +80,12 @@ const searchFoodsFlow = ai.defineFlow(
     const { output } = await searchFoodsPrompt(input, {
       config: {
         temperature: 0.1,
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
       },
     });
 

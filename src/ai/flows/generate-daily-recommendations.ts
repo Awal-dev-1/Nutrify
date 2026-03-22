@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating personalized daily recommendations, tips, and recipes.
@@ -80,7 +81,15 @@ const generateDailyRecommendationsFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await generateDailyRecommendationsPrompt(input, {
-      config: { temperature: 0.2 },
+      config: {
+        temperature: 0.2,
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      },
     });
     if (!output) {
       throw new Error("The AI failed to generate daily recommendations. The response was empty.");

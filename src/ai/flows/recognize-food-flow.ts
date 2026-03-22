@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for recognizing food items from an image.
@@ -69,7 +70,15 @@ const recognizeFoodFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await recognizeFoodPrompt(input, {
-      config: { temperature: 0.2 },
+      config: {
+        temperature: 0.2,
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      },
     });
     if (!output) {
       throw new Error("The AI failed to analyze the image. The response was empty.");

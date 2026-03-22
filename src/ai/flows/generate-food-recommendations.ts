@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating personalized food recommendations.
@@ -91,7 +92,15 @@ const generateFoodRecommendationsFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await generateFoodRecommendationsPrompt(input, {
-      config: { temperature: 0.2 },
+      config: {
+        temperature: 0.2,
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      },
     });
     if (!output) {
       return { recommendations: [], insightTips: [] };
