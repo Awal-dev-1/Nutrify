@@ -37,17 +37,6 @@ export default function DashboardLayout({
       return;
     }
     
-    // Check if the user signed up with email/password
-    const isPasswordProvider = user.providerData.some(
-      (provider) => provider.providerId === 'password'
-    );
-    
-    // If it's a password-based account and the email is not verified, redirect them
-    if (isPasswordProvider && !user.emailVerified) {
-      router.push('/verify-email');
-      return;
-    }
-
     if (userProfile && !userProfile.onboardingCompleted) {
       router.push('/onboarding');
       return;
@@ -55,11 +44,9 @@ export default function DashboardLayout({
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
   
   // Determine if we should show the loading screen
-  const isPasswordProvider = user?.providerData.some(p => p.providerId === 'password');
   const showLoading = isUserLoading || 
                       isProfileLoading || 
                       !user || 
-                      (isPasswordProvider && !user.emailVerified) ||
                       (userProfile && !userProfile.onboardingCompleted);
 
   if (showLoading) {

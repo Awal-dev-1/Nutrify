@@ -70,8 +70,8 @@ export function SignUpForm() {
     try {
       await signup(auth, db, values.email, values.password, values.name);
       toast({
-        title: "Almost there!",
-        description: "A verification email has been sent to your inbox.",
+        title: "Welcome to Nutrify!",
+        description: "Your account has been created. We've sent a confirmation email to your inbox.",
       });
       // Do not redirect here, the layout will handle it.
     } catch (error: any) {

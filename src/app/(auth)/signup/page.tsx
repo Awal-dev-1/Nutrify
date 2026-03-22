@@ -20,15 +20,8 @@ export default function SignUpPage() {
     }
 
     if (user) {
-      // After signup, user object exists.
-      // If email is not verified, layout will redirect to /verify-email.
-      // If email is verified (e.g., Google), it will redirect to /onboarding.
-      const isPasswordProvider = user.providerData.some(p => p.providerId === 'password');
-      if (isPasswordProvider && !user.emailVerified) {
-        router.push('/verify-email');
-      } else {
-        router.push("/onboarding");
-      }
+      // User is created, redirect to onboarding.
+      router.push("/onboarding");
     }
   }, [user, isUserLoading, router]);
 
