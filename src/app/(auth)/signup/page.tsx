@@ -11,22 +11,29 @@ import { Logo } from "@/components/shared/logo";
 import { motion } from "framer-motion";
 
 export default function SignUpPage() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (isUserLoading) {
-      return; // Wait for auth state to be determined
+    if (isUserLoading || isProfileLoading) {
+      return; // Wait for auth and profile state
     }
 
     if (user && !user.isAnonymous) {
-      // User is created, redirect to onboarding.
-      router.push("/onboarding");
+      if (userProfile && userProfile.onboardingCompleted) {
+        // Already onboarded, go to dashboard
+        router.push("/dashboard/overview");
+      } else {
+        // New user or hasn't onboarded, go to onboarding
+        router.push("/onboarding");
+      }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, userProfile, isProfileLoading, router]);
 
-  // Show a loader while checking auth status or if a non-anonymous user is found and we are redirecting.
-  if (isUserLoading || (user && !user.isAnonymous)) {
+  const showLoading = isUserLoading || isProfileLoading || (user && !user.isAnonymous);
+
+  // Show a loader while checking auth/profile status or if a non-anonymous user is found and we are redirecting.
+  if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
@@ -36,7 +43,7 @@ export default function SignUpPage() {
             <Loader2 className="h-10 w-10 animate-spin text-primary relative" />
           </div>
           <div className="space-y-1">
-            <p className="font-medium text-foreground">Creating your account...</p>
+            <p className="font-medium text-foreground">Checking your status...</p>
             <p className="text-small text-muted-foreground animate-pulse">
               Getting everything set up for you.
             </p>

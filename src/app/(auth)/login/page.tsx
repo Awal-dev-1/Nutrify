@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -10,23 +11,29 @@ import { Logo } from "@/components/shared/logo";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, userProfile, isProfileLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (isUserLoading) {
-      return; // Wait for auth state to be determined
+    if (isUserLoading || isProfileLoading) {
+      return; // Wait for auth and profile state
     }
 
     if (user && !user.isAnonymous) {
-      // User is logged in, redirect to the dashboard.
-      // The dashboard layout will handle the profile loading and onboarding check.
-      router.push("/dashboard/overview");
+      if (userProfile && userProfile.onboardingCompleted) {
+        router.push("/dashboard/overview");
+      } else if (userProfile) {
+        // User exists but hasn't onboarded
+        router.push("/onboarding");
+      }
+      // If user exists but userProfile doesn't yet, we wait. isProfileLoading should handle this.
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, userProfile, isProfileLoading, router]);
 
-  // Show a loader while checking auth status or if a non-anonymous user is found and we are redirecting.
-  if (isUserLoading || (user && !user.isAnonymous)) {
+  const showLoading = isUserLoading || isProfileLoading || (user && !user.isAnonymous);
+
+  // Show a loader while checking auth/profile status or if a non-anonymous user is found and we are redirecting.
+  if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
