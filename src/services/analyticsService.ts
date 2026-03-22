@@ -170,7 +170,31 @@ export async function getAnalyticsData(
   }
   
   if (!userDocSnap.exists()) {
-    throw new Error('User profile not found.');
+    console.warn(`Analytics Service: User profile not found for user ${userId}. Returning empty data.`);
+    const chartData: AnalyticsData[] = [];
+    for (let i = 0; i < days; i++) {
+        const date = subDays(today, days - 1 - i);
+        const dateKey = format(date, 'yyyy-MM-dd');
+        chartData.push({
+            date: dateKey,
+            calories: 0, goal: 2000, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0,
+            sodium: 0, fiber: 0, sugar: 0, calcium: 0, vitaminC: 0, vitaminD: 0,
+            vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0,
+            vitaminB6: 0, vitaminB12: 0, folate: 0, magnesium: 0, potassium: 0, zinc: 0,
+        });
+    }
+
+    const defaultGoals = {
+        calories: 2000, protein: 120, carbs: 250, fat: 70, iron: 18, vitaminA: 900, sodium: 2300,
+    };
+
+    return {
+        chartData,
+        summary: calculateSummary(chartData, defaultGoals.calories),
+        insights: ["Log your first meal to start seeing personalized analytics."],
+        goals: defaultGoals,
+        loggedDaysCount: 0,
+    };
   }
   const userProfile = userDocSnap.data() as UserProfile;
   const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2000;
