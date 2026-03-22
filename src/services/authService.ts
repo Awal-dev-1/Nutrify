@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -13,7 +14,17 @@ import {
   EmailAuthProvider,
   sendEmailVerification,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, Firestore, deleteDoc } from 'firebase/firestore';
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  Firestore,
+  deleteDoc,
+  collection,
+  query,
+  getDocs,
+  writeBatch,
+} from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -98,6 +109,27 @@ export const changeUserPassword = async (
   await updatePassword(user, newPassword);
 };
 
+// Helper function to delete all documents in a collection/subcollection
+const deleteCollection = async (db: Firestore, collectionPath: string) => {
+  const collectionRef = collection(db, collectionPath);
+  const q = query(collectionRef);
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot.empty) {
+    return;
+  }
+
+  const batchSize = 500;
+  for (let i = 0; i < querySnapshot.docs.length; i += batchSize) {
+    const batch = writeBatch(db);
+    const chunk = querySnapshot.docs.slice(i, i + batchSize);
+    chunk.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  }
+};
+
 
 // 6. Account Deletion
 export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
@@ -105,25 +137,53 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   if (!user) {
     throw new Error("No user is currently signed in to delete.");
   }
-
-  const userDocRef = doc(db, "users", user.uid);
   
+  const userId = user.uid;
+
+  // List of all user-specific subcollections to be deleted
+  const subcollections = [
+    'dailyLogs',
+    'generatedRecommendations',
+    'aiScans',
+    'plannedMeals',
+    'recentSearches'
+  ];
+
   try {
-    // First, delete the user's document from Firestore. This should be awaited.
+    // Delete all documents in all subcollections
+    for (const subcollection of subcollections) {
+      const path = `users/${userId}/${subcollection}`;
+      await deleteCollection(db, path);
+    }
+
+    // After subcollections are deleted, delete the main user document
+    const userDocRef = doc(db, "users", userId);
     await deleteDoc(userDocRef);
-  } catch (error) {
-     // If deleting the document fails, emit a contextual error and stop.
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: userDocRef.path,
-        operation: 'delete'
-    }));
-     // Re-throw the error to inform the caller that the deletion failed.
-    throw new Error("Failed to delete user data from the database.");
+
+  } catch (error: any) {
+    const permissionError = new FirestorePermissionError({
+      path: `users/${userId} and its subcollections`,
+      operation: 'delete',
+    });
+    errorEmitter.emit('permission-error', permissionError);
+    // Provide a more specific error message to the user.
+    throw new Error("Failed to delete user data from the database. This could be due to a permissions issue.");
   }
 
-  // Once the database document is gone, delete the auth user.
-  await deleteUser(user);
+  // Once all Firestore data is gone, delete the auth user.
+  try {
+    await deleteUser(user);
+  } catch (error: any) {
+    if (error.code === 'auth/requires-recent-login') {
+      // This is a critical state. The data is gone but auth user remains.
+      // The message must be clear and direct the user on how to complete the process.
+      throw new Error('Your data has been removed, but we require re-authentication to delete your account profile. Please log out, log back in, and delete your account again to complete the process.');
+    }
+    // For other auth errors, the situation is also critical.
+    throw new Error(`Failed to delete your authentication profile: ${error.message}. Your data has been removed, but the account could not be fully deleted. Please contact support.`);
+  }
 };
+
 
 // 8. Resend Verification Email
 export const resendVerificationEmail = async (auth: Auth) => {
