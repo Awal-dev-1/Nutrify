@@ -178,7 +178,10 @@ export default function SearchPage() {
     setPortionGrams(100);
 
     try {
-      const response = await searchFoods({ query, userProfile });
+      const response = await searchFoods({ 
+        query, 
+        userProfile: userProfile ? { health: userProfile.health } : undefined
+      });
 
       if (!response.isFoodQuery) {
         toast({

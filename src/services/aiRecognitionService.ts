@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -95,7 +96,10 @@ export const runAiScan = async (
   const photoDataUri = await dataUriPromise;
 
   // The main blocking call: get the AI analysis
-  const aiResult = await recognizeFood({ photoDataUri, userProfile: userProfile || undefined });
+  const aiResult = await recognizeFood({
+    photoDataUri,
+    userProfile: userProfile ? { health: userProfile.health } : undefined,
+  });
 
   // Now, process the result.
   if (aiResult.isFood && aiResult.predictions.length > 0) {
