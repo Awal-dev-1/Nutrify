@@ -27,7 +27,9 @@ const RecognizeFoodInputSchema = z.object({
 });
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
-const AIPredictionSchema = FoodItemSchema;
+const AIPredictionSchema = FoodItemSchema.extend({
+    confidence: z.number().describe("The AI's confidence in this prediction, from 0 to 1.").optional(),
+});
 export type AIPrediction = z.infer<typeof AIPredictionSchema>;
 
 const RecognizeFoodOutputSchema = z.object({
@@ -81,9 +83,8 @@ const recognizeFoodFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await recognizeFoodPrompt(input, {
-      model: 'googleai/gemini-pro-vision', // Explicitly use a vision-capable model
       config: {
-        temperature: 0.2,
+        temperature: 0.1,
         safetySettings: [
           {
             category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
