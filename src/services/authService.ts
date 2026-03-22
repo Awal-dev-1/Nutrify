@@ -14,6 +14,7 @@ import {
   EmailAuthProvider,
   GoogleAuthProvider,
   signInWithPopup,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, Firestore, deleteDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -29,6 +30,9 @@ export const signup = async (
 ) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
+
+  // Send verification email
+  await sendEmailVerification(user);
 
   // This update is for Firebase Auth user profile, not Firestore
   await updateProfile(user, { displayName: name });
@@ -157,5 +161,15 @@ export const signInWithGoogle = async (auth: Auth, db: Firestore) => {
     console.error("Error during Google sign-in:", error);
     // Re-throw the error so the UI can handle it (e.g., show a toast).
     throw error;
+  }
+};
+
+// 8. Resend Verification Email
+export const resendVerificationEmail = async (auth: Auth) => {
+  const user = auth.currentUser;
+  if (user) {
+    await sendEmailVerification(user);
+  } else {
+    throw new Error("No user is currently signed in.");
   }
 };

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SignUpForm } from "@/components/auth/signup-form";
@@ -19,8 +20,15 @@ export default function SignUpPage() {
     }
 
     if (user) {
-      // After signup, the user object exists. Let onboarding/dashboard handle the rest.
-      router.push("/onboarding");
+      // After signup, user object exists.
+      // If email is not verified, layout will redirect to /verify-email.
+      // If email is verified (e.g., Google), it will redirect to /onboarding.
+      const isPasswordProvider = user.providerData.some(p => p.providerId === 'password');
+      if (isPasswordProvider && !user.emailVerified) {
+        router.push('/verify-email');
+      } else {
+        router.push("/onboarding");
+      }
     }
   }, [user, isUserLoading, router]);
 

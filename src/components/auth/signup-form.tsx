@@ -23,9 +23,20 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const bannedDomains = ["test.com", "example.com", "yopmail.com", "mailinator.com"];
+
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z
+    .string()
+    .email({ message: "Invalid email address." })
+    .refine(
+      (email) =>
+        !bannedDomains.some((domain) =>
+          email.toLowerCase().endsWith(`@${domain}`)
+        ),
+      { message: "This email provider is not allowed." }
+    ),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   confirmPassword: z.string(),
   terms: z.literal(true, {
@@ -69,10 +80,10 @@ export function SignUpForm() {
     try {
       await signup(auth, db, values.email, values.password, values.name);
       toast({
-        title: "Account Created!",
-        description: "You have been successfully signed up.",
+        title: "Almost there!",
+        description: "A verification email has been sent to your inbox.",
       });
-      router.push("/onboarding");
+      // Do not redirect here, the layout will handle it.
     } catch (error: any) {
       toast({
         variant: "destructive",

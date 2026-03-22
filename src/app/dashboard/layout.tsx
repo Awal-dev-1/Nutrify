@@ -1,3 +1,4 @@
+
 'use client';
 
 import { MainSidebar } from "@/components/dashboard/main-sidebar";
@@ -33,12 +34,35 @@ export default function DashboardLayout({
     }
     if (!user) {
       router.push('/login');
-    } else if (user && userProfile && !userProfile.onboardingCompleted) {
+      return;
+    }
+    
+    // Check if the user signed up with email/password
+    const isPasswordProvider = user.providerData.some(
+      (provider) => provider.providerId === 'password'
+    );
+    
+    // If it's a password-based account and the email is not verified, redirect them
+    if (isPasswordProvider && !user.emailVerified) {
+      router.push('/verify-email');
+      return;
+    }
+
+    if (userProfile && !userProfile.onboardingCompleted) {
       router.push('/onboarding');
+      return;
     }
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
   
-  if (isUserLoading || isProfileLoading || !user || (userProfile && !userProfile.onboardingCompleted)) {
+  // Determine if we should show the loading screen
+  const isPasswordProvider = user?.providerData.some(p => p.providerId === 'password');
+  const showLoading = isUserLoading || 
+                      isProfileLoading || 
+                      !user || 
+                      (isPasswordProvider && !user.emailVerified) ||
+                      (userProfile && !userProfile.onboardingCompleted);
+
+  if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
