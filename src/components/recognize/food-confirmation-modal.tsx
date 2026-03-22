@@ -74,6 +74,18 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
           vitaminA: (foodItem.micronutrientBreakdown?.vitaminA || 0) * per100gRatio,
           vitaminC: (foodItem.micronutrientBreakdown?.vitaminC || 0) * per100gRatio,
           sodium: (foodItem.micronutrientBreakdown?.sodium || 0) * per100gRatio,
+          vitaminD: (foodItem.micronutrientBreakdown?.vitaminD || 0) * per100gRatio,
+          vitaminE: (foodItem.micronutrientBreakdown?.vitaminE || 0) * per100gRatio,
+          vitaminK: (foodItem.micronutrientBreakdown?.vitaminK || 0) * per100gRatio,
+          vitaminB1: (foodItem.micronutrientBreakdown?.vitaminB1 || 0) * per100gRatio,
+          vitaminB2: (foodItem.micronutrientBreakdown?.vitaminB2 || 0) * per100gRatio,
+          vitaminB3: (foodItem.micronutrientBreakdown?.vitaminB3 || 0) * per100gRatio,
+          vitaminB6: (foodItem.micronutrientBreakdown?.vitaminB6 || 0) * per100gRatio,
+          vitaminB12: (foodItem.micronutrientBreakdown?.vitaminB12 || 0) * per100gRatio,
+          folate: (foodItem.micronutrientBreakdown?.folate || 0) * per100gRatio,
+          magnesium: (foodItem.micronutrientBreakdown?.magnesium || 0) * per100gRatio,
+          potassium: (foodItem.micronutrientBreakdown?.potassium || 0) * per100gRatio,
+          zinc: (foodItem.micronutrientBreakdown?.zinc || 0) * per100gRatio,
         },
       };
 

@@ -56,7 +56,10 @@ Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.le
 --- CRITICAL INSTRUCTIONS ---
 1.  **Identify the Meal**: First, identify all food items in the image. Combine them into a single, descriptive \`foodName\` (e.g., "Banku with grilled tilapia and shito").
 2.  **Estimate Portion**: Estimate the total weight of the entire meal in the image and set \`estimatedWeightGrams\`.
-3.  **Calculate Total Nutrition**: Calculate the total nutritional values for the *entire* dish visible in the image (\`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`).
+3.  **Calculate Total Nutrition**: Calculate the total nutritional values for the *entire* dish visible in the image. You must provide:
+    * \`calories\`
+    * \`macronutrientBreakdown\` (protein, carbohydrates, fat).
+    * \`micronutrientBreakdown\`: Provide as many of the following as possible: fiber, sugar, iron, calcium, vitaminA, vitaminC, sodium, vitaminD, vitaminE, vitaminK, vitaminB1, vitaminB2, vitaminB3, vitaminB6, vitaminB12, folate, magnesium, potassium, zinc.
 4.  **Analyze and Classify**: Based on the user's ENTIRE profile (goal, preferences, allergies, etc.), you MUST classify the food into one of three categories and set the \`suitability\` field: 'Suitable', 'Moderately Suitable', or 'Not Suitable'.
     *   **Not Suitable**: If the food directly violates a stated restriction (e.g., meat for a Vegan). This is a hard failure.
     *   **Moderately Suitable**: If the food is generally okay but has some drawbacks for the user (e.g., high in calories for a weight loss goal).

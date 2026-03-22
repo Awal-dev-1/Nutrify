@@ -48,6 +48,18 @@ export async function addFoodToLog(
     sugar: (foodData.micronutrientBreakdown?.sugar || 0) * ratio,
     calcium: (foodData.micronutrientBreakdown?.calcium || 0) * ratio,
     vitaminC: (foodData.micronutrientBreakdown?.vitaminC || 0) * ratio,
+    vitaminD: (foodData.micronutrientBreakdown?.vitaminD || 0) * ratio,
+    vitaminE: (foodData.micronutrientBreakdown?.vitaminE || 0) * ratio,
+    vitaminK: (foodData.micronutrientBreakdown?.vitaminK || 0) * ratio,
+    vitaminB1: (foodData.micronutrientBreakdown?.vitaminB1 || 0) * ratio,
+    vitaminB2: (foodData.micronutrientBreakdown?.vitaminB2 || 0) * ratio,
+    vitaminB3: (foodData.micronutrientBreakdown?.vitaminB3 || 0) * ratio,
+    vitaminB6: (foodData.micronutrientBreakdown?.vitaminB6 || 0) * ratio,
+    vitaminB12: (foodData.micronutrientBreakdown?.vitaminB12 || 0) * ratio,
+    folate: (foodData.micronutrientBreakdown?.folate || 0) * ratio,
+    magnesium: (foodData.micronutrientBreakdown?.magnesium || 0) * ratio,
+    potassium: (foodData.micronutrientBreakdown?.potassium || 0) * ratio,
+    zinc: (foodData.micronutrientBreakdown?.zinc || 0) * ratio,
   };
 
   let dailyLog: DailyLog;
@@ -60,7 +72,10 @@ export async function addFoodToLog(
         date: dateKey,
         totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
         totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
-        totalSugar: 0, totalCalcium: 0, totalVitaminC: 0,
+        totalSugar: 0, totalCalcium: 0, totalVitaminC: 0, totalVitaminD: 0,
+        totalVitaminE: 0, totalVitaminK: 0, totalVitaminB1: 0, totalVitaminB2: 0,
+        totalVitaminB3: 0, totalVitaminB6: 0, totalVitaminB12: 0, totalFolate: 0,
+        totalMagnesium: 0, totalPotassium: 0, totalZinc: 0,
         waterIntake: 0,
         meals: { Breakfast: [], Lunch: [], Dinner: [] },
       };
@@ -89,6 +104,18 @@ export async function addFoodToLog(
   dailyLog.totalSugar = allMeals.reduce((sum, item) => sum + (item.sugar || 0), 0);
   dailyLog.totalCalcium = allMeals.reduce((sum, item) => sum + (item.calcium || 0), 0);
   dailyLog.totalVitaminC = allMeals.reduce((sum, item) => sum + (item.vitaminC || 0), 0);
+  dailyLog.totalVitaminD = allMeals.reduce((sum, item) => sum + (item.vitaminD || 0), 0);
+  dailyLog.totalVitaminE = allMeals.reduce((sum, item) => sum + (item.vitaminE || 0), 0);
+  dailyLog.totalVitaminK = allMeals.reduce((sum, item) => sum + (item.vitaminK || 0), 0);
+  dailyLog.totalVitaminB1 = allMeals.reduce((sum, item) => sum + (item.vitaminB1 || 0), 0);
+  dailyLog.totalVitaminB2 = allMeals.reduce((sum, item) => sum + (item.vitaminB2 || 0), 0);
+  dailyLog.totalVitaminB3 = allMeals.reduce((sum, item) => sum + (item.vitaminB3 || 0), 0);
+  dailyLog.totalVitaminB6 = allMeals.reduce((sum, item) => sum + (item.vitaminB6 || 0), 0);
+  dailyLog.totalVitaminB12 = allMeals.reduce((sum, item) => sum + (item.vitaminB12 || 0), 0);
+  dailyLog.totalFolate = allMeals.reduce((sum, item) => sum + (item.folate || 0), 0);
+  dailyLog.totalMagnesium = allMeals.reduce((sum, item) => sum + (item.magnesium || 0), 0);
+  dailyLog.totalPotassium = allMeals.reduce((sum, item) => sum + (item.potassium || 0), 0);
+  dailyLog.totalZinc = allMeals.reduce((sum, item) => sum + (item.zinc || 0), 0);
 
   updateLog(dailyLogRef, dailyLog);
 }

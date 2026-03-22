@@ -24,19 +24,13 @@ import { FirestorePermissionError } from '@/firebase/errors';
 function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary {
   if (data.length === 0) {
     return {
-      averageCalories: 0,
-      averageProtein: 0,
-      averageCarbs: 0,
-      averageFat: 0,
-      averageIron: 0,
-      averageVitaminA: 0,
-      averageSodium: 0,
-      averageFiber: 0,
-      averageSugar: 0,
-      averageCalcium: 0,
-      goalAchievementRate: 0,
-      highestCalorieDay: null,
-      lowestCalorieDay: null,
+      averageCalories: 0, averageProtein: 0, averageCarbs: 0, averageFat: 0,
+      averageIron: 0, averageVitaminA: 0, averageSodium: 0, averageFiber: 0,
+      averageSugar: 0, averageCalcium: 0, averageVitaminC: 0, averageVitaminD: 0,
+      averageVitaminE: 0, averageVitaminK: 0, averageVitaminB1: 0, averageVitaminB2: 0,
+      averageVitaminB3: 0, averageVitaminB6: 0, averageVitaminB12: 0, averageFolate: 0,
+      averageMagnesium: 0, averagePotassium: 0, averageZinc: 0,
+      goalAchievementRate: 0, highestCalorieDay: null, lowestCalorieDay: null,
       consistencyScore: 0,
     };
   }
@@ -53,12 +47,30 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
       acc.fiber += day.fiber || 0;
       acc.sugar += day.sugar || 0;
       acc.calcium += day.calcium || 0;
+      acc.vitaminC += day.vitaminC || 0;
+      acc.vitaminD += day.vitaminD || 0;
+      acc.vitaminE += day.vitaminE || 0;
+      acc.vitaminK += day.vitaminK || 0;
+      acc.vitaminB1 += day.vitaminB1 || 0;
+      acc.vitaminB2 += day.vitaminB2 || 0;
+      acc.vitaminB3 += day.vitaminB3 || 0;
+      acc.vitaminB6 += day.vitaminB6 || 0;
+      acc.vitaminB12 += day.vitaminB12 || 0;
+      acc.folate += day.folate || 0;
+      acc.magnesium += day.magnesium || 0;
+      acc.potassium += day.potassium || 0;
+      acc.zinc += day.zinc || 0;
       if (day.calories > 0 && day.calories <= goal) {
         acc.daysGoalMet++;
       }
       return acc;
     },
-    { calories: 0, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0, sodium: 0, fiber: 0, sugar: 0, calcium: 0, daysGoalMet: 0 }
+    { 
+      calories: 0, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0, sodium: 0, 
+      fiber: 0, sugar: 0, calcium: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, 
+      vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB6: 0, 
+      vitaminB12: 0, folate: 0, magnesium: 0, potassium: 0, zinc: 0, daysGoalMet: 0 
+    }
   );
 
   const nonZeroDays = data.filter(d => d.calories > 0);
@@ -70,7 +82,7 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
   const consistencyScore = Math.max(0, 100 - (calorieVariance / (goal * 0.25)) * 100);
 
   return {
-    averageCalories: averageCalories,
+    averageCalories,
     averageProtein: total.protein / data.length,
     averageCarbs: total.carbs / data.length,
     averageFat: total.fat / data.length,
@@ -80,6 +92,19 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
     averageFiber: total.fiber / data.length,
     averageSugar: total.sugar / data.length,
     averageCalcium: total.calcium / data.length,
+    averageVitaminC: total.vitaminC / data.length,
+    averageVitaminD: total.vitaminD / data.length,
+    averageVitaminE: total.vitaminE / data.length,
+    averageVitaminK: total.vitaminK / data.length,
+    averageVitaminB1: total.vitaminB1 / data.length,
+    averageVitaminB2: total.vitaminB2 / data.length,
+    averageVitaminB3: total.vitaminB3 / data.length,
+    averageVitaminB6: total.vitaminB6 / data.length,
+    averageVitaminB12: total.vitaminB12 / data.length,
+    averageFolate: total.folate / data.length,
+    averageMagnesium: total.magnesium / data.length,
+    averagePotassium: total.potassium / data.length,
+    averageZinc: total.zinc / data.length,
     goalAchievementRate: (total.daysGoalMet / data.length) * 100,
     highestCalorieDay,
     lowestCalorieDay,
@@ -199,6 +224,19 @@ export async function getAnalyticsData(
       fiber: log?.totalFiber || 0,
       sugar: log?.totalSugar || 0,
       calcium: log?.totalCalcium || 0,
+      vitaminC: log?.totalVitaminC || 0,
+      vitaminD: log?.totalVitaminD || 0,
+      vitaminE: log?.totalVitaminE || 0,
+      vitaminK: log?.totalVitaminK || 0,
+      vitaminB1: log?.totalVitaminB1 || 0,
+      vitaminB2: log?.totalVitaminB2 || 0,
+      vitaminB3: log?.totalVitaminB3 || 0,
+      vitaminB6: log?.totalVitaminB6 || 0,
+      vitaminB12: log?.totalVitaminB12 || 0,
+      folate: log?.totalFolate || 0,
+      magnesium: log?.totalMagnesium || 0,
+      potassium: log?.totalPotassium || 0,
+      zinc: log?.totalZinc || 0,
     });
   }
 
@@ -227,5 +265,3 @@ export async function getAnalyticsData(
     loggedDaysCount,
   };
 }
-
-    

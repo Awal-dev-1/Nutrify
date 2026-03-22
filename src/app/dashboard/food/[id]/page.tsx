@@ -261,8 +261,22 @@ export default function FoodDetailsPage() {
                           {Object.entries(food.micronutrientBreakdown).filter(([, value]) => value && value > 0).map(([key, value]) => {
                                 const per100gValue = value || 0;
                                 const currentPortionValue = (per100gValue / 100) * quantity;
-                                const keyToLabel: Record<string, string> = { fiber: 'Fiber', sugar: 'Sugar', iron: 'Iron', calcium: 'Calcium', vitaminA: 'Vit. A', vitaminC: 'Vit. C', sodium: 'Sodium'};
-                                const keyToUnit: Record<string, string> = { fiber: 'g', sugar: 'g', iron: 'mg', calcium: 'mg', vitaminA: 'µg', vitaminC: 'mg', sodium: 'mg'};
+                                const keyToLabel: Record<string, string> = {
+                                  fiber: 'Fiber', sugar: 'Sugar', iron: 'Iron', calcium: 'Calcium', 
+                                  vitaminA: 'Vit. A', vitaminC: 'Vit. C', sodium: 'Sodium',
+                                  vitaminD: 'Vit. D', vitaminE: 'Vit. E', vitaminK: 'Vit. K',
+                                  vitaminB1: 'Vit. B1', vitaminB2: 'Vit. B2', vitaminB3: 'Vit. B3',
+                                  vitaminB6: 'Vit. B6', vitaminB12: 'Vit. B12', folate: 'Folate',
+                                  magnesium: 'Magnesium', potassium: 'Potassium', zinc: 'Zinc'
+                                };
+                                const keyToUnit: Record<string, string> = {
+                                  fiber: 'g', sugar: 'g', iron: 'mg', calcium: 'mg', 
+                                  vitaminA: 'µg', vitaminC: 'mg', sodium: 'mg',
+                                  vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
+                                  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg',
+                                  vitaminB6: 'mg', vitaminB12: 'µg', folate: 'µg',
+                                  magnesium: 'mg', potassium: 'mg', zinc: 'mg'
+                                };
                                 if (!keyToLabel[key]) return null;
 
                                 return(
@@ -380,5 +394,3 @@ const FoodDetailsSkeleton = () => (
     </div>
   </div>
 );
-
-    

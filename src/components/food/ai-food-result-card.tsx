@@ -99,7 +99,7 @@ export const AiFoodResultCard: FC<{
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">Micronutrients</CardTitle>
-                    <CardDescription>For the estimated {item.estimatedWeightGrams}g portion</CardDescription>
+                    <CardDescription>Key vitamins and minerals</CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
                     <ul className="space-y-1 max-h-48 overflow-y-auto">
@@ -109,22 +109,20 @@ export const AiFoodResultCard: FC<{
                                     return null;
                                 }
                                 const keyToLabel: Record<string, string> = {
-                                    fiber: "Fiber",
-                                    sugar: "Sugar",
-                                    iron: "Iron",
-                                    calcium: "Calcium",
-                                    vitaminA: "Vitamin A",
-                                    vitaminC: "Vitamin C",
-                                    sodium: "Sodium",
+                                  fiber: 'Fiber', sugar: 'Sugar', iron: 'Iron', calcium: 'Calcium', 
+                                  vitaminA: 'Vit. A', vitaminC: 'Vit. C', sodium: 'Sodium',
+                                  vitaminD: 'Vit. D', vitaminE: 'Vit. E', vitaminK: 'Vit. K',
+                                  vitaminB1: 'Vit. B1', vitaminB2: 'Vit. B2', vitaminB3: 'Vit. B3',
+                                  vitaminB6: 'Vit. B6', vitaminB12: 'Vit. B12', folate: 'Folate',
+                                  magnesium: 'Magnesium', potassium: 'Potassium', zinc: 'Zinc'
                                 };
                                 const keyToUnit: Record<string, string> = {
-                                    fiber: "g",
-                                    sugar: "g",
-                                    iron: "mg",
-                                    calcium: "mg",
-                                    vitaminA: "µg",
-                                    vitaminC: "mg",
-                                    sodium: "mg",
+                                  fiber: 'g', sugar: 'g', iron: 'mg', calcium: 'mg', 
+                                  vitaminA: 'µg', vitaminC: 'mg', sodium: 'mg',
+                                  vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
+                                  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg',
+                                  vitaminB6: 'mg', vitaminB12: 'µg', folate: 'µg',
+                                  magnesium: 'mg', potassium: 'mg', zinc: 'mg'
                                 };
                                 return (
                                 <li key={key} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">

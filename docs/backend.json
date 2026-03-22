@@ -190,27 +190,25 @@
         "micronutrientBreakdown": {
           "type": "object",
           "properties": {
-            "fiber": {
-              "type": "number"
-            },
-            "sugar": {
-              "type": "number"
-            },
-            "iron": {
-              "type": "number"
-            },
-            "calcium": {
-              "type": "number"
-            },
-            "vitaminA": {
-              "type": "number"
-            },
-            "vitaminC": {
-              "type": "number"
-            },
-            "sodium": {
-              "type": "number"
-            }
+            "fiber": { "type": "number" },
+            "sugar": { "type": "number" },
+            "iron": { "type": "number" },
+            "calcium": { "type": "number" },
+            "vitaminA": { "type": "number" },
+            "vitaminC": { "type": "number" },
+            "sodium": { "type": "number" },
+            "vitaminD": { "type": "number" },
+            "vitaminE": { "type": "number" },
+            "vitaminK": { "type": "number" },
+            "vitaminB1": { "type": "number" },
+            "vitaminB2": { "type": "number" },
+            "vitaminB3": { "type": "number" },
+            "vitaminB6": { "type": "number" },
+            "vitaminB12": { "type": "number" },
+            "folate": { "type": "number" },
+            "magnesium": { "type": "number" },
+            "potassium": { "type": "number" },
+            "zinc": { "type": "number" }
           }
         },
         "detailedRecipe": {
@@ -259,55 +257,34 @@
       "type": "object",
       "description": "Represents a single food item logged as part of a meal within a daily log.",
       "properties": {
-        "logId": {
-          "type": "string"
-        },
-        "foodId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "quantity": {
-          "type": "number"
-        },
-        "calories": {
-          "type": "number"
-        },
-        "protein": {
-          "type": "number"
-        },
-        "carbs": {
-          "type": "number"
-        },
-        "fat": {
-          "type": "number"
-        },
-        "iron": {
-          "type": "number"
-        },
-        "vitaminA": {
-          "type": "number"
-        },
-        "sodium": {
-          "type": "number"
-        },
-        "fiber": {
-          "type": "number"
-        },
-        "sugar": {
-          "type": "number"
-        },
-        "calcium": {
-          "type": "number"
-        },
-        "vitaminC": {
-          "type": "number"
-        },
-        "imageUrl": {
-          "type": "string",
-          "format": "uri"
-        }
+        "logId": { "type": "string" },
+        "foodId": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "iron": { "type": "number" },
+        "vitaminA": { "type": "number" },
+        "sodium": { "type": "number" },
+        "fiber": { "type": "number" },
+        "sugar": { "type": "number" },
+        "calcium": { "type": "number" },
+        "vitaminC": { "type": "number" },
+        "vitaminD": { "type": "number" },
+        "vitaminE": { "type": "number" },
+        "vitaminK": { "type": "number" },
+        "vitaminB1": { "type": "number" },
+        "vitaminB2": { "type": "number" },
+        "vitaminB3": { "type": "number" },
+        "vitaminB6": { "type": "number" },
+        "vitaminB12": { "type": "number" },
+        "folate": { "type": "number" },
+        "magnesium": { "type": "number" },
+        "potassium": { "type": "number" },
+        "zinc": { "type": "number" },
+        "imageUrl": { "type": "string", "format": "uri" }
       },
       "required": [
         "logId",
@@ -322,67 +299,37 @@
       "type": "object",
       "description": "Aggregated daily nutritional data for a user, including total intake and a list of all food items consumed. Updated with every change in the tracker.",
       "properties": {
-        "date": {
-          "type": "string",
-          "format": "date"
-        },
-        "totalCalories": {
-          "type": "number"
-        },
-        "totalProtein": {
-          "type": "number"
-        },
-        "totalCarbs": {
-          "type": "number"
-        },
-        "totalFat": {
-          "type": "number"
-        },
-        "totalIron": {
-          "type": "number"
-        },
-        "totalVitaminA": {
-          "type": "number"
-        },
-        "totalSodium": {
-          "type": "number"
-        },
-        "totalFiber": {
-          "type": "number"
-        },
-        "totalSugar": {
-          "type": "number"
-        },
-        "totalCalcium": {
-          "type": "number"
-        },
-        "totalVitaminC": {
-          "type": "number"
-        },
-        "waterIntake": {
-          "type": "number"
-        },
+        "date": { "type": "string", "format": "date" },
+        "totalCalories": { "type": "number" },
+        "totalProtein": { "type": "number" },
+        "totalCarbs": { "type": "number" },
+        "totalFat": { "type": "number" },
+        "totalIron": { "type": "number" },
+        "totalVitaminA": { "type": "number" },
+        "totalSodium": { "type": "number" },
+        "totalFiber": { "type": "number" },
+        "totalSugar": { "type": "number" },
+        "totalCalcium": { "type": "number" },
+        "totalVitaminC": { "type": "number" },
+        "totalVitaminD": { "type": "number" },
+        "totalVitaminE": { "type": "number" },
+        "totalVitaminK": { "type": "number" },
+        "totalVitaminB1": { "type": "number" },
+        "totalVitaminB2": { "type": "number" },
+        "totalVitaminB3": { "type": "number" },
+        "totalVitaminB6": { "type": "number" },
+        "totalVitaminB12": { "type": "number" },
+        "totalFolate": { "type": "number" },
+        "totalMagnesium": { "type": "number" },
+        "totalPotassium": { "type": "number" },
+        "totalZinc": { "type": "number" },
+        "waterIntake": { "type": "number" },
         "meals": {
           "type": "object",
           "properties": {
-            "Breakfast": {
-              "type": "array",
-              "items": {
-                "$ref": "#/backend/entities/LoggedFoodItem"
-              }
-            },
-            "Lunch": {
-              "type": "array",
-              "items": {
-                "$ref": "#/backend/entities/LoggedFoodItem"
-              }
-            },
-            "Dinner": {
-              "type": "array",
-              "items": {
-                "$ref": "#/backend/entities/LoggedFoodItem"
-              }
-            }
+            "Breakfast": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Lunch": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } },
+            "Dinner": { "type": "array", "items": { "$ref": "#/backend/entities/LoggedFoodItem" } }
           }
         }
       },
@@ -543,27 +490,25 @@
         "micronutrientBreakdown": {
           "type": "object",
           "properties": {
-            "fiber": {
-              "type": "number"
-            },
-            "sugar": {
-              "type": "number"
-            },
-            "iron": {
-              "type": "number"
-            },
-            "calcium": {
-              "type": "number"
-            },
-            "vitaminA": {
-              "type": "number"
-            },
-            "vitaminC": {
-              "type": "number"
-            },
-            "sodium": {
-              "type": "number"
-            }
+            "fiber": { "type": "number" },
+            "sugar": { "type": "number" },
+            "iron": { "type": "number" },
+            "calcium": { "type": "number" },
+            "vitaminA": { "type": "number" },
+            "vitaminC": { "type": "number" },
+            "sodium": { "type": "number" },
+            "vitaminD": { "type": "number" },
+            "vitaminE": { "type": "number" },
+            "vitaminK": { "type": "number" },
+            "vitaminB1": { "type": "number" },
+            "vitaminB2": { "type": "number" },
+            "vitaminB3": { "type": "number" },
+            "vitaminB6": { "type": "number" },
+            "vitaminB12": { "type": "number" },
+            "folate": { "type": "number" },
+            "magnesium": { "type": "number" },
+            "potassium": { "type": "number" },
+            "zinc": { "type": "number" }
           }
         },
         "detailedRecipe": {
@@ -677,8 +622,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
