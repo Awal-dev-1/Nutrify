@@ -74,6 +74,7 @@ const AnalyticsPage = () => {
     summary: AnalyticsSummary;
     insights: string[];
     goals: { calories: number; protein: number; carbs: number; fat: number; iron: number; vitaminA: number; sodium: number; };
+    loggedDaysCount: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -169,7 +170,7 @@ const AnalyticsPage = () => {
     );
   }
 
-  const { chartData, summary, insights, goals } = data;
+  const { chartData, summary, insights, goals, loggedDaysCount } = data;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
@@ -186,7 +187,7 @@ const AnalyticsPage = () => {
               </h1>
               <p className="text-body text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Calendar className="h-3.5 w-3.5" />
-                Last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days • {chartData.length} days logged
+                Logged {loggedDaysCount} / {timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90} days
               </p>
             </div>
           </div>
@@ -781,3 +782,5 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
+
+    

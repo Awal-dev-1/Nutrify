@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -211,6 +212,8 @@ export async function getAnalyticsData(
     sodium: sodiumGoal,
   };
 
+  const loggedDaysCount = chartData.filter(day => day.calories > 0).length;
+
   // 4. Calculate summary and insights
   const summary = calculateSummary(chartData, calorieGoal);
   const insights = generateInsights(summary, goals, days);
@@ -221,5 +224,8 @@ export async function getAnalyticsData(
     summary,
     insights,
     goals,
+    loggedDaysCount,
   };
 }
+
+    
