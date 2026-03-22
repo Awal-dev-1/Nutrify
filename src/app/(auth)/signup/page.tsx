@@ -19,14 +19,14 @@ export default function SignUpPage() {
       return; // Wait for auth state to be determined
     }
 
-    if (user) {
+    if (user && !user.isAnonymous) {
       // User is created, redirect to onboarding.
       router.push("/onboarding");
     }
   }, [user, isUserLoading, router]);
 
-  // Show a loader while checking auth status or if a user is found and we are redirecting.
-  if (isUserLoading || user) {
+  // Show a loader while checking auth status or if a non-anonymous user is found and we are redirecting.
+  if (isUserLoading || (user && !user.isAnonymous)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
