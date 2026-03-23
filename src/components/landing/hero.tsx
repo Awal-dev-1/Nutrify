@@ -21,11 +21,11 @@ export function Hero() {
             src={heroImage.imageUrl}
             alt={heroImage.description}
             fill
-            className="object-cover scale-105 animate-slow-zoom"
+            className="object-cover fixed"
             priority
             data-ai-hint={heroImage.imageHint}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40" />
+          <div className="fixed inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40" />
         </>
       )}
       
