@@ -39,7 +39,6 @@ export type RecommendationItem = {
         vitaminB12?: number;
     };
     reason: string;
-    score: number;
 };
 
 export type GeneratedRecommendations = {
@@ -49,3 +48,5 @@ export type GeneratedRecommendations = {
     recommendations: RecommendationItem[];
     insightTips?: string[];
 };
+
+    

@@ -182,3 +182,5 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
     </Dialog>
   );
 }
+
+    

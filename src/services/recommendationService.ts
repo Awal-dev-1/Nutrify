@@ -163,7 +163,6 @@ export async function generateRecommendations(
         fat: r.fat,
         micronutrients: r.micronutrients,
         reason: r.reason,
-        score: 0, // Score is no longer calculated, can be removed later
     })),
     insightTips: aiResult.insightTips,
   };
@@ -184,3 +183,5 @@ export async function generateRecommendations(
     insightTips: aiResult.insightTips,
   };
 }
+
+    

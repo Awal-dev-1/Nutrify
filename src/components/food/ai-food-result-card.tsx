@@ -152,3 +152,5 @@ export const AiFoodResultCard: FC<{
     </Card>
   );
 };
+
+    

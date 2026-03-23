@@ -80,6 +80,7 @@ export type DailyLog = {
       Breakfast: LoggedFoodItem[];
       Lunch: LoggedFoodItem[];
       Dinner: LoggedFoodItem[];
+      Snacks: LoggedFoodItem[];
     };
 };
   
@@ -160,3 +161,5 @@ export type AnalyticsSummary = {
     lowestCalorieDay: AnalyticsData | null;
     consistencyScore: number;
 };
+
+    

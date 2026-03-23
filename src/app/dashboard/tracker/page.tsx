@@ -80,7 +80,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from 'framer-motion';
 
-type MealType = "Breakfast" | "Lunch" | "Dinner";
+type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
 
 export default function DailyTrackerPage() {
   const { toast } = useToast();
@@ -110,7 +110,7 @@ export default function DailyTrackerPage() {
   };
 
   const meals = useMemo(() => {
-    return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [] };
+    return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] };
   }, [dailyLog]);
 
   const dailyTotals = useMemo(() => {
@@ -200,7 +200,7 @@ export default function DailyTrackerPage() {
       potassium: (foodData.micronutrientBreakdown?.potassium || 0) * ratio,
       zinc: (foodData.micronutrientBreakdown?.zinc || 0) * ratio,
     };
-    const newMeals = { ...meals, [mealType]: [...meals[mealType], newLogItem] };
+    const newMeals = { ...meals, [mealType]: [...(meals[mealType] || []), newLogItem] };
     updateDailyLog(newMeals, dailyTotals.waterIntake);
     toast({ title: "Food Added!", description: `${foodData.foodName} added to ${mealType}.` });
   };
@@ -261,7 +261,7 @@ export default function DailyTrackerPage() {
   const clearDay = () => {
     if (dailyLogRef) {
       const emptyLog: DailyLog = {
-        date: dateKey, meals: { Breakfast: [], Lunch: [], Dinner: [] },
+        date: dateKey, meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
         waterIntake: 0, totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
         totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
         totalSugar: 0, totalCalcium: 0, totalVitaminC: 0, totalVitaminD: 0,
@@ -550,13 +550,14 @@ const MealSections: FC<{
   onEditFoodClick: (food: LoggedFoodItem) => void;
   onDeleteFoodClick: (logId: string) => void;
 }> = ({ meals, onAddFoodClick, onEditFoodClick, onDeleteFoodClick }) => {
-  const mealOrder: MealType[] = ["Breakfast", "Lunch", "Dinner"];
+  const mealOrder: MealType[] = ["Breakfast", "Lunch", "Dinner", "Snacks"];
 
   const getMealIcon = (mealType: MealType) => {
     switch (mealType) {
       case "Breakfast": return <Coffee className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />;
       case "Lunch":     return <Sun    className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />;
       case "Dinner":    return <Moon   className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />;
+      case "Snacks":    return <Cookie className="h-4 w-4 sm:h-5 sm:w-5 text-lime-600" />;
       default:          return <UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5" />;
     }
   };
@@ -771,10 +772,10 @@ const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
     { label: 'Fiber', value: totals.totalFiber, unit: 'g' },
     { label: 'Sugar', value: totals.totalSugar, unit: 'g' },
     { label: 'Sodium', value: totals.totalSodium, unit: 'mg' },
-    { label: 'Iron', value: totals.totalIron, unit: 'mg' },
     { label: 'Calcium', value: totals.totalCalcium, unit: 'mg' },
-    { label: 'Magnesium', value: totals.totalMagnesium, unit: 'mg' },
+    { label: 'Iron', value: totals.totalIron, unit: 'mg' },
     { label: 'Potassium', value: totals.totalPotassium, unit: 'mg' },
+    { label: 'Magnesium', value: totals.totalMagnesium, unit: 'mg' },
     { label: 'Zinc', value: totals.totalZinc, unit: 'mg' },
     { label: 'Vitamin A', value: totals.totalVitaminA, unit: 'µg' },
     { label: 'Vitamin C', value: totals.totalVitaminC, unit: 'mg' },
@@ -855,3 +856,5 @@ const TrackerSkeleton = () => (
         </div>
     </div>
 )
+
+    

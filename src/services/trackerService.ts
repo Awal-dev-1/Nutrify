@@ -22,7 +22,7 @@ const updateLog = (dailyLogRef: any, dailyLog: DailyLog) => {
 export async function addFoodToLog(
   db: Firestore,
   userId: string,
-  mealType: "Breakfast" | "Lunch" | "Dinner",
+  mealType: "Breakfast" | "Lunch" | "Dinner" | "Snacks",
   foodData: AiFoodItem,
   quantity: number
 ) {
@@ -89,7 +89,7 @@ export async function addFoodToLog(
         totalVitaminB1: 0, totalVitaminB2: 0, totalVitaminB3: 0, totalVitaminB5: 0, totalVitaminB6: 0,
         totalVitaminB7: 0, totalFolate: 0, totalVitaminB12: 0,
         waterIntake: 0,
-        meals: { Breakfast: [], Lunch: [], Dinner: [] },
+        meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
       };
     }
   } catch (error) {
@@ -101,7 +101,9 @@ export async function addFoodToLog(
       return;
   }
   
-
+  if (!dailyLog.meals[mealType]) {
+    dailyLog.meals[mealType] = [];
+  }
   dailyLog.meals[mealType].push(newLogItem);
 
   const allMeals = Object.values(dailyLog.meals).flat();
@@ -115,43 +117,18 @@ export async function addFoodToLog(
     totalVitaminB1: 0, totalVitaminB2: 0, totalVitaminB3: 0, totalVitaminB5: 0, totalVitaminB6: 0,
     totalVitaminB7: 0, totalFolate: 0, totalVitaminB12: 0,
   };
+  
+  const nutrientKeys = Object.keys(newTotals) as (keyof typeof newTotals)[];
 
   for (const item of allMeals) {
-    newTotals.totalCalories += item.calories || 0;
-    newTotals.totalProtein += item.protein || 0;
-    newTotals.totalCarbs += item.carbs || 0;
-    newTotals.totalFat += item.fat || 0;
-    newTotals.totalFiber += item.fiber || 0;
-    newTotals.totalSugar += item.sugar || 0;
-    newTotals.totalSodium += item.sodium || 0;
-    newTotals.totalCalcium += item.calcium || 0;
-    newTotals.totalIron += item.iron || 0;
-    newTotals.totalPotassium += item.potassium || 0;
-    newTotals.totalMagnesium += item.magnesium || 0;
-    newTotals.totalZinc += item.zinc || 0;
-    newTotals.totalPhosphorus += item.phosphorus || 0;
-    newTotals.totalIodine += item.iodine || 0;
-    newTotals.totalSelenium += item.selenium || 0;
-    newTotals.totalCopper += item.copper || 0;
-    newTotals.totalManganese += item.manganese || 0;
-    newTotals.totalChromium += item.chromium || 0;
-    newTotals.totalMolybdenum += item.molybdenum || 0;
-    newTotals.totalChloride += item.chloride || 0;
-    newTotals.totalVitaminA += item.vitaminA || 0;
-    newTotals.totalVitaminC += item.vitaminC || 0;
-    newTotals.totalVitaminD += item.vitaminD || 0;
-    newTotals.totalVitaminE += item.vitaminE || 0;
-    newTotals.totalVitaminK += item.vitaminK || 0;
-    newTotals.totalVitaminB1 += item.vitaminB1 || 0;
-    newTotals.totalVitaminB2 += item.vitaminB2 || 0;
-    newTotals.totalVitaminB3 += item.vitaminB3 || 0;
-    newTotals.totalVitaminB5 += item.vitaminB5 || 0;
-    newTotals.totalVitaminB6 += item.vitaminB6 || 0;
-    newTotals.totalVitaminB7 += item.vitaminB7 || 0;
-    newTotals.totalFolate += item.folate || 0;
-    newTotals.totalVitaminB12 += item.vitaminB12 || 0;
+    for (const key of nutrientKeys) {
+        const foodKey = key.replace('total', '').toLowerCase() as keyof LoggedFoodItem;
+        newTotals[key] += (item[foodKey] as number || 0);
+    }
   }
   
   const updatedLog = { ...dailyLog, ...newTotals };
   updateLog(dailyLogRef, updatedLog);
 }
+
+    
