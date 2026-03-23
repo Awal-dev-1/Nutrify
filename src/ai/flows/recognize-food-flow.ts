@@ -5,7 +5,7 @@
  *
  * - recognizeFood - A function that handles the food recognition process.
  * - RecognizeFoodInput - The input type for the recognizeFood function.
- * - RecognizeFoodOutput - The return type for the recognizeFood function.
+ * - RecognizeFoodOutput - The return type for the recognizeFoodOutput function.
  */
 
 import { ai } from '@/ai/genkit';
@@ -61,7 +61,7 @@ Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.le
 3.  **Calculate Total Nutrition**: Calculate the total nutritional values for the *entire* dish visible in the image. You must provide:
     * \`calories\`
     * \`macronutrientBreakdown\` (protein, carbohydrates, fat).
-    * \`micronutrientBreakdown\`: Provide as many of the following as possible: fiber, sugar, iron, calcium, vitaminA, vitaminC, sodium, vitaminD, vitaminE, vitaminK, vitaminB1, vitaminB2, vitaminB3, vitaminB6, vitaminB12, folate, magnesium, potassium, zinc.
+    * \`micronutrientBreakdown\`: Provide as many of the following as possible: fiber, sugar, sodium, calcium, iron, potassium, magnesium, zinc, phosphorus, iodine, selenium, copper, manganese, chromium, molybdenum, chloride, vitaminA, vitaminC, vitaminD, vitaminE, vitaminK, vitaminB1, vitaminB2, vitaminB3, vitaminB5, vitaminB6, vitaminB7, folate, vitaminB12.
 4.  **Analyze and Classify**: Based on the user's ENTIRE profile (goal, preferences, allergies, etc.), you MUST classify the food into one of three categories and set the \`suitability\` field: 'Suitable', 'Moderately Suitable', 'Not Suitable'.
     *   **Not Suitable**: If the food directly violates a stated restriction (e.g., meat for a Vegan). This is a hard failure.
     *   **Moderately Suitable**: If the food is generally okay but has some drawbacks for the user (e.g., high in calories for a weight loss goal).

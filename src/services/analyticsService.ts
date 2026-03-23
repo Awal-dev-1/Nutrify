@@ -22,89 +22,51 @@ import { FirestorePermissionError } from '@/firebase/errors';
  * Calculates summary metrics from a given array of analytics data.
  */
 function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary {
+  const emptySummary: AnalyticsSummary = {
+    averageCalories: 0, averageProtein: 0, averageCarbs: 0, averageFat: 0,
+    averageFiber: 0, averageSugar: 0, averageSodium: 0, averageCalcium: 0, averageIron: 0,
+    averagePotassium: 0, averageMagnesium: 0, averageZinc: 0, averagePhosphorus: 0,
+    averageIodine: 0, averageSelenium: 0, averageCopper: 0, averageManganese: 0,
+    averageChromium: 0, averageMolybdenum: 0, averageChloride: 0,
+    averageVitaminA: 0, averageVitaminC: 0, averageVitaminD: 0, averageVitaminE: 0, averageVitaminK: 0,
+    averageVitaminB1: 0, averageVitaminB2: 0, averageVitaminB3: 0, averageVitaminB5: 0, averageVitaminB6: 0,
+    averageVitaminB7: 0, averageFolate: 0, averageVitaminB12: 0,
+    goalAchievementRate: 0, highestCalorieDay: null, lowestCalorieDay: null,
+    consistencyScore: 0,
+  };
+
   if (data.length === 0) {
-    return {
-      averageCalories: 0, averageProtein: 0, averageCarbs: 0, averageFat: 0,
-      averageIron: 0, averageVitaminA: 0, averageSodium: 0, averageFiber: 0,
-      averageSugar: 0, averageCalcium: 0, averageVitaminC: 0, averageVitaminD: 0,
-      averageVitaminE: 0, averageVitaminK: 0, averageVitaminB1: 0, averageVitaminB2: 0,
-      averageVitaminB3: 0, averageVitaminB6: 0, averageVitaminB12: 0, averageFolate: 0,
-      averageMagnesium: 0, averagePotassium: 0, averageZinc: 0,
-      goalAchievementRate: 0, highestCalorieDay: null, lowestCalorieDay: null,
-      consistencyScore: 0,
-    };
+    return emptySummary;
   }
 
-  const total = data.reduce(
-    (acc, day) => {
-      acc.calories += day.calories;
-      acc.protein += day.protein;
-      acc.carbs += day.carbs;
-      acc.fat += day.fat;
-      acc.iron += day.iron || 0;
-      acc.vitaminA += day.vitaminA || 0;
-      acc.sodium += day.sodium || 0;
-      acc.fiber += day.fiber || 0;
-      acc.sugar += day.sugar || 0;
-      acc.calcium += day.calcium || 0;
-      acc.vitaminC += day.vitaminC || 0;
-      acc.vitaminD += day.vitaminD || 0;
-      acc.vitaminE += day.vitaminE || 0;
-      acc.vitaminK += day.vitaminK || 0;
-      acc.vitaminB1 += day.vitaminB1 || 0;
-      acc.vitaminB2 += day.vitaminB2 || 0;
-      acc.vitaminB3 += day.vitaminB3 || 0;
-      acc.vitaminB6 += day.vitaminB6 || 0;
-      acc.vitaminB12 += day.vitaminB12 || 0;
-      acc.folate += day.folate || 0;
-      acc.magnesium += day.magnesium || 0;
-      acc.potassium += day.potassium || 0;
-      acc.zinc += day.zinc || 0;
-      if (day.calories > 0 && day.calories <= goal) {
-        acc.daysGoalMet++;
-      }
-      return acc;
-    },
-    { 
-      calories: 0, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0, sodium: 0, 
-      fiber: 0, sugar: 0, calcium: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, 
-      vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB6: 0, 
-      vitaminB12: 0, folate: 0, magnesium: 0, potassium: 0, zinc: 0, daysGoalMet: 0 
+  const total: Omit<AnalyticsSummary, 'goalAchievementRate' | 'highestCalorieDay' | 'lowestCalorieDay' | 'consistencyScore' | keyof typeof emptySummary> & { daysGoalMet: number, [key: string]: any } = { daysGoalMet: 0 };
+  
+  Object.keys(emptySummary).forEach(key => {
+    if (key.startsWith('average')) {
+      const dataKey = key.replace('average', '');
+      const lowerCaseKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
+      total[lowerCaseKey] = data.reduce((acc, day) => acc + ((day as any)[lowerCaseKey] || 0), 0);
     }
-  );
+  });
+  total.daysGoalMet = data.filter(d => d.calories > 0 && d.calories <= goal).length;
+
+  const averages: any = {};
+  Object.keys(total).forEach(key => {
+      if (key !== 'daysGoalMet') {
+        averages[`average${key.charAt(0).toUpperCase() + key.slice(1)}`] = total[key] / data.length;
+      }
+  });
 
   const nonZeroDays = data.filter(d => d.calories > 0);
   const highestCalorieDay = [...nonZeroDays].sort((a, b) => b.calories - a.calories)[0] || null;
   const lowestCalorieDay = [...nonZeroDays].sort((a, b) => a.calories - b.calories)[0] || null;
   
-  const averageCalories = total.calories / data.length;
+  const averageCalories = averages.averageCalories;
   const calorieVariance = data.reduce((acc, day) => acc + Math.abs(day.calories - averageCalories), 0) / data.length;
   const consistencyScore = Math.max(0, 100 - (calorieVariance / (goal * 0.25)) * 100);
 
   return {
-    averageCalories,
-    averageProtein: total.protein / data.length,
-    averageCarbs: total.carbs / data.length,
-    averageFat: total.fat / data.length,
-    averageIron: total.iron / data.length,
-    averageVitaminA: total.vitaminA / data.length,
-    averageSodium: total.sodium / data.length,
-    averageFiber: total.fiber / data.length,
-    averageSugar: total.sugar / data.length,
-    averageCalcium: total.calcium / data.length,
-    averageVitaminC: total.vitaminC / data.length,
-    averageVitaminD: total.vitaminD / data.length,
-    averageVitaminE: total.vitaminE / data.length,
-    averageVitaminK: total.vitaminK / data.length,
-    averageVitaminB1: total.vitaminB1 / data.length,
-    averageVitaminB2: total.vitaminB2 / data.length,
-    averageVitaminB3: total.vitaminB3 / data.length,
-    averageVitaminB6: total.vitaminB6 / data.length,
-    averageVitaminB12: total.vitaminB12 / data.length,
-    averageFolate: total.folate / data.length,
-    averageMagnesium: total.magnesium / data.length,
-    averagePotassium: total.potassium / data.length,
-    averageZinc: total.zinc / data.length,
+    ...averages,
     goalAchievementRate: (total.daysGoalMet / data.length) * 100,
     highestCalorieDay,
     lowestCalorieDay,
@@ -169,18 +131,18 @@ export async function getAnalyticsData(
     throw error;
   }
   
-  if (!userDocSnap.exists()) {
-    console.warn(`Analytics Service: User profile not found for user ${userId}. Returning empty data.`);
+  const emptyAnalyticsData = () => {
     const chartData: AnalyticsData[] = [];
     for (let i = 0; i < days; i++) {
         const date = subDays(today, days - 1 - i);
         const dateKey = format(date, 'yyyy-MM-dd');
         chartData.push({
-            date: dateKey,
-            calories: 0, goal: 2000, protein: 0, carbs: 0, fat: 0, iron: 0, vitaminA: 0,
-            sodium: 0, fiber: 0, sugar: 0, calcium: 0, vitaminC: 0, vitaminD: 0,
-            vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0,
-            vitaminB6: 0, vitaminB12: 0, folate: 0, magnesium: 0, potassium: 0, zinc: 0,
+            date: dateKey, goal: 2000,
+            calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0, calcium: 0, iron: 0,
+            potassium: 0, magnesium: 0, zinc: 0, phosphorus: 0, iodine: 0, selenium: 0, copper: 0, manganese: 0,
+            chromium: 0, molybdenum: 0, chloride: 0,
+            vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0,
+            vitaminB3: 0, vitaminB5: 0, vitaminB6: 0, vitaminB7: 0, folate: 0, vitaminB12: 0
         });
     }
 
@@ -195,7 +157,13 @@ export async function getAnalyticsData(
         goals: defaultGoals,
         loggedDaysCount: 0,
     };
+  };
+  
+  if (!userDocSnap.exists()) {
+    console.warn(`Analytics Service: User profile not found for user ${userId}. Returning empty data.`);
+    return emptyAnalyticsData();
   }
+
   const userProfile = userDocSnap.data() as UserProfile;
   const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2000;
   const proteinGoal = (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4;
@@ -237,17 +205,28 @@ export async function getAnalyticsData(
 
     chartData.push({
       date: dateKey,
-      calories: log?.totalCalories || 0,
       goal: calorieGoal,
+      calories: log?.totalCalories || 0,
       protein: log?.totalProtein || 0,
       carbs: log?.totalCarbs || 0,
       fat: log?.totalFat || 0,
-      iron: log?.totalIron || 0,
-      vitaminA: log?.totalVitaminA || 0,
-      sodium: log?.totalSodium || 0,
       fiber: log?.totalFiber || 0,
       sugar: log?.totalSugar || 0,
+      sodium: log?.totalSodium || 0,
       calcium: log?.totalCalcium || 0,
+      iron: log?.totalIron || 0,
+      potassium: log?.totalPotassium || 0,
+      magnesium: log?.totalMagnesium || 0,
+      zinc: log?.totalZinc || 0,
+      phosphorus: log?.totalPhosphorus || 0,
+      iodine: log?.totalIodine || 0,
+      selenium: log?.totalSelenium || 0,
+      copper: log?.totalCopper || 0,
+      manganese: log?.totalManganese || 0,
+      chromium: log?.totalChromium || 0,
+      molybdenum: log?.totalMolybdenum || 0,
+      chloride: log?.totalChloride || 0,
+      vitaminA: log?.totalVitaminA || 0,
       vitaminC: log?.totalVitaminC || 0,
       vitaminD: log?.totalVitaminD || 0,
       vitaminE: log?.totalVitaminE || 0,
@@ -255,12 +234,11 @@ export async function getAnalyticsData(
       vitaminB1: log?.totalVitaminB1 || 0,
       vitaminB2: log?.totalVitaminB2 || 0,
       vitaminB3: log?.totalVitaminB3 || 0,
+      vitaminB5: log?.totalVitaminB5 || 0,
       vitaminB6: log?.totalVitaminB6 || 0,
-      vitaminB12: log?.totalVitaminB12 || 0,
+      vitaminB7: log?.totalVitaminB7 || 0,
       folate: log?.totalFolate || 0,
-      magnesium: log?.totalMagnesium || 0,
-      potassium: log?.totalPotassium || 0,
-      zinc: log?.totalZinc || 0,
+      vitaminB12: log?.totalVitaminB12 || 0,
     });
   }
 

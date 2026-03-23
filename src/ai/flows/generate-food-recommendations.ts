@@ -17,23 +17,33 @@ const RecommendationItemSchema = z.object({
   micronutrients: z.object({
     fiber: z.number().optional(),
     sugar: z.number().optional(),
-    iron: z.number().optional(),
+    sodium: z.number().optional(),
     calcium: z.number().optional(),
+    iron: z.number().optional(),
+    potassium: z.number().optional(),
+    magnesium: z.number().optional(),
+    zinc: z.number().optional(),
+    phosphorus: z.number().optional(),
+    iodine: z.number().optional(),
+    selenium: z.number().optional(),
+    copper: z.number().optional(),
+    manganese: z.number().optional(),
+    chromium: z.number().optional(),
+    molybdenum: z.number().optional(),
+    chloride: z.number().optional(),
     vitaminA: z.number().optional(),
     vitaminC: z.number().optional(),
-    sodium: z.number().optional(),
     vitaminD: z.number().optional(),
     vitaminE: z.number().optional(),
     vitaminK: z.number().optional(),
     vitaminB1: z.number().optional(),
     vitaminB2: z.number().optional(),
     vitaminB3: z.number().optional(),
+    vitaminB5: z.number().optional(),
     vitaminB6: z.number().optional(),
-    vitaminB12: z.number().optional(),
+    vitaminB7: z.number().optional(),
     folate: z.number().optional(),
-    magnesium: z.number().optional(),
-    potassium: z.number().optional(),
-    zinc: z.number().optional(),
+    vitaminB12: z.number().optional(),
   }).describe("A summary of key micronutrients per 100g.").optional(),
   reason: z.string().describe("A concise (1-2 sentences) explanation for why this food was recommended based on the user's goal."),
   detailedRecipe: z.object({
@@ -90,7 +100,7 @@ Target Macro Split (P/C/F): {{userGoals.proteinPercentageGoal}}% / {{userGoals.c
     *   \`foodId\`: Use the food's name in kebab-case (e.g., 'jollof-rice-with-chicken').
     *   \`name\`: The common name of the food.
     *   \`calories\`, \`protein\`, \`carbs\`, \`fat\`: All in grams per 100g.
-    *   \`micronutrients\`: An object with as many values as possible for fiber, sugar, iron, calcium, vitaminA, vitaminC, sodium, vitaminD, vitaminE, vitaminK, B-vitamins, magnesium, potassium, and zinc.
+    *   \`micronutrients\`: An object with as many values as possible for fiber, sugar, sodium, calcium, iron, potassium, magnesium, zinc, phosphorus, iodine, selenium, copper, manganese, chromium, molybdenum, chloride, vitaminA, vitaminC, vitaminD, vitaminE, vitaminK, vitaminB1, vitaminB2, vitaminB3, vitaminB5, vitaminB6, vitaminB7, folate, vitaminB12.
     *   \`reason\`: A short, encouraging explanation (1-2 sentences) explaining why it's a good choice for their goal.
     *   \`detailedRecipe\`: A comprehensive recipe including a list of ingredients with quantities and step-by-step instructions.
 3.  **Generate Insight Tips**: Provide 2-3 actionable \`insightTips\` related to the user's goal and the recommendations you've provided.

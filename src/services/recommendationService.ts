@@ -30,23 +30,33 @@ export interface Recommendation {
   micronutrients?: {
     fiber?: number;
     sugar?: number;
-    iron?: number;
+    sodium?: number;
     calcium?: number;
+    iron?: number;
+    potassium?: number;
+    magnesium?: number;
+    zinc?: number;
+    phosphorus?: number;
+    iodine?: number;
+    selenium?: number;
+    copper?: number;
+    manganese?: number;
+    chromium?: number;
+    molybdenum?: number;
+    chloride?: number;
     vitaminA?: number;
     vitaminC?: number;
-    sodium?: number;
     vitaminD?: number;
     vitaminE?: number;
     vitaminK?: number;
     vitaminB1?: number;
     vitaminB2?: number;
     vitaminB3?: number;
+    vitaminB5?: number;
     vitaminB6?: number;
-    vitaminB12?: number;
+    vitaminB7?: number;
     folate?: number;
-    magnesium?: number;
-    potassium?: number;
-    zinc?: number;
+    vitaminB12?: number;
   };
   reason: string;
   detailedRecipe?: {
@@ -128,6 +138,7 @@ export async function generateRecommendations(
         detailedRecipe: rec.detailedRecipe || { ingredients: [], instructions: [] },
         foodHistory: '',
         healthAnalysis: rec.reason,
+        suitability: "Suitable"
     };
     const foodDocRef = doc(db, 'foodItems', rec.foodId);
     setDoc(foodDocRef, foodItem, { merge: true }).catch(error => {

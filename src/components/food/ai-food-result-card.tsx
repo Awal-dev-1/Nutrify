@@ -109,20 +109,22 @@ export const AiFoodResultCard: FC<{
                                     return null;
                                 }
                                 const keyToLabel: Record<string, string> = {
-                                  fiber: 'Fiber', sugar: 'Sugar', iron: 'Iron', calcium: 'Calcium', 
-                                  vitaminA: 'Vit. A', vitaminC: 'Vit. C', sodium: 'Sodium',
-                                  vitaminD: 'Vit. D', vitaminE: 'Vit. E', vitaminK: 'Vit. K',
-                                  vitaminB1: 'Vit. B1', vitaminB2: 'Vit. B2', vitaminB3: 'Vit. B3',
-                                  vitaminB6: 'Vit. B6', vitaminB12: 'Vit. B12', folate: 'Folate',
-                                  magnesium: 'Magnesium', potassium: 'Potassium', zinc: 'Zinc'
+                                  fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
+                                  potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
+                                  iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
+                                  chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
+                                  vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
+                                  vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
+                                  vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
+                                  vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
                                 };
                                 const keyToUnit: Record<string, string> = {
-                                  fiber: 'g', sugar: 'g', iron: 'mg', calcium: 'mg', 
-                                  vitaminA: 'µg', vitaminC: 'mg', sodium: 'mg',
-                                  vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
-                                  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg',
-                                  vitaminB6: 'mg', vitaminB12: 'µg', folate: 'µg',
-                                  magnesium: 'mg', potassium: 'mg', zinc: 'mg'
+                                  fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
+                                  magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
+                                  copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
+                                  vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
+                                  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
+                                  vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
                                 };
                                 return (
                                 <li key={key} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">

@@ -65,7 +65,7 @@ Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.le
 
 4.  **Standardized Portion**: All nutritional data MUST be for a 100-gram portion of the entire meal or food item. You MUST set 'estimatedWeightGrams' to exactly 100. For a mixed meal, this represents 100g of the combined dish.
 
-5.  **Complete All Fields**: You must provide all fields in the schema, including \`foodName\`, \`calories\`, \`macronutrientBreakdown\`, a comprehensive \`micronutrientBreakdown\` (including vitamins and minerals like Vitamin D, B12, Magnesium, Zinc etc.), \`detailedRecipe\`, \`foodHistory\`, \`isGhanaianLocal\`, and \`tags\`. The \`healthAnalysis\` and \`suitability\` fields are mandatory.
+5.  **Complete All Fields**: You must provide all fields in the schema, including \`foodName\`, \`calories\`, \`macronutrientBreakdown\`, a comprehensive \`micronutrientBreakdown\` (including as many as possible: fiber, sugar, sodium, calcium, iron, potassium, magnesium, zinc, phosphorus, iodine, selenium, copper, manganese, chromium, molybdenum, chloride, vitaminA, vitaminC, vitaminD, vitaminE, vitaminK, vitaminB1, vitaminB2, vitaminB3, vitaminB5, vitaminB6, vitaminB7, folate, vitaminB12), \`detailedRecipe\`, \`foodHistory\`, \`isGhanaianLocal\`, and \`tags\`. The \`healthAnalysis\` and \`suitability\` fields are mandatory.
 
 6.  **Local Food Focus**: Prioritize Ghanaian and West African foods and names where applicable. For "beans and plantain", the \`foodName\` should be "Red Red (Gobe)".
 
