@@ -1,11 +1,10 @@
 'use client';
 
 // components/landing/hero.tsx
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ArrowRight, Sparkles, Camera, ChevronDown } from "lucide-react";
+import { ArrowRight, Sparkles, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function Hero() {
@@ -14,20 +13,14 @@ export function Hero() {
   );
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {heroImage && (
-        <>
-          <Image
-            src={heroImage.imageUrl}
-            alt={heroImage.description}
-            fill
-            className="object-cover fixed"
-            priority
-            data-ai-hint={heroImage.imageHint}
-          />
-          <div className="fixed inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40" />
-        </>
-      )}
+    <section
+      className="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-fixed"
+      style={{
+        backgroundImage: heroImage ? `url(${heroImage.imageUrl})` : "",
+      }}
+      data-ai-hint={heroImage?.imageHint}
+    >
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40" />
       
       <div className="relative z-10 container px-4 py-16 md:py-24">
         <div className="max-w-5xl mx-auto text-center text-white space-y-8 md:space-y-10">
