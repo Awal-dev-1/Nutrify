@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
+type MealType = "Breakfast" | "Lunch" | "Dinner";
 
 interface AddFoodModalProps {
   isOpen: boolean;
@@ -182,5 +182,3 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
     </Dialog>
   );
 }
-
-    

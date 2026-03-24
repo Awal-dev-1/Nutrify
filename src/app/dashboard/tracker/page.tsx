@@ -80,7 +80,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from 'framer-motion';
 
-type MealType = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
+type MealType = "Breakfast" | "Lunch" | "Dinner";
 
 export default function DailyTrackerPage() {
   const { toast } = useToast();
@@ -110,7 +110,7 @@ export default function DailyTrackerPage() {
   };
 
   const meals = useMemo(() => {
-    return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] };
+    return dailyLog?.meals || { Breakfast: [], Lunch: [], Dinner: [] };
   }, [dailyLog]);
 
   const dailyTotals = useMemo(() => {
@@ -261,7 +261,7 @@ export default function DailyTrackerPage() {
   const clearDay = () => {
     if (dailyLogRef) {
       const emptyLog: DailyLog = {
-        date: dateKey, meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
+        date: dateKey, meals: { Breakfast: [], Lunch: [], Dinner: [] },
         waterIntake: 0, totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
         totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
         totalSugar: 0, totalCalcium: 0, totalVitaminC: 0, totalVitaminD: 0,
@@ -550,14 +550,13 @@ const MealSections: FC<{
   onEditFoodClick: (food: LoggedFoodItem) => void;
   onDeleteFoodClick: (logId: string) => void;
 }> = ({ meals, onAddFoodClick, onEditFoodClick, onDeleteFoodClick }) => {
-  const mealOrder: MealType[] = ["Breakfast", "Lunch", "Dinner", "Snacks"];
+  const mealOrder: MealType[] = ["Breakfast", "Lunch", "Dinner"];
 
   const getMealIcon = (mealType: MealType) => {
     switch (mealType) {
       case "Breakfast": return <Coffee className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />;
       case "Lunch":     return <Sun    className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />;
       case "Dinner":    return <Moon   className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />;
-      case "Snacks":    return <Cookie className="h-4 w-4 sm:h-5 sm:w-5 text-lime-600" />;
       default:          return <UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5" />;
     }
   };
@@ -856,5 +855,3 @@ const TrackerSkeleton = () => (
         </div>
     </div>
 )
-
-    

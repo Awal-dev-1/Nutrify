@@ -345,7 +345,6 @@ export default function FoodDetailsPage() {
                         <SelectItem value="Breakfast">Breakfast</SelectItem>
                         <SelectItem value="Lunch">Lunch</SelectItem>
                         <SelectItem value="Dinner">Dinner</SelectItem>
-                        <SelectItem value="Snacks">Snacks</SelectItem>
                     </SelectContent>
                 </Select>
                 <Button onClick={handleAdd} className="w-full" size="lg">Add to Tracker</Button>
@@ -397,5 +396,3 @@ const FoodDetailsSkeleton = () => (
     </div>
   </div>
 );
-
-    

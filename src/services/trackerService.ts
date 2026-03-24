@@ -22,7 +22,7 @@ const updateLog = (dailyLogRef: any, dailyLog: DailyLog) => {
 export async function addFoodToLog(
   db: Firestore,
   userId: string,
-  mealType: "Breakfast" | "Lunch" | "Dinner" | "Snacks",
+  mealType: "Breakfast" | "Lunch" | "Dinner",
   foodData: AiFoodItem,
   quantity: number
 ) {
@@ -89,7 +89,7 @@ export async function addFoodToLog(
         totalVitaminB1: 0, totalVitaminB2: 0, totalVitaminB3: 0, totalVitaminB5: 0, totalVitaminB6: 0,
         totalVitaminB7: 0, totalFolate: 0, totalVitaminB12: 0,
         waterIntake: 0,
-        meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
+        meals: { Breakfast: [], Lunch: [], Dinner: [] },
       };
     }
   } catch (error) {
@@ -130,5 +130,3 @@ export async function addFoodToLog(
   const updatedLog = { ...dailyLog, ...newTotals };
   updateLog(dailyLogRef, updatedLog);
 }
-
-    
