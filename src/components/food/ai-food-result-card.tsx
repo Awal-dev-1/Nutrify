@@ -11,6 +11,26 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
+const keyToLabel: Record<string, string> = {
+  fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
+  potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
+  iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
+  chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
+  vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
+  vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
+  vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
+  vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
+};
+
+const keyToUnit: Record<string, string> = {
+  fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
+  magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
+  copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
+  vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
+  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
+  vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
+};
+
 const SuitabilityBadge: FC<{ suitability?: 'Suitable' | 'Moderately Suitable' | 'Not Suitable' }> = ({ suitability }) => {
   if (!suitability) return null;
 
@@ -108,24 +128,6 @@ export const AiFoodResultCard: FC<{
                                 if (value === undefined || value === null || value === 0) {
                                     return null;
                                 }
-                                const keyToLabel: Record<string, string> = {
-                                  fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
-                                  potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
-                                  iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
-                                  chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
-                                  vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
-                                  vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
-                                  vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
-                                  vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
-                                };
-                                const keyToUnit: Record<string, string> = {
-                                  fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
-                                  magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
-                                  copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
-                                  vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
-                                  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
-                                  vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
-                                };
                                 if (!keyToLabel[key]) return null;
                                 return (
                                 <li key={key} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">

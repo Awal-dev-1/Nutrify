@@ -83,6 +83,26 @@ const QUICK_PORTIONS = [
   { grams: 300, label: 'Extra' },
 ];
 
+const keyToLabel: Record<string, string> = {
+  fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
+  potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
+  iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
+  chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
+  vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
+  vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
+  vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
+  vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
+};
+
+const keyToUnit: Record<string, string> = {
+  fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
+  magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
+  copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
+  vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
+  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
+  vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
+};
+
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams?.get('q') || '';
@@ -645,24 +665,6 @@ function FoodDetailsCard({
                       if (value === undefined || value === null || value === 0) return null;
                       const per100gValue = value || 0;
                       const currentPortionValue = (per100gValue / 100) * portionGrams;
-                      const keyToLabel: Record<string, string> = {
-                        fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
-                        potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
-                        iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
-                        chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
-                        vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
-                        vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
-                        vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
-                        vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
-                      };
-                      const keyToUnit: Record<string, string> = {
-                        fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
-                        magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
-                        copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
-                        vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
-                        vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
-                        vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
-                      };
                       if (!keyToLabel[key]) return null;
                       return (
                         <li
