@@ -126,9 +126,10 @@ export const AiFoodResultCard: FC<{
                                   vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
                                   vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
                                 };
+                                if (!keyToLabel[key]) return null;
                                 return (
                                 <li key={key} className="flex justify-between p-1.5 rounded-md bg-muted/50 text-xs">
-                                    <span>{keyToLabel[key] || key}</span>
+                                    <span>{keyToLabel[key]}</span>
                                     <span className="font-medium">{(value as number).toFixed(1)}{keyToUnit[key] || ''}</span>
                                 </li>
                                 );
@@ -152,5 +153,3 @@ export const AiFoodResultCard: FC<{
     </Card>
   );
 };
-
-    
