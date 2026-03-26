@@ -776,6 +776,14 @@ const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
     { label: 'Potassium', value: totals.totalPotassium, unit: 'mg' },
     { label: 'Magnesium', value: totals.totalMagnesium, unit: 'mg' },
     { label: 'Zinc', value: totals.totalZinc, unit: 'mg' },
+    { label: 'Phosphorus', value: totals.totalPhosphorus, unit: 'mg' },
+    { label: 'Iodine', value: totals.totalIodine, unit: 'µg' },
+    { label: 'Selenium', value: totals.totalSelenium, unit: 'µg' },
+    { label: 'Copper', value: totals.totalCopper, unit: 'mg' },
+    { label: 'Manganese', value: totals.totalManganese, unit: 'mg' },
+    { label: 'Chromium', value: totals.totalChromium, unit: 'µg' },
+    { label: 'Molybdenum', value: totals.totalMolybdenum, unit: 'µg' },
+    { label: 'Chloride', value: totals.totalChloride, unit: 'mg' },
     { label: 'Vitamin A', value: totals.totalVitaminA, unit: 'µg' },
     { label: 'Vitamin C', value: totals.totalVitaminC, unit: 'mg' },
     { label: 'Vitamin D', value: totals.totalVitaminD, unit: 'µg' },
@@ -784,9 +792,11 @@ const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
     { label: 'Thiamine (B1)', value: totals.totalVitaminB1, unit: 'mg' },
     { label: 'Riboflavin (B2)', value: totals.totalVitaminB2, unit: 'mg' },
     { label: 'Niacin (B3)', value: totals.totalVitaminB3, unit: 'mg' },
+    { label: 'Pantothenic Acid (B5)', value: totals.totalVitaminB5, unit: 'mg' },
     { label: 'Vitamin B6', value: totals.totalVitaminB6, unit: 'mg' },
-    { label: 'Vitamin B12', value: totals.totalVitaminB12, unit: 'µg' },
+    { label: 'Biotin (B7)', value: totals.totalVitaminB7, unit: 'µg' },
     { label: 'Folate', value: totals.totalFolate, unit: 'µg' },
+    { label: 'Vitamin B12', value: totals.totalVitaminB12, unit: 'µg' },
   ].filter(m => m.value > 0);
 
   return (
@@ -799,7 +809,7 @@ const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
       </CardHeader>
       <CardContent>
         {micros.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
             {micros.map(micro => (
               <MicroStat key={micro.label} label={micro.label} value={micro.value} unit={micro.unit} />
             ))}
@@ -855,3 +865,5 @@ const TrackerSkeleton = () => (
         </div>
     </div>
 )
+
+    

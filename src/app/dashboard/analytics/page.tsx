@@ -88,6 +88,14 @@ const AverageMicronutrientCard: FC<{ summary: AnalyticsSummary }> = ({ summary }
         { label: 'Magnesium', value: summary.averageMagnesium, unit: 'mg' },
         { label: 'Potassium', value: summary.averagePotassium, unit: 'mg' },
         { label: 'Zinc', value: summary.averageZinc, unit: 'mg' },
+        { label: 'Phosphorus', value: summary.averagePhosphorus, unit: 'mg' },
+        { label: 'Iodine', value: summary.averageIodine, unit: 'µg' },
+        { label: 'Selenium', value: summary.averageSelenium, unit: 'µg' },
+        { label: 'Copper', value: summary.averageCopper, unit: 'mg' },
+        { label: 'Manganese', value: summary.averageManganese, unit: 'mg' },
+        { label: 'Chromium', value: summary.averageChromium, unit: 'µg' },
+        { label: 'Molybdenum', value: summary.averageMolybdenum, unit: 'µg' },
+        { label: 'Chloride', value: summary.averageChloride, unit: 'mg' },
         { label: 'Vitamin A', value: summary.averageVitaminA, unit: 'µg' },
         { label: 'Vitamin C', value: summary.averageVitaminC, unit: 'mg' },
         { label: 'Vitamin D', value: summary.averageVitaminD, unit: 'µg' },
@@ -96,9 +104,11 @@ const AverageMicronutrientCard: FC<{ summary: AnalyticsSummary }> = ({ summary }
         { label: 'Vitamin B1', value: summary.averageVitaminB1, unit: 'mg' },
         { label: 'Vitamin B2', value: summary.averageVitaminB2, unit: 'mg' },
         { label: 'Vitamin B3', value: summary.averageVitaminB3, unit: 'mg' },
+        { label: 'Vitamin B5', value: summary.averageVitaminB5, unit: 'mg' },
         { label: 'Vitamin B6', value: summary.averageVitaminB6, unit: 'mg' },
-        { label: 'Vitamin B12', value: summary.averageVitaminB12, unit: 'µg' },
+        { label: 'Vitamin B7', value: summary.averageVitaminB7, unit: 'µg' },
         { label: 'Folate', value: summary.averageFolate, unit: 'µg' },
+        { label: 'Vitamin B12', value: summary.averageVitaminB12, unit: 'µg' },
     ].filter(m => m.value > 0);
 
     return (
@@ -726,4 +736,5 @@ const AnalyticsSkeleton = () => (
 
 export default AnalyticsPage;
 
+    
     
