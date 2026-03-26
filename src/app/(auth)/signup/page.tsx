@@ -6,7 +6,7 @@ import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2, Leaf } from "lucide-react";
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Logo } from "@/components/shared/logo";
 import { motion } from "framer-motion";
 
@@ -67,9 +67,9 @@ export default function SignUpPage() {
       <div className="hidden md:flex md:w-5/12 lg:w-1/2 relative bg-gradient-to-br from-primary/5 via-primary/5 to-background items-center justify-center p-6 lg:p-8 overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-6 left-6">
-          <Link href="/">
+          <TransitionLink href="/">
             <Logo />
-          </Link>
+          </TransitionLink>
         </div>
         <div className="absolute inset-0 bg-grid-primary/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
@@ -97,9 +97,9 @@ export default function SignUpPage() {
       {/* Right Side - Sign Up Form */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
         <div className="absolute top-6 left-6 md:hidden">
-          <Link href="/">
+          <TransitionLink href="/">
             <Logo />
-          </Link>
+          </TransitionLink>
         </div>
         
         <SignUpForm />

@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -104,9 +104,9 @@ export function LoginForm() {
                 <FormItem>
                    <div className="flex items-center justify-between">
                     <FormLabel>Password</FormLabel>
-                    <Link href="#" className="text-small font-medium text-primary hover:underline">
+                    <TransitionLink href="#" className="text-small font-medium text-primary hover:underline">
                       Forgot password?
-                    </Link>
+                    </TransitionLink>
                   </div>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
@@ -123,9 +123,9 @@ export function LoginForm() {
         </Form>
         <div className="mt-4 text-center text-small">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="underline">
+          <TransitionLink href="/signup" className="underline">
             Sign up
-          </Link>
+          </TransitionLink>
         </div>
       </CardContent>
     </Card>

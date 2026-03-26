@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -170,13 +170,13 @@ export function SignUpForm() {
                   <div className="space-y-1 leading-none">
                     <FormLabel>
                       I agree to the{" "}
-                      <Link
+                      <TransitionLink
                         href="/terms-and-conditions"
                         className="font-medium text-primary underline-offset-4 hover:underline"
                         target="_blank"
                       >
                         Terms and Conditions
-                      </Link>
+                      </TransitionLink>
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -191,9 +191,9 @@ export function SignUpForm() {
         </Form>
         <div className="mt-4 text-center text-small">
           Already have an account?{" "}
-          <Link href="/login" className="underline">
+          <TransitionLink href="/login" className="underline">
             Login
-          </Link>
+          </TransitionLink>
         </div>
       </CardContent>
     </Card>

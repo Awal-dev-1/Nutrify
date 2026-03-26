@@ -1,7 +1,7 @@
 
 "use client"
 
-import Link from 'next/link'
+import { TransitionLink } from '@/components/shared/transition-link'
 import {
   LogOut,
   Settings,
@@ -92,10 +92,10 @@ export function DashboardHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings">
+              <TransitionLink href="/dashboard/settings">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
-              </Link>
+              </TransitionLink>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>

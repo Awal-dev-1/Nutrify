@@ -1,7 +1,8 @@
+
 'use client';
 
 // components/landing/hero.tsx
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { ArrowRight, Sparkles, Camera } from "lucide-react";
@@ -73,10 +74,10 @@ export function Hero() {
               asChild 
               className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 transition-all duration-300 px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full group"
             >
-              <Link href="/signup">
+              <TransitionLink href="/signup">
                 Get Started for Free
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </TransitionLink>
             </Button>
             <Button 
               size="lg" 
@@ -84,7 +85,7 @@ export function Hero() {
               asChild 
               className="border-white/20 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/30 px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full transition-all duration-300"
             >
-              <Link href="/login">Login</Link>
+              <TransitionLink href="/login">Login</TransitionLink>
             </Button>
           </motion.div>
         </div>

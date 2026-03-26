@@ -1,6 +1,7 @@
+
 // components/landing/footer.tsx
 import { Logo } from "@/components/shared/logo";
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Heart, Github, Twitter, Instagram } from "lucide-react";
 
 export function Footer() {
@@ -19,15 +20,15 @@ export function Footer() {
           
           {/* Social Links */}
           <div className="flex items-center gap-4">
-            <Link href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+            <TransitionLink href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
               <Twitter className="h-5 w-5" />
-            </Link>
-            <Link href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+            </TransitionLink>
+            <TransitionLink href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
               <Instagram className="h-5 w-5" />
-            </Link>
-            <Link href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+            </TransitionLink>
+            <TransitionLink href="#" className="p-2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
               <Github className="h-5 w-5" />
-            </Link>
+            </TransitionLink>
           </div>
         </div>
         

@@ -11,7 +11,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RecipeDetailModal } from '@/components/recommendations/recipe-detail-modal';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
-import Link from 'next/link';
+import { TransitionLink } from '@/components/shared/transition-link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
@@ -86,7 +86,7 @@ export default function RecommendationsPage() {
             {error}
             {error.includes("goals") && (
               <Button asChild variant="link" className="p-0 h-auto mt-2 text-destructive">
-                <Link href="/dashboard/goals">Go to Goals Page to fix this</Link>
+                <TransitionLink href="/dashboard/goals">Go to Goals Page to fix this</TransitionLink>
               </Button>
             )}
           </AlertDescription>

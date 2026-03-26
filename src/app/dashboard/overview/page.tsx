@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, type FC } from 'react';
-import Link from 'next/link';
+import { TransitionLink } from '@/components/shared/transition-link';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { format } from 'date-fns';
@@ -120,7 +120,7 @@ const OverviewPage = () => {
     totalCalcium: 0,
     totalVitaminC: 0,
     waterIntake: 0,
-    meals: { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] },
+    meals: { Breakfast: [], Lunch: [], Dinner: [] },
   };
 
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
@@ -418,30 +418,30 @@ const OverviewPage = () => {
                     asChild
                     className="min-h-[44px] h-12 sm:h-14 rounded-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all"
                   >
-                    <Link href="/dashboard/tracker">
+                    <TransitionLink href="/dashboard/tracker">
                       <PlusCircle className="mr-1.5 sm:mr-2 h-4 w-4 shrink-0" />
                       <span className="text-xs sm:text-sm">Add Meal</span>
-                    </Link>
+                    </TransitionLink>
                   </Button>
                   <Button
                     asChild
                     variant="outline"
                     className="min-h-[44px] h-12 sm:h-14 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
                   >
-                    <Link href="/dashboard/search">
+                    <TransitionLink href="/dashboard/search">
                       <Search className="mr-1.5 sm:mr-2 h-4 w-4 shrink-0" />
                       <span className="text-xs sm:text-sm">Search</span>
-                    </Link>
+                    </TransitionLink>
                   </Button>
                   <Button
                     asChild
                     variant="secondary"
                     className="col-span-2 min-h-[44px] h-12 sm:h-14 rounded-xl bg-secondary/50 hover:bg-secondary/70 transition-all"
                   >
-                    <Link href="/dashboard/goals">
+                    <TransitionLink href="/dashboard/goals">
                       <Target className="mr-1.5 sm:mr-2 h-4 w-4 shrink-0" />
                       <span className="text-xs sm:text-sm">Update Goals</span>
-                    </Link>
+                    </TransitionLink>
                   </Button>
                 </CardContent>
               </Card>
@@ -475,10 +475,10 @@ const OverviewPage = () => {
                         variant="secondary"
                         className="w-full mt-2 rounded-xl min-h-[44px] h-11 text-xs sm:text-sm"
                       >
-                        <Link href="/dashboard/recommendations">
+                        <TransitionLink href="/dashboard/recommendations">
                           View All Recommendations
                           <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
-                        </Link>
+                        </TransitionLink>
                       </Button>
                     </div>
                   ) : (
@@ -624,7 +624,7 @@ const MacroStat = ({
 
 // ── RecommendationItemPreview ─────────────────────────────────────────────────
 const RecommendationItemPreview = ({ rec }: { rec: RecommendationItem }) => (
-  <Link href={`/dashboard/food/${rec.foodId}`} className="block">
+  <TransitionLink href={`/dashboard/food/${rec.foodId}`} className="block">
     <motion.div
       whileHover={{ x: 4 }}
       className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/30 hover:bg-muted/50 border border-transparent hover:border-primary/20 transition-all group"
@@ -642,7 +642,7 @@ const RecommendationItemPreview = ({ rec }: { rec: RecommendationItem }) => (
       </div>
       <ArrowRight className="shrink-0 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
     </motion.div>
-  </Link>
+  </TransitionLink>
 );
 
 // ── MicroStat ─────────────────────────────────────────────────────────────────

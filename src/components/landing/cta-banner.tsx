@@ -1,7 +1,8 @@
+
 'use client';
 
 // components/landing/cta-banner.tsx
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from 'framer-motion';
@@ -47,10 +48,10 @@ export function CtaBanner() {
               asChild 
               className="bg-white text-black hover:bg-green-500 px-6 sm:px-8 py-5 sm:py-6 text-body rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
-              <Link href="/signup">
+              <TransitionLink href="/signup">
                 Sign Up for Free
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </TransitionLink>
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
+
 "use client";
 
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Fragment } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,12 +24,12 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           <Fragment key={index}>
             <li>
               {item.href ? (
-                <Link
+                <TransitionLink
                   href={item.href}
                   className="font-medium text-foreground transition-colors hover:text-primary"
                 >
                   {item.label}
-                </Link>
+                </TransitionLink>
               ) : (
                 <span className="font-medium text-foreground">{item.label}</span>
               )}

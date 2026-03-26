@@ -1,7 +1,8 @@
+
 "use client";
 
 import { Logo } from "@/components/shared/logo";
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
@@ -17,10 +18,10 @@ export default function LegalLayout({
         <div className="container flex h-16 items-center justify-between">
           <Logo />
           <Button variant="outline" asChild>
-            <Link href="/dashboard/settings">
+            <TransitionLink href="/dashboard/settings">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Settings
-            </Link>
+            </TransitionLink>
           </Button>
         </div>
       </header>

@@ -1,7 +1,8 @@
+
 "use client";
 
 // components/landing/header.tsx
-import Link from "next/link";
+import { TransitionLink } from "@/components/shared/transition-link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -23,13 +24,13 @@ export function Header() {
             asChild 
             className="rounded-full px-5 hover:bg-primary/5 hover:text-primary transition-all duration-200"
           >
-            <Link href="/login">Login</Link>
+            <TransitionLink href="/login">Login</TransitionLink>
           </Button>
           <Button 
             asChild 
             className="rounded-full bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
           >
-            <Link href="/signup">Sign Up</Link>
+            <TransitionLink href="/signup">Sign Up</TransitionLink>
           </Button>
         </div>
 
@@ -56,14 +57,14 @@ export function Header() {
               className="w-full rounded-full"
               onClick={() => setIsMenuOpen(false)}
             >
-              <Link href="/login">Login</Link>
+              <TransitionLink href="/login">Login</TransitionLink>
             </Button>
             <Button 
               asChild 
               className="w-full rounded-full bg-gradient-to-r from-primary to-primary/90"
               onClick={() => setIsMenuOpen(false)}
             >
-              <Link href="/signup">Sign Up</Link>
+              <TransitionLink href="/signup">Sign Up</TransitionLink>
             </Button>
           </div>
         </div>

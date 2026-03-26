@@ -2,7 +2,7 @@
 "use client"
 
 import { usePathname } from 'next/navigation'
-import Link from 'next/link'
+import { TransitionLink } from '@/components/shared/transition-link'
 import {
   BarChart2,
   Bot,
@@ -103,7 +103,7 @@ export function MainSidebar() {
                 )}
                 onClick={handleCloseMobileSidebar}
               >
-                <Link
+                <TransitionLink
                   href={link.href}
                   className={cn(
                     'flex items-center gap-2 w-full',
@@ -121,7 +121,7 @@ export function MainSidebar() {
                   )}>
                     {link.label}
                   </span>
-                </Link>
+                </TransitionLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )
@@ -258,7 +258,7 @@ export function MainSidebar() {
               )}
               onClick={handleCloseMobileSidebar}
             >
-              <Link
+              <TransitionLink
                 href="/dashboard/settings"
                 className={cn('flex items-center gap-2 w-full', isCollapsed && 'justify-center')}
               >
@@ -272,7 +272,7 @@ export function MainSidebar() {
                 )}>
                   Settings
                 </span>
-              </Link>
+              </TransitionLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

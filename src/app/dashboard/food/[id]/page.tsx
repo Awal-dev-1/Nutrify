@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
+import { TransitionLink } from '@/components/shared/transition-link';
 import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
@@ -112,7 +112,7 @@ export default function FoodDetailsPage() {
         description={error.message || "There was a problem fetching the food details."}
       >
         <Button asChild className="mt-4">
-          <Link href="/dashboard/search">Back to AI Food Search</Link>
+          <TransitionLink href="/dashboard/search">Back to AI Food Search</TransitionLink>
         </Button>
       </EmptyState>
     );
@@ -125,7 +125,7 @@ export default function FoodDetailsPage() {
         description="The food item you are looking for does not exist in our database."
       >
         <Button asChild className="mt-4">
-          <Link href="/dashboard/search">Back to AI Food Search</Link>
+          <TransitionLink href="/dashboard/search">Back to AI Food Search</TransitionLink>
         </Button>
       </EmptyState>
     );
@@ -152,10 +152,10 @@ export default function FoodDetailsPage() {
         className="flex justify-between items-center"
       >
         <Button variant="ghost" asChild>
-          <Link href="/dashboard/search">
+          <TransitionLink href="/dashboard/search">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to AI Search
-          </Link>
+          </TransitionLink>
         </Button>
         <Breadcrumbs items={breadcrumbItems} className="hidden md:block" />
         <Button variant="ghost" size="icon">
