@@ -58,6 +58,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
+import { MICRONUTRIENT_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS } from '@/lib/nutrients';
 
 
 export default function FoodDetailsPage() {
@@ -141,6 +142,8 @@ export default function FoodDetailsPage() {
     ...food,
     estimatedWeightGrams: quantity
   };
+  
+  const hasMicros = food.micronutrientBreakdown && Object.values(food.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
 
   return (
     <div className="space-y-6">
@@ -258,36 +261,22 @@ export default function FoodDetailsPage() {
                   </TabsContent>
                    <TabsContent value="micros" className="mt-4">
                       <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
-                          {food.micronutrientBreakdown && Object.entries(food.micronutrientBreakdown).filter(([, value]) => value && value > 0).map(([key, value]) => {
-                                const per100gValue = value || 0;
+                          {hasMicros ? (
+                            MICRONUTRIENT_KEYS.map((key) => {
+                                const per100gValue = food.micronutrientBreakdown?.[key] || 0;
                                 const currentPortionValue = (per100gValue / 100) * quantity;
-                                const keyToLabel: Record<string, string> = {
-                                  fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
-                                  potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
-                                  iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
-                                  chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
-                                  vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
-                                  vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
-                                  vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
-                                  vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
-                                };
-                                const keyToUnit: Record<string, string> = {
-                                  fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
-                                  magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
-                                  copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
-                                  vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
-                                  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
-                                  vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
-                                };
-                                if (!keyToLabel[key]) return null;
+                                if (currentPortionValue === 0) return null;
 
                                 return(
                                     <div key={key} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
-                                        <span className="capitalize text-muted-foreground">{keyToLabel[key]}</span>
-                                        <span className="font-medium">{currentPortionValue.toFixed(1)}{keyToUnit[key]}</span>
+                                        <span className="capitalize text-muted-foreground">{NUTRIENT_LABELS[key]}</span>
+                                        <span className="font-medium">{currentPortionValue.toFixed(1)}{NUTRIENT_UNITS[key]}</span>
                                     </div>
                                 )
-                          })}
+                            })
+                          ) : (
+                            <p className="text-center text-sm text-muted-foreground py-10">No micronutrient data available.</p>
+                          )}
                       </div>
                    </TabsContent>
                </Tabs>

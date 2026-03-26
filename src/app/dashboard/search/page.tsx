@@ -67,6 +67,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { FoodPlannerModal } from '@/components/planner/food-planner-modal';
 import { Label } from '@/components/ui/label';
+import { MICRONUTRIENT_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS } from '@/lib/nutrients';
 
 // Meal type configuration with icons and colors
 const MEAL_TYPES = [
@@ -82,26 +83,6 @@ const QUICK_PORTIONS = [
   { grams: 200, label: 'Large' },
   { grams: 300, label: 'Extra' },
 ];
-
-const keyToLabel: Record<string, string> = {
-  fiber: 'Fiber', sugar: 'Sugar', sodium: 'Sodium', calcium: 'Calcium', iron: 'Iron',
-  potassium: 'Potassium', magnesium: 'Magnesium', zinc: 'Zinc', phosphorus: 'Phosphorus',
-  iodine: 'Iodine', selenium: 'Selenium', copper: 'Copper', manganese: 'Manganese',
-  chromium: 'Chromium', molybdenum: 'Molybdenum', chloride: 'Chloride',
-  vitaminA: 'Vit. A', vitaminC: 'Vit. C', vitaminD: 'Vit. D', vitaminE: 'Vit. E',
-  vitaminK: 'Vit. K', vitaminB1: 'Thiamine (B1)', vitaminB2: 'Riboflavin (B2)',
-  vitaminB3: 'Niacin (B3)', vitaminB5: 'Pantothenic Acid (B5)', vitaminB6: 'Vit. B6',
-  vitaminB7: 'Biotin (B7)', folate: 'Folate (B9)', vitaminB12: 'Vit. B12',
-};
-
-const keyToUnit: Record<string, string> = {
-  fiber: 'g', sugar: 'g', sodium: 'mg', calcium: 'mg', iron: 'mg', potassium: 'mg',
-  magnesium: 'mg', zinc: 'mg', phosphorus: 'mg', iodine: 'µg', selenium: 'µg',
-  copper: 'mg', manganese: 'mg', chromium: 'µg', molybdenum: 'µg', chloride: 'mg',
-  vitaminA: 'µg', vitaminC: 'mg', vitaminD: 'µg', vitaminE: 'mg', vitaminK: 'µg',
-  vitaminB1: 'mg', vitaminB2: 'mg', vitaminB3: 'mg', vitaminB5: 'mg',
-  vitaminB6: 'mg', vitaminB7: 'µg', folate: 'µg', vitaminB12: 'µg',
-};
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -540,6 +521,7 @@ function FoodDetailsCard({
   };
 
   const CurrentMealIcon = MEAL_TYPES.find(m => m.value === mealType)?.icon;
+  const hasMicros = foodItem.micronutrientBreakdown && Object.values(foodItem.micronutrientBreakdown).some(v => v !== undefined && v !== null && v > 0);
 
   return (
     <Card className="border-2 shadow-xl overflow-hidden">
@@ -656,24 +638,21 @@ function FoodDetailsCard({
               <div className="bg-muted/30 p-4 rounded-xl space-y-3">
                 <h4 className="font-medium text-sm">Micronutrients</h4>
                 <ul className="space-y-1 max-h-[120px] overflow-y-auto text-xs pr-1">
-                  {foodItem.micronutrientBreakdown &&
-                  Object.entries(foodItem.micronutrientBreakdown).length > 0 &&
-                  Object.values(foodItem.micronutrientBreakdown).some(
-                    (v) => v !== undefined && v !== null && v > 0
-                  ) ? (
-                    Object.entries(foodItem.micronutrientBreakdown).map(([key, value]) => {
+                  {hasMicros ? (
+                    MICRONUTRIENT_KEYS.map((key) => {
+                      const value = foodItem.micronutrientBreakdown?.[key];
                       if (value === undefined || value === null || value === 0) return null;
-                      const per100gValue = value || 0;
-                      const currentPortionValue = (per100gValue / 100) * portionGrams;
-                      if (!keyToLabel[key]) return null;
+                      
+                      const currentPortionValue = (value / 100) * portionGrams;
+
                       return (
                         <li
                           key={key}
                           className="flex justify-between p-1.5 rounded-md bg-background/50"
                         >
-                          <span>{keyToLabel[key]}</span>
+                          <span>{NUTRIENT_LABELS[key]}</span>
                           <span className="font-medium">
-                            {currentPortionValue.toFixed(1)}{keyToUnit[key] || ''}
+                            {currentPortionValue.toFixed(1)}{NUTRIENT_UNITS[key] || ''}
                           </span>
                         </li>
                       );

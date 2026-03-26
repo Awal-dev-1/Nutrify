@@ -62,6 +62,7 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { MICRONUTRIENT_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS, MicronutrientKey } from '@/lib/nutrients';
 
 type Timeframe = '7d' | '30d' | '90d';
 
@@ -79,37 +80,15 @@ const MicroAverageStat: FC<{ label: string; value: number; unit: string }> = ({
 );
 
 const AverageMicronutrientCard: FC<{ summary: AnalyticsSummary }> = ({ summary }) => {
-    const micros = [
-        { label: 'Fiber', value: summary.averageFiber, unit: 'g' },
-        { label: 'Sugar', value: summary.averageSugar, unit: 'g' },
-        { label: 'Sodium', value: summary.averageSodium, unit: 'mg' },
-        { label: 'Iron', value: summary.averageIron, unit: 'mg' },
-        { label: 'Calcium', value: summary.averageCalcium, unit: 'mg' },
-        { label: 'Magnesium', value: summary.averageMagnesium, unit: 'mg' },
-        { label: 'Potassium', value: summary.averagePotassium, unit: 'mg' },
-        { label: 'Zinc', value: summary.averageZinc, unit: 'mg' },
-        { label: 'Phosphorus', value: summary.averagePhosphorus, unit: 'mg' },
-        { label: 'Iodine', value: summary.averageIodine, unit: 'µg' },
-        { label: 'Selenium', value: summary.averageSelenium, unit: 'µg' },
-        { label: 'Copper', value: summary.averageCopper, unit: 'mg' },
-        { label: 'Manganese', value: summary.averageManganese, unit: 'mg' },
-        { label: 'Chromium', value: summary.averageChromium, unit: 'µg' },
-        { label: 'Molybdenum', value: summary.averageMolybdenum, unit: 'µg' },
-        { label: 'Chloride', value: summary.averageChloride, unit: 'mg' },
-        { label: 'Vitamin A', value: summary.averageVitaminA, unit: 'µg' },
-        { label: 'Vitamin C', value: summary.averageVitaminC, unit: 'mg' },
-        { label: 'Vitamin D', value: summary.averageVitaminD, unit: 'µg' },
-        { label: 'Vitamin E', value: summary.averageVitaminE, unit: 'mg' },
-        { label: 'Vitamin K', value: summary.averageVitaminK, unit: 'µg' },
-        { label: 'Vitamin B1', value: summary.averageVitaminB1, unit: 'mg' },
-        { label: 'Vitamin B2', value: summary.averageVitaminB2, unit: 'mg' },
-        { label: 'Vitamin B3', value: summary.averageVitaminB3, unit: 'mg' },
-        { label: 'Vitamin B5', value: summary.averageVitaminB5, unit: 'mg' },
-        { label: 'Vitamin B6', value: summary.averageVitaminB6, unit: 'mg' },
-        { label: 'Vitamin B7', value: summary.averageVitaminB7, unit: 'µg' },
-        { label: 'Folate', value: summary.averageFolate, unit: 'µg' },
-        { label: 'Vitamin B12', value: summary.averageVitaminB12, unit: 'µg' },
-    ].filter(m => m.value > 0);
+    const micros = MICRONUTRIENT_KEYS.map(key => {
+        const summaryKey = `average${key.charAt(0).toUpperCase() + key.slice(1)}` as keyof AnalyticsSummary;
+        const value = (summary as any)[summaryKey] || 0;
+        return {
+            label: NUTRIENT_LABELS[key],
+            value: value,
+            unit: NUTRIENT_UNITS[key],
+        }
+    }).filter(m => m.value > 0);
 
     return (
         <Card className="border-2 shadow-xl overflow-hidden">
@@ -735,6 +714,3 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
-
-    
-    

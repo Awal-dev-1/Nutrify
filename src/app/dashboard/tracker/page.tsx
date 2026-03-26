@@ -79,6 +79,7 @@ import type { FoodItem as AiFoodItem } from "@/types/food";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from 'framer-motion';
+import { MICRONUTRIENT_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS, MicronutrientKey } from "@/lib/nutrients";
 
 type MealType = "Breakfast" | "Lunch" | "Dinner";
 
@@ -128,41 +129,47 @@ export default function DailyTrackerPage() {
   const updateDailyLog = (updatedMeals: Record<MealType, LoggedFoodItem[]>, water: number) => {
     if (!dailyLogRef) return;
     const allMeals = Object.values(updatedMeals).flat();
-    const totals = allMeals.reduce((acc, item) => {
-      acc.totalCalories += item.calories;
-      acc.totalProtein += item.protein;
-      acc.totalCarbs += item.carbs;
-      acc.totalFat += item.fat;
-      acc.totalIron += item.iron || 0;
-      acc.totalVitaminA += item.vitaminA || 0;
-      acc.totalSodium += item.sodium || 0;
-      acc.totalFiber += item.fiber || 0;
-      acc.totalSugar += item.sugar || 0;
-      acc.totalCalcium += item.calcium || 0;
-      acc.totalVitaminC += item.vitaminC || 0;
-      acc.totalVitaminD += item.vitaminD || 0;
-      acc.totalVitaminE += item.vitaminE || 0;
-      acc.totalVitaminK += item.vitaminK || 0;
-      acc.totalVitaminB1 += item.vitaminB1 || 0;
-      acc.totalVitaminB2 += item.vitaminB2 || 0;
-      acc.totalVitaminB3 += item.vitaminB3 || 0;
-      acc.totalVitaminB6 += item.vitaminB6 || 0;
-      acc.totalVitaminB12 += item.vitaminB12 || 0;
-      acc.totalFolate += item.folate || 0;
-      acc.totalMagnesium += item.magnesium || 0;
-      acc.totalPotassium += item.potassium || 0;
-      acc.totalZinc += item.zinc || 0;
-      return acc;
-    }, {
-      totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0,
-      totalIron: 0, totalVitaminA: 0, totalSodium: 0, totalFiber: 0,
-      totalSugar: 0, totalCalcium: 0, totalVitaminC: 0, totalVitaminD: 0,
-      totalVitaminE: 0, totalVitaminK: 0, totalVitaminB1: 0, totalVitaminB2: 0,
-      totalVitaminB3: 0, totalVitaminB6: 0, totalVitaminB12: 0, totalFolate: 0,
-      totalMagnesium: 0, totalPotassium: 0, totalZinc: 0
-    });
+    
+    const calculateTotal = (key: keyof Omit<LoggedFoodItem, 'logId' | 'foodId' | 'name' | 'quantity'>) => 
+        allMeals.reduce((sum, item) => sum + (item[key] || 0), 0);
 
-    const newLog: DailyLog = { date: dateKey, meals: updatedMeals, waterIntake: water, ...totals };
+    const newTotals: Omit<DailyLog, 'date' | 'meals' | 'waterIntake'> = {
+        totalCalories: calculateTotal('calories'),
+        totalProtein: calculateTotal('protein'),
+        totalCarbs: calculateTotal('carbs'),
+        totalFat: calculateTotal('fat'),
+        totalFiber: calculateTotal('fiber'),
+        totalSugar: calculateTotal('sugar'),
+        totalSodium: calculateTotal('sodium'),
+        totalCalcium: calculateTotal('calcium'),
+        totalIron: calculateTotal('iron'),
+        totalPotassium: calculateTotal('potassium'),
+        totalMagnesium: calculateTotal('magnesium'),
+        totalZinc: calculateTotal('zinc'),
+        totalPhosphorus: calculateTotal('phosphorus'),
+        totalIodine: calculateTotal('iodine'),
+        totalSelenium: calculateTotal('selenium'),
+        totalCopper: calculateTotal('copper'),
+        totalManganese: calculateTotal('manganese'),
+        totalChromium: calculateTotal('chromium'),
+        totalMolybdenum: calculateTotal('molybdenum'),
+        totalChloride: calculateTotal('chloride'),
+        totalVitaminA: calculateTotal('vitaminA'),
+        totalVitaminC: calculateTotal('vitaminC'),
+        totalVitaminD: calculateTotal('vitaminD'),
+        totalVitaminE: calculateTotal('vitaminE'),
+        totalVitaminK: calculateTotal('vitaminK'),
+        totalVitaminB1: calculateTotal('vitaminB1'),
+        totalVitaminB2: calculateTotal('vitaminB2'),
+        totalVitaminB3: calculateTotal('vitaminB3'),
+        totalVitaminB5: calculateTotal('vitaminB5'),
+        totalVitaminB6: calculateTotal('vitaminB6'),
+        totalVitaminB7: calculateTotal('vitaminB7'),
+        totalFolate: calculateTotal('folate'),
+        totalVitaminB12: calculateTotal('vitaminB12'),
+    };
+
+    const newLog: DailyLog = { date: dateKey, meals: updatedMeals, waterIntake: water, ...newTotals };
     setDoc(dailyLogRef, newLog, { merge: true }).catch((error) => {
       errorEmitter.emit("permission-error", new FirestorePermissionError({ path: dailyLogRef.path, operation: "write", requestResourceData: newLog }));
     });
@@ -180,12 +187,23 @@ export default function DailyTrackerPage() {
       protein: (foodData.macronutrientBreakdown.protein || 0) * ratio,
       carbs: (foodData.macronutrientBreakdown.carbohydrates || 0) * ratio,
       fat: (foodData.macronutrientBreakdown.fat || 0) * ratio,
-      iron: (foodData.micronutrientBreakdown?.iron || 0) * ratio,
-      vitaminA: (foodData.micronutrientBreakdown?.vitaminA || 0) * ratio,
-      sodium: (foodData.micronutrientBreakdown?.sodium || 0) * ratio,
       fiber: (foodData.micronutrientBreakdown?.fiber || 0) * ratio,
       sugar: (foodData.micronutrientBreakdown?.sugar || 0) * ratio,
+      sodium: (foodData.micronutrientBreakdown?.sodium || 0) * ratio,
       calcium: (foodData.micronutrientBreakdown?.calcium || 0) * ratio,
+      iron: (foodData.micronutrientBreakdown?.iron || 0) * ratio,
+      potassium: (foodData.micronutrientBreakdown?.potassium || 0) * ratio,
+      magnesium: (foodData.micronutrientBreakdown?.magnesium || 0) * ratio,
+      zinc: (foodData.micronutrientBreakdown?.zinc || 0) * ratio,
+      phosphorus: (foodData.micronutrientBreakdown?.phosphorus || 0) * ratio,
+      iodine: (foodData.micronutrientBreakdown?.iodine || 0) * ratio,
+      selenium: (foodData.micronutrientBreakdown?.selenium || 0) * ratio,
+      copper: (foodData.micronutrientBreakdown?.copper || 0) * ratio,
+      manganese: (foodData.micronutrientBreakdown?.manganese || 0) * ratio,
+      chromium: (foodData.micronutrientBreakdown?.chromium || 0) * ratio,
+      molybdenum: (foodData.micronutrientBreakdown?.molybdenum || 0) * ratio,
+      chloride: (foodData.micronutrientBreakdown?.chloride || 0) * ratio,
+      vitaminA: (foodData.micronutrientBreakdown?.vitaminA || 0) * ratio,
       vitaminC: (foodData.micronutrientBreakdown?.vitaminC || 0) * ratio,
       vitaminD: (foodData.micronutrientBreakdown?.vitaminD || 0) * ratio,
       vitaminE: (foodData.micronutrientBreakdown?.vitaminE || 0) * ratio,
@@ -193,12 +211,11 @@ export default function DailyTrackerPage() {
       vitaminB1: (foodData.micronutrientBreakdown?.vitaminB1 || 0) * ratio,
       vitaminB2: (foodData.micronutrientBreakdown?.vitaminB2 || 0) * ratio,
       vitaminB3: (foodData.micronutrientBreakdown?.vitaminB3 || 0) * ratio,
+      vitaminB5: (foodData.micronutrientBreakdown?.vitaminB5 || 0) * ratio,
       vitaminB6: (foodData.micronutrientBreakdown?.vitaminB6 || 0) * ratio,
-      vitaminB12: (foodData.micronutrientBreakdown?.vitaminB12 || 0) * ratio,
+      vitaminB7: (foodData.micronutrientBreakdown?.vitaminB7 || 0) * ratio,
       folate: (foodData.micronutrientBreakdown?.folate || 0) * ratio,
-      magnesium: (foodData.micronutrientBreakdown?.magnesium || 0) * ratio,
-      potassium: (foodData.micronutrientBreakdown?.potassium || 0) * ratio,
-      zinc: (foodData.micronutrientBreakdown?.zinc || 0) * ratio,
+      vitaminB12: (foodData.micronutrientBreakdown?.vitaminB12 || 0) * ratio,
     };
     const newMeals = { ...meals, [mealType]: [...(meals[mealType] || []), newLogItem] };
     updateDailyLog(newMeals, dailyTotals.waterIntake);
@@ -221,8 +238,9 @@ export default function DailyTrackerPage() {
           const nutrientKeys: (keyof LoggedFoodItem)[] = [
             'calories', 'protein', 'carbs', 'fat', 'iron', 'vitaminA', 'sodium', 
             'fiber', 'sugar', 'calcium', 'vitaminC', 'vitaminD', 'vitaminE', 
-            'vitaminK', 'vitaminB1', 'vitaminB2', 'vitaminB3', 'vitaminB6', 
-            'vitaminB12', 'folate', 'magnesium', 'potassium', 'zinc'
+            'vitaminK', 'vitaminB1', 'vitaminB2', 'vitaminB3', 'vitaminB5', 'vitaminB6', 
+            'vitaminB7', 'folate', 'magnesium', 'potassium', 'zinc', 'phosphorus',
+            'iodine', 'selenium', 'copper', 'manganese', 'chromium', 'molybdenum', 'chloride', 'vitaminB12'
           ];
           nutrientKeys.forEach(key => {
             if (typeof updatedItem[key] === 'number') {
@@ -267,7 +285,9 @@ export default function DailyTrackerPage() {
         totalSugar: 0, totalCalcium: 0, totalVitaminC: 0, totalVitaminD: 0,
         totalVitaminE: 0, totalVitaminK: 0, totalVitaminB1: 0, totalVitaminB2: 0,
         totalVitaminB3: 0, totalVitaminB6: 0, totalVitaminB12: 0, totalFolate: 0,
-        totalMagnesium: 0, totalPotassium: 0, totalZinc: 0
+        totalMagnesium: 0, totalPotassium: 0, totalZinc: 0, totalPhosphorus: 0,
+        totalIodine: 0, totalSelenium: 0, totalCopper: 0, totalManganese: 0,
+        totalChromium: 0, totalMolybdenum: 0, totalChloride: 0,
       };
       setDoc(dailyLogRef, emptyLog, { merge: false }).catch((error) => {
         errorEmitter.emit("permission-error", new FirestorePermissionError({ path: dailyLogRef.path, operation: "write", requestResourceData: emptyLog }));
@@ -767,37 +787,11 @@ const WaterTracker: FC<{ intake: number; setIntake: (intake: number) => void; go
 
 // ── Micronutrient Grid ────────────────────────────────────────────────────────
 const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
-  const micros = [
-    { label: 'Fiber', value: totals.totalFiber, unit: 'g' },
-    { label: 'Sugar', value: totals.totalSugar, unit: 'g' },
-    { label: 'Sodium', value: totals.totalSodium, unit: 'mg' },
-    { label: 'Calcium', value: totals.totalCalcium, unit: 'mg' },
-    { label: 'Iron', value: totals.totalIron, unit: 'mg' },
-    { label: 'Potassium', value: totals.totalPotassium, unit: 'mg' },
-    { label: 'Magnesium', value: totals.totalMagnesium, unit: 'mg' },
-    { label: 'Zinc', value: totals.totalZinc, unit: 'mg' },
-    { label: 'Phosphorus', value: totals.totalPhosphorus, unit: 'mg' },
-    { label: 'Iodine', value: totals.totalIodine, unit: 'µg' },
-    { label: 'Selenium', value: totals.totalSelenium, unit: 'µg' },
-    { label: 'Copper', value: totals.totalCopper, unit: 'mg' },
-    { label: 'Manganese', value: totals.totalManganese, unit: 'mg' },
-    { label: 'Chromium', value: totals.totalChromium, unit: 'µg' },
-    { label: 'Molybdenum', value: totals.totalMolybdenum, unit: 'µg' },
-    { label: 'Chloride', value: totals.totalChloride, unit: 'mg' },
-    { label: 'Vitamin A', value: totals.totalVitaminA, unit: 'µg' },
-    { label: 'Vitamin C', value: totals.totalVitaminC, unit: 'mg' },
-    { label: 'Vitamin D', value: totals.totalVitaminD, unit: 'µg' },
-    { label: 'Vitamin E', value: totals.totalVitaminE, unit: 'mg' },
-    { label: 'Vitamin K', value: totals.totalVitaminK, unit: 'µg' },
-    { label: 'Thiamine (B1)', value: totals.totalVitaminB1, unit: 'mg' },
-    { label: 'Riboflavin (B2)', value: totals.totalVitaminB2, unit: 'mg' },
-    { label: 'Niacin (B3)', value: totals.totalVitaminB3, unit: 'mg' },
-    { label: 'Pantothenic Acid (B5)', value: totals.totalVitaminB5, unit: 'mg' },
-    { label: 'Vitamin B6', value: totals.totalVitaminB6, unit: 'mg' },
-    { label: 'Biotin (B7)', value: totals.totalVitaminB7, unit: 'µg' },
-    { label: 'Folate', value: totals.totalFolate, unit: 'µg' },
-    { label: 'Vitamin B12', value: totals.totalVitaminB12, unit: 'µg' },
-  ].filter(m => m.value > 0);
+  const micros = MICRONUTRIENT_KEYS.map(key => ({
+    label: NUTRIENT_LABELS[key],
+    value: totals[`total${key.charAt(0).toUpperCase() + key.slice(1)}` as keyof DailyLog] as number,
+    unit: NUTRIENT_UNITS[key],
+  })).filter(m => m.value > 0);
 
   return (
     <Card className="border shadow-lg">
@@ -865,5 +859,3 @@ const TrackerSkeleton = () => (
         </div>
     </div>
 )
-
-    
