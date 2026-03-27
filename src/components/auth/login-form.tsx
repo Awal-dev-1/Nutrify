@@ -72,10 +72,8 @@ export function LoginForm() {
       let description = "An unexpected error occurred. Please try again.";
       
       // Handle specific Firebase Auth errors for a better user experience.
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        description = "No account found with this email address. You need to create an account.";
-      } else if (error.code === 'auth/wrong-password') {
-        description = "Incorrect password. Please try again.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = "Invalid email or password. Please check your credentials and try again.";
       } else if (error.code === 'auth/operation-not-allowed') {
         description = "Email/password accounts are not enabled. Please contact support.";
       }

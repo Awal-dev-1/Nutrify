@@ -450,9 +450,6 @@
         },
         "reason": {
           "type": "string"
-        },
-        "score": {
-          "type": "number"
         }
       },
       "required": [
@@ -576,7 +573,6 @@
       },
       "required": [
         "foodName",
-        "confidence",
         "calories",
         "macronutrientBreakdown"
       ]

@@ -232,27 +232,7 @@ export default function GoalsPage() {
   }, [calories, macros, profileData, initialState]);
 
   const handleProfileFieldChange = (field: keyof typeof profileData, value: string | number) => {
-    setProfileData(prev => {
-        const newProfileData = { ...prev, [field]: value };
-        
-        // Recalculate recommended goals when a relevant profile field changes
-        if (newProfileData.primaryGoal && (newProfileData.weightKg || 0) > 0 && newProfileData.activityLevel) {
-            const recommended = calculateRecommendedGoals({
-                primaryGoal: newProfileData.primaryGoal,
-                weightKg: newProfileData.weightKg,
-                activityLevel: newProfileData.activityLevel
-            });
-    
-            setCalories(recommended.dailyCalorieGoal);
-            setMacros({
-                protein: recommended.proteinPercentageGoal,
-                carbs: recommended.carbsPercentageGoal,
-                fat: recommended.fatPercentageGoal
-            });
-        }
-
-        return newProfileData;
-    });
+    setProfileData(prev => ({ ...prev, [field]: value }));
   }
 
   const handlePreferenceSelect = (preference: string) => {
