@@ -256,7 +256,7 @@ const AnalyticsPage = () => {
         </div>
 
         {/* Summary Cards - Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard 
             title="Avg. Daily Calories" 
             value={summary.averageCalories.toFixed(0)} 
@@ -270,6 +270,12 @@ const AnalyticsPage = () => {
             unit="of days" 
             icon={<Target className="h-4 w-4 text-chart-2" />}
             trend={summary.goalAchievementRate > 70 ? 'good' : summary.goalAchievementRate > 40 ? 'average' : 'low'}
+          />
+           <StatCard 
+            title="Days Logged" 
+            value={`${loggedDaysCount}`} 
+            unit={loggedDaysCount === 1 ? 'day' : 'days'}
+            icon={<Calendar className="h-4 w-4 text-chart-5" />}
           />
           <StatCard 
             title="Consistency Score" 
@@ -627,7 +633,6 @@ const DaySummaryCard = ({ day, title, icon, variant }: { day: AnalyticsData; tit
             <p className="font-bold text-chart-4">{day.carbs.toFixed(0)}g</p>
           </div>
           <div className="p-2 rounded-lg bg-muted/30">
-            <p className="text-xs text-muted-foreground">Fat</p>
             <p className="font-bold text-chart-1">{day.fat.toFixed(0)}g</p>
           </div>
         </div>
@@ -651,8 +656,8 @@ const AnalyticsSkeleton = () => (
         <Skeleton className="h-10 w-48 rounded-lg" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-        {[1,2,3].map(i => <Skeleton key={i} className="h-28 md:h-32 rounded-xl" />)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 md:h-32 rounded-xl" />)}
       </div>
 
       <Card className="border-2 shadow-lg">
