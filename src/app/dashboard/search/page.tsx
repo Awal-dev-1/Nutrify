@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search,
   X,
@@ -86,6 +86,7 @@ const QUICK_PORTIONS = [
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialQuery = searchParams?.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
@@ -261,10 +262,9 @@ export default function SearchPage() {
         ),
       });
 
-      // Reset UI
-      setResult(null);
-      setSearchQuery('');
-      setHasSearched(false);
+      // Navigate to tracker page after adding
+      router.push('/dashboard/tracker');
+
     } catch (err) {
       toast({
         variant: 'destructive',

@@ -37,20 +37,35 @@ export default function LoginPage() {
   const showLoading = isUserLoading || isProfileLoading || (user && !user.isAnonymous);
 
   if (showLoading) {
+    let loadingMessage = "Checking credentials...";
+    if (!isUserLoading && isProfileLoading) {
+      loadingMessage = "Loading your profile...";
+    } else if (!isUserLoading && !isProfileLoading && user) {
+      loadingMessage = "Redirecting to your dashboard...";
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
-          <Logo className="justify-center text-h3" />
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+            <Logo className="justify-center text-h3" />
+          </motion.div>
           <div className="relative flex justify-center items-center h-16">
             <div className="absolute h-16 w-16 bg-primary/10 rounded-full blur-2xl animate-pulse"></div>
             <Loader2 className="h-10 w-10 animate-spin text-primary relative" />
           </div>
-          <div className="space-y-1">
-            <p className="font-medium text-foreground">Finalizing your login...</p>
+          <motion.div
+            key={loadingMessage}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-1"
+          >
+            <p className="font-medium text-foreground">{loadingMessage}</p>
             <p className="text-small text-muted-foreground animate-pulse">
               Please wait while we prepare your dashboard.
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     );
