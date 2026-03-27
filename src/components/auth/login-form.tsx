@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { TransitionLink } from "@/components/shared/transition-link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,9 +17,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth, useToast, useFirestore } from "@/hooks";
-import { login } from "@/services/authService";
+import { login, resetPassword } from "@/services/authService";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { TransitionLink } from "@/components/shared/transition-link";
+
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -33,6 +46,13 @@ export function LoginForm() {
   const db = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // State for forgot password dialog
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,6 +93,34 @@ export function LoginForm() {
     }
   }
 
+  const handleForgotPassword = async () => {
+    if (!resetEmail) {
+        toast({
+            variant: "destructive",
+            title: "Email Required",
+            description: "Please enter your email address.",
+        });
+        return;
+    }
+    setIsResetting(true);
+    try {
+        await resetPassword(auth, resetEmail);
+        toast({
+            title: "Password Reset Email Sent",
+            description: `An email has been sent to ${resetEmail} with instructions.`,
+        });
+        setIsAlertOpen(false); // Close dialog on success
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not send reset email. Please check the address and try again.",
+        });
+    } finally {
+        setIsResetting(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -104,13 +152,66 @@ export function LoginForm() {
                 <FormItem>
                    <div className="flex items-center justify-between">
                     <FormLabel>Password</FormLabel>
-                    <TransitionLink href="#" className="text-small font-medium text-primary hover:underline">
-                      Forgot password?
-                    </TransitionLink>
+                    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+                        <AlertDialogTrigger asChild>
+                            <button
+                                type="button"
+                                className="text-small font-medium text-primary hover:underline"
+                                onClick={() => {
+                                    const emailValue = form.getValues('email');
+                                    setResetEmail(emailValue);
+                                    setIsAlertOpen(true);
+                                }}
+                            >
+                                Forgot password?
+                            </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Reset Your Password</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Enter your account's email address and we will send you a link to reset your password.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="space-y-2">
+                                <Label htmlFor="reset-email">Email</Label>
+                                <Input
+                                    id="reset-email"
+                                    placeholder="you@example.com"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                />
+                            </div>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleForgotPassword} disabled={isResetting}>
+                                    {isResetting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Send Reset Link
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
+                  <div className="relative">
+                    <FormControl>
+                        <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="pr-10"
+                        {...field}
+                        />
+                    </FormControl>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
