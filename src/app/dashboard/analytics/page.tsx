@@ -232,9 +232,8 @@ const AnalyticsPage = () => {
               <h1 className="text-h1 font-bold tracking-tight text-primary">
                 Analytics & Insights
               </h1>
-              <p className="text-body text-muted-foreground flex items-center gap-1 mt-0.5">
-                <Calendar className="h-3.5 w-3.5" />
-                Logged {loggedDaysCount} / {timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90} days
+              <p className="text-body text-muted-foreground mt-0.5">
+                Your nutritional journey over the last {timeframe === '7d' ? '7' : timeframe === '30d' ? '30' : '90'} days
               </p>
             </div>
           </div>
@@ -257,7 +256,7 @@ const AnalyticsPage = () => {
         </div>
 
         {/* Summary Cards - Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           <StatCard 
             title="Avg. Daily Calories" 
             value={summary.averageCalories.toFixed(0)} 
@@ -278,13 +277,6 @@ const AnalyticsPage = () => {
             unit="stability" 
             icon={<TrendingUp className="h-4 w-4 text-chart-1" />}
             trend={summary.consistencyScore > 70 ? 'good' : summary.consistencyScore > 40 ? 'average' : 'low'}
-          />
-          <StatCard 
-            title="Avg. Daily Protein" 
-            value={summary.averageProtein.toFixed(0)} 
-            unit="g" 
-            icon={<Beef className="h-4 w-4 text-chart-5" />}
-            trend={(summary.averageProtein / goals.protein) > 0.8 ? 'good' : 'average'}
           />
         </div>
 
@@ -659,8 +651,8 @@ const AnalyticsSkeleton = () => (
         <Skeleton className="h-10 w-48 rounded-lg" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 md:h-32 rounded-xl" />)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        {[1,2,3].map(i => <Skeleton key={i} className="h-28 md:h-32 rounded-xl" />)}
       </div>
 
       <Card className="border-2 shadow-lg">
