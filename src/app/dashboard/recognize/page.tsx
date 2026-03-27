@@ -29,7 +29,7 @@ import { motion } from 'framer-motion';
 import { FoodPlannerModal } from '@/components/planner/food-planner-modal';
 import type { FoodItem } from '@/types/food';
 
-type Status = 'idle' | 'analyzing' | 'completed' | 'failed';
+type Status = 'idle' | 'compressing' | 'preparing' | 'analyzing' | 'completed' | 'failed';
 
 export default function RecognizePage() {
   const { user, userProfile } = useUser();
@@ -134,7 +134,6 @@ export default function RecognizePage() {
   const handleAnalyze = async () => {
     if (!file || !user || !db) return;
 
-    setStatus('analyzing');
     setError(null);
     setPredictions(null);
 
@@ -143,6 +142,7 @@ export default function RecognizePage() {
         db,
         user,
         file,
+        (newStatus) => setStatus(newStatus),
         userProfile
       );
 
@@ -321,8 +321,20 @@ export default function RecognizePage() {
         );
       }
 
-      // ── ANALYZING ─────────────────────────────────────────────────────────
+      // ── ANALYZING (and other loading states) ────────────────────────────────
+      case 'compressing':
+      case 'preparing':
       case 'analyzing': {
+        const messages = {
+            compressing: 'Compressing image...',
+            preparing: 'Preparing for analysis...',
+            analyzing: 'AI is analyzing your food...'
+        };
+        const subMessages = {
+            compressing: 'Making the file smaller for a faster upload.',
+            preparing: 'Getting the image ready for our AI model.',
+            analyzing: 'This is the magic part, it may take a moment.'
+        };
         return (
           <div className="w-full max-w-4xl mx-auto">
             <Card className="overflow-hidden shadow-lg">
@@ -339,10 +351,10 @@ export default function RecognizePage() {
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 sm:p-8 gap-3 bg-black/50">
                     <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-primary animate-spin" />
                     <h3 className="text-base sm:text-lg md:text-xl font-semibold text-white">
-                      AI is analyzing your food...
+                      {messages[status]}
                     </h3>
                     <p className="text-sm sm:text-base text-white/80">
-                      This may take a few moments.
+                      {subMessages[status]}
                     </p>
                   </div>
                 </div>

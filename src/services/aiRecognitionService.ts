@@ -81,12 +81,15 @@ export const runAiScan = async (
   db: Firestore,
   user: User,
   file: File,
+  onStatusUpdate: (status: 'compressing' | 'preparing' | 'analyzing') => void,
   userProfile?: UserProfile | null
 ): Promise<RecognizeFoodOutput> => {
   // First, compress the image (this is fast)
+  onStatusUpdate('compressing');
   const compressedFile = await compressImage(file);
 
   // Convert to Data URI for the AI model
+  onStatusUpdate('preparing');
   const reader = new FileReader();
   const dataUriPromise = new Promise<string>((resolve, reject) => {
     reader.onload = () => resolve(reader.result as string);
@@ -96,6 +99,7 @@ export const runAiScan = async (
   const photoDataUri = await dataUriPromise;
 
   // The main blocking call: get the AI analysis
+  onStatusUpdate('analyzing');
   const aiResult = await recognizeFood({
     photoDataUri,
     userProfile: userProfile ? { health: userProfile.health } : undefined,
