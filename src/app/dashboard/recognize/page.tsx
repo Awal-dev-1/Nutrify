@@ -16,6 +16,7 @@ import {
   X,
   Camera,
   VideoOff,
+  Zap,
 } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -50,6 +51,11 @@ export default function RecognizePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // New state for flash control
+  const videoTrackRef = useRef<MediaStreamTrack | null>(null);
+  const [isFlashOn, setIsFlashOn] = useState(false);
+  const [isFlashAvailable, setIsFlashAvailable] = useState(false);
+
   useEffect(() => {
     if (file) {
       const objectUrl = URL.createObjectURL(file);
@@ -62,11 +68,17 @@ export default function RecognizePage() {
 
   useEffect(() => {
     if (!isCameraOpen) {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-        videoRef.current.srcObject = null;
+      // Clean up when camera is closed
+      if (videoTrackRef.current) {
+        // Make sure to turn off the flash
+        if ('torch' in videoTrackRef.current.getCapabilities()) {
+            videoTrackRef.current.applyConstraints({ advanced: [{ torch: false }] });
+        }
+        videoTrackRef.current.stop();
+        videoTrackRef.current = null;
       }
+      setIsFlashAvailable(false);
+      setIsFlashOn(false);
       return;
     }
 
@@ -77,9 +89,21 @@ export default function RecognizePage() {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment' },
         });
+
+        const track = stream.getVideoTracks()[0];
+        if (!track) {
+            throw new Error("No video track found");
+        }
+        videoTrackRef.current = track;
+        
         setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+              if (videoTrackRef.current && 'torch' in videoTrackRef.current.getCapabilities()) {
+                  setIsFlashAvailable(true);
+              }
+          }
         }
       } catch (error) {
         console.error('Error accessing camera:', error);
@@ -96,8 +120,12 @@ export default function RecognizePage() {
     getCameraStream();
 
     return () => {
+      // Cleanup function when component unmounts or isCameraOpen changes
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
+      }
+      if (videoTrackRef.current) {
+        videoTrackRef.current = null;
       }
     };
   }, [isCameraOpen, toast]);
@@ -128,6 +156,24 @@ export default function RecognizePage() {
         'image/jpeg',
         0.95
       );
+    }
+  };
+
+  const handleFlashToggle = async () => {
+    if (!videoTrackRef.current || !isFlashAvailable) return;
+    try {
+        const newFlashState = !isFlashOn;
+        await videoTrackRef.current.applyConstraints({
+            advanced: [{ torch: newFlashState }]
+        });
+        setIsFlashOn(newFlashState);
+    } catch (e) {
+        console.error('Failed to toggle flash', e);
+        toast({
+            variant: 'destructive',
+            title: 'Flash Error',
+            description: 'Could not control the flashlight.'
+        });
     }
   };
 
@@ -175,6 +221,12 @@ export default function RecognizePage() {
     setSelectedFood(null);
     setPlannerFood(null);
     setIsCameraOpen(false);
+    // Reset flash state
+    setIsFlashOn(false);
+    setIsFlashAvailable(false);
+    if(videoTrackRef.current) {
+        videoTrackRef.current = null;
+    }
   };
 
   const renderContent = () => {
@@ -199,8 +251,23 @@ export default function RecognizePage() {
 
                 {/* Overlay controls */}
                 <div className="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                  {/* Close */}
-                  <div className="flex justify-end pt-safe">
+                  {/* Top controls: Flash and Close */}
+                  <div className="flex justify-between pt-safe">
+                    {isMobile && isFlashAvailable ? (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleFlashToggle}
+                            className={cn(
+                                "bg-black/40 text-white hover:bg-black/60 rounded-full w-11 h-11 min-h-[44px] min-w-[44px]",
+                                isFlashOn && "bg-yellow-400 text-black hover:bg-yellow-400/90"
+                            )}
+                            aria-label="Toggle flash"
+                        >
+                            <Zap className="h-5 w-5" />
+                        </Button>
+                    ) : <div />}
+                    
                     <Button
                       variant="ghost"
                       size="icon"
