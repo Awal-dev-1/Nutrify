@@ -11,8 +11,8 @@ import type { Auth, User } from 'firebase/auth';
 
 const compressImage = async (file: File): Promise<File> => {
   const options = {
-    maxSizeMB: 2, // 2MB
-    maxWidthOrHeight: 1024,
+    maxSizeMB: 1, // Reduced from 2MB to make uploads faster
+    maxWidthOrHeight: 800, // Reduced from 1024 for smaller file size
     useWebWorker: true,
   };
   try {
