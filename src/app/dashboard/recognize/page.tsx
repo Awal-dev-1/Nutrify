@@ -16,7 +16,7 @@ import {
   X,
   Camera,
   VideoOff,
-  Zap,
+  Torch,
 } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -264,7 +264,7 @@ export default function RecognizePage() {
                             )}
                             aria-label="Toggle flash"
                         >
-                            <Zap className="h-5 w-5" />
+                            <Torch className="h-5 w-5" />
                         </Button>
                     ) : <div />}
                     
