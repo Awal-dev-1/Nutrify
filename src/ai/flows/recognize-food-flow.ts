@@ -28,7 +28,7 @@ const RecognizeFoodInputSchema = z.object({
 export type RecognizeFoodInput = z.infer<typeof RecognizeFoodInputSchema>;
 
 const AIPredictionSchema = FoodItemSchema.extend({
-    confidence: z.number().describe("The AI's confidence in this prediction, from 0 to 1."),
+    confidence: z.number().optional().describe("The AI's confidence in this prediction, from 0 to 1."),
 });
 export type AIPrediction = z.infer<typeof AIPredictionSchema>;
 
