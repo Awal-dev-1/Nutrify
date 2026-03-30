@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, type FC } from 'react';
 import Image from 'next/image';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Loader2,
@@ -29,6 +29,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { FoodPlannerModal } from '@/components/planner/food-planner-modal';
 import type { FoodItem } from '@/types/food';
+import { PredictionCard } from '@/components/recognize/prediction-card';
 
 type Status = 'idle' | 'compressing' | 'preparing' | 'analyzing' | 'completed' | 'failed';
 
@@ -42,16 +43,20 @@ export default function RecognizePage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
+  
+  // State Management for Predictions
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
-  const [selectedFood, setSelectedFood] = useState<AIPrediction | null>(null);
-  const [plannerFood, setPlannerFood] = useState<FoodItem | null>(null);
+  const [confirmedPrediction, setConfirmedPrediction] = useState<AIPrediction | null>(null);
+  
+  // State for Modals
+  const [foodForLogging, setFoodForLogging] = useState<AIPrediction | null>(null);
+  const [foodForPlanning, setFoodForPlanning] = useState<FoodItem | null>(null);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // New state for flash control
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [isFlashAvailable, setIsFlashAvailable] = useState(false);
@@ -68,9 +73,7 @@ export default function RecognizePage() {
 
   useEffect(() => {
     if (!isCameraOpen) {
-      // Clean up when camera is closed
       if (videoTrackRef.current) {
-        // Make sure to turn off the flash
         if ('torch' in videoTrackRef.current.getCapabilities()) {
             videoTrackRef.current.applyConstraints({ advanced: [{ torch: false }] });
         }
@@ -120,7 +123,6 @@ export default function RecognizePage() {
     getCameraStream();
 
     return () => {
-      // Cleanup function when component unmounts or isCameraOpen changes
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
@@ -147,9 +149,7 @@ export default function RecognizePage() {
         (blob) => {
           if (blob) {
             const capturedFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
-            setStatus('idle');
-            setError(null);
-            setPredictions(null);
+            resetState();
             setFile(capturedFile);
           }
         },
@@ -180,8 +180,7 @@ export default function RecognizePage() {
   const handleAnalyze = async () => {
     if (!file || !user || !db) return;
 
-    setError(null);
-    setPredictions(null);
+    resetState(true); // Soft reset, keep file and preview
 
     try {
       const scanResults = await runAiScan(
@@ -196,14 +195,19 @@ export default function RecognizePage() {
         toast({
           variant: 'destructive',
           title: 'Not a food item',
-          description:
-            'This does not appear to be a food item. Our AI is only meant for food items.',
+          description: 'This does not appear to be a food item. Our AI is only meant for food items.',
         });
         resetState();
         return;
       }
-
+      
       setPredictions(scanResults.predictions);
+      
+      // If only one prediction (high confidence), confirm it immediately
+      if (scanResults.predictions.length === 1) {
+        setConfirmedPrediction(scanResults.predictions[0]);
+      }
+      
       setStatus('completed');
     } catch (err: any) {
       console.error('AI Scan failed:', err);
@@ -212,16 +216,18 @@ export default function RecognizePage() {
     }
   };
 
-  const resetState = () => {
-    setFile(null);
-    setPreview(null);
+  const resetState = (soft = false) => {
+    if (!soft) {
+        setFile(null);
+        setPreview(null);
+    }
     setStatus('idle');
     setError(null);
     setPredictions(null);
-    setSelectedFood(null);
-    setPlannerFood(null);
+    setConfirmedPrediction(null);
+    setFoodForLogging(null);
+    setFoodForPlanning(null);
     setIsCameraOpen(false);
-    // Reset flash state
     setIsFlashOn(false);
     setIsFlashAvailable(false);
     if(videoTrackRef.current) {
@@ -231,14 +237,9 @@ export default function RecognizePage() {
 
   const renderContent = () => {
     switch (status) {
-      // ── IDLE ──────────────────────────────────────────────────────────────
       case 'idle': {
         if (isCameraOpen) {
           return (
-            /*
-             * Mobile: full-screen overlay (fixed inset-0)
-             * Tablet/Desktop: inline card, capped width, rounded
-             */
             <div className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
                 <video
@@ -248,10 +249,7 @@ export default function RecognizePage() {
                   muted
                   playsInline
                 />
-
-                {/* Overlay controls */}
                 <div className="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                  {/* Top controls: Flash and Close */}
                   <div className="flex justify-between pt-safe">
                     {isMobile && isFlashAvailable ? (
                         <Button
@@ -278,8 +276,6 @@ export default function RecognizePage() {
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
-
-                  {/* Shutter — 44px min for touch compliance, larger on desktop */}
                   <div className="flex items-center justify-center pb-8 pb-safe">
                     <button
                       onClick={handleCapture}
@@ -289,8 +285,6 @@ export default function RecognizePage() {
                     />
                   </div>
                 </div>
-
-                {/* Permission denied overlay */}
                 {hasCameraPermission === false && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-6 text-center gap-3">
                     <VideoOff className="h-10 w-10" />
@@ -310,12 +304,6 @@ export default function RecognizePage() {
             <div className="w-full max-w-4xl mx-auto space-y-4">
               <Card className="overflow-hidden shadow-lg">
                 <CardContent className="p-0">
-                  {/*
-                   * Image area heights:
-                   * xs/mobile:  40vh  — compact, leaves room for buttons
-                   * sm:         50vh
-                   * md+:        60vh
-                   */}
                   <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
                     <Image
                       src={preview}
@@ -326,8 +314,6 @@ export default function RecognizePage() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Action buttons — stack on mobile, side-by-side sm+ */}
               <div className="flex flex-col sm:flex-row justify-center gap-2">
                 <Button
                   size="lg"
@@ -339,7 +325,7 @@ export default function RecognizePage() {
                 <Button
                   size="lg"
                   variant="ghost"
-                  onClick={() => setFile(null)}
+                  onClick={() => resetState()}
                   className="w-full sm:w-auto min-h-[44px]"
                 >
                   <X className="mr-2 h-4 w-4" /> Change Image
@@ -348,13 +334,9 @@ export default function RecognizePage() {
             </div>
           );
         }
-
-        // Default upload view
         return (
           <div className="w-full max-w-4xl mx-auto space-y-4">
             <ImageUploader onFileSelect={handleFileSelect} />
-
-            {/* Camera option — mobile only */}
             {isMobile && (
               <div className="space-y-3">
                 <div className="relative flex items-center">
@@ -362,7 +344,6 @@ export default function RecognizePage() {
                   <span className="mx-4 shrink-0 text-muted-foreground text-sm">OR</span>
                   <div className="flex-grow border-t border-border" />
                 </div>
-
                 <Button
                   variant="secondary"
                   className="w-full min-h-[44px]"
@@ -371,7 +352,6 @@ export default function RecognizePage() {
                 >
                   <Camera className="mr-2 h-4 w-4" /> Use Camera
                 </Button>
-
                 {hasCameraPermission === false && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
@@ -388,7 +368,6 @@ export default function RecognizePage() {
         );
       }
 
-      // ── ANALYZING (and other loading states) ────────────────────────────────
       case 'compressing':
       case 'preparing':
       case 'analyzing': {
@@ -431,57 +410,84 @@ export default function RecognizePage() {
         );
       }
 
-      // ── COMPLETED ─────────────────────────────────────────────────────────
       case 'completed': {
-        if (!predictions || predictions.length === 0) {
+        if (confirmedPrediction) {
           return (
-            <Alert className="max-w-4xl mx-auto">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>No Food Detected</AlertTitle>
-              <AlertDescription className="text-sm">
-                The AI couldn't identify any food in the image. Try a clearer picture or a
-                different angle.
+            <motion.div
+              className="w-full md:max-w-4xl lg:max-w-5xl mx-auto space-y-4 sm:space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AiFoodResultCard
+                item={confirmedPrediction}
+                onAdd={() => setFoodForLogging(confirmedPrediction)}
+                onAddToPlan={() => setFoodForPlanning(confirmedPrediction)}
+                imageUrl={preview}
+              />
+              <div className="flex justify-center pb-4">
                 <Button
                   variant="outline"
-                  onClick={resetState}
-                  className="mt-4 w-full min-h-[44px]"
+                  onClick={() => resetState()}
+                  className="w-full sm:w-auto min-h-[44px]"
                 >
-                  <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+                  <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
                 </Button>
-              </AlertDescription>
-            </Alert>
+              </div>
+            </motion.div>
+          );
+        }
+        
+        if (predictions && predictions.length > 1) {
+          return (
+            <motion.div
+              className="w-full max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="text-center shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl sm:text-2xl">We're not quite sure.</CardTitle>
+                  <CardDescription>Which of these looks closer to your meal?</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {predictions.map((p, i) => (
+                    <PredictionCard 
+                      key={`${p.foodName}-${i}`}
+                      prediction={p} 
+                      onSelect={() => setConfirmedPrediction(p)} 
+                    />
+                  ))}
+                </CardContent>
+                <CardFooter>
+                  <Button variant="ghost" onClick={() => resetState()} className="w-full">
+                    <RefreshCw className="mr-2 h-4 w-4" /> Try with a different image
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
           );
         }
 
-        const mainPrediction = predictions[0];
-
         return (
-          <motion.div
-            className="w-full md:max-w-4xl lg:max-w-5xl mx-auto space-y-4 sm:space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <AiFoodResultCard
-              item={mainPrediction}
-              onAdd={() => setSelectedFood(mainPrediction)}
-              onAddToPlan={() => setPlannerFood(mainPrediction)}
-              imageUrl={preview}
-            />
-            <div className="flex justify-center pb-4">
+          <Alert className="max-w-4xl mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>No Food Detected</AlertTitle>
+            <AlertDescription className="text-sm">
+              The AI couldn't identify any food in the image. Try a clearer picture or a different angle.
               <Button
                 variant="outline"
-                onClick={resetState}
-                className="w-full sm:w-auto min-h-[44px]"
+                onClick={() => resetState()}
+                className="mt-4 w-full min-h-[44px]"
               >
-                <RefreshCw className="mr-2 h-4 w-4" /> Scan a new image
+                <RefreshCw className="mr-2 h-4 w-4" /> Try Again
               </Button>
-            </div>
-          </motion.div>
+            </AlertDescription>
+          </Alert>
         );
       }
 
-      // ── FAILED ────────────────────────────────────────────────────────────
       case 'failed': {
         return (
           <Alert variant="destructive" className="max-w-4xl mx-auto">
@@ -491,7 +497,7 @@ export default function RecognizePage() {
               {error || 'An unexpected error occurred.'}
               <Button
                 variant="destructive"
-                onClick={resetState}
+                onClick={() => resetState()}
                 className="mt-4 w-full min-h-[44px]"
               >
                 <RefreshCw className="mr-2 h-4 w-4" /> Try Again
@@ -507,12 +513,7 @@ export default function RecognizePage() {
   };
 
   return (
-    /*
-     * Outer wrapper: safe-area padding for notched/foldable phones,
-     * no extra horizontal padding (cards are self-contained)
-     */
     <div className="space-y-4 sm:space-y-6 md:space-y-8 px-0 pb-safe">
-      {/* Page header — hidden when camera is full-screen on mobile */}
       <div className={cn(isCameraOpen && 'hidden md:block')}>
         <h1 className="text-h1 font-bold tracking-tight flex items-center gap-2 text-primary">
           <ScanLine className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary shrink-0" />
@@ -523,31 +524,22 @@ export default function RecognizePage() {
         </p>
       </div>
 
-      {/*
-       * Content area:
-       * - min-height keeps layout stable as status changes
-       * - items-start on mobile (content flows from top),
-       *   items-center from sm+ (vertically centered in the space)
-       */}
       <div className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px] flex items-start sm:items-center justify-center">
         {renderContent()}
       </div>
 
-      {/* Hidden canvas for camera capture */}
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
 
       <FoodConfirmationModal
-        isOpen={!!selectedFood}
-        onClose={() => setSelectedFood(null)}
-        foodItem={selectedFood}
+        isOpen={!!foodForLogging}
+        onClose={() => setFoodForLogging(null)}
+        foodItem={foodForLogging}
       />
       <FoodPlannerModal
-        isOpen={!!plannerFood}
-        onClose={() => setPlannerFood(null)}
-        foodItem={plannerFood}
+        isOpen={!!foodForPlanning}
+        onClose={() => setFoodForPlanning(null)}
+        foodItem={foodForPlanning}
       />
     </div>
   );
 }
-
-    
