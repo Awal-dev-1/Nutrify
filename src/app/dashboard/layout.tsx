@@ -3,6 +3,7 @@
 
 import { MainSidebar } from "@/components/dashboard/main-sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
@@ -82,13 +83,14 @@ export default function DashboardLayout({
       <SidebarInset>
         <DashboardHeader />
         <motion.main
-          className="min-h-[calc(100vh-4rem)] bg-background p-4 lg:p-6"
+          className="min-h-[calc(100vh-4rem)] bg-background p-4 lg:p-6 pb-24 md:pb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ease: "easeInOut", duration: 0.2 }}
         >
             {children}
         </motion.main>
+        <BottomNav />
       </SidebarInset>
     </SidebarProvider>
   );

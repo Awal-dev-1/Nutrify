@@ -1,5 +1,5 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -13,7 +13,19 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'Nutrify',
   description: 'A Ghana-focused smart nutrition platform to help you track your meals and achieve your health goals.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Nutrify',
+  },
 };
+
+export const viewport: Viewport = {
+  themeColor: '#00b371',
+  viewportFit: 'cover',
+};
+
 
 export default function RootLayout({
   children,
