@@ -8,15 +8,19 @@ import { Footer } from "@/components/landing/footer";
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col max-md:overflow-hidden">
       <Header />
       <main className="flex-1">
         <Hero />
-        <Features />
-        <HowItWorks />
-        <CtaBanner />
+        <div className="hidden md:block">
+          <Features />
+          <HowItWorks />
+          <CtaBanner />
+        </div>
       </main>
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }

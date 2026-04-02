@@ -15,7 +15,7 @@ export function Hero() {
 
   return (
     <section
-      className="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-fixed"
+      className="relative min-h-[100dvh] flex flex-col items-center justify-center bg-cover bg-center bg-fixed"
       style={{
         backgroundImage: heroImage ? `url(${heroImage.imageUrl})` : "",
       }}
