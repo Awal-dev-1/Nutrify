@@ -86,7 +86,7 @@ Activity Level: {{{activityLevel}}}
 Overall Goal: {{{goal}}}
 Target Daily Calories: {{#if targetCalories}}{{{targetCalories}}} kcal{{else}}Not specified{{/if}}
 Target Macros (P/C/F %): {{{proteinPercentageGoal}}}/{{{carbsPercentageGoal}}}/{{{fatPercentageGoal}}}
-Dietary Preferences: {{#if dietaryPreferences.length}}{{#each dietaryPreferences}}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+Dietary Preferences: {{#if dietaryPreferences.length}}{{#each dietaryPreferences}} {{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
 Average Daily Intake (Calories): {{{averageDailyCalories}}} kcal
 
 Generate the output in the required JSON format.`,

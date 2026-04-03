@@ -60,7 +60,7 @@ Analyze the user's data below:
 - Calorie Goal: {{{calorieTarget}}} kcal
 - Consumed So Far: {{{caloriesConsumed}}} kcal
 - Primary Goal: {{{goals}}}
-- Dietary Preferences: {{#if preferences.length}}{{#each preferences}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+- Dietary Preferences: {{#if preferences.length}}{{#each preferences}} {{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
 
 Your task is to generate a set of recommendations to help the user achieve their goals for the rest of the day.
 
