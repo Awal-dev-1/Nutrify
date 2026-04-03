@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -23,7 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const features = [
   { href: '/dashboard/search', label: 'AI Search', icon: Search },
   { href: '/dashboard/recognize', label: 'AI Scan', icon: ScanLine },
-  { href: '/dashboard/recommendations', label: 'AI Recs', icon: Bot },
+  { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
   { href: '/dashboard/planner', label: 'Planner', icon: Calendar },
   { href: '/dashboard/tracker', label: 'Tracker', icon: HeartPulse },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
