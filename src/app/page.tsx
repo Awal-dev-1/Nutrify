@@ -1,3 +1,4 @@
+
 // app/page.tsx or components/landing/landing-page.tsx
 import { Header } from "@/components/landing/header";
 import { Hero } from "@/components/landing/hero";
@@ -9,7 +10,9 @@ import { Footer } from "@/components/landing/footer";
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col max-md:overflow-hidden">
-      <Header />
+      <div className="hidden md:block">
+        <Header />
+      </div>
       <main className="flex-1">
         <Hero />
         <div className="hidden md:block">
