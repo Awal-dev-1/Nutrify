@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -7,6 +6,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
 import { PageLoaderProvider } from '@/components/providers/page-loader-provider';
 import { PageLoader } from '@/components/shared/page-loader';
+import { SplashProvider } from '@/components/providers/splash-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -42,7 +42,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <FirebaseClientProvider>
             <PageLoaderProvider>
-              {children}
+              <SplashProvider>
+                {children}
+              </SplashProvider>
               <PageLoader />
             </PageLoaderProvider>
           </FirebaseClientProvider>
