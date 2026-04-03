@@ -1,3 +1,4 @@
+
 'use client';
 
 // components/landing/hero.tsx
@@ -5,12 +6,26 @@ import { TransitionLink } from "@/components/shared/transition-link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Camera } from "lucide-react";
 import { motion } from "framer-motion";
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function Hero() {
+  const heroImage = PlaceHolderImages.find(img => img.id === 'hero-background');
+
   return (
     <section className="relative h-[100dvh] flex flex-col items-center justify-center overflow-hidden">
-      {/* Animated Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-800 bg-[length:200%_200%] animate-gradient" />
+      {/* Background Image */}
+      {heroImage && (
+        <Image
+          src={heroImage.imageUrl}
+          alt={heroImage.description}
+          fill
+          className="object-cover"
+          priority
+          data-ai-hint={heroImage.imageHint}
+        />
+      )}
+      <div className="absolute inset-0 bg-black/50" /> {/* Overlay to ensure text readability */}
       
       {/* Main Content Container */}
       <div className="relative z-10 container px-4 py-16 md:py-24">
