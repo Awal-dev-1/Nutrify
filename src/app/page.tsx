@@ -1,28 +1,54 @@
+'use client';
 
-// app/page.tsx or components/landing/landing-page.tsx
+// app/page.tsx
 import { Header } from "@/components/landing/header";
 import { Hero } from "@/components/landing/hero";
 import { Features } from "@/components/landing/features";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { CtaBanner } from "@/components/landing/cta-banner";
 import { Footer } from "@/components/landing/footer";
+import { motion } from 'framer-motion';
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  },
+};
+
+const MotionSection = ({ children }: { children: React.ReactNode }) => (
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={sectionVariants}
+    >
+      {children}
+    </motion.div>
+);
+
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col max-md:overflow-hidden">
+    <div className="flex min-h-screen flex-col max-md:overflow-hidden bg-background">
       <div className="hidden md:block">
         <Header />
       </div>
       <main className="flex-1">
         <Hero />
-        <div className="hidden md:block">
-          <Features />
-          <HowItWorks />
-          <CtaBanner />
+        <div className="hidden md:block space-y-4">
+          <MotionSection><Features /></MotionSection>
+          <MotionSection><HowItWorks /></MotionSection>
+          <MotionSection><CtaBanner /></MotionSection>
         </div>
       </main>
       <div className="hidden md:block">
-        <Footer />
+        <MotionSection><Footer /></MotionSection>
       </div>
     </div>
   );
