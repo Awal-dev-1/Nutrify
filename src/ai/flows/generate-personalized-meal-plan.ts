@@ -18,9 +18,9 @@ const PlannedMealItemSchema = z.object({
   foodName: z.string().describe('Name of the food item.'),
   quantityGrams: z.number().describe('The recommended quantity of this food item in grams.'),
   calories: z.number().describe('Calories for this food item at the recommended quantity.'),
-  proteinGrams: z.number().optional().describe('Protein in grams for this food item.'),
-  carbsGrams: z.number().optional().describe('Carbohydrates in grams for this food item.'),
-  fatGrams: z.number().optional().describe('Fat in grams for this food item.'),
+  proteinGrams: z.number().describe('Protein in grams for this food item.'),
+  carbsGrams: z.number().describe('Carbohydrates in grams for this food item.'),
+  fatGrams: z.number().describe('Fat in grams for this food item.'),
 });
 
 const GeneratePersonalizedMealPlanInputSchema = z.object({
