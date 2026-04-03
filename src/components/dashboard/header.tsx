@@ -7,7 +7,6 @@ import {
   Settings,
 } from 'lucide-react'
 
-import { SidebarTrigger } from '@/components/ui/sidebar'
 import { format } from 'date-fns'
 import { useUser } from '@/firebase'
 import { logout } from '@/services/authService'
@@ -60,9 +59,8 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
-      <SidebarTrigger className="md:hidden" />
-      <div className="flex flex-col">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-xl px-4 sm:px-6">
+      <div className="flex flex-1 flex-col">
         <h1 className="text-body font-semibold">
           {greeting}, {userProfile?.name || 'User'}!
         </h1>

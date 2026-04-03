@@ -67,7 +67,7 @@ export function MainSidebar() {
     <div className="space-y-1">
       {groupLabel && !isCollapsed && (
         <p className={cn(
-          'text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 px-4 py-2',
+          'text-xs font-semibold uppercase tracking-widest text-muted-foreground/80 px-4 py-2',
           'transition-all duration-300',
           isCollapsed ? 'opacity-0 -translate-x-2' : 'opacity-100 translate-x-0',
         )}>
@@ -88,7 +88,7 @@ export function MainSidebar() {
                   'h-auto py-3 transition-all duration-200 active:scale-95',
                   isCollapsed && 'justify-center px-0 h-12 w-12',
                   isActive
-                    ? 'bg-primary/10 text-primary font-semibold shadow-sm border-r-4 border-primary'
+                    ? 'bg-primary/10 backdrop-blur-sm text-primary font-semibold shadow-sm border-r-4 border-primary'
                     : 'hover:bg-muted/50 hover:text-foreground',
                 )}
                 onClick={handleCloseMobileSidebar}
