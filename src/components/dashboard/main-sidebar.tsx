@@ -14,13 +14,8 @@ import {
   Settings,
   Target,
   User,
-  Sparkles,
   Brain,
-  ChefHat,
   PieChart,
-  Activity,
-  Flame,
-  Menu,
 } from 'lucide-react'
 
 import {
@@ -33,13 +28,9 @@ import {
   useSidebar,
   SidebarToggle,
 } from '@/components/ui/sidebar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/shared/logo'
-import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUser } from '@/firebase'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 const mainLinks = [
@@ -73,17 +64,17 @@ export function MainSidebar() {
     links: { href: string; label: string; icon: any }[],
     groupLabel?: string
   ) => (
-    <div className="space-y-0.5">
+    <div className="space-y-1">
       {groupLabel && !isCollapsed && (
         <p className={cn(
-          'text-small font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider',
+          'text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 px-4 py-2',
           'transition-all duration-300',
           isCollapsed ? 'opacity-0 -translate-x-2' : 'opacity-100 translate-x-0',
         )}>
           {groupLabel}
         </p>
       )}
-      <SidebarMenu className="gap-0.5">
+      <SidebarMenu className="gap-1 px-2">
         {links.map((link) => {
           const isActive = pathname === link.href
           const Icon = link.icon
@@ -94,27 +85,22 @@ export function MainSidebar() {
                 isActive={isActive}
                 tooltip={link.label}
                 className={cn(
-                  'py-2.5 transition-all duration-200',
-                  // When collapsed: centre the icon
-                  isCollapsed && 'justify-center px-0',
+                  'h-auto py-3 transition-all duration-200 active:scale-95',
+                  isCollapsed && 'justify-center px-0 h-12 w-12',
                   isActive
-                    ? 'bg-primary/10 text-primary font-medium shadow-sm'
+                    ? 'bg-primary/10 text-primary font-semibold shadow-sm border-r-4 border-primary'
                     : 'hover:bg-muted/50 hover:text-foreground',
                 )}
                 onClick={handleCloseMobileSidebar}
               >
                 <TransitionLink
                   href={link.href}
-                  className={cn(
-                    'flex items-center gap-2 w-full',
-                    isCollapsed && 'justify-center',
-                  )}
+                  className={cn('flex items-center gap-3 w-full px-4', isCollapsed && 'justify-center px-0')}
                 >
-                  <Icon className={cn('h-4 w-4 shrink-0 transition-all duration-200', isActive && 'text-primary')} />
+                  <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-200', isActive && 'text-primary')} />
 
-                  {/* Label: slides + fades out when collapsing */}
                   <span className={cn(
-                    'overflow-hidden whitespace-nowrap transition-all duration-300',
+                    'overflow-hidden whitespace-nowrap transition-all duration-300 text-sm',
                     isCollapsed
                       ? 'w-0 opacity-0 pointer-events-none'
                       : 'w-auto opacity-100',
@@ -132,163 +118,39 @@ export function MainSidebar() {
 
   return (
     <>
-      {/* ── HEADER ── */}
-      <SidebarHeader className="flex h-16 flex-row items-center justify-between border-b px-4 overflow-hidden">
+      <SidebarHeader className="flex h-auto flex-col items-start justify-between border-b px-4 py-4 gap-4">
+        {/* Mobile Grabber */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-muted rounded-full md:hidden" />
 
-        {/* Expanded: full logo + toggle */}
-        <div className={cn(
-          'flex items-center gap-2 transition-all duration-300',
-          isCollapsed ? 'opacity-0 w-0 pointer-events-none' : 'opacity-100 w-auto',
-        )}>
-          <Logo collapsed={false} />
-        </div>
+        {/* Logo and Profile Section */}
+        <div className="flex items-center justify-between w-full">
+            <div className={cn(
+              'flex items-center gap-2 transition-all duration-300',
+              isCollapsed ? 'opacity-0 w-0 pointer-events-none' : 'opacity-100 w-auto',
+            )}>
+              <Logo collapsed={false} />
+            </div>
 
-        {/* Collapsed: "N" fades to toggle on hover */}
-        <div className={cn(
-          'group relative flex items-center justify-center transition-all duration-300',
-          isCollapsed ? 'opacity-100 mx-auto h-8 w-8' : 'opacity-0 w-0 pointer-events-none',
-        )}>
-          {/* N monogram */}
-          <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 opacity-100 group-hover:opacity-0">
-            <Logo collapsed={true} />
-          </span>
-          {/* Toggle reveals on hover */}
-          <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+            {/* Collapsed "N" logo */}
+            <div className={cn('transition-all duration-300', isCollapsed ? 'opacity-100 mx-auto' : 'opacity-0 w-0 pointer-events-none')}>
+              <Logo collapsed={true} />
+            </div>
+          
             <SidebarToggle className="hidden md:inline-flex" />
-          </span>
         </div>
-
-        {/* Expanded toggle — always right-aligned when open */}
-        <div className={cn(
-          'transition-all duration-300 shrink-0',
-          isCollapsed ? 'opacity-0 w-0 pointer-events-none' : 'opacity-100',
-        )}>
-          <SidebarToggle className="hidden md:inline-flex" />
-        </div>
-
-      </SidebarHeader>
-
-      {/* ── CONTENT ── */}
-      <SidebarContent className={cn(
-        'py-4 transition-all duration-300',
-        isCollapsed ? 'px-1' : 'px-2',
-      )}>
-        <div className="space-y-6">
-
-          {renderLinks(mainLinks, 'Main')}
-
-          {/* AI Features */}
-          <div className="space-y-1">
-            {/* Section header */}
-            <div className={cn('transition-all duration-300 overflow-hidden', isCollapsed ? 'h-10' : 'h-auto')}>
-              {!isCollapsed ? (
-                <div className="relative mb-1">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg blur-sm" />
-                  <div className="relative bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1 rounded-md bg-primary/10">
-                        <Brain className="h-3.5 w-3.5 text-primary" />
-                      </div>
-                      <p className="text-small font-semibold text-primary uppercase tracking-wider flex-1 transition-all duration-300">
-                        AI Features
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-center py-2">
-                  <div className="p-1.5 rounded-md bg-primary/10">
-                    <Brain className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-              )}
-            </div>
-            {renderLinks(aiLinks)}
-          </div>
-
-          {/* Insights */}
-          <div className="space-y-1">
-            <div className={cn('transition-all duration-300 overflow-hidden', isCollapsed ? 'h-10' : 'h-auto')}>
-              {!isCollapsed ? (
-                <div className="relative mb-1">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg blur-sm" />
-                  <div className="relative bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1 rounded-md bg-primary/10">
-                        <PieChart className="h-3.5 w-3.5 text-primary" />
-                      </div>
-                      <p className="text-small font-semibold text-primary uppercase tracking-wider flex-1 transition-all duration-300">
-                        Insights
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-center py-2">
-                  <div className="p-1.5 rounded-md bg-primary/10">
-                    <PieChart className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-              )}
-            </div>
-            {renderLinks(insightLinks)}
-          </div>
-
-        </div>
-      </SidebarContent>
-
-      {/* ── FOOTER ── */}
-      <SidebarFooter className={cn(
-        'border-t transition-all duration-300',
-        isCollapsed ? 'p-2' : 'p-3',
-      )}>
-
-        <SidebarMenu className="mb-2 gap-0.5">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === '/dashboard/settings'}
-              tooltip="Settings"
-              className={cn(
-                'py-2.5 transition-all duration-200',
-                isCollapsed && 'justify-center px-0',
-                pathname === '/dashboard/settings'
-                  ? 'bg-primary/10 text-primary font-medium shadow-sm'
-                  : 'hover:bg-muted/50 hover:text-foreground',
-              )}
-              onClick={handleCloseMobileSidebar}
-            >
-              <TransitionLink
-                href="/dashboard/settings"
-                className={cn('flex items-center gap-2 w-full', isCollapsed && 'justify-center')}
-              >
-                <Settings className={cn(
-                  'h-4 w-4 shrink-0 transition-all duration-200',
-                  pathname === '/dashboard/settings' && 'text-primary',
-                )} />
-                <span className={cn(
-                  'overflow-hidden whitespace-nowrap transition-all duration-300',
-                  isCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-auto opacity-100',
-                )}>
-                  Settings
-                </span>
-              </TransitionLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-
+        
         {/* User profile */}
-        <div className={cn(
-          'rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 transition-all duration-300 hover:shadow-md',
-          isCollapsed ? 'p-1.5 flex justify-center' : 'p-2',
+         <div className={cn(
+          'w-full rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 transition-all duration-300 hover:shadow-md',
+          isCollapsed ? 'p-2 flex justify-center' : 'p-3',
         )}>
           <div className={cn(
             'flex items-center transition-all duration-300',
             isCollapsed ? 'justify-center' : 'gap-3',
           )}>
             <Avatar className={cn(
-              'border-2 border-background shadow-sm transition-all duration-300',
-              isCollapsed ? 'h-8 w-8' : 'h-9 w-9',
+              'border-2 border-background shadow-sm transition-all duration-300 ring-2 ring-primary/50',
+              isCollapsed ? 'h-9 w-9' : 'h-10 w-10',
             )}>
               <AvatarImage src={user?.photoURL || userProfile?.profile?.profileImageUrl || ''} alt={userProfile?.name || ''} />
               <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-semibold">
@@ -300,7 +162,7 @@ export function MainSidebar() {
               'overflow-hidden transition-all duration-300',
               isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 flex-1',
             )}>
-              <p className="text-small font-semibold truncate leading-tight">
+              <p className="text-sm font-semibold truncate leading-tight">
                 {userProfile?.name || 'User'}
               </p>
               <p className="text-xs text-muted-foreground truncate">
@@ -309,7 +171,60 @@ export function MainSidebar() {
             </div>
           </div>
         </div>
+      </SidebarHeader>
 
+      <SidebarContent className={cn('py-4 transition-all duration-300', isCollapsed ? 'px-0' : 'px-0')}>
+        <div className="space-y-4">
+          {renderLinks(mainLinks)}
+          
+          <div className="space-y-2">
+            {!isCollapsed && <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/80 px-4 py-2">AI Features</p>}
+            {isCollapsed && <div className="flex justify-center py-2"><Brain className="h-5 w-5 text-muted-foreground" /></div>}
+            {renderLinks(aiLinks)}
+          </div>
+          
+          <div className="space-y-2">
+            {!isCollapsed && <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/80 px-4 py-2">Insights</p>}
+            {isCollapsed && <div className="flex justify-center py-2"><PieChart className="h-5 w-5 text-muted-foreground" /></div>}
+            {renderLinks(insightLinks)}
+          </div>
+        </div>
+      </SidebarContent>
+
+      <SidebarFooter className={cn(
+        'border-t transition-all duration-300',
+        isCollapsed ? 'p-2' : 'p-3',
+      )}>
+        <SidebarMenu className="gap-1 px-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === '/dashboard/settings'}
+              tooltip="Settings"
+              className={cn(
+                'h-auto py-3 transition-all duration-200 active:scale-95',
+                isCollapsed && 'justify-center px-0 h-12 w-12',
+                pathname === '/dashboard/settings'
+                  ? 'bg-primary/10 text-primary font-semibold shadow-sm'
+                  : 'hover:bg-muted/50 hover:text-foreground',
+              )}
+              onClick={handleCloseMobileSidebar}
+            >
+              <TransitionLink
+                href="/dashboard/settings"
+                className={cn('flex items-center gap-3 w-full px-4', isCollapsed && 'justify-center px-0')}
+              >
+                <Settings className="h-5 w-5 shrink-0" />
+                <span className={cn(
+                  'overflow-hidden whitespace-nowrap transition-all duration-300 text-sm',
+                  isCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-auto opacity-100',
+                )}>
+                  Settings
+                </span>
+              </TransitionLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </>
   )
