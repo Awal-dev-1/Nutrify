@@ -42,6 +42,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { QuickAddMealModal } from '@/components/tracker/quick-add-meal-modal';
 
 const barColors = ['#3B82F6', '#22C55E', '#EAB308', '#EF4444', '#8B5CF6', '#F97316', '#14B8A6'];
 
@@ -54,6 +55,7 @@ const OverviewPage = () => {
   const [coachData, setCoachData] = useState<GenerateDailyRecommendationsOutput | null>(null);
   const [isCoachLoading, setIsCoachLoading] = useState(false);
   const [coachError, setCoachError] = useState<string | null>(null);
+  const [isAddMealModalOpen, setIsAddMealModalOpen] = useState(false);
 
   const todayKey = format(new Date(), 'yyyy-MM-dd');
   const dailyLogRef = useMemoFirebase(
@@ -161,6 +163,7 @@ const OverviewPage = () => {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-safe">
       {/* Constrained, padded container scales across all viewports */}
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-5 md:py-6 lg:py-8 space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8">
@@ -415,13 +418,11 @@ const OverviewPage = () => {
                 <CardContent className="p-3 sm:p-4 grid grid-cols-2 gap-2 sm:gap-3">
                   {/* 44px min-height on all buttons for touch compliance */}
                   <Button
-                    asChild
+                    onClick={() => setIsAddMealModalOpen(true)}
                     className="min-h-[44px] h-12 sm:h-14 rounded-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all"
                   >
-                    <TransitionLink href="/dashboard/tracker">
-                      <PlusCircle className="mr-1.5 sm:mr-2 h-4 w-4 shrink-0" />
-                      <span className="text-xs sm:text-sm">Add Meal</span>
-                    </TransitionLink>
+                    <PlusCircle className="mr-1.5 sm:mr-2 h-4 w-4 shrink-0" />
+                    <span className="text-xs sm:text-sm">Add Meal</span>
                   </Button>
                   <Button
                     asChild
@@ -581,6 +582,8 @@ const OverviewPage = () => {
 
       </div>
     </div>
+    <QuickAddMealModal isOpen={isAddMealModalOpen} onClose={() => setIsAddMealModalOpen(false)} />
+    </>
   );
 };
 
@@ -760,3 +763,5 @@ const DashboardSkeleton = () => (
 );
 
 export default OverviewPage;
+
+    
