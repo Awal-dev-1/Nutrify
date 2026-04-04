@@ -159,38 +159,45 @@ export function QuickAddMealModal({ isOpen, onClose }: QuickAddMealModalProps) {
                         <DialogDescription>Here's the nutritional breakdown. Confirm to log it.</DialogDescription>
                     </DialogHeader>
                     <div className="flex-grow my-4 space-y-4 overflow-y-auto pr-2">
-                        <div className="p-4 rounded-xl border bg-muted/50 text-center space-y-2">
-                             <p className="text-4xl font-bold text-primary">{calculatedNutrients.calories.toFixed(0)}</p>
-                             <p className="text-sm text-muted-foreground">Est. Calories</p>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="p-2 rounded-lg bg-muted/30">
-                                <Beef className="mx-auto h-5 w-5 text-red-500 mb-1"/>
-                                <p className="font-bold">{calculatedNutrients.protein.toFixed(1)}g</p>
-                                <p className="text-xs text-muted-foreground">Protein</p>
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                            <div className="p-4 rounded-xl border bg-muted/50 text-center space-y-2">
+                                <p className="text-4xl font-bold text-primary">{calculatedNutrients.calories.toFixed(0)}</p>
+                                <p className="text-sm text-muted-foreground">Est. Calories</p>
                             </div>
-                             <div className="p-2 rounded-lg bg-muted/30">
-                                <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1"/>
-                                <p className="font-bold">{calculatedNutrients.carbs.toFixed(1)}g</p>
-                                <p className="text-xs text-muted-foreground">Carbs</p>
+                        </motion.div>
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className="p-2 rounded-lg bg-muted/30">
+                                    <Beef className="mx-auto h-5 w-5 text-red-500 mb-1"/>
+                                    <p className="font-bold">{calculatedNutrients.protein.toFixed(1)}g</p>
+                                    <p className="text-xs text-muted-foreground">Protein</p>
+                                </div>
+                                <div className="p-2 rounded-lg bg-muted/30">
+                                    <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1"/>
+                                    <p className="font-bold">{calculatedNutrients.carbs.toFixed(1)}g</p>
+                                    <p className="text-xs text-muted-foreground">Carbs</p>
+                                </div>
+                                <div className="p-2 rounded-lg bg-muted/30">
+                                    <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1"/>
+                                    <p className="font-bold">{calculatedNutrients.fat.toFixed(1)}g</p>
+                                    <p className="text-xs text-muted-foreground">Fat</p>
+                                </div>
                             </div>
-                             <div className="p-2 rounded-lg bg-muted/30">
-                                <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1"/>
-                                <p className="font-bold">{calculatedNutrients.fat.toFixed(1)}g</p>
-                                <p className="text-xs text-muted-foreground">Fat</p>
-                            </div>
-                        </div>
+                        </motion.div>
 
                         {aiResult.healthAnalysis && (
-                          <Alert className="bg-primary/5 border-primary/10 text-xs">
-                            <Stethoscope className="h-4 w-4 text-primary" />
-                            <AlertTitle className="text-primary font-semibold">Health Analysis</AlertTitle>
-                            <AlertDescription className="text-primary/90">
-                              {aiResult.healthAnalysis}
-                            </AlertDescription>
-                          </Alert>
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
+                            <Alert className="bg-primary/5 border-primary/10 text-xs">
+                              <Stethoscope className="h-4 w-4 text-primary" />
+                              <AlertTitle className="text-primary font-semibold">Health Analysis</AlertTitle>
+                              <AlertDescription className="text-primary/90">
+                                {aiResult.healthAnalysis}
+                              </AlertDescription>
+                            </Alert>
+                          </motion.div>
                         )}
 
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 }}>
                         <div className="grid grid-cols-2 gap-4 items-end">
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium">Quantity (g)</label>
@@ -208,6 +215,7 @@ export function QuickAddMealModal({ isOpen, onClose }: QuickAddMealModalProps) {
                                 </Select>
                             </div>
                         </div>
+                        </motion.div>
                     </div>
                     <DialogFooter className="mt-auto pt-4 border-t">
                         <Button variant="outline" onClick={() => setStep('search')}>Back</Button>
@@ -233,5 +241,3 @@ export function QuickAddMealModal({ isOpen, onClose }: QuickAddMealModalProps) {
     </Dialog>
   );
 }
-
-    

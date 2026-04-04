@@ -28,5 +28,3 @@ const SuitabilityBadge: FC<{ suitability?: 'Suitable' | 'Moderately Suitable' | 
 };
 
 export default SuitabilityBadge;
-
-    
