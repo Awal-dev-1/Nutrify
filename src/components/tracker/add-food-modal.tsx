@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -11,13 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, AlertCircle, Leaf, Flame, Beef, Wheat, Droplets } from "lucide-react";
+import { Plus, Search, Loader2, AlertCircle, Leaf, Flame, Beef, Wheat, Droplets, Stethoscope } from "lucide-react";
 import { searchFoods } from "@/ai/flows/search-foods-flow";
 import type { FoodItem } from '@/types/food';
 import { useUser } from "@/firebase";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import SuitabilityBadge from "../food/suitability-badge";
 
 type MealType = "Breakfast" | "Lunch" | "Dinner";
 
@@ -141,7 +143,10 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
               <div className="space-y-4 animate-in fade-in-50">
                 <Card>
                    <CardHeader className="p-4">
-                    <h3 className="font-bold">{aiResult.foodName}</h3>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <h3 className="font-bold text-lg">{aiResult.foodName}</h3>
+                      <SuitabilityBadge suitability={aiResult.suitability} />
+                    </div>
                     <p className="text-xs text-muted-foreground">Nutritional estimate for your portion</p>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
@@ -167,6 +172,15 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
                             <p className="text-xs text-muted-foreground">Fat</p>
                         </div>
                     </div>
+                     {aiResult.healthAnalysis && (
+                        <Alert className="bg-primary/5 border-primary/10 text-xs mt-4">
+                            <Stethoscope className="h-4 w-4 text-primary" />
+                            <AlertTitle className="text-primary font-semibold">Health Analysis</AlertTitle>
+                            <AlertDescription className="text-primary/90">
+                            {aiResult.healthAnalysis}
+                            </AlertDescription>
+                        </Alert>
+                    )}
                   </CardContent>
                 </Card>
 
