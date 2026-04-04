@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -12,11 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, AlertCircle, Leaf } from "lucide-react";
+import { Plus, Search, Loader2, AlertCircle, Leaf, Flame, Beef, Wheat, Droplets } from "lucide-react";
 import { searchFoods } from "@/ai/flows/search-foods-flow";
 import type { FoodItem } from '@/types/food';
 import { useUser } from "@/firebase";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -85,6 +84,13 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
     setError(null);
     setAiResult(null);
   };
+  
+  const calculatedNutrients = aiResult ? {
+      calories: (aiResult.calories / (aiResult.estimatedWeightGrams || 100)) * quantity,
+      protein: (aiResult.macronutrientBreakdown.protein / (aiResult.estimatedWeightGrams || 100)) * quantity,
+      carbs: (aiResult.macronutrientBreakdown.carbohydrates / (aiResult.estimatedWeightGrams || 100)) * quantity,
+      fat: (aiResult.macronutrientBreakdown.fat / (aiResult.estimatedWeightGrams || 100)) * quantity,
+    } : null;
 
   if (!mealType) return null;
 
@@ -131,21 +137,34 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
               </Alert>
             )}
 
-            {aiResult && !loading && (
+            {aiResult && !loading && calculatedNutrients && (
               <div className="space-y-4 animate-in fade-in-50">
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="font-bold flex items-center gap-2">
-                                <Leaf className="text-primary h-4 w-4" />
-                                {aiResult.foodName}
-                            </h3>
-                            <p className="text-xs text-muted-foreground">AI-generated nutritional estimate</p>
+                   <CardHeader className="p-4">
+                    <h3 className="font-bold">{aiResult.foodName}</h3>
+                    <p className="text-xs text-muted-foreground">Nutritional estimate for your portion</p>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                        <div className="p-2 rounded-lg bg-muted/30">
+                            <Flame className="mx-auto h-5 w-5 text-orange-500 mb-1"/>
+                            <p className="font-bold">{calculatedNutrients.calories.toFixed(0)}</p>
+                            <p className="text-xs text-muted-foreground">kcal</p>
                         </div>
-                        <div className="text-right">
-                            <p className="font-bold text-primary">{aiResult.calories} kcal</p>
-                            <p className="text-xs text-muted-foreground">per 100g</p>
+                        <div className="p-2 rounded-lg bg-muted/30">
+                            <Beef className="mx-auto h-5 w-5 text-red-500 mb-1"/>
+                            <p className="font-bold">{calculatedNutrients.protein.toFixed(1)}g</p>
+                            <p className="text-xs text-muted-foreground">Protein</p>
+                        </div>
+                         <div className="p-2 rounded-lg bg-muted/30">
+                            <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1"/>
+                            <p className="font-bold">{calculatedNutrients.carbs.toFixed(1)}g</p>
+                            <p className="text-xs text-muted-foreground">Carbs</p>
+                        </div>
+                         <div className="p-2 rounded-lg bg-muted/30">
+                            <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1"/>
+                            <p className="font-bold">{calculatedNutrients.fat.toFixed(1)}g</p>
+                            <p className="text-xs text-muted-foreground">Fat</p>
                         </div>
                     </div>
                   </CardContent>
