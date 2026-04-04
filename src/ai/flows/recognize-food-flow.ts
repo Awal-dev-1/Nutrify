@@ -48,32 +48,24 @@ const recognizeFoodPrompt = ai.definePrompt({
   output: { schema: RecognizeFoodOutputSchema },
   prompt: `You are a professional nutritional vision AI for the Nutrify app, designed to be extremely fast. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown.
 
---- USER PROFILE (for personalization) ---
+--- USER CONTEXT (for personalization) ---
 {{#if userProfile}}
-Primary Goal: {{#if userProfile.health.primaryGoal}}{{userProfile.health.primaryGoal}}{{else}}Not specified{{/if}}
-Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.length}}{{#each userProfile.health.dietaryPreferences}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+The user's primary goal is '{{#if userProfile.health.primaryGoal}}{{userProfile.health.primaryGoal}}{{else}}Not specified{{/if}}'.
+Their dietary preferences are: {{#if userProfile.health.dietaryPreferences.length}}{{#each userProfile.health.dietaryPreferences}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None specified.{{/if}}
 {{else}}
-User profile not provided. Provide a general health analysis.
+The user has not provided their profile. Provide a general health analysis.
 {{/if}}
 
 --- IMAGE TO ANALYZE ---
 {{media url=photoDataUri}}
 
 --- CRITICAL INSTRUCTIONS ---
-1.  **Analyze Confidence**: First, analyze the image to identify the meal and determine your confidence level.
-2.  **High Confidence (Confidence > 0.85)**:
-    *   If you are highly confident, identify all food items and combine them into a single, descriptive \`foodName\` (e.g., "Banku with grilled tilapia and shito").
-    *   Return a single, comprehensive prediction for the entire meal in the \`predictions\` array.
-    *   Set a high \`confidence\` score (0 to 1) for this single prediction.
-3.  **Low Confidence (Confidence <= 0.85)**:
-    *   If you are not highly confident, return exactly two of the most likely alternative predictions as separate items in the \`predictions\` array.
-    *   Each prediction must have its own distinct \`foodName\` and its respective \`confidence\` score.
-4.  **For Each Prediction Returned, You MUST Include**:
-    *   \`estimatedWeightGrams\`: Estimate the portion size visible in the image.
-    *   \`calories\`, \`macronutrientBreakdown\`, and a comprehensive \`micronutrientBreakdown\`: Calculate total nutrition for that portion.
-    *   \`suitability\`: Classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. If a user profile is available, base this on their goals. Otherwise, provide a general classification.
-    *   \`healthAnalysis\`: Generate a detailed analysis. If a user profile is provided, personalize this analysis. If not, provide a general analysis of the food's pros and cons. Explain the suitability classification and provide actionable advice.
-5.  **Final Output**: If the image is not food, set \`isFood\` to false and return an empty \`predictions\` array. Otherwise, set \`isFood\` to true and follow the instructions above to populate the \`predictions\` array.
+1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array. If it is food, proceed.
+2.  **Confidence & Predictions**: Identify the meal and your confidence level. If confidence is high (>0.85), return one combined prediction. If confidence is lower, return up to two likely alternatives.
+3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST include the following fields:
+    *   \`foodName\`, \`estimatedWeightGrams\`, \`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`.
+    *   **\`suitability\`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.
+    *   **\`healthAnalysis\`**: You MUST provide a comprehensive analysis explaining your suitability rating. Personalize it if user context exists, otherwise provide a general one. This field is non-negotiable.
 
 Provide your response in the specified JSON format.`,
 });
