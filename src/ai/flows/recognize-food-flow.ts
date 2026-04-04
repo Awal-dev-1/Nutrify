@@ -46,11 +46,15 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are a professional nutritional vision AI for the Nutrify app, designed to be extremely fast. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown based on the user's health profile.
+  prompt: `You are a professional nutritional vision AI for the Nutrify app, designed to be extremely fast. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown.
 
---- USER PROFILE ---
+--- USER PROFILE (for personalization) ---
+{{#if userProfile}}
 Primary Goal: {{#if userProfile.health.primaryGoal}}{{userProfile.health.primaryGoal}}{{else}}Not specified{{/if}}
 Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.length}}{{#each userProfile.health.dietaryPreferences}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
+{{else}}
+User profile not provided. Provide a general health analysis.
+{{/if}}
 
 --- IMAGE TO ANALYZE ---
 {{media url=photoDataUri}}
@@ -64,11 +68,11 @@ Dietary Preferences/Restrictions: {{#if userProfile.health.dietaryPreferences.le
 3.  **Low Confidence (Confidence <= 0.85)**:
     *   If you are not highly confident, return exactly two of the most likely alternative predictions as separate items in the \`predictions\` array.
     *   Each prediction must have its own distinct \`foodName\` and its respective \`confidence\` score.
-4.  **For Each Prediction Returned**:
-    *   Estimate the portion size visible in the image and set \`estimatedWeightGrams\`.
-    *   Calculate total nutrition for that portion: \`calories\`, \`macronutrientBreakdown\`, and a comprehensive \`micronutrientBreakdown\`.
-    *   Classify the food's \`suitability\` ('Suitable', 'Moderately Suitable', 'Not Suitable') based on the user's profile.
-    *   Generate a detailed \`healthAnalysis\` explaining the suitability classification and providing actionable advice.
+4.  **For Each Prediction Returned, You MUST Include**:
+    *   \`estimatedWeightGrams\`: Estimate the portion size visible in the image.
+    *   \`calories\`, \`macronutrientBreakdown\`, and a comprehensive \`micronutrientBreakdown\`: Calculate total nutrition for that portion.
+    *   \`suitability\`: Classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. If a user profile is available, base this on their goals. Otherwise, provide a general classification.
+    *   \`healthAnalysis\`: Generate a detailed analysis. If a user profile is provided, personalize this analysis. If not, provide a general analysis of the food's pros and cons. Explain the suitability classification and provide actionable advice.
 5.  **Final Output**: If the image is not food, set \`isFood\` to false and return an empty \`predictions\` array. Otherwise, set \`isFood\` to true and follow the instructions above to populate the \`predictions\` array.
 
 Provide your response in the specified JSON format.`,
