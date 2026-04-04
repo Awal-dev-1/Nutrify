@@ -20,6 +20,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import SuitabilityBadge from "../food/suitability-badge";
+import { ScrollArea } from "../ui/scroll-area";
 
 type MealType = "Breakfast" | "Lunch" | "Dinner";
 
@@ -106,99 +107,101 @@ export function AddFoodModal({ isOpen, onClose, onAddFood, mealType }: AddFoodMo
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder='e.g., "Boiled yam with garden egg stew"'
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button type="submit" disabled={loading || !searchQuery.trim()}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            </Button>
-          </form>
-
-          <div className="min-h-[200px]">
-            {loading && (
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-3/5" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-10 w-full" />
+        <ScrollArea className="max-h-[60vh] -mx-6 px-6">
+          <div className="py-4 space-y-4">
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder='e.g., "Boiled yam with garden egg stew"'
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-            )}
+              <Button type="submit" disabled={loading || !searchQuery.trim()}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              </Button>
+            </form>
 
-            {error && !loading && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>AI Search Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {aiResult && !loading && calculatedNutrients && (
-              <div className="space-y-4 animate-in fade-in-50">
-                <Card>
-                   <CardHeader className="p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <h3 className="font-bold text-lg">{aiResult.foodName}</h3>
-                      <SuitabilityBadge suitability={aiResult.suitability} />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Nutritional estimate for your portion</p>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                        <div className="p-2 rounded-lg bg-muted/30">
-                            <Flame className="mx-auto h-5 w-5 text-orange-500 mb-1"/>
-                            <p className="font-bold">{calculatedNutrients.calories.toFixed(0)}</p>
-                            <p className="text-xs text-muted-foreground">kcal</p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-muted/30">
-                            <Beef className="mx-auto h-5 w-5 text-red-500 mb-1"/>
-                            <p className="font-bold">{calculatedNutrients.protein.toFixed(1)}g</p>
-                            <p className="text-xs text-muted-foreground">Protein</p>
-                        </div>
-                         <div className="p-2 rounded-lg bg-muted/30">
-                            <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1"/>
-                            <p className="font-bold">{calculatedNutrients.carbs.toFixed(1)}g</p>
-                            <p className="text-xs text-muted-foreground">Carbs</p>
-                        </div>
-                         <div className="p-2 rounded-lg bg-muted/30">
-                            <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1"/>
-                            <p className="font-bold">{calculatedNutrients.fat.toFixed(1)}g</p>
-                            <p className="text-xs text-muted-foreground">Fat</p>
-                        </div>
-                    </div>
-                     {aiResult.healthAnalysis && (
-                        <Alert className="bg-primary/5 border-primary/10 text-xs mt-4">
-                            <Stethoscope className="h-4 w-4 text-primary" />
-                            <AlertTitle className="text-primary font-semibold">Health Analysis</AlertTitle>
-                            <AlertDescription className="text-primary/90">
-                            {aiResult.healthAnalysis}
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <div className="space-y-2">
-                  <label htmlFor="quantity" className="text-sm font-medium">
-                    Quantity (grams)
-                  </label>
-                  <Input
-                    id="quantity"
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                  />
+            <div className="min-h-[200px] pr-4">
+              {loading && (
+                <div className="space-y-4">
+                  <Skeleton className="h-8 w-3/5" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
-              </div>
-            )}
+              )}
+
+              {error && !loading && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>AI Search Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {aiResult && !loading && calculatedNutrients && (
+                <div className="space-y-4 animate-in fade-in-50">
+                  <Card>
+                    <CardHeader className="p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <h3 className="font-bold text-lg">{aiResult.foodName}</h3>
+                        <SuitabilityBadge suitability={aiResult.suitability} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Nutritional estimate for your portion</p>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                          <div className="p-2 rounded-lg bg-muted/30">
+                              <Flame className="mx-auto h-5 w-5 text-orange-500 mb-1"/>
+                              <p className="font-bold">{calculatedNutrients.calories.toFixed(0)}</p>
+                              <p className="text-xs text-muted-foreground">kcal</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-muted/30">
+                              <Beef className="mx-auto h-5 w-5 text-red-500 mb-1"/>
+                              <p className="font-bold">{calculatedNutrients.protein.toFixed(1)}g</p>
+                              <p className="text-xs text-muted-foreground">Protein</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-muted/30">
+                              <Wheat className="mx-auto h-5 w-5 text-yellow-600 mb-1"/>
+                              <p className="font-bold">{calculatedNutrients.carbs.toFixed(1)}g</p>
+                              <p className="text-xs text-muted-foreground">Carbs</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-muted/30">
+                              <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1"/>
+                              <p className="font-bold">{calculatedNutrients.fat.toFixed(1)}g</p>
+                              <p className="text-xs text-muted-foreground">Fat</p>
+                          </div>
+                      </div>
+                      {aiResult.healthAnalysis && (
+                          <Alert className="bg-primary/5 border-primary/10 text-xs mt-4">
+                              <Stethoscope className="h-4 w-4 text-primary" />
+                              <AlertTitle className="text-primary font-semibold">Health Analysis</AlertTitle>
+                              <AlertDescription className="text-primary/90">
+                              {aiResult.healthAnalysis}
+                              </AlertDescription>
+                          </Alert>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <div className="space-y-2">
+                    <label htmlFor="quantity" className="text-sm font-medium">
+                      Quantity (grams)
+                    </label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </ScrollArea>
 
         <DialogFooter className="sm:justify-between pt-4 border-t">
             {aiResult && <Button variant="ghost" onClick={resetSearch}>Search Again</Button>}
