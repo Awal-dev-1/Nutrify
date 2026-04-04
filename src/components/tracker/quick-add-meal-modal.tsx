@@ -15,10 +15,12 @@ import { Input } from '@/components/ui/input';
 import { useUser, useFirestore, useToast } from '@/hooks';
 import { searchFoods, type FoodItem } from '@/ai/flows/search-foods-flow';
 import { addFoodToLog } from '@/services/trackerService';
-import { Loader2, Search, Sparkles, Flame, Beef, Wheat, Droplets, Plus, Utensils, AlertCircle } from 'lucide-react';
+import { Loader2, Search, Sparkles, Flame, Beef, Wheat, Droplets, Plus, Utensils, AlertCircle, Stethoscope } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { useRouter } from 'next/navigation';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import SuitabilityBadge from '../food/suitability-badge';
 
 type ModalStep = 'search' | 'loading' | 'result' | 'error';
 type MealType = "Breakfast" | "Lunch" | "Dinner";
@@ -150,10 +152,13 @@ export function QuickAddMealModal({ isOpen, onClose }: QuickAddMealModalProps) {
                {step === 'result' && aiResult && calculatedNutrients && (
                 <div className="flex flex-col h-full">
                     <DialogHeader className="text-left">
-                        <DialogTitle className="text-xl">{aiResult.foodName}</DialogTitle>
+                        <div className="flex flex-wrap items-center gap-2">
+                           <DialogTitle className="text-xl">{aiResult.foodName}</DialogTitle>
+                           <SuitabilityBadge suitability={aiResult.suitability} />
+                        </div>
                         <DialogDescription>Here's the nutritional breakdown. Confirm to log it.</DialogDescription>
                     </DialogHeader>
-                    <div className="flex-grow my-4 space-y-4">
+                    <div className="flex-grow my-4 space-y-4 overflow-y-auto pr-2">
                         <div className="p-4 rounded-xl border bg-muted/50 text-center space-y-2">
                              <p className="text-4xl font-bold text-primary">{calculatedNutrients.calories.toFixed(0)}</p>
                              <p className="text-sm text-muted-foreground">Est. Calories</p>
@@ -175,6 +180,17 @@ export function QuickAddMealModal({ isOpen, onClose }: QuickAddMealModalProps) {
                                 <p className="text-xs text-muted-foreground">Fat</p>
                             </div>
                         </div>
+
+                        {aiResult.healthAnalysis && (
+                          <Alert className="bg-primary/5 border-primary/10 text-xs">
+                            <Stethoscope className="h-4 w-4 text-primary" />
+                            <AlertTitle className="text-primary font-semibold">Health Analysis</AlertTitle>
+                            <AlertDescription className="text-primary/90">
+                              {aiResult.healthAnalysis}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+
                         <div className="grid grid-cols-2 gap-4 items-end">
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium">Quantity (g)</label>
@@ -193,7 +209,7 @@ export function QuickAddMealModal({ isOpen, onClose }: QuickAddMealModalProps) {
                             </div>
                         </div>
                     </div>
-                    <DialogFooter className="mt-auto">
+                    <DialogFooter className="mt-auto pt-4 border-t">
                         <Button variant="outline" onClick={() => setStep('search')}>Back</Button>
                         <Button onClick={handleConfirm} disabled={isAdding}>
                             {isAdding ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <Plus className="mr-2 h-4 w-4"/>}
