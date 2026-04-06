@@ -166,7 +166,7 @@ const OverviewPage = () => {
     <>
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-safe">
       {/* Constrained, padded container scales across all viewports */}
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-5 md:py-6 lg:py-8 space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8">
+      <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8">
 
         {/* ── Header ── */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -763,5 +763,3 @@ const DashboardSkeleton = () => (
 );
 
 export default OverviewPage;
-
-    
