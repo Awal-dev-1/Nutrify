@@ -651,13 +651,15 @@ const MicronutrientSection: FC<{
   goals: MicroGoalState;
   onGoalChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ title, icon, fields, goals, onGoalChange }) => {
-    const goalKeys = fields.map(field => `${field}Target${NUTRIENT_UNITS[field] === 'g' ? 'G' : NUTRIENT_UNITS[field].charAt(0).toUpperCase() + NUTRIENT_UNITS[field].slice(1)}` as keyof MicroGoalState)
+    const goalKeys = useMemo(() => fields.map(field => {
+        return NUTRIENT_GOAL_KEYS.find(key => key.startsWith(field));
+    }).filter((key): key is keyof MicroGoalState => !!key), [fields]);
 
     return (
-        <Card className="border shadow-lg overflow-hidden">
+        <Card className="border-2 shadow-lg overflow-hidden">
             <AccordionItem value={title as string} className="border-b-0">
                 <AccordionTrigger className="p-4 sm:p-5 md:p-6 hover:no-underline">
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                         {icon} {title}
                     </CardTitle>
                 </AccordionTrigger>
