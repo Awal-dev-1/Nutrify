@@ -15,7 +15,7 @@ export const VITAMIN_KEYS: readonly MicronutrientKey[] = [
 
 export const MINERAL_KEYS: readonly MicronutrientKey[] = [
   "calcium", "iron", "potassium", "magnesium", "zinc", "phosphorus", "iodine",
-  "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride", "sodium", "fiber"
+  "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride", "sodium"
 ];
 
 export const NUTRIENT_GOAL_KEYS = [
@@ -24,35 +24,35 @@ export const NUTRIENT_GOAL_KEYS = [
 
 
 export const NUTRIENT_LABELS: Record<MicronutrientKey, string> = {
-  fiber: 'Fiber (g)',
-  sugar: 'Sugar (g)',
-  sodium: 'Sodium (mg) — Electrolyte',
-  calcium: 'Calcium (mg) — Macromineral',
-  iron: 'Iron (mg) — Trace Mineral',
-  potassium: 'Potassium (mg) — Electrolyte',
-  magnesium: 'Magnesium (mg) — Macromineral',
-  zinc: 'Zinc (mg) — Trace Mineral',
-  phosphorus: 'Phosphorus (mg) — Macromineral',
-  iodine: 'Iodine (µg) — Trace Mineral',
-  selenium: 'Selenium (µg) — Trace Mineral',
-  copper: 'Copper (mg) — Trace Mineral',
-  manganese: 'Manganese (mg) — Trace Mineral',
-  chromium: 'Chromium (µg) — Trace Mineral',
-  molybdenum: 'Molybdenum (µg) — Trace Mineral',
-  chloride: 'Chloride (mg) — Electrolyte',
-  vitaminA: 'Vitamin A (µg) — Fat-Soluble',
-  vitaminC: 'Vitamin C (mg) — Water-Soluble',
-  vitaminD: 'Vitamin D (µg) — Fat-Soluble',
-  vitaminE: 'Vitamin E (mg) — Fat-Soluble',
-  vitaminK: 'Vitamin K (µg) — Fat-Soluble',
-  vitaminB1: 'Thiamine (B1) (mg) — B-Complex',
-  vitaminB2: 'Riboflavin (B2) (mg) — B-Complex',
-  vitaminB3: 'Niacin (B3) (mg) — B-Complex',
-  vitaminB5: 'Pantothenic Acid (B5) (mg) — B-Complex',
-  vitaminB6: 'Vitamin B6 (mg) — B-Complex',
-  vitaminB7: 'Biotin (B7) (µg) — B-Complex',
-  folate: 'Folate (B9) (µg) — B-Complex',
-  vitaminB12: 'Vitamin B12 (µg) — B-Complex',
+  fiber: 'Fiber',
+  sugar: 'Sugar',
+  sodium: 'Sodium',
+  calcium: 'Calcium',
+  iron: 'Iron',
+  potassium: 'Potassium',
+  magnesium: 'Magnesium',
+  zinc: 'Zinc',
+  phosphorus: 'Phosphorus',
+  iodine: 'Iodine',
+  selenium: 'Selenium',
+  copper: 'Copper',
+  manganese: 'Manganese',
+  chromium: 'Chromium',
+  molybdenum: 'Molybdenum',
+  chloride: 'Chloride',
+  vitaminA: 'Vitamin A',
+  vitaminC: 'Vitamin C',
+  vitaminD: 'Vitamin D',
+  vitaminE: 'Vitamin E',
+  vitaminK: 'Vitamin K',
+  vitaminB1: 'Thiamine (B1)',
+  vitaminB2: 'Riboflavin (B2)',
+  vitaminB3: 'Niacin (B3)',
+  vitaminB5: 'Pantothenic Acid (B5)',
+  vitaminB6: 'Vitamin B6',
+  vitaminB7: 'Biotin (B7)',
+  folate: 'Folate (B9)',
+  vitaminB12: 'Vitamin B12',
 };
 
 export const NUTRIENT_DESCRIPTIONS: Partial<Record<MicronutrientKey, string>> = {
@@ -131,5 +131,3 @@ export const NUTRIENT_DRV: Partial<Record<MicronutrientKey, number>> = {
   folate: 400, // µg
   vitaminB12: 2.4, // µg
 };
-
-    

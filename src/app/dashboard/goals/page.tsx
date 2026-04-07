@@ -346,8 +346,8 @@ export default function GoalsPage() {
   ];
 
   const microGoalFields = {
-    Vitamins: VITAMIN_KEYS,
     Minerals: MINERAL_KEYS,
+    Vitamins: VITAMIN_KEYS,
   } as const;
 
   return (
@@ -435,14 +435,14 @@ export default function GoalsPage() {
                     <div className="lg:col-span-3">
                         <Accordion type="multiple" defaultValue={["Vitamins", "Minerals"]} className="w-full space-y-4 md:space-y-6">
                            <MicronutrientSection
-                              title={<>💎 Minerals <span className="text-sm font-normal text-muted-foreground">({microGoalFields.Minerals.length} Total)</span></>}
+                              title="Minerals"
                               icon={<Atom />}
                               fields={microGoalFields.Minerals}
                               goals={microGoals}
                               onGoalChange={handleMicroGoalChange}
                             />
                             <MicronutrientSection
-                              title={<>🍊 Vitamins <span className="text-sm font-normal text-muted-foreground">({microGoalFields.Vitamins.length} Total)</span></>}
+                              title="Vitamins"
                               icon={<ShieldCheck />}
                               fields={microGoalFields.Vitamins}
                               goals={microGoals}
@@ -558,7 +558,7 @@ export default function GoalsPage() {
                 <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
               <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg" className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all">
                 {isSaving ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4 shrink-0" />)}
-                Save Changes
+                Save All Goals
                 {hasChanges && <ChevronRight className="ml-1 sm:ml-2 h-4 w-4 shrink-0" />}
               </Button>
             </div>
@@ -658,11 +658,11 @@ const MicronutrientSection: FC<{
             <AccordionItem value={title as string} className="border-b-0">
                 <AccordionTrigger className="p-4 sm:p-5 md:p-6 hover:no-underline">
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                        {title}
+                        {icon} {title}
                     </CardTitle>
                 </AccordionTrigger>
                 <AccordionContent>
-                    <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5">
+                    <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                         {goalKeys.map(field => (
                            <MicroGoalInput
                              key={field}
@@ -683,20 +683,22 @@ const MicroGoalInput: FC<{
     value: number | undefined;
     onChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ field, value, onChange }) => {
-    // e.g. from 'ironTargetMg' to 'iron'
     const nutrientKey = field.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
     const label = NUTRIENT_LABELS[nutrientKey];
+    const unit = NUTRIENT_UNITS[nutrientKey];
     const description = NUTRIENT_DESCRIPTIONS[nutrientKey];
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
             <div className="flex items-center gap-1">
                 <Label htmlFor={field} className="text-sm">{label}</Label>
                 {description && (
                     <TooltipProvider>
                         <Tooltip>
-                            <TooltipTrigger>
-                                <Info className="h-3 w-3 text-muted-foreground" />
+                            <TooltipTrigger asChild>
+                                <button type="button" className="focus:outline-none">
+                                    <Info className="h-3 w-3 text-muted-foreground" />
+                                </button>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p className="max-w-xs">{description}</p>
@@ -705,13 +707,15 @@ const MicroGoalInput: FC<{
                     </TooltipProvider>
                 )}
             </div>
-            <div className="relative">
+            <div className="relative flex items-center">
                 <Input
                     id={field}
                     type="number"
                     value={value || ''}
                     onChange={(e) => onChange(field, e.target.value)}
+                    className="pr-12"
                 />
+                <span className="absolute right-3 text-sm text-muted-foreground pointer-events-none">{unit}</span>
             </div>
         </div>
     )
