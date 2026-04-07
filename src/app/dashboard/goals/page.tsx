@@ -55,7 +55,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipContent } from '@/components/ui/tooltip';
 import { NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DESCRIPTIONS, MicronutrientKey, VITAMIN_KEYS, MINERAL_KEYS, NUTRIENT_GOAL_KEYS } from '@/lib/nutrients';
 
 
@@ -351,7 +351,7 @@ export default function GoalsPage() {
   } as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-28 md:pb-12">
+    <div className="bg-gradient-to-b from-background to-secondary/5 pb-28 md:pb-12">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3">
@@ -552,23 +552,23 @@ export default function GoalsPage() {
         </Tabs>
 
       </div>
-        <div className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/80 p-3 sm:p-4 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-              <Button variant="outline" onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all">
-                <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
-              <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg" className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all">
-                {isSaving ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4 shrink-0" />)}
-                Save All Goals
-                {hasChanges && <ChevronRight className="ml-1 sm:ml-2 h-4 w-4 shrink-0" />}
-              </Button>
+      <div className="md:sticky bottom-0 z-10 border-t bg-background/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+            <Button variant="outline" onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all">
+              <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
+            <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg" className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all">
+              {isSaving ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4 shrink-0" />)}
+              Save All Goals
+              {hasChanges && <ChevronRight className="ml-1 sm:ml-2 h-4 w-4 shrink-0" />}
+            </Button>
+          </div>
+          {!hasChanges && initialState && (
+            <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground mt-2">
+              <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0" />
+              <span>All goals are up to date</span>
             </div>
-            {!hasChanges && initialState && (
-              <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground mt-2">
-                <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0" />
-                <span>All goals are up to date</span>
-              </div>
-            )}
-        </div>
+          )}
+      </div>
     </div>
   );
 }
@@ -652,7 +652,7 @@ const MicronutrientSection: FC<{
   onGoalChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ title, icon, fields, goals, onGoalChange }) => {
     const goalKeys = useMemo(() => fields.map(field => {
-        return NUTRIENT_GOAL_KEYS.find(key => key.startsWith(field));
+        return NUTRIENT_GOAL_KEYS.find(key => key.toLowerCase().startsWith(field.toLowerCase()));
     }).filter((key): key is keyof MicroGoalState => !!key), [fields]);
 
     return (
@@ -685,7 +685,7 @@ const MicroGoalInput: FC<{
     value: number | undefined;
     onChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ field, value, onChange }) => {
-    const nutrientKey = field.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
+    const nutrientKey = field.replace(/Target(G|Mg|Mcg)$/i, '') as MicronutrientKey;
     const label = NUTRIENT_LABELS[nutrientKey];
     const unit = NUTRIENT_UNITS[nutrientKey];
     const description = NUTRIENT_DESCRIPTIONS[nutrientKey];
@@ -725,7 +725,7 @@ const MicroGoalInput: FC<{
 
 
 const GoalsSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
+  <div className="bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
       <div className="space-y-3 md:space-y-4">
         <div className="flex items-center gap-3">
