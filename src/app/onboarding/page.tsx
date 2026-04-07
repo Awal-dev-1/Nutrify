@@ -126,7 +126,7 @@ export default function OnboardingPage() {
   const showPageLoading = isUserLoading || isProfileLoading || !user || user.isAnonymous || (userProfile && userProfile.onboardingCompleted);
   if (showPageLoading) {
     return (
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-dvh">
             <LoadingStep />
         </div>
     );
@@ -146,7 +146,7 @@ export default function OnboardingPage() {
   ];
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/30 overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-dvh bg-gradient-to-br from-primary/5 via-background to-secondary/30 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />

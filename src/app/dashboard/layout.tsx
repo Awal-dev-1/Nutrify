@@ -49,15 +49,16 @@ export default function DashboardLayout({
   
   // Determine if we should show the loading screen.
   // This covers initial load, or if a redirect is about to happen.
-  const showLoading = isUserLoading || 
-                      isProfileLoading || 
-                      !user || 
-                      user.isAnonymous ||
-                      (userProfile && !userProfile.onboardingCompleted);
+  const showLoading =
+    isUserLoading ||
+    isProfileLoading ||
+    !user ||
+    user.isAnonymous ||
+    (userProfile && !userProfile.onboardingCompleted);
 
   if (showLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
           <Logo className="justify-center text-2xl" />
           <div className="relative flex justify-center items-center h-16">
@@ -83,12 +84,12 @@ export default function DashboardLayout({
       <SidebarInset>
         <DashboardHeader />
         <motion.main
-          className="min-h-[calc(100vh-4rem)] bg-background p-4 lg:p-6 pb-24 md:pb-6"
+          className="min-h-[calc(100dvh-4rem)] bg-background p-4 lg:p-6 pb-20 md:pb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ease: "easeInOut", duration: 0.2 }}
         >
-            {children}
+          {children}
         </motion.main>
         <BottomNav />
       </SidebarInset>

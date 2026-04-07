@@ -284,7 +284,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
+    <div className="min-h-dvh bg-gradient-to-b from-background to-secondary/5">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
         {/* Header */}
@@ -721,5 +721,3 @@ function FoodDetailsCard({
     </Card>
   );
 }
-
-    

@@ -45,7 +45,7 @@ export default function LoginPage() {
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-b from-background to-secondary/5">
         <div className="text-center space-y-6 p-4">
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
             <Logo className="justify-center text-h3" />
@@ -74,7 +74,7 @@ export default function LoginPage() {
   // If loading is finished and no redirect is needed, show the login form.
   return (
     <motion.div
-      className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10"
+      className="min-h-dvh flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: "easeInOut" }}

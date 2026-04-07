@@ -35,7 +35,7 @@ const MotionSection = ({ children }: { children: React.ReactNode }) => (
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col max-md:overflow-hidden bg-background">
+    <div className="flex min-h-dvh flex-col max-md:overflow-hidden bg-background">
       <div className="hidden md:block">
         <Header />
       </div>
