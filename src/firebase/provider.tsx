@@ -35,6 +35,10 @@ export interface UserProfile {
     calciumTargetMg?: number;
     magnesiumTargetMg?: number;
     vitaminDTargetMcg?: number;
+    vitaminCTargetMg?: number;
+    vitaminB12TargetMcg?: number;
+    zincTargetMg?: number;
+    potassiumTargetMg?: number;
   };
   preferences?: {
     themePreference?: 'light' | 'dark' | 'system';

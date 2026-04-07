@@ -111,6 +111,22 @@
             "vitaminDTargetMcg": {
               "type": "number",
               "description": "User's target daily Vitamin D intake in micrograms."
+            },
+            "vitaminCTargetMg": {
+              "type": "number",
+              "description": "User's target daily Vitamin C intake in milligrams."
+            },
+            "vitaminB12TargetMcg": {
+              "type": "number",
+              "description": "User's target daily Vitamin B12 intake in micrograms."
+            },
+            "zincTargetMg": {
+              "type": "number",
+              "description": "User's target daily Zinc intake in milligrams."
+            },
+            "potassiumTargetMg": {
+              "type": "number",
+              "description": "User's target daily Potassium intake in milligrams."
             }
           }
         },

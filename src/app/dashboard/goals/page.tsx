@@ -82,7 +82,7 @@ const preferenceGroups = {
 
 
 type MicroGoalState = {
-    [K in 'ironTargetMg' | 'vitaminATargetMcg' | 'calciumTargetMg' | 'magnesiumTargetMg' | 'vitaminDTargetMcg']?: number;
+    [K in 'ironTargetMg' | 'vitaminATargetMcg' | 'calciumTargetMg' | 'magnesiumTargetMg' | 'vitaminDTargetMcg' | 'vitaminCTargetMg' | 'vitaminB12TargetMcg' | 'zincTargetMg' | 'potassiumTargetMg']?: number;
 };
 
 export default function GoalsPage() {
@@ -123,6 +123,10 @@ export default function GoalsPage() {
             calciumTargetMg: goals.calciumTargetMg,
             magnesiumTargetMg: goals.magnesiumTargetMg,
             vitaminDTargetMcg: goals.vitaminDTargetMcg,
+            vitaminCTargetMg: goals.vitaminCTargetMg,
+            vitaminB12TargetMcg: goals.vitaminB12TargetMcg,
+            zincTargetMg: goals.zincTargetMg,
+            potassiumTargetMg: goals.potassiumTargetMg,
         },
         profile: {
           activityLevel: userProfile.profile?.activityLevel || '',
@@ -231,6 +235,10 @@ export default function GoalsPage() {
               magnesiumTargetMg: result.magnesiumTargetMg,
               vitaminDTargetMcg: result.vitaminDTargetMcg,
               vitaminATargetMcg: result.vitaminATargetMcg,
+              vitaminCTargetMg: result.vitaminCTargetMg,
+              vitaminB12TargetMcg: result.vitaminB12TargetMcg,
+              zincTargetMg: result.zincTargetMg,
+              potassiumTargetMg: result.potassiumTargetMg,
           }, 400);
 
           toast({ title: "AI Sync Complete!", description: "Your goals have been updated with AI recommendations." });
@@ -255,6 +263,10 @@ export default function GoalsPage() {
         'goals.calciumTargetMg': microGoals.calciumTargetMg,
         'goals.magnesiumTargetMg': microGoals.magnesiumTargetMg,
         'goals.vitaminDTargetMcg': microGoals.vitaminDTargetMcg,
+        'goals.vitaminCTargetMg': microGoals.vitaminCTargetMg,
+        'goals.vitaminB12TargetMcg': microGoals.vitaminB12TargetMcg,
+        'goals.zincTargetMg': microGoals.zincTargetMg,
+        'goals.potassiumTargetMg': microGoals.potassiumTargetMg,
         'profile.activityLevel': profileData.activityLevel,
         'health.primaryGoal': profileData.primaryGoal,
         'profile.age': Number(profileData.age),
@@ -287,7 +299,11 @@ export default function GoalsPage() {
         (microGoals.vitaminATargetMcg || 0) !== (initialState.micros.vitaminATargetMcg || 0) ||
         (microGoals.calciumTargetMg || 0) !== (initialState.micros.calciumTargetMg || 0) ||
         (microGoals.magnesiumTargetMg || 0) !== (initialState.micros.magnesiumTargetMg || 0) ||
-        (microGoals.vitaminDTargetMcg || 0) !== (initialState.micros.vitaminDTargetMcg || 0)
+        (microGoals.vitaminDTargetMcg || 0) !== (initialState.micros.vitaminDTargetMcg || 0) ||
+        (microGoals.vitaminCTargetMg || 0) !== (initialState.micros.vitaminCTargetMg || 0) ||
+        (microGoals.vitaminB12TargetMcg || 0) !== (initialState.micros.vitaminB12TargetMcg || 0) ||
+        (microGoals.zincTargetMg || 0) !== (initialState.micros.zincTargetMg || 0) ||
+        (microGoals.potassiumTargetMg || 0) !== (initialState.micros.potassiumTargetMg || 0)
     ) return true;
     if (
         profileData.activityLevel !== initialState.profile.activityLevel ||
@@ -348,8 +364,8 @@ export default function GoalsPage() {
   ];
 
   const microGoalFields = {
-    Vitamins: ['vitaminDTargetMcg', 'vitaminATargetMcg'],
-    Minerals: ['ironTargetMg', 'calciumTargetMg', 'magnesiumTargetMg'],
+    Vitamins: ['vitaminDTargetMcg', 'vitaminATargetMcg', 'vitaminCTargetMg', 'vitaminB12TargetMcg'],
+    Minerals: ['ironTargetMg', 'calciumTargetMg', 'magnesiumTargetMg', 'zincTargetMg', 'potassiumTargetMg'],
   } as const;
 
   return (
@@ -670,7 +686,7 @@ const MicronutrientSection: FC<{
 }
 
 const MicroGoalInput: FC<{
-    field: 'ironTargetMg' | 'vitaminATargetMcg' | 'calciumTargetMg' | 'magnesiumTargetMg' | 'vitaminDTargetMcg';
+    field: keyof MicroGoalState;
     value: number | undefined;
     onChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ field, value, onChange }) => {

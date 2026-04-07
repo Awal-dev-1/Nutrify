@@ -59,6 +59,7 @@ export const NUTRIENT_DESCRIPTIONS: Partial<Record<MicronutrientKey, string>> = 
   vitaminC: 'An antioxidant that helps protect cells and maintain healthy skin and tissues.',
   potassium: 'Helps maintain normal levels of fluid inside our cells and supports blood pressure.',
   zinc: 'Important for immune function, wound healing, and senses of smell and taste.',
+  vitaminB12: 'Crucial for nerve function and the production of DNA and red blood cells.',
 };
 
 

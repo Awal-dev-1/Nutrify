@@ -26,6 +26,10 @@ const GenerateNutrientGoalsOutputSchema = z.object({
   magnesiumTargetMg: z.number().describe("Recommended daily magnesium intake in mg."),
   vitaminDTargetMcg: z.number().describe("Recommended daily Vitamin D intake in mcg."),
   vitaminATargetMcg: z.number().describe("Recommended daily Vitamin A intake in mcg."),
+  vitaminCTargetMg: z.number().describe("Recommended daily Vitamin C intake in mg."),
+  vitaminB12TargetMcg: z.number().describe("Recommended daily Vitamin B12 intake in mcg."),
+  zincTargetMg: z.number().describe("Recommended daily Zinc intake in mg."),
+  potassiumTargetMg: z.number().describe("Recommended daily Potassium intake in mg."),
 });
 
 export type GenerateNutrientGoalsInput = z.infer<typeof GenerateNutrientGoalsInputSchema>;
@@ -58,6 +62,10 @@ const generateNutrientGoalsPrompt = ai.definePrompt({
     - Magnesium (mg)
     - Vitamin D (mcg)
     - Vitamin A (mcg)
+    - Vitamin C (mg)
+    - Vitamin B12 (mcg)
+    - Zinc (mg)
+    - Potassium (mg)
 4.  Return the response in the specified JSON format. The values should be reasonable and based on established nutritional science.
 `,
 });
