@@ -34,6 +34,7 @@ import {
   Coffee,
   Salad,
   Utensils,
+  ClipboardX,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { generateDailyRecommendations, type GenerateDailyRecommendationsOutput } from '@/ai/flows/generate-daily-recommendations';
@@ -43,6 +44,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { QuickAddMealModal } from '@/components/tracker/quick-add-meal-modal';
+import { MICRONUTRIENT_KEYS, NUTRIENT_GOAL_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DRV } from '@/lib/nutrients';
 
 const barColors = ['#3B82F6', '#22C55E', '#EAB308', '#EF4444', '#8B5CF6', '#F97316', '#14B8A6'];
 
@@ -132,6 +134,36 @@ const OverviewPage = () => {
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
   const calorieRemaining = derivedGoals.calories - todayTotals.totalCalories;
   const isOverGoal = todayTotals.totalCalories > derivedGoals.calories;
+
+  const topMicronutrients = useMemo(() => {
+    if (!userProfile) return [];
+
+    const goals = userProfile.goals || {};
+
+    const allMicros = MICRONUTRIENT_KEYS.map(key => {
+      const goalKey = NUTRIENT_GOAL_KEYS.find(k => k.toLowerCase().startsWith(key.toLowerCase()));
+      const goal = (goals as any)[goalKey as any] || NUTRIENT_DRV[key] || 0;
+      const totalKey = `total${key.charAt(0).toUpperCase() + key.slice(1)}` as keyof DailyLog;
+      const total = (todayTotals as any)[totalKey] || 0;
+      
+      const percentage = goal > 0 ? (total / goal) * 100 : 0;
+
+      return {
+        key,
+        label: NUTRIENT_LABELS[key],
+        value: total,
+        goal,
+        unit: NUTRIENT_UNITS[key],
+        percentage,
+      };
+    });
+
+    return allMicros
+      .filter(m => m.goal > 0)
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 10);
+
+  }, [todayTotals, userProfile]);
 
   const handleGetCoachPlan = async () => {
     if (!userProfile || !dailyLog) {
@@ -313,7 +345,7 @@ const OverviewPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.1 }}
             >
-              <MicroNutrientGrid totals={todayTotals} />
+              <MicroNutrientGrid topNutrients={topMicronutrients} />
             </motion.div>
 
             {/* Weekly Trend */}
@@ -652,50 +684,83 @@ const RecommendationItemPreview = ({ rec }: { rec: RecommendationItem }) => (
   </TransitionLink>
 );
 
-// ── MicroStat ─────────────────────────────────────────────────────────────────
-const MicroStat: FC<{ label: string; value: number; unit: string }> = ({
-  label,
-  value,
-  unit,
-}) => (
-  <motion.div
-    whileHover={{ scale: 1.02 }}
-    className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 border hover:shadow-md transition-all"
-  >
-    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 truncate">{label}</p>
-    <p className="text-base sm:text-lg font-bold leading-none">
-      <span className="tabular-nums">{Math.round(value)}</span>
-      <span className="text-[10px] sm:text-sm font-normal text-muted-foreground ml-0.5">{unit}</span>
-    </p>
-  </motion.div>
-);
+// ── NutrientProgress ────────────────────────────────────────────────────────
+const NutrientProgress: FC<{
+  label: string;
+  value: number;
+  goal: number;
+  unit: string;
+  percentage: number;
+}> = ({ label, value, goal, unit, percentage }) => {
+  const isComplete = percentage >= 100;
+  return (
+    <motion.div
+      className="space-y-1.5 p-2.5 sm:p-3 rounded-lg bg-muted/30"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="flex justify-between items-center text-xs sm:text-sm">
+        <span className="font-medium text-muted-foreground">{label}</span>
+        <span className="font-bold">{percentage.toFixed(0)}%</span>
+      </div>
+      <Progress
+        value={Math.min(percentage, 100)}
+        className="h-1.5"
+        indicatorClassName={cn(isComplete ? "bg-green-500" : "bg-primary")}
+      />
+      <div className="text-right text-[10px] text-muted-foreground/80 tabular-nums">
+        {value.toFixed(1)}{unit} / {goal.toFixed(1)}{unit}
+      </div>
+    </motion.div>
+  );
+};
 
 // ── MicroNutrientGrid ─────────────────────────────────────────────────────────
-const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => (
+const MicroNutrientGrid: FC<{ 
+  topNutrients: Array<{
+    key: string;
+    label: string;
+    value: number;
+    goal: number;
+    unit: string;
+    percentage: number;
+  }> 
+}> = ({ topNutrients }) => (
   <Card className="border-2 shadow-xl overflow-hidden">
     <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-3 sm:pb-4">
       <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
         <div className="shrink-0 p-1.5 rounded-lg bg-primary/10">
           <Salad className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
         </div>
-        Micronutrient Overview
+        Top 10 Micronutrients
       </CardTitle>
+      <CardDescription className="text-xs sm:text-sm">
+        Today's highest progress against your daily goals.
+      </CardDescription>
     </CardHeader>
-    {/*
-      Grid columns:
-      - Mobile (<sm):     2 cols
-      - sm–md:            3 cols
-      - md–lg:            6 cols (wide, single row)
-      - lg–xl:            3 cols (sidebar collapses space)
-      - xl+:              6 cols again
-    */}
-    <CardContent className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
-      <MicroStat label="Fiber"    value={totals.totalFiber}    unit="g"  />
-      <MicroStat label="Sugar"    value={totals.totalSugar}    unit="g"  />
-      <MicroStat label="Sodium"   value={totals.totalSodium}   unit="mg" />
-      <MicroStat label="Calcium"  value={totals.totalCalcium}  unit="mg" />
-      <MicroStat label="Iron"     value={totals.totalIron}     unit="mg" />
-      <MicroStat label="Vit. A"   value={totals.totalVitaminA} unit="µg" />
+    <CardContent className="p-3 sm:p-4">
+      {topNutrients.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+          {topNutrients.map(nutrient => (
+            <NutrientProgress
+              key={nutrient.key}
+              label={nutrient.label}
+              value={nutrient.value}
+              goal={nutrient.goal}
+              unit={nutrient.unit}
+              percentage={nutrient.percentage}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center">
+            <div className="inline-flex p-3 sm:p-4 rounded-full bg-muted/50 mb-3">
+              <ClipboardX className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm text-muted-foreground">Log a meal to see your nutrient progress.</p>
+          </div>
+      )}
     </CardContent>
   </Card>
 );
