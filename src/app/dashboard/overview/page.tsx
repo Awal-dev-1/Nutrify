@@ -56,10 +56,14 @@ const OverviewPage = () => {
   const [isCoachLoading, setIsCoachLoading] = useState(false);
   const [coachError, setCoachError] = useState<string | null>(null);
   const [isAddMealModalOpen, setIsAddMealModalOpen] = useState(false);
+  const [todayKey, setTodayKey] = useState('');
 
-  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  useEffect(() => {
+    setTodayKey(format(new Date(), 'yyyy-MM-dd'));
+  }, []);
+
   const dailyLogRef = useMemoFirebase(
-    () => (user ? doc(db, 'users', user.uid, 'dailyLogs', todayKey) : null),
+    () => (user && todayKey ? doc(db, 'users', user.uid, 'dailyLogs', todayKey) : null),
     [user, db, todayKey]
   );
   const { data: dailyLog, isLoading: isLogLoading } = useDoc<DailyLog>(dailyLogRef);

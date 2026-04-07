@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, type FC } from "react";
+import { useState, useMemo, type FC, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -87,11 +87,15 @@ export default function DailyTrackerPage() {
   const { toast } = useToast();
   const { user, userProfile } = useUser();
   const db = useFirestore();
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState<Date | null>(null);
 
-  const dateKey = format(date, "yyyy-MM-dd");
+  useEffect(() => {
+    setDate(new Date());
+  }, []);
+
+  const dateKey = date ? format(date, "yyyy-MM-dd") : '';
   const dailyLogRef = useMemoFirebase(
-    () => (user ? doc(db, "users", user.uid, "dailyLogs", dateKey) : null),
+    () => (user && dateKey ? doc(db, "users", user.uid, "dailyLogs", dateKey) : null),
     [user, db, dateKey]
   );
 
@@ -296,7 +300,7 @@ export default function DailyTrackerPage() {
     toast({ title: "Day Cleared", description: "Your log for this day has been reset." });
   };
 
-  if (isLogLoading) {
+  if (isLogLoading || !date) {
     return <TrackerSkeleton />;
   }
 
