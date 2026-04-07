@@ -351,7 +351,7 @@ export default function GoalsPage() {
   } as const;
 
   return (
-    <div className="pb-28 md:pb-12">
+    <div className="md:pb-24">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3">
@@ -552,7 +552,7 @@ export default function GoalsPage() {
         </Tabs>
 
       </div>
-      <div className="md:sticky bottom-0 z-10 border-t bg-background/80 p-3 sm:p-4 backdrop-blur-sm">
+      <div className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/80 p-3 backdrop-blur-sm md:sticky md:left-auto md:right-auto md:w-full">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
             <Button variant="outline" onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all">
               <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
