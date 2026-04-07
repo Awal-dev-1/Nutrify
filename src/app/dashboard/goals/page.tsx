@@ -652,7 +652,7 @@ const MicronutrientSection: FC<{
                     </CardTitle>
                 </AccordionTrigger>
                 <AccordionContent>
-                    <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5">
                         {goalKeys.map(field => (
                            <MicroGoalInput
                              key={field}
@@ -744,5 +744,3 @@ const GoalsSkeleton = () => (
     </div>
   </div>
 );
-
-    
