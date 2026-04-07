@@ -55,7 +55,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipProvider, TooltipContent } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DESCRIPTIONS, MicronutrientKey, VITAMIN_KEYS, MINERAL_KEYS, NUTRIENT_GOAL_KEYS } from '@/lib/nutrients';
 
 
@@ -351,7 +351,7 @@ export default function GoalsPage() {
   } as const;
 
   return (
-    <div className="bg-gradient-to-b from-background to-secondary/5 pb-28 md:pb-12">
+    <div className="pb-28 md:pb-12">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3">
@@ -652,8 +652,15 @@ const MicronutrientSection: FC<{
   onGoalChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ title, icon, fields, goals, onGoalChange }) => {
     const goalKeys = useMemo(() => fields.map(field => {
-        return NUTRIENT_GOAL_KEYS.find(key => key.toLowerCase().startsWith(field.toLowerCase()));
+        const key = NUTRIENT_GOAL_KEYS.find(k => {
+          // Normalize both keys for comparison: remove "Target" and unit suffix, and make lowercase
+          const normalizedK = k.replace(/Target(G|Mg|Mcg)$/i, '').toLowerCase();
+          const normalizedField = field.toLowerCase();
+          return normalizedK === normalizedField;
+        });
+        return key;
     }).filter((key): key is keyof MicroGoalState => !!key), [fields]);
+
 
     return (
         <Card className="border-2 shadow-lg overflow-hidden">
@@ -725,7 +732,7 @@ const MicroGoalInput: FC<{
 
 
 const GoalsSkeleton = () => (
-  <div className="bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
+  <div className="pb-8 md:pb-12 animate-pulse">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
       <div className="space-y-3 md:space-y-4">
         <div className="flex items-center gap-3">
