@@ -176,6 +176,7 @@ export default function GoalsPage() {
         title: "Profile Incomplete",
         description: "Please complete your profile to get recommended goals.",
       });
+      setActiveTab('profile');
       return;
     }
 
@@ -382,7 +383,7 @@ export default function GoalsPage() {
                 <div className="flex justify-end mb-4">
                     <Button onClick={handleAiSync} disabled={isSyncingAI} variant="outline" className="rounded-full shadow-sm">
                         {isSyncingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4 text-primary"/>}
-                        Sync AI Recommendations
+                        Generate Full Health Profile
                     </Button>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
@@ -433,8 +434,20 @@ export default function GoalsPage() {
 
                     <div className="lg:col-span-3">
                         <Accordion type="multiple" defaultValue={["Vitamins", "Minerals"]} className="w-full space-y-4 md:space-y-6">
-                            <MicronutrientSection title="Vitamins" icon={<ShieldCheck />} fields={microGoalFields.Vitamins} goals={microGoals} onGoalChange={handleMicroGoalChange} />
-                            <MicronutrientSection title="Minerals" icon={<Atom />} fields={microGoalFields.Minerals} goals={microGoals} onGoalChange={handleMicroGoalChange} />
+                           <MicronutrientSection
+                              title={<>💎 Minerals <span className="text-sm font-normal text-muted-foreground">({microGoalFields.Minerals.length} Total)</span></>}
+                              icon={<Atom />}
+                              fields={microGoalFields.Minerals}
+                              goals={microGoals}
+                              onGoalChange={handleMicroGoalChange}
+                            />
+                            <MicronutrientSection
+                              title={<>🍊 Vitamins <span className="text-sm font-normal text-muted-foreground">({microGoalFields.Vitamins.length} Total)</span></>}
+                              icon={<ShieldCheck />}
+                              fields={microGoalFields.Vitamins}
+                              goals={microGoals}
+                              onGoalChange={handleMicroGoalChange}
+                            />
                         </Accordion>
                     </div>
                 </div>
@@ -632,7 +645,7 @@ const GramDisplay = ({ label, value, color, icon: Icon, total }: {
 };
 
 const MicronutrientSection: FC<{
-  title: string;
+  title: React.ReactNode;
   icon: React.ReactNode;
   fields: readonly MicronutrientKey[];
   goals: MicroGoalState;
@@ -642,12 +655,9 @@ const MicronutrientSection: FC<{
 
     return (
         <Card className="border shadow-lg overflow-hidden">
-            <AccordionItem value={title} className="border-b-0">
+            <AccordionItem value={title as string} className="border-b-0">
                 <AccordionTrigger className="p-4 sm:p-5 md:p-6 hover:no-underline">
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                        <div className="shrink-0 p-1 sm:p-1.5 rounded-md bg-primary/10 text-primary">
-                            {icon}
-                        </div>
                         {title}
                     </CardTitle>
                 </AccordionTrigger>
@@ -676,7 +686,6 @@ const MicroGoalInput: FC<{
     // e.g. from 'ironTargetMg' to 'iron'
     const nutrientKey = field.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
     const label = NUTRIENT_LABELS[nutrientKey];
-    const unit = NUTRIENT_UNITS[nutrientKey];
     const description = NUTRIENT_DESCRIPTIONS[nutrientKey];
 
     return (
@@ -702,9 +711,7 @@ const MicroGoalInput: FC<{
                     type="number"
                     value={value || ''}
                     onChange={(e) => onChange(field, e.target.value)}
-                    className="pr-12"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{unit}</span>
             </div>
         </div>
     )
