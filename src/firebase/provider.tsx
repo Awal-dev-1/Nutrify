@@ -30,6 +30,11 @@ export interface UserProfile {
     proteinPercentageGoal: number;
     carbsPercentageGoal: number;
     fatPercentageGoal: number;
+    ironTargetMg?: number;
+    vitaminATargetMcg?: number;
+    calciumTargetMg?: number;
+    magnesiumTargetMg?: number;
+    vitaminDTargetMcg?: number;
   };
   preferences?: {
     themePreference?: 'light' | 'dark' | 'system';
@@ -55,7 +60,7 @@ interface UserProfileState {
 }
 
 export interface FirebaseContextState {
-  areServicesAvailable: boolean; 
+  areServicesAvailable: boolean;
   firebaseApp: FirebaseApp | null;
   firestore: Firestore | null;
   auth: Auth | null;
@@ -120,7 +125,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;
     }
-    
+
     // The listener for auth changes.
     const unsubscribe = onAuthStateChanged(
       auth,
@@ -155,7 +160,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     if (user) {
         setProfileState({ userProfile: null, isProfileLoading: true, profileError: null });
         const userDocRef = doc(firestore, 'users', user.uid);
-        const unsubscribe = onSnapshot(userDocRef, 
+        const unsubscribe = onSnapshot(userDocRef,
             (snapshot) => {
                 if (snapshot.exists()) {
                     setProfileState({
@@ -249,10 +254,10 @@ type MemoFirebase <T> = T & {__memo?: boolean};
 
 export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | (MemoFirebase<T>) {
   const memoized = useMemo(factory, deps);
-  
+
   if(typeof memoized !== 'object' || memoized === null) return memoized;
   (memoized as MemoFirebase<T>).__memo = true;
-  
+
   return memoized;
 }
 

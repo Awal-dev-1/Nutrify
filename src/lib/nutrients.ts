@@ -1,20 +1,20 @@
 
 export const MICRONUTRIENT_KEYS = [
-    "fiber", "sugar", "sodium", "calcium", "iron", "potassium", "magnesium", "zinc", 
+    "fiber", "sugar", "sodium", "calcium", "iron", "potassium", "magnesium", "zinc",
     "phosphorus", "iodine", "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride",
-    "vitaminA", "vitaminC", "vitaminD", "vitaminE", "vitaminK", "vitaminB1", "vitaminB2", 
+    "vitaminA", "vitaminC", "vitaminD", "vitaminE", "vitaminK", "vitaminB1", "vitaminB2",
     "vitaminB3", "vitaminB5", "vitaminB6", "vitaminB7", "folate", "vitaminB12"
 ] as const;
 
 export type MicronutrientKey = typeof MICRONUTRIENT_KEYS[number];
 
 export const VITAMIN_KEYS: readonly MicronutrientKey[] = [
-  "vitaminA", "vitaminC", "vitaminD", "vitaminE", "vitaminK", "vitaminB1", "vitaminB2", 
+  "vitaminA", "vitaminC", "vitaminD", "vitaminE", "vitaminK", "vitaminB1", "vitaminB2",
   "vitaminB3", "vitaminB5", "vitaminB6", "vitaminB7", "folate", "vitaminB12"
 ];
 
 export const MINERAL_KEYS: readonly MicronutrientKey[] = [
-  "calcium", "iron", "potassium", "magnesium", "zinc", "phosphorus", "iodine", 
+  "calcium", "iron", "potassium", "magnesium", "zinc", "phosphorus", "iodine",
   "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride", "sodium"
 ];
 
@@ -49,6 +49,18 @@ export const NUTRIENT_LABELS: Record<MicronutrientKey, string> = {
   folate: 'Folate (B9)',
   vitaminB12: 'Vitamin B12',
 };
+
+export const NUTRIENT_DESCRIPTIONS: Partial<Record<MicronutrientKey, string>> = {
+  iron: 'Essential for producing hemoglobin, which carries oxygen in your blood.',
+  calcium: 'Crucial for strong bones and teeth, muscle function, and nerve signaling.',
+  magnesium: 'Supports muscle and nerve function, energy production, and bone health.',
+  vitaminD: 'Helps your body absorb calcium and supports immune function.',
+  vitaminA: 'Important for vision, immune function, and cell growth.',
+  vitaminC: 'An antioxidant that helps protect cells and maintain healthy skin and tissues.',
+  potassium: 'Helps maintain normal levels of fluid inside our cells and supports blood pressure.',
+  zinc: 'Important for immune function, wound healing, and senses of smell and taste.',
+};
+
 
 export const NUTRIENT_UNITS: Record<MicronutrientKey, string> = {
   fiber: 'g',

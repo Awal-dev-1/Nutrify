@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type FC } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserGoalsAndProfile, calculateRecommendedGoals } from '@/services/goalsService';
-
+import { generateNutrientGoals, type GenerateNutrientGoalsOutput } from '@/ai/flows/generate-nutrient-goals-flow';
 import {
   Card,
   CardContent,
@@ -20,17 +20,17 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PieChart as PieChartComponent, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart as PieChartComponent, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { motion } from 'framer-motion';
-import { 
-  Save, 
-  RefreshCw, 
-  Target, 
-  AlertCircle, 
-  Info, 
-  Flame, 
-  Beef, 
-  Wheat, 
+import {
+  Save,
+  RefreshCw,
+  Target,
+  AlertCircle,
+  Info,
+  Flame,
+  Beef,
+  Wheat,
   Droplets,
   Scale,
   CheckCircle2,
@@ -42,6 +42,9 @@ import {
   User,
   Activity,
   PieChart as PieChartIcon,
+  Sparkles,
+  Atom,
+  ShieldCheck,
 } from 'lucide-react';
 import { UserProfile } from '@/firebase/provider';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +55,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DESCRIPTIONS, MicronutrientKey, VITAMIN_KEYS, MINERAL_KEYS } from '@/lib/nutrients';
+
 
 const MACRO_COLORS = {
   protein: 'hsl(var(--chart-2))',
@@ -75,6 +81,10 @@ const preferenceGroups = {
 };
 
 
+type MicroGoalState = {
+    [K in 'ironTargetMg' | 'vitaminATargetMcg' | 'calciumTargetMg' | 'magnesiumTargetMg' | 'vitaminDTargetMcg']?: number;
+};
+
 export default function GoalsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
   const db = useFirestore();
@@ -82,32 +92,37 @@ export default function GoalsPage() {
 
   const [activeTab, setActiveTab] = useState('targets');
   const [isSaving, setIsSaving] = useState(false);
+  const [isSyncingAI, setIsSyncingAI] = useState(false);
 
   // Targets state
   const [calories, setCalories] = useState<number>(2000);
   const [macros, setMacros] = useState({ protein: 30, carbs: 40, fat: 30 });
+  const [microGoals, setMicroGoals] = useState<MicroGoalState>({});
 
   // Profile state
   const [profileData, setProfileData] = useState({
-      activityLevel: '',
-      primaryGoal: '',
-      age: 0,
-      gender: '',
-      heightCm: 0,
-      weightKg: 0,
-      dietaryPreferences: [] as string[],
+      activityLevel: '', primaryGoal: '', age: 0, gender: '',
+      heightCm: 0, weightKg: 0, dietaryPreferences: [] as string[],
   });
 
   const [initialState, setInitialState] = useState<any>(null);
 
   useEffect(() => {
     if (userProfile) {
+      const goals = userProfile.goals || {};
       const initial = {
-        calories: userProfile.goals?.dailyCalorieGoal || 2000,
+        calories: goals.dailyCalorieGoal || 2000,
         macros: {
-          protein: userProfile.goals?.proteinPercentageGoal || 30,
-          carbs: userProfile.goals?.carbsPercentageGoal || 40,
-          fat: userProfile.goals?.fatPercentageGoal || 30,
+          protein: goals.proteinPercentageGoal || 30,
+          carbs: goals.carbsPercentageGoal || 40,
+          fat: goals.fatPercentageGoal || 30,
+        },
+        micros: {
+            ironTargetMg: goals.ironTargetMg,
+            vitaminATargetMcg: goals.vitaminATargetMcg,
+            calciumTargetMg: goals.calciumTargetMg,
+            magnesiumTargetMg: goals.magnesiumTargetMg,
+            vitaminDTargetMcg: goals.vitaminDTargetMcg,
         },
         profile: {
           activityLevel: userProfile.profile?.activityLevel || '',
@@ -121,6 +136,7 @@ export default function GoalsPage() {
       };
       setCalories(initial.calories);
       setMacros(initial.macros);
+      setMicroGoals(initial.micros);
       setProfileData(initial.profile);
       setInitialState(initial);
     }
@@ -164,7 +180,7 @@ export default function GoalsPage() {
       });
       return;
     }
-    
+
     const recommended = calculateRecommendedGoals({
         primaryGoal: profileData.primaryGoal,
         weightKg: userProfile.profile.weightKg,
@@ -177,8 +193,54 @@ export default function GoalsPage() {
       carbs: recommended.carbsPercentageGoal,
       fat: recommended.fatPercentageGoal
     });
+    setMicroGoals({}); // Reset micros to default
     toast({ title: "Goals Reset", description: "Your targets have been reset to our recommended values based on your profile." });
   };
+
+  const handleAiSync = async () => {
+      if(!userProfile?.profile || !userProfile?.health) {
+          toast({ variant: 'destructive', title: 'Profile Incomplete', description: 'Please fill out your profile details to use AI Sync.' });
+          setActiveTab('profile');
+          return;
+      }
+      setIsSyncingAI(true);
+      try {
+          const input = {
+              gender: userProfile.profile.gender,
+              age: userProfile.profile.age,
+              heightCm: userProfile.profile.heightCm,
+              weightKg: userProfile.profile.weightKg,
+              activityLevel: userProfile.profile.activityLevel,
+              primaryGoal: userProfile.health.primaryGoal,
+          }
+          const result = await generateNutrientGoals(input);
+
+          const staggeredUpdate = (setter: Function, value: any, delay: number) => {
+              setTimeout(() => setter(value), delay);
+          };
+
+          staggeredUpdate(setCalories, result.dailyCalorieGoal, 0);
+          staggeredUpdate(setMacros, {
+              protein: result.proteinPercentageGoal,
+              carbs: result.carbsPercentageGoal,
+              fat: result.fatPercentageGoal,
+          }, 200);
+          staggeredUpdate(setMicroGoals, {
+              ironTargetMg: result.ironTargetMg,
+              calciumTargetMg: result.calciumTargetMg,
+              magnesiumTargetMg: result.magnesiumTargetMg,
+              vitaminDTargetMcg: result.vitaminDTargetMcg,
+              vitaminATargetMcg: result.vitaminATargetMcg,
+          }, 400);
+
+          toast({ title: "AI Sync Complete!", description: "Your goals have been updated with AI recommendations." });
+
+      } catch (e: any) {
+          toast({ variant: 'destructive', title: 'AI Sync Failed', description: e.message || 'Could not fetch AI recommendations.' });
+      } finally {
+          setIsSyncingAI(false);
+      }
+  }
 
   const handleSave = async () => {
     if (!user || !db) return;
@@ -188,6 +250,11 @@ export default function GoalsPage() {
         'goals.proteinPercentageGoal': macros.protein,
         'goals.carbsPercentageGoal': macros.carbs,
         'goals.fatPercentageGoal': macros.fat,
+        'goals.ironTargetMg': microGoals.ironTargetMg,
+        'goals.vitaminATargetMcg': microGoals.vitaminATargetMcg,
+        'goals.calciumTargetMg': microGoals.calciumTargetMg,
+        'goals.magnesiumTargetMg': microGoals.magnesiumTargetMg,
+        'goals.vitaminDTargetMcg': microGoals.vitaminDTargetMcg,
         'profile.activityLevel': profileData.activityLevel,
         'health.primaryGoal': profileData.primaryGoal,
         'profile.age': Number(profileData.age),
@@ -198,11 +265,7 @@ export default function GoalsPage() {
     };
     try {
         await updateUserGoalsAndProfile(db, user.uid, updates);
-        setInitialState({
-            calories,
-            macros,
-            profile: profileData
-        });
+        setInitialState({ calories, macros, micros: microGoals, profile: profileData });
         toast({ title: 'Goals & Profile Saved!', description: 'Your nutritional profile and targets have been updated.' });
     } catch(e: any) {
         toast({
@@ -220,19 +283,30 @@ export default function GoalsPage() {
     if (calories !== initialState.calories) return true;
     if (macros.protein !== initialState.macros.protein || macros.carbs !== initialState.macros.carbs || macros.fat !== initialState.macros.fat) return true;
     if (
+        (microGoals.ironTargetMg || 0) !== (initialState.micros.ironTargetMg || 0) ||
+        (microGoals.vitaminATargetMcg || 0) !== (initialState.micros.vitaminATargetMcg || 0) ||
+        (microGoals.calciumTargetMg || 0) !== (initialState.micros.calciumTargetMg || 0) ||
+        (microGoals.magnesiumTargetMg || 0) !== (initialState.micros.magnesiumTargetMg || 0) ||
+        (microGoals.vitaminDTargetMcg || 0) !== (initialState.micros.vitaminDTargetMcg || 0)
+    ) return true;
+    if (
         profileData.activityLevel !== initialState.profile.activityLevel ||
         profileData.primaryGoal !== initialState.profile.primaryGoal ||
-        profileData.age !== initialState.profile.age ||
+        Number(profileData.age) !== initialState.profile.age ||
         profileData.gender !== initialState.profile.gender ||
-        profileData.heightCm !== initialState.profile.heightCm ||
-        profileData.weightKg !== initialState.profile.weightKg ||
+        Number(profileData.heightCm) !== initialState.profile.heightCm ||
+        Number(profileData.weightKg) !== initialState.profile.weightKg ||
         JSON.stringify(profileData.dietaryPreferences.sort()) !== JSON.stringify((initialState.profile.dietaryPreferences || []).sort())
     ) return true;
     return false;
-  }, [calories, macros, profileData, initialState]);
+  }, [calories, macros, microGoals, profileData, initialState]);
 
   const handleProfileFieldChange = (field: keyof typeof profileData, value: string | number) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
+  }
+
+  const handleMicroGoalChange = (field: keyof MicroGoalState, value: string) => {
+      setMicroGoals(prev => ({ ...prev, [field]: Number(value) || undefined }))
   }
 
   const handlePreferenceSelect = (preference: string) => {
@@ -257,7 +331,7 @@ export default function GoalsPage() {
 
   if (!userProfile) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-3">
+      <div className="flex items-center justify-center min-h-[calc(10vh-200px)] px-3">
         <Alert variant="destructive" className="max-w-md w-full">
           <AlertCircle className="h-5 w-5" />
           <AlertTitle className="text-lg">Error Loading Profile</AlertTitle>
@@ -272,16 +346,14 @@ export default function GoalsPage() {
     { name: 'Carbs', value: macros.carbs, color: MACRO_COLORS.carbs },
     { name: 'Fat', value: macros.fat, color: MACRO_COLORS.fat },
   ];
-  
-  const GoalIcon = {
-    'lose-weight': TrendingDown,
-    'gain-weight': TrendingUp,
-    'maintain-weight': Scale,
-    'eat-healthier': Heart,
-  }[profileData.primaryGoal || 'maintain-weight'] || Scale;
+
+  const microGoalFields = {
+    Vitamins: ['vitaminDTargetMcg', 'vitaminATargetMcg'],
+    Minerals: ['ironTargetMg', 'calciumTargetMg', 'magnesiumTargetMg'],
+  } as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-28 md:pb-12">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3">
@@ -308,8 +380,14 @@ export default function GoalsPage() {
                     <User className="h-4 w-4" /> Profile
                 </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="targets" className="mt-6">
+                <div className="flex justify-end mb-4">
+                    <Button onClick={handleAiSync} disabled={isSyncingAI} variant="outline" className="rounded-full shadow-sm">
+                        {isSyncingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4 text-primary"/>}
+                        Sync AI Recommendations
+                    </Button>
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     <div className="lg:col-span-2 space-y-4 md:space-y-6">
                         <Card className="border shadow-lg overflow-hidden">
@@ -351,9 +429,16 @@ export default function GoalsPage() {
                             <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><PieChartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />Visual Breakdown</CardTitle></CardHeader>
                             <CardContent className="p-4 sm:p-5 md:p-6">
                             <div className="h-[180px] sm:h-[200px] lg:h-[180px] xl:h-[200px] w-full">
-                            <ResponsiveContainer width="100%" height="100%"><PieChartComponent><Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={4} label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''} labelLine={false}>{pieData.map((entry) => (<Cell key={entry.name} fill={entry.color} />))}</Pie><Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))',border: '1px solid hsl(var(--border))',borderRadius: '8px',padding: '6px 10px',fontSize: '12px',}} formatter={(value: number) => [`${value}%`, 'Percentage']}/></PieChartComponent></ResponsiveContainer></div>
+                            <ResponsiveContainer width="100%" height="100%"><PieChartComponent><Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={4} label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''} labelLine={false}>{pieData.map((entry) => (<Cell key={entry.name} fill={entry.color} />))}</Pie><RechartsTooltip contentStyle={{backgroundColor: 'hsl(var(--background))',border: '1px solid hsl(var(--border))',borderRadius: '8px',padding: '6px 10px',fontSize: '12px',}} formatter={(value: number) => [`${value}%`, 'Percentage']}/></PieChartComponent></ResponsiveContainer></div>
                             </CardContent>
                         </Card>
+                    </div>
+
+                    <div className="lg:col-span-3">
+                        <Accordion type="multiple" defaultValue={["Vitamins", "Minerals"]} className="w-full space-y-4 md:space-y-6">
+                            <MicronutrientSection title="Vitamins" icon={<ShieldCheck />} fields={microGoalFields.Vitamins} goals={microGoals} onGoalChange={handleMicroGoalChange} />
+                            <MicronutrientSection title="Minerals" icon={<Atom />} fields={microGoalFields.Minerals} goals={microGoals} onGoalChange={handleMicroGoalChange} />
+                        </Accordion>
                     </div>
                 </div>
             </TabsContent>
@@ -456,23 +541,24 @@ export default function GoalsPage() {
             </TabsContent>
         </Tabs>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t pt-4 md:pt-6 bg-gradient-to-r from-transparent via-primary/5 to-transparent rounded-lg p-3 sm:p-4 md:p-6">
-          <Button variant="outline" onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all">
-            <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
-          <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg" className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all">
-            {isSaving ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4 shrink-0" />)}
-            Save Changes
-            {hasChanges && <ChevronRight className="ml-1 sm:ml-2 h-4 w-4 shrink-0" />}
-          </Button>
-        </div>
-
-        {!hasChanges && initialState && (
-          <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
-            <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0" />
-            <span>All goals are up to date</span>
-          </div>
-        )}
       </div>
+        <div className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/80 p-3 sm:p-4 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+              <Button variant="outline" onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto rounded-lg px-4 sm:px-6 h-10 sm:h-11 text-xs sm:text-sm border-2 hover:border-primary/50 transition-all">
+                <RefreshCw className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />Reset to Recommended</Button>
+              <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg" className="w-full sm:w-auto rounded-lg px-5 sm:px-8 h-10 sm:h-11 text-xs sm:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all">
+                {isSaving ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4 shrink-0" />)}
+                Save Changes
+                {hasChanges && <ChevronRight className="ml-1 sm:ml-2 h-4 w-4 shrink-0" />}
+              </Button>
+            </div>
+            {!hasChanges && initialState && (
+              <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground mt-2">
+                <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0" />
+                <span>All goals are up to date</span>
+              </div>
+            )}
+        </div>
     </div>
   );
 }
@@ -548,6 +634,83 @@ const GramDisplay = ({ label, value, color, icon: Icon, total }: {
   );
 };
 
+const MicronutrientSection: FC<{
+  title: string;
+  icon: React.ReactNode;
+  fields: readonly (keyof MicroGoalState)[];
+  goals: MicroGoalState;
+  onGoalChange: (field: keyof MicroGoalState, value: string) => void;
+}> = ({ title, icon, fields, goals, onGoalChange }) => {
+    return (
+        <Card className="border shadow-lg overflow-hidden">
+            <AccordionItem value={title} className="border-b-0">
+                <AccordionTrigger className="p-4 sm:p-5 md:p-6 hover:no-underline">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <div className="shrink-0 p-1 sm:p-1.5 rounded-md bg-primary/10 text-primary">
+                            {icon}
+                        </div>
+                        {title}
+                    </CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {fields.map(field => (
+                           <MicroGoalInput
+                             key={field}
+                             field={field as any}
+                             value={goals[field]}
+                             onChange={onGoalChange}
+                           />
+                        ))}
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+        </Card>
+    )
+}
+
+const MicroGoalInput: FC<{
+    field: 'ironTargetMg' | 'vitaminATargetMcg' | 'calciumTargetMg' | 'magnesiumTargetMg' | 'vitaminDTargetMcg';
+    value: number | undefined;
+    onChange: (field: keyof MicroGoalState, value: string) => void;
+}> = ({ field, value, onChange }) => {
+    const nutrientKey = field.replace(/Target(Mg|Mcg)$/, '') as MicronutrientKey;
+    const label = NUTRIENT_LABELS[nutrientKey];
+    const unit = NUTRIENT_UNITS[nutrientKey];
+    const description = NUTRIENT_DESCRIPTIONS[nutrientKey];
+
+    return (
+        <div className="space-y-2">
+            <div className="flex items-center gap-1">
+                <Label htmlFor={field} className="text-sm">{label}</Label>
+                {description && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Info className="h-3 w-3 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="max-w-xs">{description}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
+            </div>
+            <div className="relative">
+                <Input
+                    id={field}
+                    type="number"
+                    value={value || ''}
+                    onChange={(e) => onChange(field, e.target.value)}
+                    className="pr-12"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{unit}</span>
+            </div>
+        </div>
+    )
+}
+
+
 const GoalsSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
@@ -562,7 +725,7 @@ const GoalsSkeleton = () => (
       </div>
 
       <Skeleton className="h-12 w-full rounded-lg" />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
           <Skeleton className="h-40 md:h-48 w-full rounded-xl" />
