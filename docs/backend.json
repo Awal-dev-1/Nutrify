@@ -76,58 +76,39 @@
           "type": "object",
           "description": "Contains the user's specific nutritional targets.",
           "properties": {
-            "dailyCalorieGoal": {
-              "type": "number",
-              "description": "The user's target daily calorie intake."
-            },
-            "proteinPercentageGoal": {
-              "type": "number",
-              "description": "Target percentage of daily calories from protein (0-100)."
-            },
-            "carbsPercentageGoal": {
-              "type": "number",
-              "description": "Target percentage of daily calories from carbohydrates (0-100)."
-            },
-            "fatPercentageGoal": {
-              "type": "number",
-              "description": "Target percentage of daily calories from fats (0-100)."
-            },
-            "ironTargetMg": {
-              "type": "number",
-              "description": "User's target daily iron intake in milligrams."
-            },
-            "vitaminATargetMcg": {
-              "type": "number",
-              "description": "User's target daily Vitamin A intake in micrograms."
-            },
-            "calciumTargetMg": {
-              "type": "number",
-              "description": "User's target daily Calcium intake in milligrams."
-            },
-            "magnesiumTargetMg": {
-              "type": "number",
-              "description": "User's target daily Magnesium intake in milligrams."
-            },
-            "vitaminDTargetMcg": {
-              "type": "number",
-              "description": "User's target daily Vitamin D intake in micrograms."
-            },
-            "vitaminCTargetMg": {
-              "type": "number",
-              "description": "User's target daily Vitamin C intake in milligrams."
-            },
-            "vitaminB12TargetMcg": {
-              "type": "number",
-              "description": "User's target daily Vitamin B12 intake in micrograms."
-            },
-            "zincTargetMg": {
-              "type": "number",
-              "description": "User's target daily Zinc intake in milligrams."
-            },
-            "potassiumTargetMg": {
-              "type": "number",
-              "description": "User's target daily Potassium intake in milligrams."
-            }
+            "dailyCalorieGoal": { "type": "number", "description": "The user's target daily calorie intake." },
+            "proteinPercentageGoal": { "type": "number", "description": "Target percentage of daily calories from protein (0-100)." },
+            "carbsPercentageGoal": { "type": "number", "description": "Target percentage of daily calories from carbohydrates (0-100)." },
+            "fatPercentageGoal": { "type": "number", "description": "Target percentage of daily calories from fats (0-100)." },
+            "ironTargetMg": { "type": "number", "description": "User's target daily iron intake in milligrams." },
+            "vitaminATargetMcg": { "type": "number", "description": "User's target daily Vitamin A intake in micrograms." },
+            "calciumTargetMg": { "type": "number", "description": "User's target daily Calcium intake in milligrams." },
+            "magnesiumTargetMg": { "type": "number", "description": "User's target daily Magnesium intake in milligrams." },
+            "vitaminDTargetMcg": { "type": "number", "description": "User's target daily Vitamin D intake in micrograms." },
+            "vitaminCTargetMg": { "type": "number", "description": "User's target daily Vitamin C intake in milligrams." },
+            "vitaminB12TargetMcg": { "type": "number", "description": "User's target daily Vitamin B12 intake in micrograms." },
+            "zincTargetMg": { "type": "number", "description": "User's target daily Zinc intake in milligrams." },
+            "potassiumTargetMg": { "type": "number", "description": "User's target daily Potassium intake in milligrams." },
+            "fiberTargetG": { "type": "number", "description": "User's target daily Fiber intake in grams." },
+            "sugarTargetG": { "type": "number", "description": "User's target daily Sugar intake limit in grams." },
+            "sodiumTargetMg": { "type": "number", "description": "User's target daily Sodium intake limit in milligrams." },
+            "phosphorusTargetMg": { "type": "number", "description": "User's target daily Phosphorus intake in milligrams." },
+            "iodineTargetMcg": { "type": "number", "description": "User's target daily Iodine intake in micrograms." },
+            "seleniumTargetMcg": { "type": "number", "description": "User's target daily Selenium intake in micrograms." },
+            "copperTargetMg": { "type": "number", "description": "User's target daily Copper intake in milligrams." },
+            "manganeseTargetMg": { "type": "number", "description": "User's target daily Manganese intake in milligrams." },
+            "chromiumTargetMcg": { "type": "number", "description": "User's target daily Chromium intake in micrograms." },
+            "molybdenumTargetMcg": { "type": "number", "description": "User's target daily Molybdenum intake in micrograms." },
+            "chlorideTargetMg": { "type": "number", "description": "User's target daily Chloride intake in milligrams." },
+            "vitaminETargetMg": { "type": "number", "description": "User's target daily Vitamin E intake in milligrams." },
+            "vitaminKTargetMcg": { "type": "number", "description": "User's target daily Vitamin K intake in micrograms." },
+            "vitaminB1TargetMg": { "type": "number", "description": "User's target daily Thiamine (B1) intake in milligrams." },
+            "vitaminB2TargetMg": { "type": "number", "description": "User's target daily Riboflavin (B2) intake in milligrams." },
+            "vitaminB3TargetMg": { "type": "number", "description": "User's target daily Niacin (B3) intake in milligrams." },
+            "vitaminB5TargetMg": { "type": "number", "description": "User's target daily Pantothenic Acid (B5) intake in milligrams." },
+            "vitaminB6TargetMg": { "type": "number", "description": "User's target daily Vitamin B6 intake in milligrams." },
+            "vitaminB7TargetMcg": { "type": "number", "description": "User's target daily Biotin (B7) intake in micrograms." },
+            "folateTargetMcg": { "type": "number", "description": "User's target daily Folate (B9) intake in micrograms." }
           }
         },
         "preferences": {
@@ -837,3 +818,5 @@
     "reasoning": "The recommended Firestore structure prioritizes security, scalability, and query performance. Storing user-specific data under `/users/{userId}` ensures strong ownership and simplifies security rules. The new `/users/{userId}/dailyLogs/{date}` collection is specifically designed for analytics performance. By storing pre-aggregated daily totals in a single document per day (identified by date), the application can fetch analytics data for a date range (e.g., 7 or 30 days) with a single, efficient query, rather than needing to read and aggregate hundreds of individual food log documents on the client. This dramatically improves performance and reduces cost at scale."
   }
 }
+
+    

@@ -15,8 +15,13 @@ export const VITAMIN_KEYS: readonly MicronutrientKey[] = [
 
 export const MINERAL_KEYS: readonly MicronutrientKey[] = [
   "calcium", "iron", "potassium", "magnesium", "zinc", "phosphorus", "iodine",
-  "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride", "sodium"
+  "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride", "sodium", "fiber"
 ];
+
+export const NUTRIENT_GOAL_KEYS = [
+    'fiberTargetG', 'sugarTargetG', 'sodiumTargetMg', 'calciumTargetMg', 'ironTargetMg', 'potassiumTargetMg', 'magnesiumTargetMg', 'zincTargetMg', 'phosphorusTargetMg', 'iodineTargetMcg', 'seleniumTargetMcg', 'copperTargetMg', 'manganeseTargetMg', 'chromiumTargetMcg', 'molybdenumTargetMcg', 'chlorideTargetMg', 'vitaminATargetMcg', 'vitaminCTargetMg', 'vitaminDTargetMcg', 'vitaminETargetMg', 'vitaminKTargetMcg', 'vitaminB1TargetMg', 'vitaminB2TargetMg', 'vitaminB3TargetMg', 'vitaminB5TargetMg', 'vitaminB6TargetMg', 'vitaminB7TargetMcg', 'folateTargetMcg', 'vitaminB12TargetMcg'
+] as const;
+
 
 export const NUTRIENT_LABELS: Record<MicronutrientKey, string> = {
   fiber: 'Fiber',
@@ -126,3 +131,5 @@ export const NUTRIENT_DRV: Partial<Record<MicronutrientKey, number>> = {
   folate: 400, // µg
   vitaminB12: 2.4, // µg
 };
+
+    

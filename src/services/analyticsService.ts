@@ -17,7 +17,7 @@ import type { UserProfile } from '@/firebase';
 import type { DailyLog, AnalyticsData, AnalyticsSummary } from '@/types/analytics';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { NUTRIENT_DRV } from '@/lib/nutrients';
+import { NUTRIENT_DRV, NUTRIENT_GOAL_KEYS, MicronutrientKey, NUTRIENT_UNITS } from '@/lib/nutrients';
 
 /**
  * Calculates summary metrics from a given array of analytics data.
@@ -134,17 +134,16 @@ export async function getAnalyticsData(
   
   const emptyAnalyticsData = () => {
     const chartData: AnalyticsData[] = [];
+    const emptyNutrients = Object.fromEntries(NUTRIENT_GOAL_KEYS.map(k => [k.replace(/Target(G|Mg|Mcg)$/, ''), 0]));
+
     for (let i = 0; i < days; i++) {
         const date = subDays(today, days - 1 - i);
         const dateKey = format(date, 'yyyy-MM-dd');
         chartData.push({
             date: dateKey, goal: 2000,
-            calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0, calcium: 0, iron: 0,
-            potassium: 0, magnesium: 0, zinc: 0, phosphorus: 0, iodine: 0, selenium: 0, copper: 0, manganese: 0,
-            chromium: 0, molybdenum: 0, chloride: 0,
-            vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0,
-            vitaminB3: 0, vitaminB5: 0, vitaminB6: 0, vitaminB7: 0, folate: 0, vitaminB12: 0
-        });
+            calories: 0, protein: 0, carbs: 0, fat: 0,
+            ...emptyNutrients
+        } as unknown as AnalyticsData);
     }
 
     const defaultGoals = {
@@ -168,15 +167,17 @@ export async function getAnalyticsData(
   const userProfile = userDocSnap.data() as UserProfile;
   const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2000;
   
-  const goals = {
-    ...NUTRIENT_DRV,
+  const goals: Record<string, number> = {
     calories: calorieGoal,
     protein: (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4,
     carbs: (calorieGoal * ((userProfile.goals?.carbsPercentageGoal || 40) / 100)) / 4,
     fat: (calorieGoal * ((userProfile.goals?.fatPercentageGoal || 30) / 100)) / 9,
-    iron: userProfile.goals?.ironTargetMg || NUTRIENT_DRV.iron,
-    vitaminA: userProfile.goals?.vitaminATargetMcg || NUTRIENT_DRV.vitaminA,
   };
+
+  NUTRIENT_GOAL_KEYS.forEach(goalKey => {
+      const nutrientKey = goalKey.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
+      goals[nutrientKey] = (userProfile.goals as any)?.[goalKey] ?? NUTRIENT_DRV[nutrientKey] ?? 0;
+  });
 
 
   // 2. Fetch daily logs for the period
@@ -208,43 +209,23 @@ export async function getAnalyticsData(
     const dateKey = format(date, 'yyyy-MM-dd');
     const log = logsByDate.get(dateKey);
 
-    chartData.push({
+    const dayData: AnalyticsData = {
       date: dateKey,
       goal: calorieGoal,
       calories: log?.totalCalories || 0,
       protein: log?.totalProtein || 0,
       carbs: log?.totalCarbs || 0,
       fat: log?.totalFat || 0,
-      fiber: log?.totalFiber || 0,
-      sugar: log?.totalSugar || 0,
-      sodium: log?.totalSodium || 0,
-      calcium: log?.totalCalcium || 0,
-      iron: log?.totalIron || 0,
-      potassium: log?.totalPotassium || 0,
-      magnesium: log?.totalMagnesium || 0,
-      zinc: log?.totalZinc || 0,
-      phosphorus: log?.totalPhosphorus || 0,
-      iodine: log?.totalIodine || 0,
-      selenium: log?.totalSelenium || 0,
-      copper: log?.totalCopper || 0,
-      manganese: log?.totalManganese || 0,
-      chromium: log?.totalChromium || 0,
-      molybdenum: log?.totalMolybdenum || 0,
-      chloride: log?.totalChloride || 0,
-      vitaminA: log?.totalVitaminA || 0,
-      vitaminC: log?.totalVitaminC || 0,
-      vitaminD: log?.totalVitaminD || 0,
-      vitaminE: log?.totalVitaminE || 0,
-      vitaminK: log?.totalVitaminK || 0,
-      vitaminB1: log?.totalVitaminB1 || 0,
-      vitaminB2: log?.totalVitaminB2 || 0,
-      vitaminB3: log?.totalVitaminB3 || 0,
-      vitaminB5: log?.totalVitaminB5 || 0,
-      vitaminB6: log?.totalVitaminB6 || 0,
-      vitaminB7: log?.totalVitaminB7 || 0,
-      folate: log?.totalFolate || 0,
-      vitaminB12: log?.totalVitaminB12 || 0,
+      fiber: 0, sugar: 0, sodium: 0, calcium: 0, iron: 0, potassium: 0, magnesium: 0, zinc: 0, phosphorus: 0, iodine: 0, selenium: 0, copper: 0, manganese: 0, chromium: 0, molybdenum: 0, chloride: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB5: 0, vitaminB6: 0, vitaminB7: 0, folate: 0, vitaminB12: 0
+    };
+
+    NUTRIENT_GOAL_KEYS.forEach(goalKey => {
+        const nutrientKey = goalKey.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
+        const totalKey = `total${nutrientKey.charAt(0).toUpperCase() + nutrientKey.slice(1)}` as keyof DailyLog;
+        (dayData as any)[nutrientKey] = log?.[totalKey] as number || 0;
     });
+
+    chartData.push(dayData);
   }
 
   const loggedDaysCount = chartData.filter(day => day.calories > 0).length;
@@ -262,3 +243,5 @@ export async function getAnalyticsData(
     loggedDaysCount,
   };
 }
+
+    

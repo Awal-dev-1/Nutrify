@@ -30,15 +30,37 @@ export interface UserProfile {
     proteinPercentageGoal: number;
     carbsPercentageGoal: number;
     fatPercentageGoal: number;
-    ironTargetMg?: number;
-    vitaminATargetMcg?: number;
+    
+    // Expanded Micronutrient Goals
+    fiberTargetG?: number;
+    sugarTargetG?: number;
+    sodiumTargetMg?: number;
     calciumTargetMg?: number;
-    magnesiumTargetMg?: number;
-    vitaminDTargetMcg?: number;
-    vitaminCTargetMg?: number;
-    vitaminB12TargetMcg?: number;
-    zincTargetMg?: number;
+    ironTargetMg?: number;
     potassiumTargetMg?: number;
+    magnesiumTargetMg?: number;
+    zincTargetMg?: number;
+    phosphorusTargetMg?: number;
+    iodineTargetMcg?: number;
+    seleniumTargetMcg?: number;
+    copperTargetMg?: number;
+    manganeseTargetMg?: number;
+    chromiumTargetMcg?: number;
+    molybdenumTargetMcg?: number;
+    chlorideTargetMg?: number;
+    vitaminATargetMcg?: number;
+    vitaminCTargetMg?: number;
+    vitaminDTargetMcg?: number;
+    vitaminETargetMg?: number;
+    vitaminKTargetMcg?: number;
+    vitaminB1TargetMg?: number;
+    vitaminB2TargetMg?: number;
+    vitaminB3TargetMg?: number;
+    vitaminB5TargetMg?: number;
+    vitaminB6TargetMg?: number;
+    vitaminB7TargetMcg?: number;
+    folateTargetMcg?: number;
+    vitaminB12TargetMcg?: number;
   };
   preferences?: {
     themePreference?: 'light' | 'dark' | 'system';
@@ -269,3 +291,5 @@ export const useUser = (): UserHookResult => {
   const { user, isUserLoading, userError, userProfile, isProfileLoading, profileError } = useFirebase();
   return { user, isUserLoading, userError, userProfile, isProfileLoading, profileError };
 };
+
+    

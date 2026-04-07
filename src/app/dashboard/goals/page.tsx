@@ -56,7 +56,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DESCRIPTIONS, MicronutrientKey, VITAMIN_KEYS, MINERAL_KEYS } from '@/lib/nutrients';
+import { NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DESCRIPTIONS, MicronutrientKey, VITAMIN_KEYS, MINERAL_KEYS, NUTRIENT_GOAL_KEYS } from '@/lib/nutrients';
 
 
 const MACRO_COLORS = {
@@ -80,9 +80,8 @@ const preferenceGroups = {
   ],
 };
 
-
 type MicroGoalState = {
-    [K in 'ironTargetMg' | 'vitaminATargetMcg' | 'calciumTargetMg' | 'magnesiumTargetMg' | 'vitaminDTargetMcg' | 'vitaminCTargetMg' | 'vitaminB12TargetMcg' | 'zincTargetMg' | 'potassiumTargetMg']?: number;
+  [K in typeof NUTRIENT_GOAL_KEYS[number]]?: number;
 };
 
 export default function GoalsPage() {
@@ -110,6 +109,11 @@ export default function GoalsPage() {
   useEffect(() => {
     if (userProfile) {
       const goals = userProfile.goals || {};
+      const initialMicros: MicroGoalState = {};
+      NUTRIENT_GOAL_KEYS.forEach(key => {
+        initialMicros[key] = goals[key] as number | undefined;
+      });
+
       const initial = {
         calories: goals.dailyCalorieGoal || 2000,
         macros: {
@@ -117,17 +121,7 @@ export default function GoalsPage() {
           carbs: goals.carbsPercentageGoal || 40,
           fat: goals.fatPercentageGoal || 30,
         },
-        micros: {
-            ironTargetMg: goals.ironTargetMg,
-            vitaminATargetMcg: goals.vitaminATargetMcg,
-            calciumTargetMg: goals.calciumTargetMg,
-            magnesiumTargetMg: goals.magnesiumTargetMg,
-            vitaminDTargetMcg: goals.vitaminDTargetMcg,
-            vitaminCTargetMg: goals.vitaminCTargetMg,
-            vitaminB12TargetMcg: goals.vitaminB12TargetMcg,
-            zincTargetMg: goals.zincTargetMg,
-            potassiumTargetMg: goals.potassiumTargetMg,
-        },
+        micros: initialMicros,
         profile: {
           activityLevel: userProfile.profile?.activityLevel || '',
           primaryGoal: userProfile.health?.primaryGoal || '',
@@ -229,17 +223,14 @@ export default function GoalsPage() {
               carbs: result.carbsPercentageGoal,
               fat: result.fatPercentageGoal,
           }, 200);
-          staggeredUpdate(setMicroGoals, {
-              ironTargetMg: result.ironTargetMg,
-              calciumTargetMg: result.calciumTargetMg,
-              magnesiumTargetMg: result.magnesiumTargetMg,
-              vitaminDTargetMcg: result.vitaminDTargetMcg,
-              vitaminATargetMcg: result.vitaminATargetMcg,
-              vitaminCTargetMg: result.vitaminCTargetMg,
-              vitaminB12TargetMcg: result.vitaminB12TargetMcg,
-              zincTargetMg: result.zincTargetMg,
-              potassiumTargetMg: result.potassiumTargetMg,
-          }, 400);
+
+          const aiMicroGoals: MicroGoalState = {};
+          NUTRIENT_GOAL_KEYS.forEach(key => {
+            if (key in result) {
+              aiMicroGoals[key] = (result as any)[key];
+            }
+          });
+          staggeredUpdate(setMicroGoals, aiMicroGoals, 400);
 
           toast({ title: "AI Sync Complete!", description: "Your goals have been updated with AI recommendations." });
 
@@ -253,20 +244,11 @@ export default function GoalsPage() {
   const handleSave = async () => {
     if (!user || !db) return;
     setIsSaving(true);
-    const updates = {
+    const updates: Record<string, any> = {
         'goals.dailyCalorieGoal': calories,
         'goals.proteinPercentageGoal': macros.protein,
         'goals.carbsPercentageGoal': macros.carbs,
         'goals.fatPercentageGoal': macros.fat,
-        'goals.ironTargetMg': microGoals.ironTargetMg,
-        'goals.vitaminATargetMcg': microGoals.vitaminATargetMcg,
-        'goals.calciumTargetMg': microGoals.calciumTargetMg,
-        'goals.magnesiumTargetMg': microGoals.magnesiumTargetMg,
-        'goals.vitaminDTargetMcg': microGoals.vitaminDTargetMcg,
-        'goals.vitaminCTargetMg': microGoals.vitaminCTargetMg,
-        'goals.vitaminB12TargetMcg': microGoals.vitaminB12TargetMcg,
-        'goals.zincTargetMg': microGoals.zincTargetMg,
-        'goals.potassiumTargetMg': microGoals.potassiumTargetMg,
         'profile.activityLevel': profileData.activityLevel,
         'health.primaryGoal': profileData.primaryGoal,
         'profile.age': Number(profileData.age),
@@ -275,6 +257,11 @@ export default function GoalsPage() {
         'profile.weightKg': Number(profileData.weightKg),
         'health.dietaryPreferences': profileData.dietaryPreferences,
     };
+
+    NUTRIENT_GOAL_KEYS.forEach(key => {
+        updates[`goals.${key}`] = microGoals[key] ?? null; // Use null to remove field if undefined
+    });
+
     try {
         await updateUserGoalsAndProfile(db, user.uid, updates);
         setInitialState({ calories, macros, micros: microGoals, profile: profileData });
@@ -294,17 +281,11 @@ export default function GoalsPage() {
     if (!initialState) return false;
     if (calories !== initialState.calories) return true;
     if (macros.protein !== initialState.macros.protein || macros.carbs !== initialState.macros.carbs || macros.fat !== initialState.macros.fat) return true;
-    if (
-        (microGoals.ironTargetMg || 0) !== (initialState.micros.ironTargetMg || 0) ||
-        (microGoals.vitaminATargetMcg || 0) !== (initialState.micros.vitaminATargetMcg || 0) ||
-        (microGoals.calciumTargetMg || 0) !== (initialState.micros.calciumTargetMg || 0) ||
-        (microGoals.magnesiumTargetMg || 0) !== (initialState.micros.magnesiumTargetMg || 0) ||
-        (microGoals.vitaminDTargetMcg || 0) !== (initialState.micros.vitaminDTargetMcg || 0) ||
-        (microGoals.vitaminCTargetMg || 0) !== (initialState.micros.vitaminCTargetMg || 0) ||
-        (microGoals.vitaminB12TargetMcg || 0) !== (initialState.micros.vitaminB12TargetMcg || 0) ||
-        (microGoals.zincTargetMg || 0) !== (initialState.micros.zincTargetMg || 0) ||
-        (microGoals.potassiumTargetMg || 0) !== (initialState.micros.potassiumTargetMg || 0)
-    ) return true;
+    
+    for (const key of NUTRIENT_GOAL_KEYS) {
+        if ((microGoals[key] || 0) !== (initialState.micros[key] || 0)) return true;
+    }
+
     if (
         profileData.activityLevel !== initialState.profile.activityLevel ||
         profileData.primaryGoal !== initialState.profile.primaryGoal ||
@@ -364,8 +345,8 @@ export default function GoalsPage() {
   ];
 
   const microGoalFields = {
-    Vitamins: ['vitaminDTargetMcg', 'vitaminATargetMcg', 'vitaminCTargetMg', 'vitaminB12TargetMcg'],
-    Minerals: ['ironTargetMg', 'calciumTargetMg', 'magnesiumTargetMg', 'zincTargetMg', 'potassiumTargetMg'],
+    Vitamins: VITAMIN_KEYS,
+    Minerals: MINERAL_KEYS,
   } as const;
 
   return (
@@ -653,10 +634,12 @@ const GramDisplay = ({ label, value, color, icon: Icon, total }: {
 const MicronutrientSection: FC<{
   title: string;
   icon: React.ReactNode;
-  fields: readonly (keyof MicroGoalState)[];
+  fields: readonly MicronutrientKey[];
   goals: MicroGoalState;
   onGoalChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ title, icon, fields, goals, onGoalChange }) => {
+    const goalKeys = fields.map(field => `${field}Target${NUTRIENT_UNITS[field] === 'g' ? 'G' : NUTRIENT_UNITS[field].charAt(0).toUpperCase() + NUTRIENT_UNITS[field].slice(1)}` as keyof MicroGoalState)
+
     return (
         <Card className="border shadow-lg overflow-hidden">
             <AccordionItem value={title} className="border-b-0">
@@ -670,10 +653,10 @@ const MicronutrientSection: FC<{
                 </AccordionTrigger>
                 <AccordionContent>
                     <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {fields.map(field => (
+                        {goalKeys.map(field => (
                            <MicroGoalInput
                              key={field}
-                             field={field as any}
+                             field={field}
                              value={goals[field]}
                              onChange={onGoalChange}
                            />
@@ -690,7 +673,8 @@ const MicroGoalInput: FC<{
     value: number | undefined;
     onChange: (field: keyof MicroGoalState, value: string) => void;
 }> = ({ field, value, onChange }) => {
-    const nutrientKey = field.replace(/Target(Mg|Mcg)$/, '') as MicronutrientKey;
+    // e.g. from 'ironTargetMg' to 'iron'
+    const nutrientKey = field.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
     const label = NUTRIENT_LABELS[nutrientKey];
     const unit = NUTRIENT_UNITS[nutrientKey];
     const description = NUTRIENT_DESCRIPTIONS[nutrientKey];
@@ -760,3 +744,5 @@ const GoalsSkeleton = () => (
     </div>
   </div>
 );
+
+    
