@@ -8,6 +8,16 @@ export const MICRONUTRIENT_KEYS = [
 
 export type MicronutrientKey = typeof MICRONUTRIENT_KEYS[number];
 
+export const VITAMIN_KEYS: readonly MicronutrientKey[] = [
+  "vitaminA", "vitaminC", "vitaminD", "vitaminE", "vitaminK", "vitaminB1", "vitaminB2", 
+  "vitaminB3", "vitaminB5", "vitaminB6", "vitaminB7", "folate", "vitaminB12"
+];
+
+export const MINERAL_KEYS: readonly MicronutrientKey[] = [
+  "calcium", "iron", "potassium", "magnesium", "zinc", "phosphorus", "iodine", 
+  "selenium", "copper", "manganese", "chromium", "molybdenum", "chloride", "sodium"
+];
+
 export const NUTRIENT_LABELS: Record<MicronutrientKey, string> = {
   fiber: 'Fiber',
   sugar: 'Sugar',
@@ -70,4 +80,36 @@ export const NUTRIENT_UNITS: Record<MicronutrientKey, string> = {
   vitaminB7: 'µg',
   folate: 'µg',
   vitaminB12: 'µg',
+};
+
+export const NUTRIENT_DRV: Partial<Record<MicronutrientKey, number>> = {
+  fiber: 28, // g
+  sugar: 50, // g (this is a limit, not a goal)
+  sodium: 2300, // mg (limit)
+  calcium: 1300, // mg
+  iron: 18, // mg
+  potassium: 4700, // mg
+  magnesium: 420, // mg
+  zinc: 11, // mg
+  phosphorus: 1250, // mg
+  iodine: 150, // µg
+  selenium: 55, // µg
+  copper: 0.9, // mg
+  manganese: 2.3, // mg
+  chromium: 35, // µg
+  molybdenum: 45, // µg
+  chloride: 2300, // mg
+  vitaminA: 900, // µg RAE
+  vitaminC: 90, // mg
+  vitaminD: 20, // µg
+  vitaminE: 15, // mg
+  vitaminK: 120, // µg
+  vitaminB1: 1.2, // mg
+  vitaminB2: 1.3, // mg
+  vitaminB3: 16, // mg
+  vitaminB5: 5, // mg
+  vitaminB6: 1.7, // mg
+  vitaminB7: 30, // µg
+  folate: 400, // µg
+  vitaminB12: 2.4, // µg
 };

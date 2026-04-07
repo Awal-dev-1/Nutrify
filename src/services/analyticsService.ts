@@ -17,6 +17,7 @@ import type { UserProfile } from '@/firebase';
 import type { DailyLog, AnalyticsData, AnalyticsSummary } from '@/types/analytics';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { NUTRIENT_DRV } from '@/lib/nutrients';
 
 /**
  * Calculates summary metrics from a given array of analytics data.
@@ -147,7 +148,7 @@ export async function getAnalyticsData(
     }
 
     const defaultGoals = {
-        calories: 2000, protein: 120, carbs: 250, fat: 70, iron: 18, vitaminA: 900, sodium: 2300,
+        calories: 2000, protein: 120, carbs: 250, fat: 70, ...NUTRIENT_DRV,
     };
 
     return {
@@ -166,12 +167,16 @@ export async function getAnalyticsData(
 
   const userProfile = userDocSnap.data() as UserProfile;
   const calorieGoal = userProfile.goals?.dailyCalorieGoal || 2000;
-  const proteinGoal = (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4;
-  const carbsGoal = (calorieGoal * ((userProfile.goals?.carbsPercentageGoal || 40) / 100)) / 4;
-  const fatGoal = (calorieGoal * ((userProfile.goals?.fatPercentageGoal || 30) / 100)) / 9;
-  const ironGoal = userProfile.goals?.ironTargetMg || 18;
-  const vitaminAGoal = userProfile.goals?.vitaminATargetMcg || 900;
-  const sodiumGoal = 2300; // General recommendation
+  
+  const goals = {
+    ...NUTRIENT_DRV,
+    calories: calorieGoal,
+    protein: (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4,
+    carbs: (calorieGoal * ((userProfile.goals?.carbsPercentageGoal || 40) / 100)) / 4,
+    fat: (calorieGoal * ((userProfile.goals?.fatPercentageGoal || 30) / 100)) / 9,
+    iron: userProfile.goals?.ironTargetMg || NUTRIENT_DRV.iron,
+    vitaminA: userProfile.goals?.vitaminATargetMcg || NUTRIENT_DRV.vitaminA,
+  };
 
 
   // 2. Fetch daily logs for the period
@@ -241,16 +246,6 @@ export async function getAnalyticsData(
       vitaminB12: log?.totalVitaminB12 || 0,
     });
   }
-
-  const goals = {
-    calories: calorieGoal,
-    protein: proteinGoal,
-    carbs: carbsGoal,
-    fat: fatGoal,
-    iron: ironGoal,
-    vitaminA: vitaminAGoal,
-    sodium: sodiumGoal,
-  };
 
   const loggedDaysCount = chartData.filter(day => day.calories > 0).length;
 

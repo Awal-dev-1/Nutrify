@@ -40,8 +40,8 @@ import {
   AlertCircle,
   Wheat,
   Droplets,
-  Shield,
-  Eye,
+  ShieldCheck,
+  Atom,
   Salad,
   Target,
   TrendingUp,
@@ -62,55 +62,80 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import { MICRONUTRIENT_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS, MicronutrientKey } from '@/lib/nutrients';
+import { MICRONUTRIENT_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS, MicronutrientKey, VITAMIN_KEYS, MINERAL_KEYS, NUTRIENT_DRV } from '@/lib/nutrients';
 
 type Timeframe = '7d' | '30d' | '90d';
 
-const MicroAverageStat: FC<{ label: string; value: number; unit: string }> = ({
-  label,
-  value,
-  unit,
-}) => (
-  <div className="p-2 sm:p-3 rounded-lg bg-muted/50 text-center transition-colors hover:bg-muted">
-    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{label}</p>
-    <p className="font-bold text-sm sm:text-base">
-      {value.toFixed(1)} <span className="text-xs font-normal">{unit}</span>
-    </p>
-  </div>
-);
+const NutrientProgress: FC<{
+  label: string;
+  value: number;
+  goal: number;
+  unit: string;
+  colorClass: string;
+}> = ({ label, value, goal, unit, colorClass }) => {
+  const percentage = goal > 0 ? (value / goal) * 100 : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="font-medium text-muted-foreground">{label}</span>
+        <span className="font-semibold">
+          {value.toFixed(1)} / {goal.toFixed(1)} {unit}
+        </span>
+      </div>
+      <Progress value={percentage} indicatorClassName={colorClass} className="h-1.5" />
+    </div>
+  );
+};
 
-const AverageMicronutrientCard: FC<{ summary: AnalyticsSummary }> = ({ summary }) => {
-    const micros = MICRONUTRIENT_KEYS.map(key => {
+const NutrientBreakdownCard: FC<{
+  title: string;
+  icon: React.ReactNode;
+  nutrientKeys: readonly MicronutrientKey[];
+  summary: AnalyticsSummary;
+  goals: any; // The comprehensive goals object
+  colorClass: string;
+}> = ({ title, icon, nutrientKeys, summary, goals, colorClass }) => {
+    const nutrients = nutrientKeys.map(key => {
         const summaryKey = `average${key.charAt(0).toUpperCase() + key.slice(1)}` as keyof AnalyticsSummary;
         const value = (summary as any)[summaryKey] || 0;
+        const goal = goals[key] || 0;
         return {
+            key,
             label: NUTRIENT_LABELS[key],
-            value: value,
+            value,
+            goal,
             unit: NUTRIENT_UNITS[key],
         }
-    }).filter(m => m.value > 0);
+    }).filter(n => n.goal > 0);
+
+    if (nutrients.length === 0) return null;
 
     return (
         <Card className="border-2 shadow-xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
               <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                 <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Salad className="h-4 w-4 text-primary" />
+                  {icon}
                 </div>
-                Average Micronutrient Intake
+                {title}
               </CardTitle>
-              <CardDescription className="text-xs md:text-sm">
-                Your average daily values over the selected period.
-              </CardDescription>
             </CardHeader>
-            <CardContent className="p-3 md:p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-                {micros.map(micro => (
-                    <MicroAverageStat key={micro.label} {...micro} />
+            <CardContent className="p-3 md:p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {nutrients.map(n => (
+                    <NutrientProgress
+                        key={n.key}
+                        label={n.label}
+                        value={n.value}
+                        goal={n.goal}
+                        unit={n.unit}
+                        colorClass={colorClass}
+                    />
                 ))}
             </CardContent>
         </Card>
     );
 };
+
 
 const AnalyticsPage = () => {
   const { user } = useUser();
@@ -120,7 +145,7 @@ const AnalyticsPage = () => {
     chartData: AnalyticsData[];
     summary: AnalyticsSummary;
     insights: string[];
-    goals: { calories: number; protein: number; carbs: number; fat: number; iron: number; vitaminA: number; sodium: number; };
+    goals: any;
     loggedDaysCount: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,7 +157,7 @@ const AnalyticsPage = () => {
       setError(null);
       getAnalyticsData(db, user.uid, timeframe)
         .then((result) => {
-          setData(result);
+          setData(result as any);
         })
         .catch((err) => {
           setError(err.message || 'Could not load analytics data.');
@@ -405,7 +430,7 @@ const AnalyticsPage = () => {
         </Card>
 
         {/* Trend Charts - Responsive Grid */}
-        <div className="grid grid-cols-1 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* Macronutrient Trends */}
           <Card className="border-2 shadow-xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b pb-4">
@@ -464,7 +489,23 @@ const AnalyticsPage = () => {
             </CardContent>
           </Card>
           
-          <AverageMicronutrientCard summary={summary} />
+          <NutrientBreakdownCard
+            title="Average Vitamin Intake"
+            icon={<ShieldCheck className="h-4 w-4 text-primary" />}
+            nutrientKeys={VITAMIN_KEYS}
+            summary={summary}
+            goals={goals}
+            colorClass="bg-blue-500"
+          />
+
+          <NutrientBreakdownCard
+            title="Average Mineral Intake"
+            icon={<Atom className="h-4 w-4 text-primary" />}
+            nutrientKeys={MINERAL_KEYS}
+            summary={summary}
+            goals={goals}
+            colorClass="bg-teal-500"
+          />
 
         </div>
 
@@ -683,7 +724,7 @@ const AnalyticsSkeleton = () => (
         </CardContent>
       </Card>
       
-      <div className="grid grid-cols-1 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <Card className="border-2 shadow-lg">
           <CardHeader>
             <Skeleton className="h-5 w-1/3" />
@@ -698,9 +739,20 @@ const AnalyticsSkeleton = () => (
             <Skeleton className="h-5 w-1/3" />
             <Skeleton className="h-3 w-1/2" />
           </CardHeader>
-          <CardContent className="p-4 grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {Array.from({ length: 18 }).map((_, i) => (
-                  <Skeleton key={i} className="h-14 w-full" />
+          <CardContent className="p-4 space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-full" />
+              ))}
+          </CardContent>
+        </Card>
+        <Card className="border-2 shadow-lg">
+          <CardHeader>
+            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-3 w-1/2" />
+          </CardHeader>
+          <CardContent className="p-4 space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-full" />
               ))}
           </CardContent>
         </Card>
