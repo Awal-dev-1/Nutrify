@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useRef, type DragEvent } from 'react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UploadCloud, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -60,43 +61,45 @@ export function ImageUploader({ onFileSelect, disabled }: ImageUploaderProps) {
 
   return (
     <div className="w-full space-y-3 sm:space-y-4">
-      <div
+      <Card
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         className={cn(
-          // Reduced padding on mobile so it doesn't take up the whole viewport
-          'relative flex flex-col items-center justify-center w-full',
-          'p-8 sm:p-12',
-          'border-2 border-dashed rounded-lg transition-colors duration-200',
+          'relative overflow-hidden group transition-all shadow-lg',
+          'border-2 border-dashed',
           isDragging ? 'border-primary bg-primary/10' : 'border-border',
           disabled
             ? 'cursor-not-allowed bg-muted/50'
-            : 'cursor-pointer hover:border-primary/50',
+            : 'cursor-pointer hover:border-primary/50'
         )}
         onClick={() => fileInputRef.current?.click()}
       >
-        <div className="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-3">
-          {/* Icon: smaller on mobile */}
-          <div className={cn(
-            'p-3 sm:p-4 rounded-full bg-muted/80 transition-colors',
-            isDragging && 'bg-primary/20 text-primary',
-          )}>
+        <CardContent
+          className={cn(
+            'flex flex-col items-center justify-center w-full text-center space-y-3',
+            'p-8 sm:p-10',
+            'bg-background/50 backdrop-blur-sm'
+          )}
+        >
+          <div
+            className={cn(
+              'p-3 sm:p-4 rounded-full bg-muted/80 transition-colors',
+              isDragging && 'bg-primary/20 text-primary'
+            )}
+          >
             <UploadCloud className="w-7 h-7 sm:w-10 sm:h-10 text-muted-foreground" />
           </div>
 
-          {/* Primary label: shorter copy on mobile where drag isn't available */}
           <p className="text-base sm:text-lg font-semibold leading-snug">
-            <span className="hidden sm:inline">Drag &amp; drop an image or click to upload</span>
-            <span className="sm:hidden">Tap to upload an image</span>
+            Choose from Gallery
           </p>
 
           <p className="text-xs sm:text-sm text-muted-foreground">
-            PNG, JPG, or WEBP &mdash; max {MAX_FILE_SIZE_MB}MB
+            <span className="hidden sm:inline">Or drag and drop an image here</span>
           </p>
-        </div>
-
+        </CardContent>
         <input
           ref={fileInputRef}
           type="file"
@@ -105,7 +108,7 @@ export function ImageUploader({ onFileSelect, disabled }: ImageUploaderProps) {
           onChange={(e) => e.target.files && handleFile(e.target.files[0])}
           disabled={disabled}
         />
-      </div>
+      </Card>
 
       {error && (
         <Alert variant="destructive">

@@ -335,22 +335,16 @@ export default function RecognizePage() {
           );
         }
         return (
-          <div className="w-full max-w-4xl mx-auto space-y-4">
-            <ImageUploader onFileSelect={handleFileSelect} />
+          <div className="w-full max-w-2xl mx-auto space-y-4">
             {isMobile && (
               <div className="space-y-3">
-                <div className="relative flex items-center">
-                  <div className="flex-grow border-t border-border" />
-                  <span className="mx-4 shrink-0 text-muted-foreground text-sm">OR</span>
-                  <div className="flex-grow border-t border-border" />
-                </div>
                 <Button
-                  variant="secondary"
-                  className="w-full min-h-[44px]"
+                  variant="default"
+                  className="w-full min-h-[56px] text-lg rounded-xl bg-gradient-to-r from-primary to-primary/80 shadow-lg hover:shadow-xl transition-all"
                   onClick={() => setIsCameraOpen(true)}
                   disabled={hasCameraPermission === false}
                 >
-                  <Camera className="mr-2 h-4 w-4" /> Use Camera
+                  <Camera className="mr-3 h-5 w-5" /> Use Camera
                 </Button>
                 {hasCameraPermission === false && (
                   <Alert variant="destructive">
@@ -364,6 +358,7 @@ export default function RecognizePage() {
                 )}
               </div>
             )}
+            <ImageUploader onFileSelect={handleFileSelect} />
           </div>
         );
       }
@@ -374,16 +369,11 @@ export default function RecognizePage() {
         const messages = {
             compressing: 'Compressing image...',
             preparing: 'Preparing for analysis...',
-            analyzing: 'AI is analyzing your food...'
-        };
-        const subMessages = {
-            compressing: 'Making the file smaller for a faster upload.',
-            preparing: 'Getting the image ready for our AI model.',
             analyzing: 'This is the magic part, it may take a moment.'
         };
         return (
           <div className="w-full max-w-4xl mx-auto">
-            <Card className="overflow-hidden shadow-lg">
+            <Card className="overflow-hidden shadow-lg border-2 border-primary/20">
               <CardContent className="p-0">
                 <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
                   {preview && (
@@ -391,17 +381,28 @@ export default function RecognizePage() {
                       src={preview}
                       alt="Analyzing food"
                       fill
-                      className="object-contain opacity-50"
+                      className="object-contain opacity-30 blur-sm"
                     />
                   )}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 sm:p-8 gap-3 bg-black/50">
-                    <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-primary animate-spin" />
-                    <h3 className="text-base sm:text-lg md:text-xl font-semibold text-white">
-                      {messages[status]}
-                    </h3>
-                    <p className="text-sm sm:text-base text-white/80">
-                      {subMessages[status]}
-                    </p>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                    <div className="absolute inset-x-0 top-0 bottom-0 overflow-hidden">
+                      <motion.div
+                        className="absolute left-0 right-0 h-1 bg-primary/70 shadow-[0_0_15px_2px_hsl(var(--primary))]"
+                        initial={{ y: '-10%' }}
+                        animate={{ y: '110%' }}
+                        transition={{
+                          duration: 2.5,
+                          repeat: Infinity,
+                          repeatType: 'reverse',
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="relative flex flex-col items-center gap-3">
+                      <Loader2 className="h-10 w-10 text-white animate-spin" />
+                      <h3 className="text-lg font-semibold text-white">{messages[status]}</h3>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -516,7 +517,7 @@ export default function RecognizePage() {
     <div className="space-y-4 sm:space-y-6 md:space-y-8">
       <div className={cn(isCameraOpen && 'hidden md:block')}>
         <h1 className="text-h1 font-bold tracking-tight flex items-center gap-2 text-primary">
-          <ScanLine className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary shrink-0" />
+          <ScanLine className="h-6 w-6 sm:h-7 sm:h-7 md:h-8 md:w-8 text-primary shrink-0 animate-pulse" />
           AI Food Recognition
         </h1>
         <p className="text-body text-muted-foreground mt-1">
@@ -543,5 +544,3 @@ export default function RecognizePage() {
     </div>
   );
 }
-
-    
