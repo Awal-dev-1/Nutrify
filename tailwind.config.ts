@@ -109,11 +109,16 @@ export default {
           '50%': { 'background-position': '100% 50%' },
           '100%': { 'background-position': '0% 50%' },
         },
+        'pulse-glow': {
+          '0%, 100%': { boxShadow: '0 0 0 0 hsla(var(--primary), 0.4)' },
+          '70%': { boxShadow: '0 0 0 10px hsla(var(--primary), 0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'gradient': 'gradient 15s ease infinite',
+        'pulse-glow': 'pulse-glow 2s infinite',
       },
     },
   },

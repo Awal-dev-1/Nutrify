@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, RefreshCw, Lightbulb, AlertCircle } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -9,11 +9,25 @@ import { RecommendationCard } from '@/components/recommendations/recommendation-
 import { generateRecommendations, type RecommendationResult, type Recommendation } from '@/services/recommendationService';
 import { useUser, useFirestore } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { RecipeDetailModal } from '@/components/recommendations/recipe-detail-modal';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
 import { TransitionLink } from '@/components/shared/transition-link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
+
+const RecommendationCardSkeleton = () => (
+  <div className="flex items-center gap-4 border-2 rounded-2xl p-4">
+      <Skeleton className="h-12 w-12 rounded-full shrink-0" />
+      <div className="flex-grow space-y-2">
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-3 w-full" />
+          <div className="flex gap-2 pt-1">
+              <Skeleton className="h-5 w-20 rounded-full" />
+              <Skeleton className="h-5 w-24 rounded-full" />
+          </div>
+      </div>
+      <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+  </div>
+);
 
 export default function RecommendationsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -22,10 +36,8 @@ export default function RecommendationsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedFoodForModal, setSelectedFoodForModal] = useState<Recommendation | null>(null);
-  const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
+  const [selectedFoodForModal, setSelectedFoodForModal] = useState<any | null>(null);
   
   const fetchRecommendations = async () => {
     if (!user || !db) return;
@@ -48,11 +60,6 @@ export default function RecommendationsPage() {
     }
   };
 
-  const handleViewRecipe = (foodId: string) => {
-    setSelectedFoodId(foodId);
-    setIsRecipeModalOpen(true);
-  };
-
   const handleAddToCart = (food: Recommendation) => {
     const foodItemForModal = {
         foodName: food.name,
@@ -63,10 +70,11 @@ export default function RecommendationsPage() {
             carbohydrates: food.carbs,
             fat: food.fat,
         },
-        micronutrientBreakdown: food.micronutrients || {}, // Pass along micros
-        detailedRecipe: { ingredients: [], instructions: [] }, // Not needed for add modal
-        foodHistory: '', // Not needed
-        healthAnalysis: '', // Not needed
+        micronutrientBreakdown: food.micronutrients || {},
+        healthAnalysis: food.reason,
+        suitability: "Suitable",
+        isGhanaianLocal: true,
+        detailedRecipe: food.detailedRecipe || { ingredients: [], instructions: [] },
     }
     setSelectedFoodForModal(foodItemForModal as any);
     setIsAddModalOpen(true);
@@ -74,7 +82,16 @@ export default function RecommendationsPage() {
 
   const renderContent = () => {
     if (isLoading || isProfileLoading) {
-      return <RecommendationsPageSkeleton />;
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-5 w-1/3" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+              <RecommendationCardSkeleton />
+              <RecommendationCardSkeleton />
+              <RecommendationCardSkeleton />
+          </div>
+        </div>
+      );
     }
 
     if (error) {
@@ -102,11 +119,16 @@ export default function RecommendationsPage() {
           transition={{ duration: 0.2 }}
         >
           <EmptyState
-            icon={<Lightbulb className="h-16 w-16 text-muted-foreground" />}
+            icon={<Lightbulb className="h-12 w-12 text-muted-foreground" />}
             title="No recommendations yet"
             description="Click the button to get AI-powered meal suggestions based on your goals."
           >
-            <Button onClick={fetchRecommendations} size="lg" disabled={isLoading}>
+            <Button
+              onClick={fetchRecommendations}
+              size="lg"
+              disabled={isLoading}
+              className="animate-pulse-glow"
+            >
               <Sparkles className="mr-2 h-4 w-4" />
               Generate Recommendations
             </Button>
@@ -117,7 +139,7 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <p className="text-base text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
             Recommendations based on your goal to <span className="font-semibold text-primary">{data.goal.replace('-', ' ')}</span>.
         </p>
 
@@ -131,7 +153,7 @@ export default function RecommendationsPage() {
               <Lightbulb className="h-4 w-4" />
               <AlertTitle>Insightful Tips</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-disc list-inside space-y-1 text-sm">
                   {data.insightTips.map((tip, index) => <li key={index}>{tip}</li>)}
                 </ul>
               </AlertDescription>
@@ -139,7 +161,7 @@ export default function RecommendationsPage() {
           </motion.div>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
           {data.recommendations.map((rec, index) => (
             <motion.div
               key={rec.foodId}
@@ -149,7 +171,7 @@ export default function RecommendationsPage() {
             >
               <RecommendationCard
                 recommendation={rec}
-                onViewRecipe={() => handleViewRecipe(rec.foodId)}
+                onViewRecipe={() => { /* No longer used in this UI */ }}
                 onAddToCart={() => handleAddToCart(rec)}
               />
             </motion.div>
@@ -168,7 +190,7 @@ export default function RecommendationsPage() {
                 <Sparkles className="h-6 w-6" />
                 Smart Food Recommendations
             </h1>
-            <p className="text-base text-muted-foreground max-w-2xl">
+            <p className="text-body text-muted-foreground max-w-2xl">
               Get meal suggestions based on your goals and preferences.
             </p>
         </div>
@@ -183,12 +205,6 @@ export default function RecommendationsPage() {
       <div className="min-h-[400px]">
         {renderContent()}
       </div>
-
-      <RecipeDetailModal
-        isOpen={isRecipeModalOpen}
-        onClose={() => setIsRecipeModalOpen(false)}
-        foodId={selectedFoodId}
-      />
       
       <FoodConfirmationModal
         isOpen={isAddModalOpen}
@@ -198,34 +214,3 @@ export default function RecommendationsPage() {
     </div>
   );
 }
-
-const RecommendationCardSkeleton = () => (
-    <div className="border-2 rounded-lg p-4 space-y-4 h-full flex flex-col">
-        <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <div className="flex flex-wrap gap-2 pt-1">
-            <Skeleton className="h-5 w-20 rounded-full" />
-            <Skeleton className="h-5 w-20 rounded-full" />
-            <Skeleton className="h-5 w-20 rounded-full" />
-        </div>
-        <div className="flex-grow">
-          <Skeleton className="h-16 w-full" />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-        </div>
-    </div>
-)
-
-const RecommendationsPageSkeleton = () => (
-    <div className="space-y-6 animate-pulse">
-        <Skeleton className="h-5 w-1/3" />
-        <Skeleton className="h-20 w-full" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <RecommendationCardSkeleton />
-            <RecommendationCardSkeleton />
-            <RecommendationCardSkeleton />
-        </div>
-    </div>
-)
