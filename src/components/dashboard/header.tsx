@@ -61,9 +61,9 @@ export function DashboardHeader() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 flex h-12 items-center gap-4 px-5 pt-safe",
-      "bg-background/95 backdrop-blur-sm border-0 shadow-none",
-      "gpu-layer" // Forcing GPU layer to prevent scroll jitter
+      "sticky top-0 z-50 flex h-auto items-center gap-4 px-5 py-2 pt-safe",
+      "bg-background/80 backdrop-blur-sm border-0 shadow-none",
+      "gpu-layer"
     )}>
       <div className="flex flex-1 flex-col">
         <h1 className="text-body font-semibold">
