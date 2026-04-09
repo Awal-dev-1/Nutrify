@@ -11,11 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Beef, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Droplets, MoreVertical, Pencil, Plus, Sparkles, Trash2, Utensils, UtensilsCrossed, Wheat } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Utensils, MoreVertical, UtensilsCrossed, Sparkles } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
