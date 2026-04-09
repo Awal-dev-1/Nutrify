@@ -705,13 +705,13 @@ const WaterWidget: FC<{
     }
   }, [isGoalMet]);
 
-  const handleIntakeUpdate = async (increment: number) => {
+  const handleIntakeUpdate = (increment: number) => {
     if (!dailyLogRef) return;
 
     const newIntake = Math.max(0, intake + increment);
     const oldIntake = intake;
 
-    setIntake(newIntake); // Optimistic update
+    setIntake(newIntake); // Optimistic UI update
 
     const newLogData = {
       ...todayTotals,
@@ -719,21 +719,23 @@ const WaterWidget: FC<{
       date: todayKey,
     };
 
-    try {
-      await setDoc(dailyLogRef, newLogData, { merge: true });
-    } catch (error) {
+    // Background sync with error handling
+    setDoc(dailyLogRef, newLogData, { merge: true }).catch((error) => {
       setIntake(oldIntake); // Rollback on failure
       toast({
-        variant: "destructive",
-        title: "Sync Failed",
-        description: "Could not update water intake. Check your connection.",
+        variant: 'destructive',
+        title: 'Sync Failed',
+        description: 'Could not update water intake. Check your connection.',
       });
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: dailyLogRef.path,
-        operation: 'write',
-        requestResourceData: { waterIntake: newIntake },
-      }));
-    }
+      errorEmitter.emit(
+        'permission-error',
+        new FirestorePermissionError({
+          path: dailyLogRef.path,
+          operation: 'write',
+          requestResourceData: { waterIntake: newIntake },
+        })
+      );
+    });
   };
 
   const progress = Math.min((intake / goal) * 100, 100);
@@ -823,3 +825,5 @@ const DashboardSkeleton = () => (
 );
 
 export default OverviewPage;
+
+    
