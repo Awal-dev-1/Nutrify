@@ -47,7 +47,7 @@ const FeaturesDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 p-4 pb-12 pb-safe backdrop-blur-lg"
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 p-4 pb-16 pb-safe backdrop-blur-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/30 mb-4" />
