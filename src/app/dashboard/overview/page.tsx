@@ -221,7 +221,7 @@ const OverviewPage = () => {
     <>
     <div className="min-h-dvh bg-gradient-to-b from-background to-secondary/5">
       {/* Constrained, padded container scales across all viewports */}
-      <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8">
+      <div className="w-full max-w-7xl mx-auto space-y-4">
 
         {/* ── Header ── */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
