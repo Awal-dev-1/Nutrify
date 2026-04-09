@@ -32,6 +32,7 @@ function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary
     averageVitaminA: 0, averageVitaminC: 0, averageVitaminD: 0, averageVitaminE: 0, averageVitaminK: 0,
     averageVitaminB1: 0, averageVitaminB2: 0, averageVitaminB3: 0, averageVitaminB5: 0, averageVitaminB6: 0,
     averageVitaminB7: 0, averageFolate: 0, averageVitaminB12: 0,
+    averageWaterIntake: 0,
     goalAchievementRate: 0, highestCalorieDay: null, lowestCalorieDay: null,
     consistencyScore: 0,
   };
@@ -142,12 +143,13 @@ export async function getAnalyticsData(
         chartData.push({
             date: dateKey, goal: 2000,
             calories: 0, protein: 0, carbs: 0, fat: 0,
+            waterIntake: 0,
             ...emptyNutrients
         } as unknown as AnalyticsData);
     }
 
     const defaultGoals = {
-        calories: 2000, protein: 120, carbs: 250, fat: 70, ...NUTRIENT_DRV,
+        calories: 2000, protein: 120, carbs: 250, fat: 70, water: 8, ...NUTRIENT_DRV,
     };
 
     return {
@@ -172,6 +174,7 @@ export async function getAnalyticsData(
     protein: (calorieGoal * ((userProfile.goals?.proteinPercentageGoal || 30) / 100)) / 4,
     carbs: (calorieGoal * ((userProfile.goals?.carbsPercentageGoal || 40) / 100)) / 4,
     fat: (calorieGoal * ((userProfile.goals?.fatPercentageGoal || 30) / 100)) / 9,
+    water: 8, // Default water goal
   };
 
   NUTRIENT_GOAL_KEYS.forEach(goalKey => {
@@ -216,6 +219,7 @@ export async function getAnalyticsData(
       protein: log?.totalProtein || 0,
       carbs: log?.totalCarbs || 0,
       fat: log?.totalFat || 0,
+      waterIntake: log?.waterIntake || 0,
       fiber: 0, sugar: 0, sodium: 0, calcium: 0, iron: 0, potassium: 0, magnesium: 0, zinc: 0, phosphorus: 0, iodine: 0, selenium: 0, copper: 0, manganese: 0, chromium: 0, molybdenum: 0, chloride: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB5: 0, vitaminB6: 0, vitaminB7: 0, folate: 0, vitaminB12: 0
     };
 
@@ -243,5 +247,3 @@ export async function getAnalyticsData(
     loggedDaysCount,
   };
 }
-
-    

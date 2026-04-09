@@ -105,6 +105,7 @@ export type AnalyticsData = {
     chromium: number;
     molybdenum: number;
     chloride: number;
+    waterIntake: number;
     vitaminA: number;
     vitaminC: number;
     vitaminD: number;
@@ -141,6 +142,7 @@ export type AnalyticsSummary = {
     averageChromium: number;
     averageMolybdenum: number;
     averageChloride: number;
+    averageWaterIntake: number;
     averageVitaminA: number;
     averageVitaminC: number;
     averageVitaminD: number;

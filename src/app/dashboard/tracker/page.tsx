@@ -276,7 +276,6 @@ export default function DailyTrackerPage() {
     toast({ variant: "destructive", title: "Food Removed!", description: `${foodName} has been removed from your log.` });
   };
 
-  const handleWaterChange = (newIntake: number) => updateDailyLog(meals, newIntake);
   const openAddModal = (mealType: MealType) => { setMealToAdd(mealType); setAddModalOpen(true); };
   const openEditModal = (food: LoggedFoodItem) => setEditingFood({ logId: food.logId, quantity: food.quantity });
 
@@ -334,7 +333,7 @@ export default function DailyTrackerPage() {
       ) : (
         // Stack on mobile, side-by-side on lg+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-          <div className="lg:col-span-2 space-y-4 sm:space-y-8">
+          <div className="lg:col-span-3 space-y-4 sm:space-y-8">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.05 }}>
               <CalorieSummaryCard totals={dailyTotals} goal={derivedGoals.calories} />
             </motion.div>
@@ -353,15 +352,6 @@ export default function DailyTrackerPage() {
               />
             </motion.div>
           </div>
-          {/* Water tracker: natural flow on mobile, sticky on lg+ */}
-          <motion.div
-            className="lg:col-span-1"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: 0.1 }}
-          >
-            <WaterTracker intake={dailyTotals.waterIntake} setIntake={handleWaterChange} goal={derivedGoals.water} />
-          </motion.div>
         </div>
       )}
 
@@ -730,65 +720,6 @@ const LoggedFoodItemComponent: FC<{
   </div>
 );
 
-// ── Water Tracker ─────────────────────────────────────────────────────────────
-const WaterTracker: FC<{ intake: number; setIntake: (intake: number) => void; goal: number }> = ({ intake, setIntake, goal }) => {
-  const progress = (intake / goal) * 100;
-  const isGoalMet = intake >= goal;
-
-  return (
-    // sticky only on lg+ where there's enough viewport height
-    <Card className="overflow-hidden border shadow-lg lg:sticky lg:top-24">
-      <CardHeader className="pb-3 sm:pb-4 bg-gradient-to-br from-blue-500/5 to-transparent">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/10">
-            <GlassWater className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-          </div>
-          Water Intake
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-        <div className="flex items-center justify-between gap-2">
-          <Button variant="outline" size="icon"
-            onClick={() => setIntake(Math.max(0, intake - 1))}
-            className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border-2 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all"
-            disabled={intake === 0}>
-            <Minus className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
-
-          <div className="text-center flex-1">
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl sm:text-5xl font-bold text-blue-500">{intake}</span>
-              <span className="text-lg sm:text-xl text-muted-foreground">/ {goal}</span>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">glasses</p>
-          </div>
-
-          <Button variant="outline" size="icon"
-            onClick={() => setIntake(intake + 1)}
-            className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border-2 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all">
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs sm:text-sm">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium">{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="h-2.5" indicatorStyle={{ backgroundColor: "hsl(210 100% 50%)" }} />
-        </div>
-
-        {isGoalMet && (
-          <div className="flex items-center gap-2 p-2.5 sm:p-3 rounded-xl bg-green-500/10 text-green-600">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span className="text-xs sm:text-sm font-medium">Daily water goal achieved!</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
 // ── Micronutrient Grid ────────────────────────────────────────────────────────
 const MicroNutrientGrid: FC<{ totals: DailyLog }> = ({ totals }) => {
   const micros = MICRONUTRIENT_KEYS.map(key => ({
@@ -848,7 +779,7 @@ const TrackerSkeleton = () => (
             </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-            <div className="lg:col-span-2 space-y-4 sm:space-y-8">
+            <div className="lg:col-span-3 space-y-4 sm:space-y-8">
                 <Skeleton className="h-48 rounded-lg" />
                 <Skeleton className="h-56 rounded-lg" />
                 <Skeleton className="h-48 rounded-lg" />
@@ -856,9 +787,6 @@ const TrackerSkeleton = () => (
                     <Skeleton className="h-24 rounded-lg" />
                     <Skeleton className="h-24 rounded-lg" />
                 </div>
-            </div>
-            <div className="lg:col-span-1">
-                <Skeleton className="h-48 rounded-lg" />
             </div>
         </div>
     </div>
