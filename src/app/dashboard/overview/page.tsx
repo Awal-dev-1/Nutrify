@@ -53,6 +53,19 @@ import { useToast } from '@/hooks/use-toast';
 
 const barColors = ['#3B82F6', '#22C55E', '#EAB308', '#EF4444', '#8B5CF6', '#F97316', '#14B8A6'];
 
+const CustomWaterTooltip: FC<{ active?: boolean; payload?: any[]; label?: string }> = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-2 bg-background/80 backdrop-blur-sm rounded-lg border shadow-lg">
+        <p className="text-xs font-bold text-primary">{`${payload[0].value} glasses`}</p>
+        <p className="text-xs text-muted-foreground">{`On ${label}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 const OverviewPage = () => {
   const { user, userProfile, isProfileLoading } = useUser();
   const db = useFirestore();
@@ -768,9 +781,24 @@ const WaterWidget: FC<{
             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <defs><linearGradient id="waterGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(217.2 91.2% 59.8%)" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(217.2 91.2% 59.8%)" stopOpacity={0}/></linearGradient></defs>
               <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-              <Tooltip contentStyle={{ display: 'none' }} cursor={{ fill: 'hsl(var(--accent))', opacity: 0.2 }} />
+              <Tooltip
+                cursor={{ fill: 'hsl(var(--accent))', opacity: 0.3 }}
+                content={<CustomWaterTooltip />}
+              />
               <ReferenceLine y={goal} stroke="hsl(var(--border))" strokeDasharray="3 3" />
-              <Area type="monotone" dataKey="intake" stroke="hsl(217.2 91.2% 59.8%)" fill="url(#waterGradient)" strokeWidth={2} />
+              <Area 
+                type="monotone" 
+                dataKey="intake" 
+                stroke="hsl(217.2 91.2% 59.8%)" 
+                fill="url(#waterGradient)" 
+                strokeWidth={2}
+                activeDot={{
+                  r: 6,
+                  strokeWidth: 2,
+                  fill: "hsl(var(--background))",
+                  stroke: "hsl(217.2 91.2% 59.8%)",
+                }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -825,5 +853,3 @@ const DashboardSkeleton = () => (
 );
 
 export default OverviewPage;
-
-    
