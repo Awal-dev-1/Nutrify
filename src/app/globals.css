@@ -120,4 +120,13 @@
   .pr-safe {
     padding-right: env(safe-area-inset-right);
   }
+  .gpu-layer {
+    will-change: transform;
+  }
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
 }

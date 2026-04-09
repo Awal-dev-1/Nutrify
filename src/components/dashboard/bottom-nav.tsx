@@ -84,7 +84,10 @@ export function BottomNav() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/80 backdrop-blur-lg pb-safe md:hidden">
+      <div className={cn(
+          "fixed bottom-0 left-0 right-0 z-30 border-t bg-background/80 backdrop-blur-lg pb-safe md:hidden",
+          "gpu-layer" // Forcing GPU layer to prevent scroll jitter
+        )}>
         <div className="flex h-16 items-center justify-around px-2">
           {/* Overview */}
           <TransitionLink

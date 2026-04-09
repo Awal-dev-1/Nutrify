@@ -29,6 +29,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { ThemeToggle } from './theme-toggle'
+import { cn } from '@/lib/utils'
 
 
 export function DashboardHeader() {
@@ -59,7 +60,11 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 bg-background/95 backdrop-blur-sm px-5 pt-safe">
+    <header className={cn(
+      "sticky top-0 z-30 flex h-16 items-center gap-4 px-5 pt-safe",
+      "bg-background/80 backdrop-blur-sm border-b-0 shadow-none",
+      "gpu-layer" // Forcing GPU layer to prevent scroll jitter
+    )}>
       <div className="flex flex-1 flex-col">
         <h1 className="text-body font-semibold">
           {greeting}, {userProfile?.name || 'User'}!
