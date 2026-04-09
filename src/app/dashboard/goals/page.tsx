@@ -352,7 +352,7 @@ export default function GoalsPage() {
 
   return (
     <div>
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
+      <div className="w-full max-w-7xl mx-auto space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3">
             <div className="shrink-0 p-2.5 sm:p-3 md:p-4 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg w-fit">
@@ -733,7 +733,7 @@ const MicroGoalInput: FC<{
 
 const GoalsSkeleton = () => (
   <div className="pb-8 md:pb-12 animate-pulse">
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
+    <div className="w-full max-w-7xl mx-auto space-y-4 md:space-y-8">
       <div className="space-y-3 md:space-y-4">
         <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 md:h-16 md:w-16 rounded-2xl" />
@@ -764,3 +764,5 @@ const GoalsSkeleton = () => (
     </div>
   </div>
 );
+
+    

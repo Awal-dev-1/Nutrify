@@ -187,7 +187,7 @@ const AnalyticsPage = () => {
   if (!data || data.chartData.length === 0 || data.summary.averageCalories === 0) {
     return (
       <div className="min-h-[80vh] bg-gradient-to-b from-background to-secondary/5">
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+        <div className="w-full max-w-7xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ const AnalyticsPage = () => {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12">
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+      <div className="w-full max-w-7xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
@@ -685,7 +685,7 @@ const DaySummaryCard = ({ day, title, icon, variant }: { day: AnalyticsData; tit
 // Enhanced Analytics Skeleton
 const AnalyticsSkeleton = () => (
   <div className="min-h-dvh bg-gradient-to-b from-background to-secondary/5 pb-8 md:pb-12 animate-pulse">
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+    <div className="w-full max-w-7xl mx-auto space-y-6 md:space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 rounded-xl" />
@@ -763,3 +763,5 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
+
+    

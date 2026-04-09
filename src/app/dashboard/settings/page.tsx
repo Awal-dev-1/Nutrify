@@ -407,7 +407,7 @@ export default function SettingsPage() {
 
   if (isProfileLoading) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         <div className="space-y-2">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-4 w-64" />
@@ -421,7 +421,7 @@ export default function SettingsPage() {
   const isDeleteDisabled = deleteConfirmText !== 'DELETE';
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-4 md:py-6 lg:py-8">
+    <div className="w-full max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <div className="flex items-center gap-3">
@@ -583,3 +583,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    

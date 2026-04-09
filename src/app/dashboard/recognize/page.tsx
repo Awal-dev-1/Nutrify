@@ -513,7 +513,7 @@ export default function RecognizePage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 md:space-y-8 px-0">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       <div className={cn(isCameraOpen && 'hidden md:block')}>
         <h1 className="text-h1 font-bold tracking-tight flex items-center gap-2 text-primary">
           <ScanLine className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary shrink-0" />
@@ -543,3 +543,5 @@ export default function RecognizePage() {
     </div>
   );
 }
+
+    
