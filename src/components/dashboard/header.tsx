@@ -59,7 +59,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 bg-background/80 backdrop-blur-xl px-5 pt-safe">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 bg-background/95 backdrop-blur-sm px-5 pt-safe">
       <div className="flex flex-1 flex-col">
         <h1 className="text-body font-semibold">
           {greeting}, {userProfile?.name || 'User'}!

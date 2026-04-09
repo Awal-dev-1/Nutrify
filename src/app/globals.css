@@ -5,7 +5,7 @@
 @layer base {
   html,
   body {
-    @apply m-0 h-full w-full p-0;
+    @apply m-0 min-h-dvh w-full p-0;
   }
   html {
     overflow-x: hidden;
@@ -14,6 +14,17 @@
     @apply font-body;
     overscroll-behavior-y: none;
     overflow-x: hidden;
+  }
+  
+  /* Scrollbar hiding for webkit browsers */
+  .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+  }
+
+  /* Scrollbar hiding for IE, Edge and Firefox */
+  .scrollbar-hide {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
   }
 
   :root {
