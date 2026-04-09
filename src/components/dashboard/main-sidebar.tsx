@@ -173,7 +173,7 @@ export function MainSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className={cn('py-4 transition-all duration-300', isCollapsed ? 'px-0' : 'px-0')}>
+      <SidebarContent className={cn('py-4 transition-all duration-300 no-scrollbar', isCollapsed ? 'px-0' : 'px-0')}>
         <div className="space-y-4">
           {renderLinks(mainLinks)}
           
