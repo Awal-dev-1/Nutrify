@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo, type FC } from 'react';
 import { TransitionLink } from '@/components/shared/transition-link';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query, orderBy, limit, setDoc } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, setDoc, type DocumentReference } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { getAnalyticsData } from '@/services/analyticsService';
 import type { DailyLog, AnalyticsData } from '@/types/analytics';
@@ -49,6 +49,7 @@ import { cn } from '@/lib/utils';
 import { QuickAddMealModal } from '@/components/tracker/quick-add-meal-modal';
 import { MICRONUTRIENT_KEYS, NUTRIENT_GOAL_KEYS, NUTRIENT_LABELS, NUTRIENT_UNITS, NUTRIENT_DRV } from '@/lib/nutrients';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 const barColors = ['#3B82F6', '#22C55E', '#EAB308', '#EF4444', '#8B5CF6', '#F97316', '#14B8A6'];
 
@@ -136,22 +137,6 @@ const OverviewPage = () => {
     meals: { Breakfast: [], Lunch: [], Dinner: [] },
   };
   
-  const handleWaterChange = (newIntake: number) => {
-    if (!dailyLogRef) return;
-    const newLogData = {
-      ...todayTotals,
-      waterIntake: newIntake,
-      date: todayKey,
-    };
-    setDoc(dailyLogRef, newLogData, { merge: true }).catch(error => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: dailyLogRef.path,
-        operation: 'write',
-        requestResourceData: { waterIntake: newIntake },
-      }));
-    });
-  };
-
   const calorieProgress = (todayTotals.totalCalories / (derivedGoals.calories || 1)) * 100;
   const calorieRemaining = derivedGoals.calories - todayTotals.totalCalories;
   const isOverGoal = todayTotals.totalCalories > derivedGoals.calories;
@@ -499,7 +484,9 @@ const OverviewPage = () => {
                   todayLog={todayTotals}
                   weeklyData={weeklyData}
                   goal={derivedGoals.water}
-                  onIntakeChange={handleWaterChange}
+                  dailyLogRef={dailyLogRef}
+                  todayTotals={todayTotals}
+                  todayKey={todayKey}
               />
             </motion.div>
 
@@ -692,11 +679,23 @@ const MicroNutrientGrid: FC<{ topNutrients: Array<{ key: string; label: string; 
   </Card>
 );
 
-const WaterWidget: FC<{ todayLog: DailyLog; weeklyData: AnalyticsData[] | null; goal: number; onIntakeChange: (newIntake: number) => void; }> = ({ todayLog, weeklyData, goal, onIntakeChange }) => {
-  const intake = todayLog.waterIntake;
-  const progress = Math.min((intake / goal) * 100, 100);
-  const isGoalMet = intake >= goal;
+const WaterWidget: FC<{
+  todayLog: DailyLog;
+  weeklyData: AnalyticsData[] | null;
+  goal: number;
+  dailyLogRef: DocumentReference | null;
+  todayTotals: DailyLog;
+  todayKey: string;
+}> = ({ todayLog, weeklyData, goal, dailyLogRef, todayTotals, todayKey }) => {
+  const { toast } = useToast();
+  const [intake, setIntake] = useState(todayLog.waterIntake);
   const [showCheck, setShowCheck] = useState(false);
+
+  useEffect(() => {
+    setIntake(todayLog.waterIntake);
+  }, [todayLog.waterIntake]);
+
+  const isGoalMet = intake >= goal;
 
   useEffect(() => {
     if (isGoalMet) {
@@ -706,6 +705,39 @@ const WaterWidget: FC<{ todayLog: DailyLog; weeklyData: AnalyticsData[] | null; 
     }
   }, [isGoalMet]);
 
+  const handleIntakeUpdate = async (increment: number) => {
+    if (!dailyLogRef) return;
+
+    const newIntake = Math.max(0, intake + increment);
+    const oldIntake = intake;
+
+    setIntake(newIntake); // Optimistic update
+
+    const newLogData = {
+      ...todayTotals,
+      waterIntake: newIntake,
+      date: todayKey,
+    };
+
+    try {
+      await setDoc(dailyLogRef, newLogData, { merge: true });
+    } catch (error) {
+      setIntake(oldIntake); // Rollback on failure
+      toast({
+        variant: "destructive",
+        title: "Sync Failed",
+        description: "Could not update water intake. Check your connection.",
+      });
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: dailyLogRef.path,
+        operation: 'write',
+        requestResourceData: { waterIntake: newIntake },
+      }));
+    }
+  };
+
+  const progress = Math.min((intake / goal) * 100, 100);
+  
   const chartData = useMemo(() => weeklyData?.map(d => ({ date: format(new Date(d.date), 'EEE'), intake: d.waterIntake, goal })) || [], [weeklyData, goal]);
 
   return (
@@ -715,7 +747,7 @@ const WaterWidget: FC<{ todayLog: DailyLog; weeklyData: AnalyticsData[] | null; 
       </CardHeader>
       <CardContent className="p-3 sm:p-4 space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => onIntakeChange(Math.max(0, intake - 1))} disabled={intake === 0} className="h-12 w-12 rounded-full border-2 bg-background/50 hover:bg-muted active:bg-muted/80 disabled:opacity-50 transition-all flex items-center justify-center"><Minus className="h-5 w-5" /></motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleIntakeUpdate(-1)} disabled={intake === 0} className="h-12 w-12 rounded-full border-2 bg-background/50 hover:bg-muted active:bg-muted/80 disabled:opacity-50 transition-all flex items-center justify-center"><Minus className="h-5 w-5" /></motion.button>
           <div className="relative h-28 w-28">
             <AnimatePresence>{showCheck && (<motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} className="absolute inset-0 flex items-center justify-center z-10"><div className="h-10 w-10 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg"><CheckCircle2 className="h-6 w-6" /></div></motion.div>)}</AnimatePresence>
             <ResponsiveContainer width="100%" height="100%">
@@ -727,7 +759,7 @@ const WaterWidget: FC<{ todayLog: DailyLog; weeklyData: AnalyticsData[] | null; 
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center"><span className="text-3xl font-bold text-blue-600 dark:text-blue-400">{intake}</span><span className="text-sm text-muted-foreground">/ {goal}</span></div>
           </div>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => onIntakeChange(intake + 1)} className="h-12 w-12 rounded-full border-2 bg-background/50 hover:bg-muted active:bg-muted/80 transition-all flex items-center justify-center"><Plus className="h-5 w-5" /></motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleIntakeUpdate(1)} className="h-12 w-12 rounded-full border-2 bg-background/50 hover:bg-muted active:bg-muted/80 transition-all flex items-center justify-center"><Plus className="h-5 w-5" /></motion.button>
         </div>
         <div className="h-[80px] w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
