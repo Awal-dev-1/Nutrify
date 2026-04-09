@@ -97,7 +97,7 @@ const OverviewPage = () => {
         })
         .finally(() => setIsWeeklyLoading(false));
     }
-  }, [user, db, dailyLog]); // Re-fetch analytics when dailyLog changes for water chart
+  }, [user, db]); // This now only runs on initial load, not on dailyLog changes.
 
   const recommendationsQuery = useMemoFirebase(
     () =>
@@ -496,6 +496,7 @@ const OverviewPage = () => {
               <WaterWidget 
                   todayLog={todayTotals}
                   weeklyData={weeklyData}
+                  setWeeklyData={setWeeklyData}
                   goal={derivedGoals.water}
                   dailyLogRef={dailyLogRef}
                   todayTotals={todayTotals}
@@ -695,11 +696,12 @@ const MicroNutrientGrid: FC<{ topNutrients: Array<{ key: string; label: string; 
 const WaterWidget: FC<{
   todayLog: DailyLog;
   weeklyData: AnalyticsData[] | null;
+  setWeeklyData: React.Dispatch<React.SetStateAction<AnalyticsData[] | null>>;
   goal: number;
   dailyLogRef: DocumentReference | null;
   todayTotals: DailyLog;
   todayKey: string;
-}> = ({ todayLog, weeklyData, goal, dailyLogRef, todayTotals, todayKey }) => {
+}> = ({ todayLog, weeklyData, setWeeklyData, goal, dailyLogRef, todayTotals, todayKey }) => {
   const { toast } = useToast();
   const [intake, setIntake] = useState(todayLog.waterIntake);
   const [showCheck, setShowCheck] = useState(false);
@@ -724,7 +726,16 @@ const WaterWidget: FC<{
     const newIntake = Math.max(0, intake + increment);
     const oldIntake = intake;
 
-    setIntake(newIntake); // Optimistic UI update
+    // Optimistically update the counter and chart data
+    setIntake(newIntake);
+    if (setWeeklyData) {
+      setWeeklyData(prevData => {
+        if (!prevData) return null;
+        return prevData.map(day => 
+          day.date === todayKey ? { ...day, waterIntake: newIntake } : day
+        );
+      });
+    }
 
     const newLogData = {
       ...todayTotals,
@@ -734,7 +745,17 @@ const WaterWidget: FC<{
 
     // Background sync with error handling
     setDoc(dailyLogRef, newLogData, { merge: true }).catch((error) => {
-      setIntake(oldIntake); // Rollback on failure
+      // Rollback on failure
+      setIntake(oldIntake);
+      if (setWeeklyData) {
+        setWeeklyData(prevData => {
+           if (!prevData) return null;
+           return prevData.map(day => 
+             day.date === todayKey ? { ...day, waterIntake: oldIntake } : day
+           );
+        });
+      }
+      
       toast({
         variant: 'destructive',
         title: 'Sync Failed',
