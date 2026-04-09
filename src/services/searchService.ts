@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -10,6 +11,8 @@ import {
   limit,
   getDocs,
   writeBatch,
+  doc,
+  deleteDoc,
 } from 'firebase/firestore';
 import type { FoodItem } from '@/types/food';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -60,6 +63,20 @@ export const addRecentSearch = (
       path: recentsColRef.path,
       operation: 'create',
       requestResourceData: newRecentSearch,
+    }));
+  });
+};
+
+export const deleteRecentSearch = (
+  db: Firestore,
+  userId: string,
+  searchId: string
+) => {
+  const searchDocRef = doc(db, 'users', userId, 'recentSearches', searchId);
+  deleteDoc(searchDocRef).catch(error => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: searchDocRef.path,
+      operation: 'delete',
     }));
   });
 };
