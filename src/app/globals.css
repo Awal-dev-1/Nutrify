@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,11 +18,13 @@
   }
   
   /* Scrollbar hiding for webkit browsers */
+  .no-scrollbar::-webkit-scrollbar,
   .scrollbar-hide::-webkit-scrollbar {
       display: none;
   }
 
   /* Scrollbar hiding for IE, Edge and Firefox */
+  .no-scrollbar,
   .scrollbar-hide {
       -ms-overflow-style: none;  /* IE and Edge */
       scrollbar-width: none;  /* Firefox */
@@ -122,6 +125,9 @@
   }
   .gpu-layer {
     will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   .smooth-scroll {
     -webkit-overflow-scrolling: touch;
