@@ -12,7 +12,7 @@
   }
   body {
     @apply font-body;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
     overflow-x: hidden;
   }
   
