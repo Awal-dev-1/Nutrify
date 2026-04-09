@@ -84,7 +84,7 @@ export default function DashboardLayout({
       <SidebarInset>
         <DashboardHeader />
         <motion.div
-          className="bg-background px-5 pt-2 pb-20 md:p-6 md:pt-6 min-h-[101vh]"
+          className="bg-background px-5 pt-4 pb-20 md:p-6 md:pb-6 min-h-[101vh]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ease: "easeInOut", duration: 0.2 }}
