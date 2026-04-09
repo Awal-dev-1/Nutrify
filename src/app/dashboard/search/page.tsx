@@ -313,7 +313,8 @@ export default function SearchPage() {
                   "pl-12 pr-36",
                   "bg-background/80 backdrop-blur-sm",
                   "border-2 border-muted focus:border-primary",
-                  "rounded-2xl shadow-lg transition-all"
+                  "rounded-full shadow-lg transition-all",
+                  "placeholder:text-muted-foreground/70"
                 )}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -351,7 +352,7 @@ export default function SearchPage() {
                   className={cn(
                     "h-12 px-6 rounded-xl shrink-0",
                     "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
-                    "text-base"
+                    "text-base shadow-md hover:shadow-lg hover:shadow-primary/20 transition-all"
                   )}
                   disabled={loading || !searchQuery.trim()}
                 >
@@ -721,5 +722,3 @@ function FoodDetailsCard({
     </Card>
   );
 }
-
-    

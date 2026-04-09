@@ -1,3 +1,4 @@
+
 'use client';
 
 import { History, Bot, Flame, ChevronRight } from 'lucide-react';
@@ -20,10 +21,12 @@ export function RecentSearches({ recents, isLoading, onRecentClick }: RecentSear
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-4 w-48 mt-1" />
         </CardHeader>
-        <CardContent className="space-y-3">
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <Skeleton className="h-12 w-full rounded-lg" />
+        <CardContent className="p-0">
+          <div className="space-y-0">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
         </CardContent>
       </Card>
     );
@@ -49,13 +52,13 @@ export function RecentSearches({ recents, isLoading, onRecentClick }: RecentSear
         </CardTitle>
         <CardDescription>Click an item to view its details again.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="p-0">
+        <div className="space-y-0">
           {recents.map((recent) => (
             <button
               key={recent.id}
               onClick={() => onRecentClick(recent)}
-              className="w-full text-left p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors flex justify-between items-center group"
+              className="w-full text-left p-4 border-t hover:bg-muted/50 transition-colors flex justify-between items-center group"
             >
               <div className="flex-1 min-w-0">
                 <p className="font-medium">{recent.foodName}</p>
@@ -64,7 +67,7 @@ export function RecentSearches({ recents, isLoading, onRecentClick }: RecentSear
                     <span>{Math.round(recent.calories)} kcal</span>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors ml-2 shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors ml-2 shrink-0" />
             </button>
           ))}
         </div>
