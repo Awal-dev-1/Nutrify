@@ -232,7 +232,7 @@ export default function MealPlannerPage() {
 
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -277,9 +277,9 @@ export default function MealPlannerPage() {
         <PlannerSkeleton />
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="day">Day View</TabsTrigger>
-            <TabsTrigger value="week">Week View</TabsTrigger>
+          <TabsList className="grid w-full max-w-sm mx-auto grid-cols-2 h-auto rounded-full bg-muted/50 p-1.5">
+            <TabsTrigger value="day" className="rounded-full data-[state=active]:shadow-md">Day View</TabsTrigger>
+            <TabsTrigger value="week" className="rounded-full data-[state=active]:shadow-md">Week View</TabsTrigger>
           </TabsList>
           <TabsContent value="day" className="mt-6">
             <motion.div

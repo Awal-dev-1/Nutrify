@@ -37,11 +37,11 @@ export function PlannerControls({
   if (isPreviewing) {
     return (
       <div className="flex items-center gap-2 animate-in fade-in-50">
-        <Button variant="outline" onClick={onDiscard} disabled={isSaving}>
+        <Button variant="outline" size="sm" onClick={onDiscard} disabled={isSaving}>
           <X className="h-4 w-4 mr-2" />
           Discard
         </Button>
-        <Button onClick={onSave} disabled={isSaving}>
+        <Button onClick={onSave} disabled={isSaving} size="sm">
           {isSaving ? (
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
           ) : (
@@ -55,22 +55,21 @@ export function PlannerControls({
 
   return (
     <div className="flex items-center gap-2">
-      <Button onClick={onGenerate} disabled={isGenerating} className="whitespace-nowrap">
+      <Button onClick={onGenerate} disabled={isGenerating} size="sm" className="whitespace-nowrap">
         {isGenerating ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Sparkles className="h-4 w-4 mr-2" />
+          <Sparkles className="h-4 w-4" />
         )}
-        <span className="hidden sm:inline">Generate Plan</span>
-        <span className="sm:hidden">Generate</span>
+        <span className="ml-2 hidden sm:inline">Generate</span>
+        <span className="sm:hidden ml-2">AI Plan</span>
       </Button>
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="destructive" className="whitespace-nowrap">
-            <Trash2 className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Clear Plan</span>
-            <span className="sm:hidden">Clear</span>
+          <Button variant="destructive" size="icon" className="h-9 w-9">
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Clear Plan</span>
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
