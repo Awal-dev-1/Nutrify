@@ -351,7 +351,7 @@ export default function GoalsPage() {
   } as const;
 
   return (
-    <div className="md:pb-24">
+    <div>
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3">
