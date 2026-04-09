@@ -26,12 +26,19 @@ import type { AIPrediction } from '@/types/ai';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FoodPlannerModal } from '@/components/planner/food-planner-modal';
 import type { FoodItem } from '@/types/food';
 import { PredictionCard } from '@/components/recognize/prediction-card';
 
 type Status = 'idle' | 'compressing' | 'preparing' | 'analyzing' | 'completed' | 'failed';
+
+const motionVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3, ease: 'easeInOut' }
+};
 
 export default function RecognizePage() {
   const { user, userProfile } = useUser();
@@ -44,11 +51,9 @@ export default function RecognizePage() {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   
-  // State Management for Predictions
   const [predictions, setPredictions] = useState<AIPrediction[] | null>(null);
   const [confirmedPrediction, setConfirmedPrediction] = useState<AIPrediction | null>(null);
   
-  // State for Modals
   const [foodForLogging, setFoodForLogging] = useState<AIPrediction | null>(null);
   const [foodForPlanning, setFoodForPlanning] = useState<FoodItem | null>(null);
 
@@ -240,7 +245,7 @@ export default function RecognizePage() {
       case 'idle': {
         if (isCameraOpen) {
           return (
-            <div className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
+            <motion.div key="camera" {...motionVariants} className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
                 <video
                   ref={videoRef}
@@ -295,13 +300,13 @@ export default function RecognizePage() {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
         }
 
         if (preview) {
           return (
-            <div className="w-full max-w-4xl mx-auto space-y-4">
+            <motion.div key="preview" {...motionVariants} className="w-full max-w-4xl mx-auto space-y-4">
               <Card className="overflow-hidden shadow-lg">
                 <CardContent className="p-0">
                   <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
@@ -331,11 +336,11 @@ export default function RecognizePage() {
                   <X className="mr-2 h-4 w-4" /> Change Image
                 </Button>
               </div>
-            </div>
+            </motion.div>
           );
         }
         return (
-          <div className="w-full max-w-2xl mx-auto space-y-4">
+          <motion.div key="uploader" {...motionVariants} className="w-full max-w-2xl mx-auto space-y-4">
             {isMobile && (
               <div className="space-y-3">
                 <Button
@@ -359,7 +364,7 @@ export default function RecognizePage() {
               </div>
             )}
             <ImageUploader onFileSelect={handleFileSelect} />
-          </div>
+          </motion.div>
         );
       }
 
@@ -367,47 +372,54 @@ export default function RecognizePage() {
       case 'preparing':
       case 'analyzing': {
         const messages = {
-            compressing: 'Compressing image...',
-            preparing: 'Preparing for analysis...',
-            analyzing: 'This is the magic part, it may take a moment.'
+            compressing: { title: 'Optimizing Image', subtitle: 'Making things snappy...' },
+            preparing: { title: 'Preparing Analysis', subtitle: 'Connecting to the AI brain...' },
+            analyzing: { title: 'Analyzing Your Meal', subtitle: 'Detecting nutrients and calories...' }
         };
+        const currentMessage = messages[status];
         return (
-          <div className="w-full max-w-4xl mx-auto">
-            <Card className="overflow-hidden shadow-lg border-2 border-primary/20">
-              <CardContent className="p-0">
-                <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
-                  {preview && (
-                    <Image
-                      src={preview}
-                      alt="Analyzing food"
-                      fill
-                      className="object-contain opacity-30 blur-sm"
-                    />
-                  )}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                    <div className="absolute inset-x-0 top-0 bottom-0 overflow-hidden">
-                      <motion.div
-                        className="absolute left-0 right-0 h-1 bg-primary/70 shadow-[0_0_15px_2px_hsl(var(--primary))]"
-                        initial={{ y: '-10%' }}
-                        animate={{ y: '110%' }}
-                        transition={{
-                          duration: 2.5,
-                          repeat: Infinity,
-                          repeatType: 'reverse',
-                          ease: 'easeInOut',
-                        }}
+          <motion.div
+            key="analyzing"
+            {...motionVariants}
+            className="w-full"
+          >
+            <div className="w-full max-w-4xl mx-auto">
+              <Card className="overflow-hidden shadow-lg border-2 border-primary/20">
+                <CardContent className="p-0">
+                  <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
+                    {preview && (
+                      <Image
+                        src={preview}
+                        alt="Analyzing food"
+                        fill
+                        className="object-contain opacity-30 blur-sm"
                       />
-                    </div>
-                    
-                    <div className="relative flex flex-col items-center gap-3">
-                      <Loader2 className="h-10 w-10 text-white animate-spin" />
-                      <h3 className="text-lg font-semibold text-white">{messages[status]}</h3>
+                    )}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                      <div className="absolute inset-x-0 top-0 bottom-0 overflow-hidden">
+                        <motion.div
+                          className="absolute left-0 right-0 h-1 bg-primary/70 shadow-[0_0_15px_2px_hsl(var(--primary))]"
+                          initial={{ y: '-10%' }}
+                          animate={{ y: '110%' }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            repeatType: 'reverse',
+                            ease: 'easeInOut',
+                          }}
+                        />
+                      </div>
+                      <div className="relative flex flex-col items-center gap-4">
+                        <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                        <h3 className="text-xl font-medium text-white">{currentMessage.title}</h3>
+                        <p className="text-sm text-white/70">{currentMessage.subtitle}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.div>
         );
       }
 
@@ -415,10 +427,9 @@ export default function RecognizePage() {
         if (confirmedPrediction) {
           return (
             <motion.div
+              key="confirmed"
+              {...motionVariants}
               className="w-full md:max-w-4xl lg:max-w-5xl mx-auto space-y-4 sm:space-y-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
             >
               <AiFoodResultCard
                 item={confirmedPrediction}
@@ -442,10 +453,9 @@ export default function RecognizePage() {
         if (predictions && predictions.length > 1) {
           return (
             <motion.div
+              key="multiple"
+              {...motionVariants}
               className="w-full max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
             >
               <Card className="text-center shadow-lg">
                 <CardHeader>
@@ -472,39 +482,43 @@ export default function RecognizePage() {
         }
 
         return (
-          <Alert className="max-w-4xl mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>No Food Detected</AlertTitle>
-            <AlertDescription className="text-sm">
-              The AI couldn't identify any food in the image. Try a clearer picture or a different angle.
-              <Button
-                variant="outline"
-                onClick={() => resetState()}
-                className="mt-4 w-full min-h-[44px]"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <motion.div key="no-food" {...motionVariants}>
+            <Alert className="max-w-4xl mx-auto">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>No Food Detected</AlertTitle>
+              <AlertDescription className="text-sm">
+                The AI couldn't identify any food in the image. Try a clearer picture or a different angle.
+                <Button
+                  variant="outline"
+                  onClick={() => resetState()}
+                  className="mt-4 w-full min-h-[44px]"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
         );
       }
 
       case 'failed': {
         return (
-          <Alert variant="destructive" className="max-w-4xl mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Analysis Failed</AlertTitle>
-            <AlertDescription className="text-sm">
-              {error || 'An unexpected error occurred.'}
-              <Button
-                variant="destructive"
-                onClick={() => resetState()}
-                className="mt-4 w-full min-h-[44px]"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <motion.div key="failed" {...motionVariants}>
+            <Alert variant="destructive" className="max-w-4xl mx-auto">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Analysis Failed</AlertTitle>
+              <AlertDescription className="text-sm">
+                {error || 'An unexpected error occurred.'}
+                <Button
+                  variant="destructive"
+                  onClick={() => resetState()}
+                  className="mt-4 w-full min-h-[44px]"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
         );
       }
 
@@ -526,7 +540,9 @@ export default function RecognizePage() {
       </div>
 
       <div className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px] flex items-start sm:items-center justify-center">
-        {renderContent()}
+        <AnimatePresence mode="wait">
+          {renderContent()}
+        </AnimatePresence>
       </div>
 
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
