@@ -62,7 +62,7 @@ export function DashboardHeader() {
   return (
     <header className={cn(
       "sticky top-0 z-50 flex h-auto items-center gap-4 px-5 py-2 pt-safe",
-      "bg-background/80 backdrop-blur-md border-0 shadow-md",
+      "bg-background/80 backdrop-blur-md border-0 shadow-sm",
       "gpu-layer"
     )}>
       <div className="flex flex-1 flex-col">

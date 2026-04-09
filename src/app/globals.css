@@ -8,7 +8,15 @@
   body {
     @apply m-0 min-h-dvh w-full p-0;
     height: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
   }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none; /* Webkit browsers */
+  }
+
   html {
     overflow-x: hidden;
   }
