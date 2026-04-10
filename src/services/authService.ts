@@ -196,13 +196,26 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   try {
     // Wait for both storage and firestore cleanup to complete
     await Promise.all([storageCleanupPromise, firestoreCleanupPromise]);
-  } catch (error) {
-    // If any data deletion fails, emit a generic permission error and stop
-    const permissionError = new FirestorePermissionError({
-      path: `users/${userId} and its subcollections/storage`,
-      operation: 'delete',
-    });
-    errorEmitter.emit('permission-error', permissionError);
+  } catch (error: any) {
+    // Improved error handling
+    if (error.code) { // Check if it's a Firebase error
+      if (error.code.startsWith('storage/')) {
+        console.error("Storage cleanup failed:", error);
+        // Throw a user-friendly error for storage issues
+        throw new Error(`Storage cleanup failed: ${error.message}. Please try again.`);
+      } else if (error.code === 'permission-denied') {
+        // It's a Firestore permission error. Emit the specific error for the dev overlay.
+        const permissionError = new FirestorePermissionError({
+          path: `users/${userId} and subcollections`,
+          operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // Throw a more generic error for the user's toast notification.
+        throw new Error("Permission denied. Failed to delete user data from the database.");
+      }
+    }
+    // For other generic errors
+    console.error("Account deletion data cleanup failed:", error);
     throw new Error("Failed to delete user data due to a network or permission issue. Please try again.");
   }
 
