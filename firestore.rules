@@ -22,32 +22,34 @@ service cloud.firestore {
           && request.resource.data.createdAt == resource.data.createdAt;
     }
 
-    // Performs basic validation on the data being written in an update.
-    function isValidUserUpdate() {
-        let data = request.resource.data;
-        let profile = data.get('profile', {});
-        let goals = data.get('goals', {});
+    // Performs comprehensive validation on user profile data for create and update.
+    function isValidUserData(data) {
+      let profile = data.get('profile', {});
+      let health = data.get('health', {});
+      let goals = data.get('goals', {});
+      
+      let isNameValid = data.name is string && data.name.size() > 1;
 
-        // Validate name exists and is a non-empty string.
-        let isNameValid = data.name is string && data.name.size() > 1;
-        
-        // Validate age if it's being updated.
-        let isAgeValid = !profile.keys().hasAny(['age']) || (profile.age is number && profile.age > 0);
-
-        // Validate calorie goal if it's being updated.
-        let isCalorieGoalValid = !goals.keys().hasAny(['dailyCalorieGoal']) || (goals.dailyCalorieGoal is number && goals.dailyCalorieGoal > 0);
-        
-        // Validate macro goals if they are being updated.
-        let isProteinGoalValid = !goals.keys().hasAny(['proteinPercentageGoal']) || (goals.proteinPercentageGoal is number && goals.proteinPercentageGoal >= 0 && goals.proteinPercentageGoal <= 100);
-        let isCarbsGoalValid = !goals.keys().hasAny(['carbsPercentageGoal']) || (goals.carbsPercentageGoal is number && goals.carbsPercentageGoal >= 0 && goals.carbsPercentageGoal <= 100);
-        let isFatGoalValid = !goals.keys().hasAny(['fatPercentageGoal']) || (goals.fatPercentageGoal is number && goals.fatPercentageGoal >= 0 && goals.fatPercentageGoal <= 100);
-
-        return isNameValid 
-            && isAgeValid 
-            && isCalorieGoalValid
-            && isProteinGoalValid
-            && isCarbsGoalValid
-            && isFatGoalValid;
+      // Profile validation (optional fields for updates)
+      let isGenderValid = !('gender' in profile) || profile.gender in ['male', 'female', 'other'];
+      let isAgeValid = !('age' in profile) || (profile.age is number && profile.age >= 1 && profile.age <= 120);
+      let isHeightValid = !('heightCm' in profile) || (profile.heightCm is number && profile.heightCm > 0);
+      let isWeightValid = !('weightKg' in profile) || (profile.weightKg is number && profile.weightKg > 0);
+      let isActivityValid = !('activityLevel' in profile) || profile.activityLevel in ['low', 'moderate', 'active', 'very-active'];
+      
+      // Health validation (optional fields for updates)
+      let isPrimaryGoalValid = !('primaryGoal' in health) || health.primaryGoal in ['lose-weight', 'maintain-weight', 'gain-weight', 'eat-healthier'];
+      
+      // Goals validation (optional fields for updates)
+      let isCalorieGoalValid = !('dailyCalorieGoal' in goals) || (goals.dailyCalorieGoal is number && goals.dailyCalorieGoal > 0);
+      let isProteinGoalValid = !('proteinPercentageGoal' in goals) || (goals.proteinPercentageGoal is number && goals.proteinPercentageGoal >= 0 && goals.proteinPercentageGoal <= 100);
+      let isCarbsGoalValid = !('carbsPercentageGoal' in goals) || (goals.carbsPercentageGoal is number && goals.carbsPercentageGoal >= 0 && goals.carbsPercentageGoal <= 100);
+      let isFatGoalValid = !('fatPercentageGoal' in goals) || (goals.fatPercentageGoal is number && goals.fatPercentageGoal >= 0 && goals.fatPercentageGoal <= 100);
+      
+      return isNameValid
+          && isGenderValid && isAgeValid && isHeightValid && isWeightValid && isActivityValid
+          && isPrimaryGoalValid
+          && isCalorieGoalValid && isProteinGoalValid && isCarbsGoalValid && isFatGoalValid;
     }
 
     // -------------------------------------------------------------------------
@@ -57,9 +59,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow get, delete: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId);
-      // Allow update if it's the onboarding completion OR a valid subsequent update.
-      allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && (resource.data.onboardingCompleted == false || isValidUserUpdate());
+      allow create: if isOwner(userId) && isValidUserData(request.resource.data);
+      allow update: if isOwner(userId) && areImmutableFieldsUnchanged() && isValidUserData(request.resource.data);
 
       /**
        * @description Manages a user's private daily nutrition logs.
@@ -114,5 +115,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

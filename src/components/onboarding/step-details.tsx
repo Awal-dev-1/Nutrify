@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   gender: z.string().min(1, "Gender is required"),
-  age: z.coerce.number().min(1, "Age must be a positive number."),
+  age: z.coerce.number().min(1, "Age must be a positive number.").max(120, "Please enter a valid age."),
   heightUnit: z.enum(["cm", "m", "ft-in"]),
   height: z.coerce.number().min(1, "Height is required."),
   heightInches: z.coerce.number().optional(),
@@ -33,11 +33,11 @@ const formSchema = z.object({
   weight: z.coerce.number().min(1, "Weight is required."),
 }).refine(data => {
   if (data.heightUnit === 'ft-in') {
-    return data.heightInches !== undefined && data.heightInches >= 0;
+    return data.heightInches !== undefined && data.heightInches >= 0 && data.heightInches < 12;
   }
   return true;
 }, {
-  message: "Inches are required",
+  message: "Inches must be between 0 and 11.",
   path: ["heightInches"],
 });
 
