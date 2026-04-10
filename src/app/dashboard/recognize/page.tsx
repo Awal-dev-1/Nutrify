@@ -81,12 +81,14 @@ export default function RecognizePage() {
   useEffect(() => {
     if (!isCameraOpen) {
       if (videoTrackRef.current) {
-        if ('torch' in videoTrackRef.current.getCapabilities()) {
-            try { // Use try-catch for constraints as they can fail
-              videoTrackRef.current.applyConstraints({ advanced: [{ torch: false }] });
-            } catch (e) {
-              console.warn("Could not turn off torch", e);
-            }
+        try {
+          const capabilities = videoTrackRef.current.getCapabilities();
+          // Attempt to turn off flash when closing camera
+          if (capabilities && capabilities.torch) {
+            videoTrackRef.current.applyConstraints({ advanced: [{ torch: false }] });
+          }
+        } catch (e) {
+          console.warn("Could not ensure torch was off during cleanup:", e);
         }
         videoTrackRef.current.stop();
         videoTrackRef.current = null;
@@ -114,8 +116,19 @@ export default function RecognizePage() {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.onloadedmetadata = () => {
-              if (videoTrackRef.current && 'torch' in videoTrackRef.current.getCapabilities()) {
-                  setIsFlashAvailable(true);
+              if (videoTrackRef.current) {
+                try {
+                  const capabilities = videoTrackRef.current.getCapabilities();
+                  // Check if the 'torch' capability is supported and true
+                  if (capabilities && capabilities.torch) {
+                      setIsFlashAvailable(true);
+                  } else {
+                      setIsFlashAvailable(false);
+                  }
+                } catch(e) {
+                  console.warn("Could not get track capabilities:", e);
+                  setIsFlashAvailable(false);
+                }
               }
           }
         }
@@ -251,7 +264,7 @@ export default function RecognizePage() {
       case 'idle': {
         if (isCameraOpen) {
           return (
-            <motion.div key="camera" {...motionVariants} className="fixed md:relative inset-0 z-[110] bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
+            <motion.div key="camera" {...motionVariants} className="fixed inset-0 z-50 bg-black md:relative md:z-auto md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
                 <video
                   ref={videoRef}
