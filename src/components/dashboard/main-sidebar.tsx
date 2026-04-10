@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/sidebar'
 import { Logo } from '@/components/shared/logo'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useUser } from '@/firebase'
+import { useUser, useSettingsModal } from '@/hooks'
 import { cn } from '@/lib/utils'
 
 const mainLinks = [
@@ -53,6 +53,7 @@ const insightLinks = [
 export function MainSidebar() {
   const pathname = usePathname()
   const { user, userProfile } = useUser()
+  const { openSettings } = useSettingsModal();
   const { isMobile, setOpenMobile, state } = useSidebar()
   const isCollapsed = state === 'collapsed'
 
@@ -173,7 +174,7 @@ export function MainSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className={cn('pt-4 pb-4 transition-all duration-300 no-scrollbar', isCollapsed ? 'px-0' : 'px-0')}>
+      <SidebarContent className={cn('pt-4 pb-4 transition-all duration-300', isCollapsed ? 'px-0' : 'px-0')}>
         <div className="space-y-4">
           {renderLinks(mainLinks)}
           
@@ -198,30 +199,26 @@ export function MainSidebar() {
         <SidebarMenu className="gap-1 px-2">
           <SidebarMenuItem>
             <SidebarMenuButton
-              asChild
-              isActive={pathname === '/dashboard/settings'}
               tooltip="Settings"
               className={cn(
                 'h-auto py-3 transition-all duration-200 active:scale-95',
                 isCollapsed && 'justify-center px-0 h-12 w-12',
-                pathname === '/dashboard/settings'
-                  ? 'bg-primary/10 text-primary font-semibold shadow-sm'
-                  : 'hover:bg-muted/50 hover:text-foreground',
+                'hover:bg-muted/50 hover:text-foreground',
               )}
-              onClick={handleCloseMobileSidebar}
+              onClick={() => {
+                openSettings();
+                handleCloseMobileSidebar();
+              }}
             >
-              <TransitionLink
-                href="/dashboard/settings"
-                className={cn('flex items-center gap-4 w-full', isCollapsed && 'justify-center px-0')}
-              >
-                <Settings className="h-5 w-5 shrink-0" />
-                <span className={cn(
-                  'overflow-hidden whitespace-nowrap transition-all duration-300 text-sm',
-                  isCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-auto opacity-100',
-                )}>
-                  Settings
-                </span>
-              </TransitionLink>
+                <div className={cn('flex items-center gap-4 w-full', isCollapsed && 'justify-center px-0')}>
+                    <Settings className="h-5 w-5 shrink-0" />
+                    <span className={cn(
+                    'overflow-hidden whitespace-nowrap transition-all duration-300 text-sm',
+                    isCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-auto opacity-100',
+                    )}>
+                    Settings
+                    </span>
+                </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

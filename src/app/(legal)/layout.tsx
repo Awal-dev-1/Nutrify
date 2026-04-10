@@ -18,9 +18,9 @@ export default function LegalLayout({
         <div className="container flex h-16 items-center justify-between">
           <Logo />
           <Button variant="outline" asChild>
-            <TransitionLink href="/dashboard/settings">
+            <TransitionLink href="/dashboard/overview">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Settings
+              Back to Dashboard
             </TransitionLink>
           </Button>
         </div>

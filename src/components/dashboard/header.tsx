@@ -10,7 +10,7 @@ import {
 import { format } from 'date-fns'
 import { useUser } from '@/firebase'
 import { logout } from '@/services/authService'
-import { useAuth } from '@/hooks'
+import { useAuth, useSettingsModal } from '@/hooks'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import { useState, useEffect } from 'react'
@@ -38,6 +38,7 @@ export function DashboardHeader() {
   const router = useRouter();
   const { setTheme } = useTheme();
   const [greeting, setGreeting] = useState("Good Morning");
+  const { openSettings } = useSettingsModal();
 
   useEffect(() => {
     const getGreeting = () => {
@@ -62,9 +63,9 @@ export function DashboardHeader() {
   return (
     <header
       className={cn(
-        "fixed top-0 z-[100] flex h-16 items-center gap-4 px-5 pt-safe shadow-sm",
+        "fixed top-0 z-[100] flex h-16 items-center gap-4 px-5 pt-safe shadow-sm gpu-layer",
         "bg-background/80 backdrop-blur-md",
-        "right-0",
+        "left-0 right-0",
         "md:left-[var(--sidebar-width)]",
         "group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)]",
         "transition-[left] duration-200 ease-in-out"
@@ -109,11 +110,9 @@ export function DashboardHeader() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem asChild>
-              <TransitionLink href="/dashboard/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </TransitionLink>
+            <DropdownMenuItem onSelect={openSettings}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

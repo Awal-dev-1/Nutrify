@@ -10,8 +10,9 @@
 
     /* ✅ Enable smooth mobile scrolling */
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
 
-    /* ✅ Hide scrollbars */
+    /* ✅ Hide scrollbars globally */
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -31,20 +32,6 @@
 
     overflow-x: hidden;
     overflow-y: auto; /* ✅ CRITICAL for scroll + sticky */
-  }
-
-  /* ========================
-     Scrollbar utilities
-  ======================== */
-  .no-scrollbar::-webkit-scrollbar,
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar,
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 
   /* ========================
@@ -151,5 +138,22 @@
 
   .touch-pan-y {
     touch-action: pan-y;
+  }
+
+  /* Custom scrollbar for desktop sidebar */
+  .sidebar-scroll::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--sidebar-border));
+    border-radius: 3px;
+  }
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--sidebar-border)) transparent;
   }
 }

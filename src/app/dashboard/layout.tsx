@@ -12,6 +12,7 @@ import { useTheme } from 'next-themes';
 import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { motion } from 'framer-motion';
+import { SettingsProvider } from '@/components/providers/settings-provider';
 
 export default function DashboardLayout({
   children,
@@ -77,22 +78,24 @@ export default function DashboardLayout({
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <MainSidebar />
-      </Sidebar>
-      <SidebarInset>
-        <DashboardHeader />
-        <motion.div
-          className="bg-background px-5 pt-20 pb-20 md:px-6 md:pt-20 md:pb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ease: "easeInOut", duration: 0.2 }}
-        >
-          {children}
-        </motion.div>
-        <BottomNav />
-      </SidebarInset>
-    </SidebarProvider>
+    <SettingsProvider>
+      <SidebarProvider>
+        <Sidebar>
+          <MainSidebar />
+        </Sidebar>
+        <SidebarInset>
+          <DashboardHeader />
+          <motion.div
+            className="bg-background px-5 pt-20 pb-20 md:px-6 md:pb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ease: "easeInOut", duration: 0.2 }}
+          >
+            {children}
+          </motion.div>
+          <BottomNav />
+        </SidebarInset>
+      </SidebarProvider>
+    </SettingsProvider>
   );
 }
