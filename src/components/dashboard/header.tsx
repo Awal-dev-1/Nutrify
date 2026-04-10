@@ -60,11 +60,14 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className={cn(
-      "sticky top-0 z-50 flex h-auto items-center gap-4 px-5 py-2 pt-safe",
-      "bg-background/80 backdrop-blur-md border-0 shadow-sm",
-      "gpu-layer"
-    )}>
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-[100] flex h-auto items-center gap-4 px-5 py-2 pt-safe",
+        "bg-background",
+        "shadow-md",
+        "will-change-transform"
+      )}
+    >
       <div className="flex flex-1 flex-col">
         <h1 className="text-body font-semibold">
           {greeting}, {userProfile?.name || 'User'}!
@@ -73,17 +76,25 @@ export function DashboardHeader() {
           {format(new Date(), "EEEE, MMMM d, yyyy")}
         </p>
       </div>
+
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.photoURL || userProfile?.profile?.profileImageUrl || ''} alt={userProfile?.name || 'User'} />
-                <AvatarFallback>{userProfile?.name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                <AvatarImage
+                  src={user?.photoURL || userProfile?.profile?.profileImageUrl || ''}
+                  alt={userProfile?.name || 'User'}
+                />
+                <AvatarFallback>
+                  {userProfile?.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
@@ -93,14 +104,18 @@ export function DashboardHeader() {
                 </p>
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem asChild>
               <TransitionLink href="/dashboard/settings">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </TransitionLink>
             </DropdownMenuItem>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Logout</span>

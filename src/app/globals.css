@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,40 +5,51 @@
 @layer base {
   html,
   body {
-    @apply m-0 min-h-dvh w-full p-0;
-    height: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    @apply m-0 w-full p-0;
+    min-height: 100dvh;
+
+    /* ✅ Enable smooth mobile scrolling */
+    -webkit-overflow-scrolling: touch;
+
+    /* ✅ Hide scrollbars */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   html::-webkit-scrollbar,
   body::-webkit-scrollbar {
-    display: none; /* Webkit browsers */
+    display: none;
   }
 
   html {
     overflow-x: hidden;
+    overflow-y: auto; /* ✅ IMPORTANT: allow vertical scroll */
   }
+
   body {
-    @apply font-body;
-    overscroll-behavior-y: contain;
-    overflow-y: auto;
+    @apply font-body bg-background text-foreground;
+
     overflow-x: hidden;
+    overflow-y: auto; /* ✅ CRITICAL for scroll + sticky */
   }
-  
-  /* Scrollbar hiding for webkit browsers */
+
+  /* ========================
+     Scrollbar utilities
+  ======================== */
   .no-scrollbar::-webkit-scrollbar,
   .scrollbar-hide::-webkit-scrollbar {
-      display: none;
+    display: none;
   }
 
-  /* Scrollbar hiding for IE, Edge and Firefox */
   .no-scrollbar,
   .scrollbar-hide {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
+  /* ========================
+     Theme Variables
+  ======================== */
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -75,6 +85,7 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 161 100% 35%;
   }
+
   .dark {
     --background: 240 6% 10%;
     --foreground: 0 0% 98%;
@@ -115,9 +126,6 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
 
 @layer components {
@@ -133,15 +141,14 @@
   .pr-safe {
     padding-right: env(safe-area-inset-right);
   }
+
   .gpu-layer {
     will-change: transform;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
-  .smooth-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
+
   .touch-pan-y {
     touch-action: pan-y;
   }
