@@ -1,18 +1,17 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, PlusCircle, Flame } from 'lucide-react';
+import { Lightbulb, Flame, ArrowRight } from 'lucide-react';
 import type { Recommendation } from '@/services/recommendationService';
 
 interface RecommendationCardProps {
   recommendation: Recommendation;
-  onAddToCart: () => void;
+  onClick: () => void;
 }
 
-export function RecommendationCard({ recommendation, onAddToCart }: RecommendationCardProps) {
+export function RecommendationCard({ recommendation, onClick }: RecommendationCardProps) {
   const highestMacro = useMemo(() => {
     const macros = [
       { name: 'Protein', value: recommendation.protein },
@@ -28,7 +27,8 @@ export function RecommendationCard({ recommendation, onAddToCart }: Recommendati
 
   return (
     <Card
-      className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col border-2 rounded-2xl"
+      onClick={onClick}
+      className="cursor-pointer overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col border-2 rounded-2xl group"
     >
       <div className="flex-grow p-4 flex items-center gap-4">
         {/* Left Icon */}
@@ -55,11 +55,9 @@ export function RecommendationCard({ recommendation, onAddToCart }: Recommendati
           </div>
         </div>
         
-        {/* Right Button */}
+        {/* Right Arrow */}
         <div className="flex-shrink-0">
-            <Button size="icon" variant="ghost" onClick={onAddToCart} className="h-10 w-10 rounded-full hover:bg-primary/10">
-                <PlusCircle className="h-5 w-5 text-primary" />
-            </Button>
+            <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors group-hover:translate-x-1" />
         </div>
       </div>
     </Card>
