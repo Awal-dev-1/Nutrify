@@ -20,13 +20,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const features = [
-  { href: '/dashboard/search', label: 'AI Search', icon: Search },
-  { href: '/dashboard/recognize', label: 'AI Scan', icon: ScanLine },
-  { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot },
-  { href: '/dashboard/planner', label: 'Planner', icon: Calendar },
-  { href: '/dashboard/tracker', label: 'Tracker', icon: HeartPulse },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/dashboard/goals', label: 'Goals', icon: Target },
+  { href: '/dashboard/search',          label: 'AI Search',       icon: Search     },
+  { href: '/dashboard/recognize',       label: 'AI Scan',         icon: ScanLine   },
+  { href: '/dashboard/recommendations', label: 'Recommendations', icon: Bot        },
+  { href: '/dashboard/planner',         label: 'Planner',         icon: Calendar   },
+  { href: '/dashboard/tracker',         label: 'Tracker',         icon: HeartPulse },
+  { href: '/dashboard/analytics',       label: 'Analytics',       icon: BarChart2  },
+  { href: '/dashboard/goals',           label: 'Goals',           icon: Target     },
 ];
 
 const FeaturesDrawer = ({
@@ -54,7 +54,7 @@ const FeaturesDrawer = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 pb-safe"
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
@@ -67,8 +67,8 @@ const FeaturesDrawer = ({
               Features
             </p>
 
-            {/* 4-column grid — prevents label overflow */}
-            <div className="grid grid-cols-4 gap-x-2 gap-y-3 px-4 pb-8">
+            {/* 4-column grid */}
+            <div className="grid grid-cols-3 gap-x-2 gap-y-3 px-4">
               {features.map((item) => {
                 const isActive = pathname.startsWith(item.href);
                 return (
@@ -78,10 +78,10 @@ const FeaturesDrawer = ({
                     onClick={onClose}
                     className={cn(
                       'flex flex-col items-center justify-start gap-1.5 py-2 rounded-2xl active:scale-95 transition-all min-w-0',
+                      features.length % 3 === 1 && features.indexOf(item) === features.length - 1 && 'col-start-2',
                       isActive ? 'bg-primary/10' : 'hover:bg-accent'
                     )}
                   >
-                    {/* Icon circle */}
                     <div
                       className={cn(
                         'flex items-center justify-center h-11 w-11 rounded-full transition-colors shrink-0',
@@ -92,8 +92,6 @@ const FeaturesDrawer = ({
                     >
                       <item.icon className="h-[18px] w-[18px]" />
                     </div>
-
-                    {/* Label — always visible, wraps cleanly */}
                     <span
                       className={cn(
                         'text-[10px] font-medium leading-tight text-center w-full break-words',
@@ -106,6 +104,9 @@ const FeaturesDrawer = ({
                 );
               })}
             </div>
+
+            {/* Spacer that covers the nav bar height (64px) + safe area */}
+            <div className="h-24 pb-safe" />
           </motion.div>
         </motion.div>
       )}
