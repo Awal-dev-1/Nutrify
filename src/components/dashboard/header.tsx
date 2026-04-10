@@ -62,9 +62,12 @@ export function DashboardHeader() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-[100] flex h-auto items-center gap-4 px-5 py-2 pt-safe shadow-md",
+        "fixed top-0 z-[100] flex h-16 items-center gap-4 px-5 pt-safe shadow-md",
         "bg-background/80 backdrop-blur-md",
-        "will-change-transform"
+        "right-0",
+        "md:left-[var(--sidebar-width)]",
+        "group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)]",
+        "transition-[left] duration-200 ease-in-out"
       )}
     >
       <div className="flex flex-1 flex-col">

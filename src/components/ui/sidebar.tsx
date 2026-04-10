@@ -146,6 +146,7 @@ const SidebarProvider = React.forwardRef<
               className
             )}
             ref={ref}
+            data-state={state}
             {...props}
           >
             {children}
@@ -199,12 +200,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
+            className="w-[18rem] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             side={side}
           >
             <SheetHeader className="sr-only">
@@ -229,11 +225,7 @@ const Sidebar = React.forwardRef<
         <div
           className={cn(
             "duration-200 relative w-[--sidebar-width] bg-transparent transition-[width] ease-in-out",
-            "group-data-[collapsible=offcanvas]:w-0",
-            "group-data-[side=right]:rotate-180",
-            variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+            "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
         />
         <div
