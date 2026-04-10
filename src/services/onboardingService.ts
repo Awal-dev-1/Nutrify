@@ -62,3 +62,26 @@ export const completeOnboarding = async (
     throw error;
   }
 };
+
+export const skipOnboarding = async (
+  db: Firestore,
+  userId: string
+): Promise<void> => {
+  const userRef = doc(db, 'users', userId);
+
+  const userDataToUpdate = {
+    onboardingCompleted: true,
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    await updateDoc(userRef, userDataToUpdate);
+  } catch (error) {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'update',
+        requestResourceData: userDataToUpdate
+    }));
+    throw error;
+  }
+};

@@ -13,10 +13,10 @@ import { PreferencesStep } from "@/components/onboarding/step-preferences";
 import { ActivityStep } from "@/components/onboarding/step-activity";
 import { SummaryStep } from "@/components/onboarding/step-summary";
 import { LoadingStep } from "@/components/onboarding/step-loading";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser, useFirestore } from "@/firebase";
-import { completeOnboarding } from "@/services/onboardingService";
+import { completeOnboarding, skipOnboarding } from "@/services/onboardingService";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +43,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState({});
+  const [isSkipping, setIsSkipping] = useState(false);
   const router = useRouter();
   const { user, userProfile, isUserLoading, isProfileLoading } = useUser();
   const db = useFirestore();
@@ -112,6 +113,29 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleSkip = async () => {
+    if (!user || !db || isSkipping) return;
+    
+    setIsSkipping(true);
+
+    try {
+        await skipOnboarding(db, user.uid);
+        toast({
+            title: "Setup Skipped",
+            description: "Welcome to Nutrify! You can complete your profile later in settings."
+        });
+        router.push("/dashboard/overview");
+    } catch (error) {
+        console.error("Skipping onboarding failed:", error);
+        toast({
+            variant: "destructive",
+            title: "Skip Failed",
+            description: "Could not skip onboarding. Please try again."
+        });
+        setIsSkipping(false);
+    }
+  };
+
   const stepsComponents = [
     <WelcomeStep onNext={handleNext} />,
     <DetailsStep onNext={handleNext} />,
@@ -159,6 +183,14 @@ export default function OnboardingPage() {
         className="w-full max-w-2xl px-4 relative z-10"
       >
         <Card className="border-2 shadow-xl overflow-hidden backdrop-blur-sm bg-background/95">
+          {step > 0 && step < totalSteps && (
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
+              <Button variant="ghost" onClick={handleSkip} disabled={isSkipping} className="text-muted-foreground h-11 px-4">
+                {isSkipping ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Skip'}
+              </Button>
+            </div>
+          )}
+
           {step === 0 && (
             <div className="pt-8 flex justify-center">
               <div className="flex items-center px-4 py-2 rounded-full bg-primary/10">
