@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -8,12 +10,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import type { Recommendation } from '@/services/recommendationService';
-import { CheckCircle, AlertTriangle, PlusCircle, Heart } from 'lucide-react';
-import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
+import { addFoodToLog } from '@/services/trackerService';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, AlertTriangle, PlusCircle, Heart, Coffee, Sun, Moon } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RecipeDetailDrawerProps {
     recommendation: Recommendation | null;
@@ -21,16 +25,91 @@ interface RecipeDetailDrawerProps {
     onClose: () => void;
 }
 
+const viewVariants = {
+    enter: (direction: number) => ({
+      opacity: 0,
+      x: direction > 0 ? 50 : -50,
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: (direction: number) => ({
+      opacity: 0,
+      x: direction < 0 ? 50 : -50,
+    }),
+  };
+
+const SuccessView = () => (
+    <div className="flex flex-col items-center justify-center text-center h-full absolute inset-0">
+        <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.1 }}
+            className="flex flex-col items-center justify-center"
+        >
+            <CheckCircle className="h-20 w-20 text-green-500" />
+            <p className="mt-4 text-lg font-medium">Logged Successfully!</p>
+            <p className="text-sm text-muted-foreground">Redirecting to your tracker...</p>
+        </motion.div>
+    </div>
+);
+
+const MealTypeSelector = ({ onSelect }: { onSelect: (mealType: 'Breakfast' | 'Lunch' | 'Dinner') => void }) => {
+    const mealTypes = [
+        { name: 'Breakfast', icon: Coffee, color: 'text-amber-500' },
+        { name: 'Lunch', icon: Sun, color: 'text-orange-500' },
+        { name: 'Dinner', icon: Moon, color: 'text-indigo-500' },
+    ] as const;
+
+    return (
+        <div className="flex flex-col items-center justify-center h-full absolute inset-0">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full max-w-sm text-center space-y-4"
+            >
+                <h3 className="text-xl font-semibold">Which meal was this?</h3>
+                {mealTypes.map((meal, index) => (
+                    <motion.div
+                        key={meal.name}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, delay: 0.1 + index * 0.05 }}
+                    >
+                        <Button 
+                            onClick={() => onSelect(meal.name)} 
+                            className="w-full h-16 text-lg rounded-xl"
+                            variant="outline"
+                        >
+                            <meal.icon className={cn("mr-4 h-6 w-6", meal.color)} />
+                            {meal.name}
+                        </Button>
+                    </motion.div>
+                ))}
+            </motion.div>
+        </div>
+    );
+};
+
+
 export function RecipeDetailDrawer({ recommendation, isOpen, onClose }: RecipeDetailDrawerProps) {
-    const { userProfile } = useUser();
+    const { user, userProfile } = useUser();
+    const db = useFirestore();
+    const { toast } = useToast();
+    const router = useRouter();
+
+    const [view, setView] = useState<'details' | 'selectingMeal' | 'success'>('details');
+    const [direction, setDirection] = useState(1);
     const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     useEffect(() => {
-        if (recommendation?.detailedRecipe?.ingredients) {
-            setCheckedIngredients(new Array(recommendation.detailedRecipe.ingredients.length).fill(false));
+        if (isOpen && recommendation) {
+            setView('details');
+            setCheckedIngredients(new Array(recommendation.detailedRecipe?.ingredients.length || 0).fill(false));
         }
-    }, [recommendation]);
+    }, [isOpen, recommendation]);
 
     const handleIngredientCheck = (index: number) => {
         setCheckedIngredients(prev => {
@@ -65,11 +144,11 @@ export function RecipeDetailDrawer({ recommendation, isOpen, onClose }: RecipeDe
         return null;
     }, [recommendation, userProfile]);
 
-    const foodItemForModal: FoodItem | null = useMemo(() => {
+    const foodItemForLogging: FoodItem | null = useMemo(() => {
         if (!recommendation) return null;
         return {
             foodName: recommendation.name,
-            estimatedWeightGrams: 100,
+            estimatedWeightGrams: 100, // Recommendations are based on 100g
             calories: recommendation.calories,
             macronutrientBreakdown: {
                 protein: recommendation.protein,
@@ -84,14 +163,39 @@ export function RecipeDetailDrawer({ recommendation, isOpen, onClose }: RecipeDe
             suitability: "Suitable"
         };
     }, [recommendation]);
+    
+    const handleLogMeal = async (mealType: 'Breakfast' | 'Lunch' | 'Dinner') => {
+        if (!foodItemForLogging || !user || !db) return;
+        
+        setDirection(1);
+        setView('success');
+        
+        toast({
+            title: 'Meal Logged!',
+            description: `${foodItemForLogging.foodName} added to ${mealType}.`,
+        });
 
-    const renderContent = () => {
-        if (!recommendation) {
-            return <RecipeDrawerSkeleton />;
+        setTimeout(() => {
+            onClose();
+            router.push('/dashboard/tracker');
+        }, 1200);
+
+        try {
+            await addFoodToLog(db, user.uid, mealType, foodItemForLogging, 100);
+        } catch (err) {
+            console.error("Background log failed:", err);
         }
+    };
+    
+    const handleStartLogging = () => {
+        setDirection(1);
+        setView('selectingMeal');
+    };
+
+    const renderDetails = () => {
+        if (!recommendation) return <RecipeDrawerSkeleton />;
 
         const { reason, detailedRecipe } = recommendation;
-
         return (
             <div className="space-y-6">
                 {healthMatch && (
@@ -104,20 +208,18 @@ export function RecipeDetailDrawer({ recommendation, isOpen, onClose }: RecipeDe
                         <AlertDescription className="text-foreground/80">{healthMatch.text}</AlertDescription>
                     </Alert>
                 )}
-
                 <div className="bg-primary/5 p-4 rounded-lg">
-                    <h3 className="font-semibold flex items-center gap-2 mb-2"><Heart className="h-4 w-4 text-primary"/>Why this is good for you</h3>
+                    <h3 className="font-semibold flex items-center gap-2 mb-2"><Heart className="h-4 w-4 text-primary"/>Why it's good for you</h3>
                     <p className="text-sm text-muted-foreground">{reason}</p>
                 </div>
-
                 {detailedRecipe?.ingredients && detailedRecipe.ingredients.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-semibold text-lg">Ingredients</h3>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        <div className="flex flex-col space-y-2">
                             {detailedRecipe.ingredients.map((ingredient, index) => (
-                                <div key={index} className="flex items-center space-x-2">
+                                <div key={index} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
                                     <Checkbox id={`ing-${index}`} checked={checkedIngredients[index]} onCheckedChange={() => handleIngredientCheck(index)} />
-                                    <Label htmlFor={`ing-${index}`} className={cn("text-sm transition-colors", checkedIngredients[index] && "line-through text-muted-foreground")}>
+                                    <Label htmlFor={`ing-${index}`} className={cn("text-base transition-colors", checkedIngredients[index] && "line-through text-muted-foreground")}>
                                         {ingredient}
                                     </Label>
                                 </div>
@@ -125,11 +227,10 @@ export function RecipeDetailDrawer({ recommendation, isOpen, onClose }: RecipeDe
                         </div>
                     </div>
                 )}
-
                 {detailedRecipe?.instructions && detailedRecipe.instructions.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-semibold text-lg">Instructions</h3>
-                        <ol className="list-decimal list-outside pl-5 space-y-4 text-muted-foreground text-sm leading-relaxed">
+                        <ol className="list-decimal list-outside pl-5 space-y-4 text-muted-foreground text-base leading-relaxed">
                             {detailedRecipe.instructions.map((instruction, index) => (
                                 <li key={index}>{instruction}</li>
                             ))}
@@ -141,31 +242,41 @@ export function RecipeDetailDrawer({ recommendation, isOpen, onClose }: RecipeDe
     };
 
     return (
-        <>
-            <Sheet open={isOpen} onOpenChange={onClose}>
-                <SheetContent side="bottom" className="h-[90vh] flex flex-col rounded-t-2xl">
-                    <SheetHeader className="text-left pr-10">
-                        <SheetTitle className="text-2xl truncate">{recommendation?.name || <Skeleton className="h-8 w-48" />}</SheetTitle>
-                        <SheetDescription>
-                            {recommendation ? `${Math.round(recommendation.calories)} kcal · ${recommendation.protein.toFixed(0)}g P · ${recommendation.carbs.toFixed(0)}g C · ${recommendation.fat.toFixed(0)}g F` : <Skeleton className="h-5 w-64" />}
-                        </SheetDescription>
-                    </SheetHeader>
-                    <ScrollArea className="flex-1 -mx-6 px-6 my-4">
-                        {renderContent()}
-                    </ScrollArea>
-                    <SheetFooter className="bg-background pt-4 sticky bottom-0">
-                        <Button size="lg" className="w-full h-14 text-lg" onClick={() => setIsAddModalOpen(true)} disabled={!recommendation}>
+        <Sheet open={isOpen} onOpenChange={onClose}>
+            <SheetContent side="bottom" className="max-h-[90vh] h-fit flex flex-col rounded-t-2xl">
+                <SheetHeader className="text-left pr-10">
+                    <SheetTitle className="text-2xl truncate">{recommendation?.name || <Skeleton className="h-8 w-48" />}</SheetTitle>
+                    <SheetDescription>
+                        {recommendation ? `${Math.round(recommendation.calories)} kcal · ${recommendation.protein.toFixed(0)}g P · ${recommendation.carbs.toFixed(0)}g C · ${recommendation.fat.toFixed(0)}g F` : <Skeleton className="h-5 w-64" />}
+                    </SheetDescription>
+                </SheetHeader>
+                <div className="relative flex-1 my-4">
+                    <AnimatePresence initial={false} custom={direction}>
+                        <motion.div
+                            key={view}
+                            custom={direction}
+                            variants={viewVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="h-full"
+                        >
+                            {view === 'details' && <ScrollArea className="h-full pr-4">{renderDetails()}</ScrollArea>}
+                            {view === 'selectingMeal' && <MealTypeSelector onSelect={handleLogMeal} />}
+                            {view === 'success' && <SuccessView />}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+                {view === 'details' && (
+                     <SheetFooter className="bg-background pt-4 sticky bottom-0">
+                        <Button size="lg" className="w-full h-14 text-lg" onClick={handleStartLogging} disabled={!recommendation}>
                             <PlusCircle className="mr-2 h-5 w-5" /> Add to Today's Log
                         </Button>
                     </SheetFooter>
-                </SheetContent>
-            </Sheet>
-            <FoodConfirmationModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                foodItem={foodItemForModal}
-            />
-        </>
+                )}
+            </SheetContent>
+        </Sheet>
     );
 }
 
@@ -175,11 +286,10 @@ const RecipeDrawerSkeleton = () => (
         <Skeleton className="h-24 w-full" />
         <div className="space-y-3">
             <Skeleton className="h-6 w-32" />
-            <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-5 w-full" />
+            <div className="flex flex-col space-y-3">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
             </div>
         </div>
         <div className="space-y-3">
