@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -130,7 +129,6 @@ export default function PrivacySettingsPage() {
         setIsDeleting(true);
         try {
             await deleteUserAccount(auth, db);
-            // This toast may not be visible as the page will redirect immediately
             toast({ title: 'Account Deleted', description: 'Your account and all associated data have been permanently deleted.' });
             window.location.assign('/');
         } catch (error: any) {
