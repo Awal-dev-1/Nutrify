@@ -2,25 +2,23 @@
 'use client';
 
 import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
-import type { Auth, User } from 'firebase/auth';
+import type { Auth } from 'firebase/auth';
 
 const compressImage = async (file: File): Promise<File> => {
   const options = {
-    maxSizeMB: 1, // Reduced from 2MB to make uploads faster
-    maxWidthOrHeight: 800, // Reduced from 1024 for smaller file size
+    maxSizeMB: 1,
+    maxWidthOrHeight: 800,
     useWebWorker: true,
   };
   try {
     const compressedFile = await imageCompression(file, options);
     return compressedFile;
   } catch (error) {
-    console.error('Image compression failed:', error);
-    return file; // Return original file if compression fails
+    console.error('Image compression failed, using original file:', error);
+    return file;
   }
 };
 
@@ -36,40 +34,49 @@ export const updateUserProfileAndPhoto = async (
   const nameChanged = displayName && displayName !== user.displayName;
   const photoChanged = imageFile !== null;
 
-  // If nothing changed, do nothing.
   if (!nameChanged && !photoChanged) {
-    return;
+    return; // Nothing to update
   }
 
   let newPhotoURL: string | undefined = undefined;
+
+  // Handle image upload if a file is provided.
   if (photoChanged) {
     const storage = getStorage();
     const compressedFile = await compressImage(imageFile!);
-    const storageRef = ref(storage, `profile-images/${user.uid}`);
+    
+    // Use a consistent file path. Overwriting cleans up the old file automatically.
+    const filePath = `users/${user.uid}/profile_images/profile.jpg`;
+    const storageRef = ref(storage, filePath);
+
     await uploadBytes(storageRef, compressedFile);
     newPhotoURL = await getDownloadURL(storageRef);
   }
 
-  // Update auth profile
+  // Prepare updates for Firebase Auth profile
   const authUpdates: { displayName?: string, photoURL?: string } = {};
   if (nameChanged) authUpdates.displayName = displayName;
   if (newPhotoURL) authUpdates.photoURL = newPhotoURL;
+
+  // Update auth profile if there are changes
   if (Object.keys(authUpdates).length > 0) {
     await updateAuthProfile(user, authUpdates);
   }
 
-  // Update Firestore document
+  // Prepare updates for Firestore document
   const firestoreUpdates: Record<string, any> = { 'updatedAt': serverTimestamp() };
   if (nameChanged) firestoreUpdates.name = displayName;
   if (newPhotoURL) firestoreUpdates['profile.profileImageUrl'] = newPhotoURL;
 
   const userDocRef = doc(db, 'users', user.uid);
+
   try {
-    // This is a user-facing blocking action, so we await it.
+    // This is a user-facing action, so we await the Firestore update
     await updateDoc(userDocRef, firestoreUpdates);
   } catch (error) {
-    // We re-throw the error so the calling UI component can handle it (e.g., show a toast).
-    // Using the errorEmitter here is not ideal because the UI is actively waiting.
+    // If the Firestore update fails, re-throw the error for the UI to handle.
+    // No need to use the errorEmitter here as this is a direct, awaited action.
+    console.error("Failed to update user profile in Firestore:", error);
     throw error;
   }
 };

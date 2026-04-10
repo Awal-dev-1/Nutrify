@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { updateUserProfileAndPhoto } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
-import { User, Save, Loader2, ChevronRight } from 'lucide-react';
+import { User, Save, Loader2, ChevronRight, Upload } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,7 +112,10 @@ export default function ProfileSettingsPage() {
             <AvatarImage src={imagePreview || user?.photoURL || userProfile?.profile?.profileImageUrl} alt={displayName} />
             <AvatarFallback className="text-xl bg-primary/10">{displayName.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full text-primary hover:bg-primary/10 hover:text-primary" onClick={() => fileInputRef.current?.click()}>Change Photo</Button>
+          <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full text-primary hover:bg-primary/10 hover:text-primary" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="mr-2 h-3 w-3" />
+            Change Photo
+          </Button>
           <input ref={fileInputRef} type="file" accept="image/png, image/jpeg, image/webp" className="hidden" onChange={handleImageChange} />
         </div>
         <div className="flex-1 space-y-4 w-full">
