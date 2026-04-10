@@ -62,6 +62,7 @@ export default function RecognizePage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
   const [isFlashOn, setIsFlashOn] = useState(false);
@@ -81,7 +82,11 @@ export default function RecognizePage() {
     if (!isCameraOpen) {
       if (videoTrackRef.current) {
         if ('torch' in videoTrackRef.current.getCapabilities()) {
-            videoTrackRef.current.applyConstraints({ advanced: [{ torch: false }] });
+            try { // Use try-catch for constraints as they can fail
+              videoTrackRef.current.applyConstraints({ advanced: [{ torch: false }] });
+            } catch (e) {
+              console.warn("Could not turn off torch", e);
+            }
         }
         videoTrackRef.current.stop();
         videoTrackRef.current = null;
@@ -256,7 +261,7 @@ export default function RecognizePage() {
                   playsInline
                 />
                   {/* Top controls */}
-                  <div className="absolute top-6 left-4 right-4 flex justify-between items-center pt-safe">
+                  <div className="absolute top-10 left-4 right-4 flex justify-between items-center pt-safe">
                     {isMobile && isFlashAvailable ? (
                       <Button
                         variant="ghost"
@@ -567,6 +572,19 @@ export default function RecognizePage() {
       </div>
 
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+
+      {/* This input is triggered by the camera overlay's gallery button */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/png, image/jpeg, image/webp"
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileSelect(e.target.files[0]);
+          }
+        }}
+      />
 
       <FoodConfirmationModal
         isOpen={!!foodForLogging}
