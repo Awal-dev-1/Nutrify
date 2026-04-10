@@ -173,7 +173,7 @@ export function MainSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className={cn('pt-4 pb-10 transition-all duration-300 no-scrollbar', isCollapsed ? 'px-0' : 'px-0')}>
+      <SidebarContent className={cn('pt-4 pb-4 transition-all duration-300 no-scrollbar', isCollapsed ? 'px-0' : 'px-0')}>
         <div className="space-y-4">
           {renderLinks(mainLinks)}
           
@@ -193,7 +193,7 @@ export function MainSidebar() {
 
       <SidebarFooter className={cn(
         'border-t transition-all duration-300',
-        isCollapsed ? 'p-2' : 'px-4 pt-3 pb-8',
+        isCollapsed ? 'p-2' : 'px-4 py-4',
       )}>
         <SidebarMenu className="gap-1 px-2">
           <SidebarMenuItem>
