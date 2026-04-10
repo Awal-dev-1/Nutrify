@@ -6,7 +6,7 @@ import { TransitionLink } from '@/components/shared/transition-link';
 import {
   LayoutGrid,
   Sparkles,
-  User,
+  Settings,
   Search,
   ScanLine,
   Bot,
@@ -172,7 +172,7 @@ export function BottomNav() {
             </span>
           </button>
 
-          {/* Profile */}
+          {/* Settings */}
           <TransitionLink
             href="/dashboard/settings"
             className={cn(
@@ -182,8 +182,8 @@ export function BottomNav() {
                 : 'text-muted-foreground hover:bg-accent/50'
             )}
           >
-            <User className="h-[22px] w-[22px]" />
-            <span className="text-[11px] font-medium">Profile</span>
+            <Settings className="h-[22px] w-[22px]" />
+            <span className="text-[11px] font-medium">Settings</span>
             {isSettingsActive && (
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-t-full bg-primary" />
             )}
