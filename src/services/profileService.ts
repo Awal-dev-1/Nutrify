@@ -49,7 +49,11 @@ export const updateUserProfileAndPhoto = async (
     const filePath = `users/${user.uid}/profile_images/profile.jpg`;
     const storageRef = ref(storage, filePath);
 
-    await uploadBytes(storageRef, compressedFile);
+    const metadata = {
+      contentType: imageFile!.type,
+    };
+
+    await uploadBytes(storageRef, compressedFile, metadata);
     newPhotoURL = await getDownloadURL(storageRef);
   }
 

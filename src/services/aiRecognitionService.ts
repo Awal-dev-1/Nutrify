@@ -48,8 +48,12 @@ const saveHistoryInBackground = (
   const storageRef = ref(storage, storagePath);
   const scanDocRef = doc(db, 'users', user.uid, 'aiScans', scanId);
 
+  const metadata = {
+    contentType: compressedFile.type,
+  };
+
   // Upload image first, then save doc with URL
-  uploadBytes(storageRef, compressedFile)
+  uploadBytes(storageRef, compressedFile, metadata)
     .then(uploadResult => getDownloadURL(uploadResult.ref))
     .then(imageUrl => {
       const dataToSet = {
