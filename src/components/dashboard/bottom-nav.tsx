@@ -69,10 +69,12 @@ const FeaturesDrawer = ({
               Features
             </p>
 
-            {/* 4-column grid */}
-            <div className="grid grid-cols-4 gap-x-2 gap-y-3 px-4">
-              {features.map((item) => {
+            {/* 3-column grid */}
+            <div className="grid grid-cols-3 gap-x-4 gap-y-6 px-6">
+              {features.map((item, index) => {
                 const isActive = pathname.startsWith(item.href);
+                const isLastItemOnOwnRow = index === features.length - 1 && features.length % 3 === 1;
+
                 return (
                   <TransitionLink
                     key={item.href}
@@ -80,7 +82,8 @@ const FeaturesDrawer = ({
                     onClick={onClose}
                     className={cn(
                       'flex flex-col items-center justify-start gap-1.5 py-2 rounded-2xl active:scale-95 transition-all min-w-0',
-                      isActive ? 'bg-primary/10' : 'hover:bg-accent'
+                      isActive ? 'bg-primary/10' : 'hover:bg-accent',
+                      isLastItemOnOwnRow && 'col-start-2'
                     )}
                   >
                     <div
@@ -95,7 +98,7 @@ const FeaturesDrawer = ({
                     </div>
                     <span
                       className={cn(
-                        'text-[10px] font-medium leading-tight text-center w-full break-words',
+                        'text-[10px] font-medium leading-tight text-center w-full truncate',
                         isActive ? 'text-primary' : 'text-muted-foreground'
                       )}
                     >
