@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -22,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PrivacySettingsPage() {
     const { userProfile } = useUser();
@@ -133,7 +133,6 @@ export default function PrivacySettingsPage() {
             window.location.assign('/');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message, duration: 10000 });
-        } finally {
             setIsDeleting(false);
         }
     };
@@ -142,6 +141,21 @@ export default function PrivacySettingsPage() {
     
     return (
         <div className="space-y-6">
+            <AnimatePresence>
+              {isDeleting && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm"
+                >
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="mt-4 text-lg font-medium">Permanently deleting your data...</p>
+                  <p className="text-sm text-muted-foreground">This may take a moment. Please do not close this window.</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
             <SettingsCard
                 title="Privacy & Data"
                 description="Manage your data and privacy settings."
@@ -193,8 +207,8 @@ export default function PrivacySettingsPage() {
                             </div>
                             <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                                 <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setDeleteConfirmText('')}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction disabled={isDeleteDisabled || isDeleting} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90" onClick={handleAccountDelete}>
-                                    {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Delete Permanently
+                                <AlertDialogAction disabled={isDeleteDisabled} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90" onClick={handleAccountDelete}>
+                                    Delete Permanently
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>

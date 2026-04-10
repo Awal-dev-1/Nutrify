@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -127,28 +126,36 @@ const deleteFolderContents = async (folderRef: StorageReference) => {
     }
 };
 
-// Helper function to delete all documents in a collection/subcollection
+// Helper function to delete all documents in a collection using batched writes
 const deleteCollection = async (db: Firestore, collectionPath: string) => {
   const collectionRef = collection(db, collectionPath);
   const q = query(collectionRef);
-  const querySnapshot = await getDocs(q);
+  
+  try {
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return;
+    }
 
-  if (querySnapshot.empty) {
-    return;
-  }
-
-  const batchSize = 500;
-  for (let i = 0; i < querySnapshot.docs.length; i += batchSize) {
-    const batch = writeBatch(db);
-    const chunk = querySnapshot.docs.slice(i, i + batchSize);
-    chunk.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-    await batch.commit();
+    const batchSize = 500; // Firestore batch limit
+    for (let i = 0; i < querySnapshot.docs.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const chunk = querySnapshot.docs.slice(i, i + batchSize);
+      chunk.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+    }
+  } catch (error) {
+    // We'll let the main deleteUserAccount function handle the permission error emission
+    // to avoid emitting multiple times.
+    console.error(`Failed during batch deletion of ${collectionPath}`, error);
+    throw error; // Re-throw to be caught by the caller
   }
 };
 
-// 6. Account Deletion
+
+// 6. Account Deletion (Optimized)
 export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const user = auth.currentUser;
   if (!user) {
@@ -158,46 +165,52 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const userId = user.uid;
   const storage = getStorage();
 
-  // --- Step 1: Delete all user files from Firebase Storage ---
-  const userStorageRef = ref(storage, `users/${userId}`);
-  const aiScansStorageRef = ref(storage, `ai-recognition/${userId}`);
-  // Run deletions in parallel
-  await Promise.all([
-    deleteFolderContents(userStorageRef),
-    deleteFolderContents(aiScansStorageRef),
-  ]);
+  // --- Step 1 & 2: Delete Storage and Firestore data in parallel ---
+  const storageCleanupPromise = (async () => {
+    const userStorageRef = ref(storage, `users/${userId}`);
+    const aiScansStorageRef = ref(storage, `ai-recognition/${userId}`);
+    await Promise.all([
+      deleteFolderContents(userStorageRef),
+      deleteFolderContents(aiScansStorageRef),
+    ]);
+  })();
 
-  // --- Step 2: Delete all user data from Firestore ---
-  const subcollections = [
-    'dailyLogs',
-    'generatedRecommendations',
-    'aiScans',
-    'plannedMeals',
-    'recentSearches'
-  ];
-
-  try {
-    for (const subcollection of subcollections) {
-      const path = `users/${userId}/${subcollection}`;
-      await deleteCollection(db, path);
-    }
+  const firestoreCleanupPromise = (async () => {
+    const subcollections = [
+      'dailyLogs',
+      'generatedRecommendations',
+      'aiScans',
+      'plannedMeals',
+      'recentSearches'
+    ];
+    // Delete all subcollections in parallel
+    await Promise.all(subcollections.map(sub => deleteCollection(db, `users/${userId}/${sub}`)));
+    
+    // Finally, delete the main user document
     const userDocRef = doc(db, "users", userId);
     await deleteDoc(userDocRef);
-  } catch (error: any) {
+  })();
+
+  try {
+    // Wait for both storage and firestore cleanup to complete
+    await Promise.all([storageCleanupPromise, firestoreCleanupPromise]);
+  } catch (error) {
+    // If any data deletion fails, emit a generic permission error and stop
     const permissionError = new FirestorePermissionError({
-      path: `users/${userId} and its subcollections`,
+      path: `users/${userId} and its subcollections/storage`,
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
-    throw new Error("Failed to delete user data from the database. This could be due to a permissions issue.");
+    throw new Error("Failed to delete user data. This could be due to a permissions issue.");
   }
 
   // --- Step 3: Delete the user from Firebase Authentication ---
+  // This is the last and final step.
   try {
     await deleteUser(user);
   } catch (error: any) {
     if (error.code === 'auth/requires-recent-login') {
-      throw new Error('Your data has been removed, but we require re-authentication to delete your account profile. Please log out, log back in, and delete your account again to complete the process.');
+      throw new Error('Your data has been removed, but we require re-authentication to delete your account. Please log in again and retry deletion to complete the process.');
     }
     throw new Error(`Failed to delete your authentication profile: ${error.message}. Your data has been removed, but the account could not be fully deleted. Please contact support.`);
   }
