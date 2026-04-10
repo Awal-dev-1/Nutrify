@@ -40,14 +40,17 @@ export default function LandingPage() {
       <Header />
       <main className="flex-1">
         <Hero />
+      </main>
+      {/* These sections are only rendered on desktop to create a zero-scroll mobile experience */}
+      <div className="hidden md:block">
         <div className="space-y-4">
           <MotionSection><Features /></MotionSection>
           <MotionSection><HowItWorks /></MotionSection>
           <MotionSection><CtaBanner /></MotionSection>
         </div>
-      </main>
-      <div>
-        <MotionSection><Footer /></MotionSection>
+        <div>
+          <MotionSection><Footer /></MotionSection>
+        </div>
       </div>
     </div>
   );

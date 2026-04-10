@@ -13,9 +13,17 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      // Only run the scroll effect on non-mobile screens
+      if (window.innerWidth >= 768) {
+        setScrolled(window.scrollY > 10);
+      }
     };
+
     window.addEventListener('scroll', handleScroll);
+    
+    // Initial check on mount
+    handleScroll();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
