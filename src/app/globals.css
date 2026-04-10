@@ -94,6 +94,20 @@
   * {
     @apply border-border;
   }
+
+  /* Custom Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: hsl(var(--primary) / 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary));
+    border-radius: 6px;
+  }
 }
 
 @layer components {
