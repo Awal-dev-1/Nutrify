@@ -5,7 +5,6 @@ import { Logo } from "@/components/shared/logo";
 import { TransitionLink } from "@/components/shared/transition-link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
 
 export default function LegalLayout({
   children,
@@ -25,16 +24,11 @@ export default function LegalLayout({
           </Button>
         </div>
       </header>
-      <motion.main
-        className="container py-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ease: "easeInOut", duration: 0.2 }}
-      >
+      <main className="container py-12">
         <div className="max-w-4xl mx-auto bg-card p-8 rounded-lg shadow-sm">
           {children}
         </div>
-      </motion.main>
+      </main>
     </div>
   );
 }

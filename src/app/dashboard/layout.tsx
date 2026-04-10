@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import { useTheme } from 'next-themes';
 import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
-import { motion } from 'framer-motion';
 import { SettingsProvider } from '@/components/providers/settings-provider';
 
 export default function DashboardLayout({
@@ -85,14 +84,11 @@ export default function DashboardLayout({
         </Sidebar>
         <SidebarInset>
           <DashboardHeader />
-          <motion.div
+          <div
             className="bg-background px-5 pt-20 pb-[84px] md:px-6 md:pb-6 min-h-dvh"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ease: "easeInOut", duration: 0.2 }}
           >
             {children}
-          </motion.div>
+          </div>
           <BottomNav />
         </SidebarInset>
       </SidebarProvider>

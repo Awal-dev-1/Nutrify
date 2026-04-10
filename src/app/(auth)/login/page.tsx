@@ -73,11 +73,8 @@ export default function LoginPage() {
 
   // If loading is finished and no redirect is needed, show the login form.
   return (
-    <motion.div
+    <div
       className="min-h-dvh flex flex-col md:flex-row bg-gradient-to-br from-background via-background to-secondary/10"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
     >
       {/* Left Side - Branding (visible on md and up) */}
       <div className="hidden md:flex md:w-5/12 lg:w-1/2 relative bg-gradient-to-br from-primary/5 via-primary/5 to-background items-center justify-center p-6 lg:p-8 overflow-hidden">
@@ -121,6 +118,6 @@ export default function LoginPage() {
         
         <LoginForm />
       </div>
-    </motion.div>
+    </div>
   );
 }

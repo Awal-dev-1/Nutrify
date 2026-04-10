@@ -176,10 +176,7 @@ export default function OnboardingPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+      <div
         className="w-full max-w-2xl px-4 relative z-10"
       >
         <Card className="border-2 shadow-xl overflow-hidden backdrop-blur-sm bg-background/95">
@@ -287,7 +284,7 @@ export default function OnboardingPage() {
             <p>Your information is secure and never shared</p>
           </motion.div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

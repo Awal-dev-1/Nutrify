@@ -4,7 +4,6 @@
 import { TransitionLink } from '@/components/shared/transition-link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function SettingsSubLayout({
   children,
@@ -13,10 +12,7 @@ export default function SettingsSubLayout({
 }) {
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
+      <div
         className="flex items-center gap-4"
       >
         <Button variant="outline" size="icon" asChild>
@@ -33,15 +29,11 @@ export default function SettingsSubLayout({
             Manage your account and preferences.
           </p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2, delay: 0.1 }}
-      >
+      <div>
         {children}
-      </motion.div>
+      </div>
     </div>
   );
 }
