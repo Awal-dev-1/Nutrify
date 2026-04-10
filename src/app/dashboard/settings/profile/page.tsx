@@ -112,7 +112,7 @@ export default function ProfileSettingsPage() {
             <AvatarImage src={imagePreview || user?.photoURL || userProfile?.profile?.profileImageUrl} alt={displayName} />
             <AvatarFallback className="text-xl bg-primary/10">{displayName.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <Button variant="outline" size="sm" className="h-8 text-xs rounded-full" onClick={() => fileInputRef.current?.click()}>Change Photo</Button>
+          <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full text-primary hover:bg-primary/10 hover:text-primary" onClick={() => fileInputRef.current?.click()}>Change Photo</Button>
           <input ref={fileInputRef} type="file" accept="image/png, image/jpeg, image/webp" className="hidden" onChange={handleImageChange} />
         </div>
         <div className="flex-1 space-y-4 w-full">

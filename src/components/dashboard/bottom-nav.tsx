@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -18,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSettingsModal } from '@/hooks';
 
 const features = [
   { href: '/dashboard/search',          label: 'AI Search',       icon: Search     },
@@ -54,7 +56,7 @@ const FeaturesDrawer = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95"
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/90"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
@@ -68,7 +70,7 @@ const FeaturesDrawer = ({
             </p>
 
             {/* 4-column grid */}
-            <div className="grid grid-cols-3 gap-x-2 gap-y-3 px-4">
+            <div className="grid grid-cols-4 gap-x-2 gap-y-3 px-4">
               {features.map((item) => {
                 const isActive = pathname.startsWith(item.href);
                 return (
@@ -78,7 +80,6 @@ const FeaturesDrawer = ({
                     onClick={onClose}
                     className={cn(
                       'flex flex-col items-center justify-start gap-1.5 py-2 rounded-2xl active:scale-95 transition-all min-w-0',
-                      features.length % 3 === 1 && features.indexOf(item) === features.length - 1 && 'col-start-2',
                       isActive ? 'bg-primary/10' : 'hover:bg-accent'
                     )}
                   >
@@ -118,6 +119,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { openSettings } = useSettingsModal();
 
   if (!isMobile) {
     return null;
@@ -173,8 +175,8 @@ export function BottomNav() {
           </button>
 
           {/* Settings */}
-          <TransitionLink
-            href="/dashboard/settings"
+          <button
+            onClick={openSettings}
             className={cn(
               'relative flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg transition-colors active:scale-95 pt-1',
               isSettingsActive
@@ -187,7 +189,7 @@ export function BottomNav() {
             {isSettingsActive && (
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-t-full bg-primary" />
             )}
-          </TransitionLink>
+          </button>
 
         </div>
       </div>
