@@ -62,7 +62,7 @@ export function DashboardHeader() {
   return (
     <header
       className={cn(
-        "fixed top-0 z-[100] flex h-16 items-center gap-4 px-5 pt-safe shadow-md",
+        "fixed top-0 z-[100] flex h-16 items-center gap-4 px-5 pt-safe shadow-sm",
         "bg-background/80 backdrop-blur-md",
         "right-0",
         "md:left-[var(--sidebar-width)]",

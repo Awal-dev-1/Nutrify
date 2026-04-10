@@ -33,6 +33,7 @@ import {
   Clock,
   Shield,
   Laptop,
+  ChevronDown
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const passwordFormSchema = z.object({
   currentPassword: z.string().min(1, { message: "Current password is required." }),
@@ -96,6 +103,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { setTheme, theme } = useTheme();
+
+  const [activeTab, setActiveTab] = useState('profile');
 
   // Current State
   const [displayName, setDisplayName] = useState('');
@@ -127,6 +136,8 @@ export default function SettingsPage() {
       confirmPassword: "",
     },
   });
+
+  const activeNavItem = useMemo(() => navItems.find(item => item.id === activeTab), [activeTab]);
 
   useEffect(() => {
     if (userProfile) {
@@ -437,17 +448,44 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <div className="w-full overflow-x-auto pb-2">
-          <TabsList className="grid w-max min-w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {/* Mobile Dropdown Navigation */}
+        <div className="md:hidden mb-6">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full justify-between h-12 text-base">
+                {activeNavItem ? (
+                  <div className="flex items-center gap-2">
+                    <activeNavItem.icon className="h-4 w-4" />
+                    <span>{activeNavItem.label}</span>
+                  </div>
+                ) : <span>Select a category</span>}
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+              {navItems.map(item => (
+                <DropdownMenuItem key={item.id} onSelect={() => setActiveTab(item.id)}>
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        
+        {/* Desktop Tabs Navigation */}
+        <div className="hidden md:block">
+          <TabsList className="grid w-full grid-cols-5 gap-2">
             {navItems.map(item => (
-              <TabsTrigger key={item.id} value={item.id} className="h-auto py-2 sm:py-2.5 flex-row gap-2">
+              <TabsTrigger key={item.id} value={item.id} className="h-auto py-2.5 flex-row gap-2">
                 <item.icon className="h-4 w-4" />
                 <span>{item.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
+
 
         <div className="mt-6">
           <TabsContent value="profile">
@@ -583,5 +621,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

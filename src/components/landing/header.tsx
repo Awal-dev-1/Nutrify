@@ -6,14 +6,26 @@ import { TransitionLink } from "@/components/shared/transition-link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl backdrop-saturate-150">
+    <header className={cn(
+      "fixed top-0 z-50 w-full transition-all duration-300",
+      scrolled ? "border-b bg-background/80 backdrop-blur-xl" : "bg-transparent"
+    )}>
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
         

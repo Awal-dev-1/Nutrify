@@ -1,3 +1,4 @@
+
 'use client';
 
 // app/page.tsx
@@ -35,19 +36,17 @@ const MotionSection = ({ children }: { children: React.ReactNode }) => (
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-dvh flex-col max-md:overflow-hidden bg-background">
-      <div className="hidden md:block">
-        <Header />
-      </div>
-      <main className="flex-1">
+    <div className="flex min-h-dvh flex-col bg-background">
+      <Header />
+      <main className="flex-1 pt-16">
         <Hero />
-        <div className="hidden md:block space-y-4">
+        <div className="space-y-4">
           <MotionSection><Features /></MotionSection>
           <MotionSection><HowItWorks /></MotionSection>
           <MotionSection><CtaBanner /></MotionSection>
         </div>
       </main>
-      <div className="hidden md:block">
+      <div>
         <MotionSection><Footer /></MotionSection>
       </div>
     </div>
