@@ -129,3 +129,10 @@
     scrollbar-width: none; /* Firefox */
   }
 }
+
+@layer utilities {
+  .camera-is-open [data-dashboard-header] {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

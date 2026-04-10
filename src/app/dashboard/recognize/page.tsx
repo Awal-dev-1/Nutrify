@@ -69,6 +69,19 @@ export default function RecognizePage() {
   const [isFlashAvailable, setIsFlashAvailable] = useState(false);
 
   useEffect(() => {
+    // Hide the main dashboard header when the camera is active
+    if (isCameraOpen) {
+      document.documentElement.classList.add('camera-is-open');
+    } else {
+      document.documentElement.classList.remove('camera-is-open');
+    }
+    // Cleanup on unmount
+    return () => {
+      document.documentElement.classList.remove('camera-is-open');
+    };
+  }, [isCameraOpen]);
+  
+  useEffect(() => {
     if (file) {
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
@@ -120,7 +133,7 @@ export default function RecognizePage() {
                 try {
                   const capabilities = videoTrackRef.current.getCapabilities();
                   // Check if the 'torch' capability is supported and true
-                  if (capabilities && capabilities.torch) {
+                  if (capabilities?.torch) {
                       setIsFlashAvailable(true);
                   } else {
                       setIsFlashAvailable(false);
@@ -264,7 +277,7 @@ export default function RecognizePage() {
       case 'idle': {
         if (isCameraOpen) {
           return (
-            <motion.div key="camera" {...motionVariants} className="fixed inset-0 z-50 bg-black md:relative md:z-auto md:w-full md:max-w-2xl md:mx-auto">
+            <motion.div key="camera" {...motionVariants} className="fixed inset-0 z-60 bg-black md:relative md:z-auto md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
                 <video
                   ref={videoRef}
@@ -281,12 +294,12 @@ export default function RecognizePage() {
                         size="icon"
                         onClick={handleFlashToggle}
                         className={cn(
-                          'bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 rounded-full w-10 h-10',
+                          'bg-black/30 backdrop-blur-md text-white hover:bg-black/40 rounded-full w-8 h-8',
                           isFlashOn && 'bg-yellow-400 text-black hover:bg-yellow-400/90'
                         )}
                         aria-label="Toggle flash"
                       >
-                        <Flashlight className="h-5 w-5" />
+                        <Flashlight className="h-4 w-4" />
                       </Button>
                     ) : (
                       <div />
@@ -296,36 +309,32 @@ export default function RecognizePage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsCameraOpen(false)}
-                      className="bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 rounded-full w-10 h-10"
+                      className="bg-black/30 backdrop-blur-md text-white hover:bg-black/40 rounded-full w-8 h-8"
                       aria-label="Close camera"
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
 
                   {/* Bottom controls */}
                   <div className="absolute bottom-[calc(4rem+20px)] left-0 right-0 px-6 pb-safe">
-                    <div className="grid grid-cols-3 items-center">
-                      <div className="flex justify-start">
-                        <Button
+                    <div className="flex justify-center items-center gap-8">
+                       <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => fileInputRef.current?.click()}
-                          className="bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 rounded-full w-12 h-12"
+                          className="bg-black/30 backdrop-blur-md text-white hover:bg-black/40 rounded-full w-12 h-12"
                           aria-label="Open gallery"
                         >
                           <ImageIcon className="h-6 w-6" />
                         </Button>
-                      </div>
-                      <div className="flex justify-center">
                         <button
                           onClick={handleCapture}
                           disabled={hasCameraPermission !== true}
-                          className="w-16 h-16 rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition disabled:opacity-50"
+                          className="w-14 h-14 rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition disabled:opacity-50"
                           aria-label="Capture image"
                         />
-                      </div>
-                      <div /> {/* Spacer */}
+                        <div className="w-12 h-12" /> {/* Spacer to balance flexbox */}
                     </div>
                   </div>
 
