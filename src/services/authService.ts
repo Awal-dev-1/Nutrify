@@ -122,8 +122,9 @@ const deleteFolderContents = async (folderRef: StorageReference) => {
         const deleteFolderPromises = res.prefixes.map(prefixRef => deleteFolderContents(prefixRef));
         await Promise.all(deleteFolderPromises);
     } catch (error) {
-        // Log errors, but don't re-throw to allow other cleanup to continue.
+        // Log and re-throw the error to ensure the calling Promise.all fails.
         console.error(`Failed to delete contents of ${folderRef.fullPath}`, error);
+        throw error;
     }
 };
 
@@ -202,7 +203,7 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
-    throw new Error("Failed to delete user data. This could be due to a permissions issue.");
+    throw new Error("Failed to delete user data due to a network or permission issue. Please try again.");
   }
 
   // --- Step 3: Delete the user from Firebase Authentication ---
