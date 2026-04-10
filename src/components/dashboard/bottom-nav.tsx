@@ -46,7 +46,7 @@ const FeaturesDrawer = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
           onClick={onClose}
         >
           <motion.div
@@ -54,7 +54,7 @@ const FeaturesDrawer = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 backdrop-blur-lg pb-safe"
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 pb-safe"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
@@ -68,7 +68,7 @@ const FeaturesDrawer = ({
             </p>
 
             {/* 4-column grid — prevents label overflow */}
-            <div className="grid grid-cols-4 gap-x-1 gap-y-3 px-3 pb-8">
+            <div className="grid grid-cols-4 gap-x-2 gap-y-3 px-4 pb-8">
               {features.map((item) => {
                 const isActive = pathname.startsWith(item.href);
                 return (
@@ -77,7 +77,7 @@ const FeaturesDrawer = ({
                     href={item.href}
                     onClick={onClose}
                     className={cn(
-                      'flex flex-col items-center justify-start gap-1.5 py-2 px-1 rounded-2xl active:scale-95 transition-all min-w-0',
+                      'flex flex-col items-center justify-start gap-1.5 py-2 rounded-2xl active:scale-95 transition-all min-w-0',
                       isActive ? 'bg-primary/10' : 'hover:bg-accent'
                     )}
                   >
@@ -96,7 +96,7 @@ const FeaturesDrawer = ({
                     {/* Label — always visible, wraps cleanly */}
                     <span
                       className={cn(
-                        'text-[10px] font-medium leading-tight text-center w-full hyphens-auto',
+                        'text-[10px] font-medium leading-tight text-center w-full break-words',
                         isActive ? 'text-primary' : 'text-muted-foreground'
                       )}
                     >
