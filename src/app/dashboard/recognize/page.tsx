@@ -251,7 +251,7 @@ export default function RecognizePage() {
       case 'idle': {
         if (isCameraOpen) {
           return (
-            <motion.div key="camera" {...motionVariants} className="fixed md:relative inset-0 z-60 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
+            <motion.div key="camera" {...motionVariants} className="fixed md:relative inset-0 z-[110] bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
                 <video
                   ref={videoRef}
