@@ -16,23 +16,24 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Loader2, Plus, Flame, Beef, Wheat, Droplets, Minus } from 'lucide-react';
+import { Loader2, Plus, Flame, Beef, Wheat, Droplets, Minus, Coffee, Sun, Moon } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 interface FoodConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   foodItem: FoodItem | null;
 }
+
+const mealTypes = [
+  { value: 'Breakfast', label: 'Breakfast', icon: Coffee },
+  { value: 'Lunch', label: 'Lunch', icon: Sun },
+  { value: 'Dinner', label: 'Dinner', icon: Moon },
+] as const;
 
 export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirmationModalProps) {
   const [quantity, setQuantity] = useState(100);
@@ -56,13 +57,11 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
     if (!foodItem || !user || !db) return;
     setIsAdding(true);
     try {
-      // The service expects nutrient data to be normalized per 100g.
-      // Here, we create a temporary FoodItem object that meets this requirement.
       const per100gRatio = 100 / (foodItem.estimatedWeightGrams || 100);
 
       const foodDataForService: FoodItem = {
         ...foodItem,
-        estimatedWeightGrams: 100, // The service will use the `quantity` param, so this is for standardization.
+        estimatedWeightGrams: 100,
         calories: foodItem.calories * per100gRatio,
         macronutrientBreakdown: {
           protein: foodItem.macronutrientBreakdown.protein * per100gRatio,
@@ -97,7 +96,6 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
 
   const calculatedNutrients = useMemo(() => {
     if (!foodItem) return null;
-    // This calculation now correctly determines the nutrients for the *user-selected* quantity.
     const ratio = quantity / (foodItem.estimatedWeightGrams || 100);
     return {
       calories: foodItem.calories * ratio,
@@ -170,17 +168,17 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mealType" className="text-sm">Add to Meal</Label>
-                <Select value={mealType} onValueChange={(v) => setMealType(v as any)}>
-                  <SelectTrigger id="mealType" className="h-11 sm:h-12 text-base">
-                    <SelectValue placeholder="Select a meal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Breakfast">Breakfast</SelectItem>
-                    <SelectItem value="Lunch">Lunch</SelectItem>
-                    <SelectItem value="Dinner">Dinner</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-sm">Add to Meal</Label>
+                <Tabs value={mealType} onValueChange={(v) => setMealType(v as any)} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 h-14 p-1.5">
+                    {mealTypes.map(mt => (
+                        <TabsTrigger key={mt.value} value={mt.value} className="text-xs sm:text-sm h-full gap-1.5 flex-col sm:flex-row">
+                          <mt.icon className="h-4 w-4" />
+                          {mt.label}
+                        </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
               </div>
             </div>
           </div>

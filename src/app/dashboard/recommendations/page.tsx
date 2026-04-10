@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -12,21 +13,25 @@ import { TransitionLink } from '@/components/shared/transition-link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { RecipeDetailDrawer } from '@/components/recommendations/recipe-detail-drawer';
+import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
+import type { FoodItem } from '@/types/food';
 
 const RecommendationCardSkeleton = () => (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 border-2 rounded-2xl p-3 sm:p-4">
-    <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full shrink-0" />
-    <div className="flex-grow space-y-2 w-full sm:w-auto">
-      <Skeleton className="h-5 w-full sm:w-3/4" />
-      <Skeleton className="h-3 w-full" />
-      <div className="flex flex-wrap gap-2 pt-1">
-        <Skeleton className="h-5 w-20 rounded-full" />
-        <Skeleton className="h-5 w-24 rounded-full" />
-      </div>
+    <div className="flex flex-col gap-3 border-2 rounded-2xl p-3 sm:p-4">
+        <div className="flex items-start gap-4">
+        <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full shrink-0" />
+        <div className="flex-grow space-y-2 w-full">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-3 w-full" />
+        </div>
+        </div>
+        <div className="flex justify-end gap-2">
+        <Skeleton className="h-9 w-24 rounded-md" />
+        <Skeleton className="h-9 w-24 rounded-md" />
+        </div>
     </div>
-    <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full shrink-0 ml-auto sm:ml-0" />
-  </div>
 );
+
 
 export default function RecommendationsPage() {
   const { user, userProfile, isProfileLoading } = useUser();
@@ -34,7 +39,10 @@ export default function RecommendationsPage() {
   const [data, setData] = useState<RecommendationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // State for modals/drawers
   const [detailedRec, setDetailedRec] = useState<Recommendation | null>(null);
+  const [foodToLog, setFoodToLog] = useState<FoodItem | null>(null);
 
   const fetchRecommendations = async () => {
     if (!user || !db) return;
@@ -56,10 +64,27 @@ export default function RecommendationsPage() {
       setIsLoading(false);
     }
   };
-
-  const handleViewDetails = (rec: Recommendation) => {
-    setDetailedRec(rec);
+  
+  const handleStartLogging = (rec: Recommendation) => {
+    const foodItem: FoodItem = {
+      foodName: rec.name,
+      estimatedWeightGrams: 100, // Recommendations are based on 100g
+      calories: rec.calories,
+      macronutrientBreakdown: {
+        protein: rec.protein,
+        carbohydrates: rec.carbs,
+        fat: rec.fat,
+      },
+      micronutrientBreakdown: rec.micronutrients || {},
+      isGhanaianLocal: true, // Assume local as per prompt
+      detailedRecipe: rec.detailedRecipe || { ingredients: [], instructions: [] },
+      foodHistory: '',
+      healthAnalysis: rec.reason,
+      suitability: 'Suitable', // Or derive this
+    };
+    setFoodToLog(foodItem);
   };
+
 
   const renderContent = () => {
     if (isLoading || isProfileLoading) {
@@ -120,7 +145,7 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-4 sm:space-y-6">
-        <p className="text-xs sm:text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
             Recommendations based on your goal to <span className="font-semibold text-primary">{data.goal.replace('-', ' ')}</span>.
         </p>
 
@@ -134,7 +159,7 @@ export default function RecommendationsPage() {
               <Lightbulb className="h-4 w-4 shrink-0" />
               <AlertTitle>Insightful Tips</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm">
+                <ul className="list-disc list-inside space-y-1 text-sm">
                   {data.insightTips.map((tip, index) => <li key={index}>{tip}</li>)}
                 </ul>
               </AlertDescription>
@@ -152,7 +177,8 @@ export default function RecommendationsPage() {
             >
               <RecommendationCard
                 recommendation={rec}
-                onClick={() => handleViewDetails(rec)}
+                onViewDetails={() => setDetailedRec(rec)}
+                onLog={() => handleStartLogging(rec)}
               />
             </motion.div>
           ))}
@@ -195,6 +221,18 @@ export default function RecommendationsPage() {
         recommendation={detailedRec}
         isOpen={!!detailedRec}
         onClose={() => setDetailedRec(null)}
+        onLogRequest={() => {
+            if (detailedRec) {
+                handleStartLogging(detailedRec);
+                setDetailedRec(null);
+            }
+        }}
+      />
+
+      <FoodConfirmationModal
+        isOpen={!!foodToLog}
+        onClose={() => setFoodToLog(null)}
+        foodItem={foodToLog}
       />
     </div>
   );
