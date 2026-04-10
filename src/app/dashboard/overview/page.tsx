@@ -79,6 +79,7 @@ const OverviewPage = () => {
   const [todayKey, setTodayKey] = useState('');
 
   useEffect(() => {
+    // This effect runs only on the client, preventing hydration mismatch
     setTodayKey(format(new Date(), 'yyyy-MM-dd'));
   }, []);
 
@@ -117,7 +118,7 @@ const OverviewPage = () => {
     [recommendationsData]
   );
 
-  const isLoading = isProfileLoading || isLogLoading || isWeeklyLoading || isRecsLoading;
+  const isLoading = isProfileLoading || isLogLoading || isWeeklyLoading || isRecsLoading || !todayKey;
 
   const userGoals = userProfile?.goals || {
     dailyCalorieGoal: 2000,

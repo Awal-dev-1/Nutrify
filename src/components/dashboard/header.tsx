@@ -63,8 +63,7 @@ export function DashboardHeader() {
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-[100] flex h-auto items-center gap-4 px-5 py-2 pt-safe",
-        "bg-background",
-        "shadow-sm",
+        "bg-background/80 backdrop-blur-md",
         "will-change-transform"
       )}
     >

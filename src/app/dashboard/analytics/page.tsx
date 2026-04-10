@@ -321,7 +321,7 @@ const AnalyticsPage = () => {
               Calorie Intake vs. Goal
             </CardTitle>
             <CardDescription className="text-sm">
-              Your daily calorie consumption compared to your goal of {goals.calories} kcal
+              Your daily calorie consumption compared to your goal of {goals.calories.toFixed(0)} kcal
             </CardDescription>
           </CardHeader>
           <CardContent className="p-3 md:p-6">
@@ -674,6 +674,7 @@ const DaySummaryCard = ({ day, title, icon, variant }: { day: AnalyticsData; tit
             <p className="font-bold text-chart-4">{day.carbs.toFixed(0)}g</p>
           </div>
           <div className="p-2 rounded-lg bg-muted/30">
+            <p className="text-xs text-muted-foreground">Fat</p>
             <p className="font-bold text-chart-1">{day.fat.toFixed(0)}g</p>
           </div>
         </div>
@@ -763,5 +764,3 @@ const AnalyticsSkeleton = () => (
 );
 
 export default AnalyticsPage;
-
-    

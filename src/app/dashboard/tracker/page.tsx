@@ -90,6 +90,7 @@ export default function DailyTrackerPage() {
   const [date, setDate] = useState<Date | null>(null);
 
   useEffect(() => {
+    // This effect runs only on the client, preventing hydration mismatch
     setDate(new Date());
   }, []);
 

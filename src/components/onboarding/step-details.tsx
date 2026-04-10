@@ -25,12 +25,12 @@ import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   gender: z.string().min(1, "Gender is required"),
-  age: z.coerce.number().min(1, "Age is required"),
+  age: z.coerce.number().min(1, "Age must be a positive number."),
   heightUnit: z.enum(["cm", "m", "ft-in"]),
-  height: z.coerce.number().min(1, "Height is required"),
+  height: z.coerce.number().min(1, "Height is required."),
   heightInches: z.coerce.number().optional(),
   weightUnit: z.enum(["kg", "g", "lb", "oz"]),
-  weight: z.coerce.number().min(1, "Weight is required"),
+  weight: z.coerce.number().min(1, "Weight is required."),
 }).refine(data => {
   if (data.heightUnit === 'ft-in') {
     return data.heightInches !== undefined && data.heightInches >= 0;
@@ -148,7 +148,7 @@ export function DetailsStep({ onNext }: { onNext: (data: any) => void }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input type="number" placeholder={heightUnit === 'ft-in' ? 'ft' : 'Height'} {...field} value={field.value || ''} />
+                          <Input type="number" placeholder={heightUnit === 'ft-in' ? 'ft' : 'e.g., 175'} {...field} value={field.value || ''} />
                         </FormControl>
                          <FormMessage />
                       </FormItem>

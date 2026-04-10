@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { addFoodToLog } from '@/services/trackerService';
 import { useUser, useFirestore } from '@/firebase';
@@ -56,37 +56,23 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
     if (!foodItem || !user || !db) return;
     setIsAdding(true);
     try {
+      // The service expects nutrient data to be normalized per 100g.
+      // Here, we create a temporary FoodItem object that meets this requirement.
       const per100gRatio = 100 / (foodItem.estimatedWeightGrams || 100);
+
       const foodDataForService: FoodItem = {
         ...foodItem,
-        estimatedWeightGrams: 100,
+        estimatedWeightGrams: 100, // The service will use the `quantity` param, so this is for standardization.
         calories: foodItem.calories * per100gRatio,
         macronutrientBreakdown: {
           protein: foodItem.macronutrientBreakdown.protein * per100gRatio,
           carbohydrates: foodItem.macronutrientBreakdown.carbohydrates * per100gRatio,
           fat: foodItem.macronutrientBreakdown.fat * per100gRatio,
         },
-        micronutrientBreakdown: {
-          fiber: (foodItem.micronutrientBreakdown?.fiber || 0) * per100gRatio,
-          sugar: (foodItem.micronutrientBreakdown?.sugar || 0) * per100gRatio,
-          iron: (foodItem.micronutrientBreakdown?.iron || 0) * per100gRatio,
-          calcium: (foodItem.micronutrientBreakdown?.calcium || 0) * per100gRatio,
-          vitaminA: (foodItem.micronutrientBreakdown?.vitaminA || 0) * per100gRatio,
-          vitaminC: (foodItem.micronutrientBreakdown?.vitaminC || 0) * per100gRatio,
-          sodium: (foodItem.micronutrientBreakdown?.sodium || 0) * per100gRatio,
-          vitaminD: (foodItem.micronutrientBreakdown?.vitaminD || 0) * per100gRatio,
-          vitaminE: (foodItem.micronutrientBreakdown?.vitaminE || 0) * per100gRatio,
-          vitaminK: (foodItem.micronutrientBreakdown?.vitaminK || 0) * per100gRatio,
-          vitaminB1: (foodItem.micronutrientBreakdown?.vitaminB1 || 0) * per100gRatio,
-          vitaminB2: (foodItem.micronutrientBreakdown?.vitaminB2 || 0) * per100gRatio,
-          vitaminB3: (foodItem.micronutrientBreakdown?.vitaminB3 || 0) * per100gRatio,
-          vitaminB6: (foodItem.micronutrientBreakdown?.vitaminB6 || 0) * per100gRatio,
-          vitaminB12: (foodItem.micronutrientBreakdown?.vitaminB12 || 0) * per100gRatio,
-          folate: (foodItem.micronutrientBreakdown?.folate || 0) * per100gRatio,
-          magnesium: (foodItem.micronutrientBreakdown?.magnesium || 0) * per100gRatio,
-          potassium: (foodItem.micronutrientBreakdown?.potassium || 0) * per100gRatio,
-          zinc: (foodItem.micronutrientBreakdown?.zinc || 0) * per100gRatio,
-        },
+        micronutrientBreakdown: foodItem.micronutrientBreakdown ? 
+          Object.fromEntries(
+            Object.entries(foodItem.micronutrientBreakdown).map(([key, value]) => [key, (value || 0) * per100gRatio])
+          ) : {},
       };
 
       await addFoodToLog(db, user.uid, mealType, foodDataForService, quantity);
@@ -109,14 +95,18 @@ export function FoodConfirmationModal({ isOpen, onClose, foodItem }: FoodConfirm
     }
   };
 
-  const calculatedNutrients = foodItem
-    ? {
-        calories: (foodItem.calories / (foodItem.estimatedWeightGrams || 1)) * quantity,
-        protein: (foodItem.macronutrientBreakdown.protein / (foodItem.estimatedWeightGrams || 1)) * quantity,
-        carbs: (foodItem.macronutrientBreakdown.carbohydrates / (foodItem.estimatedWeightGrams || 1)) * quantity,
-        fat: (foodItem.macronutrientBreakdown.fat / (foodItem.estimatedWeightGrams || 1)) * quantity,
-      }
-    : null;
+  const calculatedNutrients = useMemo(() => {
+    if (!foodItem) return null;
+    // This calculation now correctly determines the nutrients for the *user-selected* quantity.
+    const ratio = quantity / (foodItem.estimatedWeightGrams || 100);
+    return {
+      calories: foodItem.calories * ratio,
+      protein: foodItem.macronutrientBreakdown.protein * ratio,
+      carbs: foodItem.macronutrientBreakdown.carbohydrates * ratio,
+      fat: foodItem.macronutrientBreakdown.fat * ratio,
+    };
+  }, [foodItem, quantity]);
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
