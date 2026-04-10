@@ -25,6 +25,7 @@ import {
   getDocs,
   writeBatch,
 } from 'firebase/firestore';
+import { getStorage, ref, listAll, deleteObject, type StorageReference } from 'firebase/storage';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -109,6 +110,23 @@ export const changeUserPassword = async (
   await updatePassword(user, newPassword);
 };
 
+// Helper to recursively delete all contents of a Firebase Storage folder
+const deleteFolderContents = async (folderRef: StorageReference) => {
+    try {
+        const res = await listAll(folderRef);
+        // Delete all files in the current folder
+        const deleteFilePromises = res.items.map(itemRef => deleteObject(itemRef));
+        await Promise.all(deleteFilePromises);
+        
+        // Recursively delete all subfolders
+        const deleteFolderPromises = res.prefixes.map(prefixRef => deleteFolderContents(prefixRef));
+        await Promise.all(deleteFolderPromises);
+    } catch (error) {
+        // Log errors, but don't re-throw to allow other cleanup to continue.
+        console.error(`Failed to delete contents of ${folderRef.fullPath}`, error);
+    }
+};
+
 // Helper function to delete all documents in a collection/subcollection
 const deleteCollection = async (db: Firestore, collectionPath: string) => {
   const collectionRef = collection(db, collectionPath);
@@ -130,7 +148,6 @@ const deleteCollection = async (db: Firestore, collectionPath: string) => {
   }
 };
 
-
 // 6. Account Deletion
 export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const user = auth.currentUser;
@@ -139,8 +156,18 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   }
   
   const userId = user.uid;
+  const storage = getStorage();
 
-  // List of all user-specific subcollections to be deleted
+  // --- Step 1: Delete all user files from Firebase Storage ---
+  const userStorageRef = ref(storage, `users/${userId}`);
+  const aiScansStorageRef = ref(storage, `ai-recognition/${userId}`);
+  // Run deletions in parallel
+  await Promise.all([
+    deleteFolderContents(userStorageRef),
+    deleteFolderContents(aiScansStorageRef),
+  ]);
+
+  // --- Step 2: Delete all user data from Firestore ---
   const subcollections = [
     'dailyLogs',
     'generatedRecommendations',
@@ -150,36 +177,28 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   ];
 
   try {
-    // Delete all documents in all subcollections
     for (const subcollection of subcollections) {
       const path = `users/${userId}/${subcollection}`;
       await deleteCollection(db, path);
     }
-
-    // After subcollections are deleted, delete the main user document
     const userDocRef = doc(db, "users", userId);
     await deleteDoc(userDocRef);
-
   } catch (error: any) {
     const permissionError = new FirestorePermissionError({
       path: `users/${userId} and its subcollections`,
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Provide a more specific error message to the user.
     throw new Error("Failed to delete user data from the database. This could be due to a permissions issue.");
   }
 
-  // Once all Firestore data is gone, delete the auth user.
+  // --- Step 3: Delete the user from Firebase Authentication ---
   try {
     await deleteUser(user);
   } catch (error: any) {
     if (error.code === 'auth/requires-recent-login') {
-      // This is a critical state. The data is gone but auth user remains.
-      // The message must be clear and direct the user on how to complete the process.
       throw new Error('Your data has been removed, but we require re-authentication to delete your account profile. Please log out, log back in, and delete your account again to complete the process.');
     }
-    // For other auth errors, the situation is also critical.
     throw new Error(`Failed to delete your authentication profile: ${error.message}. Your data has been removed, but the account could not be fully deleted. Please contact support.`);
   }
 };

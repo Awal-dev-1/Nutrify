@@ -2,17 +2,15 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth, useFirestore, useUser } from '@/firebase';
-import { logout, resetPassword, deleteUserAccount, changeUserPassword } from '@/services/authService';
+import { useAuth } from '@/firebase';
+import { useUser } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
-  AlertTriangle,
   Loader2,
   KeyRound,
-  Trash2,
   LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +26,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -40,6 +37,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SettingsCard } from '@/components/settings/settings-card';
 import { useTheme } from 'next-themes';
+import { logout, resetPassword, changeUserPassword } from '@/services/authService';
 
 
 const passwordFormSchema = z.object({
@@ -53,14 +51,11 @@ const passwordFormSchema = z.object({
 
 export default function AccountSettingsPage() {
     const { user } = useUser();
-    const db = useFirestore();
     const auth = useAuth();
     const { toast } = useToast();
     const { setTheme } = useTheme();
 
-    const [isSaving, setIsSaving] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
     const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
         resolver: zodResolver(passwordFormSchema),
@@ -103,19 +98,6 @@ export default function AccountSettingsPage() {
           toast({ variant: 'destructive', title: 'Error', description: error.message });
         }
     };
-
-    const handleAccountDelete = async () => {
-        setIsSaving(true);
-        try {
-          await deleteUserAccount(auth, db);
-          toast({ title: 'Account Deleted', description: 'Your account has been permanently deleted.' });
-          window.location.assign('/');
-        } catch (error: any) {
-          toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message });
-        } finally {
-          setIsSaving(false);
-        }
-      };
     
     const handleLogout = async () => {
         try {
@@ -126,8 +108,6 @@ export default function AccountSettingsPage() {
           toast({ variant: 'destructive', title: 'Logout Failed', description: error.message });
         }
     };
-
-    const isDeleteDisabled = deleteConfirmText !== 'DELETE';
 
     return (
         <div className="space-y-6">
@@ -156,23 +136,6 @@ export default function AccountSettingsPage() {
                     <AlertDialog>
                     <AlertDialogTrigger asChild><Button variant="outline"><LogOut className="mr-2 h-4 w-4" /> Logout</Button></AlertDialogTrigger>
                     <AlertDialogContent className="w-[90vw] max-w-md rounded-xl"><AlertDialogHeader><AlertDialogTitle>Logout</AlertDialogTitle><AlertDialogDescription>Are you sure you want to log out of your account?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col sm:flex-row gap-2"><AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleLogout} className="w-full sm:w-auto">Logout</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            </SettingsCard>
-            <SettingsCard
-                title="Danger Zone"
-                description="Manage irreversible account actions."
-                icon={<AlertTriangle className="h-5 w-5" />}
-            >
-                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-lg bg-destructive/5">
-                    <div className="space-y-1"><h3 className="font-medium text-destructive">Delete Account</h3><p className="text-sm text-muted-foreground">Permanently delete your account and all associated data.</p></div>
-                    <AlertDialog>
-                    <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete Account</Button></AlertDialogTrigger>
-                    <AlertDialogContent className="w-[90vw] max-w-md rounded-xl">
-                        <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone. This will permanently delete your account and remove all your data from our servers.</AlertDialogDescription></AlertDialogHeader>
-                        <div className="space-y-3 py-3"><Label htmlFor="delete-confirm" className="text-sm">Type <span className="font-bold">DELETE</span> to confirm</Label><Input id="delete-confirm" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} placeholder="DELETE" className="h-11"/></div>
-                        <AlertDialogFooter className="flex-col sm:flex-row gap-2"><AlertDialogCancel className="w-full sm:w-auto" onClick={() => setDeleteConfirmText('')}>Cancel</AlertDialogCancel><AlertDialogAction disabled={isDeleteDisabled || isSaving} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90" onClick={handleAccountDelete}>{isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Delete Permanently</AlertDialogAction></AlertDialogFooter>
-                    </AlertDialogContent>
                     </AlertDialog>
                 </div>
             </SettingsCard>

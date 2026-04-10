@@ -1,18 +1,37 @@
 
 'use client';
 
-import { useUser, type UserProfile } from '@/firebase';
+import { useState } from 'react';
+import { useUser, useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { FileBadge, Download } from 'lucide-react';
+import { FileBadge, Download, AlertTriangle, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsCard } from '@/components/settings/settings-card';
+import { deleteUserAccount } from '@/services/authService';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 export default function PrivacySettingsPage() {
     const { userProfile } = useUser();
     const { toast } = useToast();
+    const auth = useAuth();
+    const db = useFirestore();
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
-    const formatDataAsDoc = (profile: UserProfile): string => {
+    const formatDataAsDoc = (profile: any): string => {
         let content = `Nutrify User Data Export\n`;
         content += `=========================\n\n`;
         content += `User ID: ${profile.id}\n`;
@@ -105,31 +124,83 @@ export default function PrivacySettingsPage() {
           });
         }
     };
+
+    const handleAccountDelete = async () => {
+        setIsDeleting(true);
+        try {
+            await deleteUserAccount(auth, db);
+            toast({ title: 'Account Deleted', description: 'Your account and all associated data have been permanently deleted.' });
+            window.location.assign('/');
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message, duration: 10000 });
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const isDeleteDisabled = deleteConfirmText !== 'DELETE';
     
     return (
-        <SettingsCard
-            title="Privacy & Data"
-            description="Manage your data and privacy settings."
-            icon={<FileBadge className="h-5 w-5" />}
-        >
-            <div className="space-y-4">
-                <p className="text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg">Nutrify uses your data to provide personalized nutrition insights. Your data is encrypted and never sold to third parties.</p>
-                <div className="space-y-3 pt-2">
-                    <Button variant="outline" className="w-full justify-start h-11 rounded-lg" asChild>
-                        <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-                            <FileBadge className="mr-2 h-4 w-4" /> View Privacy Policy
-                        </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start h-11 rounded-lg" asChild>
-                        <Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">
-                            <FileBadge className="mr-2 h-4 w-4" /> View Terms & Conditions
-                        </Link>
-                    </Button>
-                    <Button variant="secondary" className="w-full justify-start h-11 rounded-lg" onClick={handleDownloadData}>
-                        <Download className="mr-2 h-4 w-4" /> Download My Data
-                    </Button>
+        <div className="space-y-6">
+            <SettingsCard
+                title="Privacy & Data"
+                description="Manage your data and privacy settings."
+                icon={<FileBadge className="h-5 w-5" />}
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg">Nutrify uses your data to provide personalized nutrition insights. Your data is encrypted and never sold to third parties.</p>
+                    <div className="space-y-3 pt-2">
+                        <Button variant="outline" className="w-full justify-start h-11 rounded-lg" asChild>
+                            <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer">
+                                <FileBadge className="mr-2 h-4 w-4" /> View Privacy Policy
+                            </Link>
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start h-11 rounded-lg" asChild>
+                            <Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">
+                                <FileBadge className="mr-2 h-4 w-4" /> View Terms & Conditions
+                            </Link>
+                        </Button>
+                        <Button variant="secondary" className="w-full justify-start h-11 rounded-lg" onClick={handleDownloadData}>
+                            <Download className="mr-2 h-4 w-4" /> Download My Data
+                        </Button>
+                    </div>
                 </div>
-            </div>
-        </SettingsCard>
+            </SettingsCard>
+
+            <SettingsCard
+                title="Danger Zone"
+                description="Manage irreversible account actions."
+                icon={<AlertTriangle className="h-5 w-5" />}
+            >
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+                    <div className="space-y-1"><h3 className="font-medium text-destructive">Delete Account</h3><p className="text-sm text-muted-foreground">Permanently delete your account and all associated data.</p></div>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Account
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="w-[90vw] max-w-md rounded-xl">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your account, including your profile, logs, and all other associated data.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="space-y-3 py-3">
+                                <Label htmlFor="delete-confirm" className="text-sm">Type <span className="font-bold">DELETE</span> to confirm</Label>
+                                <Input id="delete-confirm" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} placeholder="DELETE" className="h-11"/>
+                            </div>
+                            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setDeleteConfirmText('')}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction disabled={isDeleteDisabled || isDeleting} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90" onClick={handleAccountDelete}>
+                                    {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Delete Permanently
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </SettingsCard>
+        </div>
     );
 }
