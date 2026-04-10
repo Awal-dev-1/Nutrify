@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -30,7 +29,15 @@ const features = [
   { href: '/dashboard/goals', label: 'Goals', icon: Target },
 ];
 
-const FeaturesDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const FeaturesDrawer = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const pathname = usePathname();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -38,7 +45,7 @@ const FeaturesDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.25 }}
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
           onClick={onClose}
         >
@@ -47,24 +54,57 @@ const FeaturesDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 p-4 pb-10 pb-safe backdrop-blur-lg"
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t bg-background/95 backdrop-blur-lg pb-safe"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/30 mb-4" />
-            <div className="grid grid-cols-3 gap-4 text-center">
-              {features.map((item) => (
-                <TransitionLink
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl hover:bg-accent active:scale-95 transition-all"
-                >
-                  <div className="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 text-primary">
-                    <item.icon className="h-6 w-6" />
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
-                </TransitionLink>
-              ))}
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+            </div>
+
+            {/* Section title */}
+            <p className="text-center text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest py-2">
+              Features
+            </p>
+
+            {/* 4-column grid — prevents label overflow */}
+            <div className="grid grid-cols-4 gap-x-1 gap-y-3 px-3 pb-8">
+              {features.map((item) => {
+                const isActive = pathname.startsWith(item.href);
+                return (
+                  <TransitionLink
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className={cn(
+                      'flex flex-col items-center justify-start gap-1.5 py-2 px-1 rounded-2xl active:scale-95 transition-all min-w-0',
+                      isActive ? 'bg-primary/10' : 'hover:bg-accent'
+                    )}
+                  >
+                    {/* Icon circle */}
+                    <div
+                      className={cn(
+                        'flex items-center justify-center h-11 w-11 rounded-full transition-colors shrink-0',
+                        isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-primary/10 text-primary'
+                      )}
+                    >
+                      <item.icon className="h-[18px] w-[18px]" />
+                    </div>
+
+                    {/* Label — always visible, wraps cleanly */}
+                    <span
+                      className={cn(
+                        'text-[10px] font-medium leading-tight text-center w-full hyphens-auto',
+                        isActive ? 'text-primary' : 'text-muted-foreground'
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </TransitionLink>
+                );
+              })}
             </div>
           </motion.div>
         </motion.div>
@@ -72,7 +112,6 @@ const FeaturesDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     </AnimatePresence>
   );
 };
-
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -83,50 +122,75 @@ export function BottomNav() {
     return null;
   }
 
+  const isOverviewActive = pathname.startsWith('/dashboard/overview');
+  const isSettingsActive = pathname.startsWith('/dashboard/settings');
+
   return (
     <>
-      <div className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-lg pb-safe md:hidden",
-          "gpu-layer" // Forcing GPU layer to prevent scroll jitter
-        )}>
+      <div
+        className={cn(
+          'fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-lg pb-safe md:hidden',
+          'gpu-layer'
+        )}
+      >
         <div className="flex h-16 items-center justify-around px-2">
+
           {/* Overview */}
           <TransitionLink
             href="/dashboard/overview"
             className={cn(
-              'relative flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg transition-colors active:scale-95',
-              pathname.startsWith('/dashboard/overview') ? 'text-primary' : 'text-muted-foreground hover:bg-accent/50'
+              'relative flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg transition-colors active:scale-95 pt-1',
+              isOverviewActive
+                ? 'text-primary'
+                : 'text-muted-foreground hover:bg-accent/50'
             )}
           >
-            <LayoutGrid className="h-6 w-6" />
-            <span className="text-xs font-medium">Overview</span>
+            <LayoutGrid className="h-[22px] w-[22px]" />
+            <span className="text-[11px] font-medium">Overview</span>
+            {isOverviewActive && (
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-t-full bg-primary" />
+            )}
           </TransitionLink>
-          
-          {/* Menu Button */}
+
+          {/* Menu — toggles drawer open/close */}
           <button
-            onClick={() => setIsMenuOpen(true)}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
             className="flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg text-primary active:scale-95 transition-all"
-            aria-label="Open features menu"
+            aria-label={isMenuOpen ? 'Close features menu' : 'Open features menu'}
+            aria-expanded={isMenuOpen}
           >
-             <div className="flex items-center justify-center h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg -mt-4 ring-4 ring-background">
-                <Sparkles className="h-6 w-6" />
-            </div>
-            <span className="text-xs font-bold -mt-1">Menu</span>
+            <motion.div
+              animate={{ rotate: isMenuOpen ? 45 : 0, scale: isMenuOpen ? 0.9 : 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              className="flex items-center justify-center h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg -mt-5 ring-[3px] ring-background"
+            >
+              <Sparkles className="h-[22px] w-[22px]" />
+            </motion.div>
+            <span className="text-[11px] font-semibold -mt-0.5 transition-all">
+              {isMenuOpen ? 'Close' : 'Menu'}
+            </span>
           </button>
 
           {/* Profile */}
-           <TransitionLink
+          <TransitionLink
             href="/dashboard/settings"
             className={cn(
-              'relative flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg transition-colors active:scale-95',
-              pathname.startsWith('/dashboard/settings') ? 'text-primary' : 'text-muted-foreground hover:bg-accent/50'
+              'relative flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg transition-colors active:scale-95 pt-1',
+              isSettingsActive
+                ? 'text-primary'
+                : 'text-muted-foreground hover:bg-accent/50'
             )}
           >
-            <User className="h-6 w-6" />
-            <span className="text-xs font-medium">Profile</span>
+            <User className="h-[22px] w-[22px]" />
+            <span className="text-[11px] font-medium">Profile</span>
+            {isSettingsActive && (
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-t-full bg-primary" />
+            )}
           </TransitionLink>
+
         </div>
       </div>
+
       <FeaturesDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   );

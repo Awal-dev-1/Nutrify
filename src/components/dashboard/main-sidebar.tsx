@@ -74,7 +74,7 @@ export function MainSidebar() {
           {groupLabel}
         </p>
       )}
-      <SidebarMenu className="gap-1 px-2">
+      <SidebarMenu className="gap-1 px-4">
         {links.map((link) => {
           const isActive = pathname === link.href
           const Icon = link.icon
@@ -95,7 +95,7 @@ export function MainSidebar() {
               >
                 <TransitionLink
                   href={link.href}
-                  className={cn('flex items-center gap-3 w-full px-4', isCollapsed && 'justify-center px-0')}
+                  className={cn('flex items-center gap-4 w-full', isCollapsed && 'justify-center px-0')}
                 >
                   <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-200', isActive && 'text-primary')} />
 
@@ -118,7 +118,7 @@ export function MainSidebar() {
 
   return (
     <>
-      <SidebarHeader className="flex h-auto flex-col items-start justify-between border-b px-4 py-4 gap-4">
+      <SidebarHeader className="flex h-auto flex-col items-start justify-between border-b px-6 pt-8 pb-4 gap-4">
         {/* Mobile Grabber */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-muted rounded-full md:hidden" />
 
@@ -173,7 +173,7 @@ export function MainSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className={cn('py-4 transition-all duration-300 no-scrollbar', isCollapsed ? 'px-0' : 'px-0')}>
+      <SidebarContent className={cn('pt-4 pb-10 transition-all duration-300 no-scrollbar', isCollapsed ? 'px-0' : 'px-0')}>
         <div className="space-y-4">
           {renderLinks(mainLinks)}
           
@@ -193,7 +193,7 @@ export function MainSidebar() {
 
       <SidebarFooter className={cn(
         'border-t transition-all duration-300',
-        isCollapsed ? 'p-2' : 'p-3',
+        isCollapsed ? 'p-2' : 'px-4 pt-3 pb-8',
       )}>
         <SidebarMenu className="gap-1 px-2">
           <SidebarMenuItem>
@@ -212,7 +212,7 @@ export function MainSidebar() {
             >
               <TransitionLink
                 href="/dashboard/settings"
-                className={cn('flex items-center gap-3 w-full px-4', isCollapsed && 'justify-center px-0')}
+                className={cn('flex items-center gap-4 w-full', isCollapsed && 'justify-center px-0')}
               >
                 <Settings className="h-5 w-5 shrink-0" />
                 <span className={cn(
