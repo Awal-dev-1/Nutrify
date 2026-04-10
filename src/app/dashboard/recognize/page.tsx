@@ -17,6 +17,7 @@ import {
   Camera,
   VideoOff,
   Flashlight,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { ImageUploader } from '@/components/recognize/image-uploader';
 import { FoodConfirmationModal } from '@/components/recognize/food-confirmation-modal';
@@ -245,7 +246,7 @@ export default function RecognizePage() {
       case 'idle': {
         if (isCameraOpen) {
           return (
-            <motion.div key="camera" {...motionVariants} className="fixed md:relative inset-0 z-50 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
+            <motion.div key="camera" {...motionVariants} className="fixed md:relative inset-0 z-60 bg-black md:bg-transparent md:w-full md:max-w-2xl md:mx-auto">
               <div className="relative w-full h-full md:h-[68vh] md:rounded-2xl overflow-hidden">
                 <video
                   ref={videoRef}
@@ -254,42 +255,62 @@ export default function RecognizePage() {
                   muted
                   playsInline
                 />
-                <div className="absolute inset-0 flex flex-col justify-between p-4 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                  <div className="flex justify-between pt-safe">
+                  {/* Top controls */}
+                  <div className="absolute top-6 left-4 right-4 flex justify-between items-center pt-safe">
                     {isMobile && isFlashAvailable ? (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleFlashToggle}
-                            className={cn(
-                                "bg-black/40 text-white hover:bg-black/60 rounded-full w-11 h-11 min-h-[44px] min-w-[44px]",
-                                isFlashOn && "bg-yellow-400 text-black hover:bg-yellow-400/90"
-                            )}
-                            aria-label="Toggle flash"
-                        >
-                            <Flashlight className="h-5 w-5" />
-                        </Button>
-                    ) : <div />}
-                    
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleFlashToggle}
+                        className={cn(
+                          'bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 rounded-full w-10 h-10',
+                          isFlashOn && 'bg-yellow-400 text-black hover:bg-yellow-400/90'
+                        )}
+                        aria-label="Toggle flash"
+                      >
+                        <Flashlight className="h-5 w-5" />
+                      </Button>
+                    ) : (
+                      <div />
+                    )}
+
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsCameraOpen(false)}
-                      className="bg-black/40 text-white hover:bg-black/60 rounded-full w-11 h-11 min-h-[44px] min-w-[44px]"
+                      className="bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 rounded-full w-10 h-10"
                       aria-label="Close camera"
                     >
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
-                  <div className="flex items-center justify-center pb-8 pb-safe">
-                    <button
-                      onClick={handleCapture}
-                      disabled={hasCameraPermission !== true}
-                      className="w-16 h-16 min-h-[44px] min-w-[44px] rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition disabled:opacity-50"
-                      aria-label="Capture image"
-                    />
+
+                  {/* Bottom controls */}
+                  <div className="absolute bottom-[calc(4rem+20px)] left-0 right-0 px-6 pb-safe">
+                    <div className="grid grid-cols-3 items-center">
+                      <div className="flex justify-start">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 rounded-full w-12 h-12"
+                          aria-label="Open gallery"
+                        >
+                          <ImageIcon className="h-6 w-6" />
+                        </Button>
+                      </div>
+                      <div className="flex justify-center">
+                        <button
+                          onClick={handleCapture}
+                          disabled={hasCameraPermission !== true}
+                          className="w-16 h-16 rounded-full border-4 border-white bg-white/30 ring-4 ring-black/30 active:bg-white/50 transition disabled:opacity-50"
+                          aria-label="Capture image"
+                        />
+                      </div>
+                      <div /> {/* Spacer */}
+                    </div>
                   </div>
-                </div>
+
                 {hasCameraPermission === false && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-6 text-center gap-3">
                     <VideoOff className="h-10 w-10" />
