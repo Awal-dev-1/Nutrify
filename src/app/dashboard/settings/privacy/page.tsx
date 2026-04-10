@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -129,6 +130,7 @@ export default function PrivacySettingsPage() {
         setIsDeleting(true);
         try {
             await deleteUserAccount(auth, db);
+            // This toast may not be visible as the page will redirect immediately
             toast({ title: 'Account Deleted', description: 'Your account and all associated data have been permanently deleted.' });
             window.location.assign('/');
         } catch (error: any) {
@@ -150,7 +152,7 @@ export default function PrivacySettingsPage() {
                   className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm"
                 >
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="mt-4 text-lg font-medium">Permanently deleting your data...</p>
+                  <p className="mt-4 text-lg font-medium">Permanently Wiping Your Data...</p>
                   <p className="text-sm text-muted-foreground">This may take a moment. Please do not close this window.</p>
                 </motion.div>
               )}
