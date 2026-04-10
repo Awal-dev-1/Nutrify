@@ -185,7 +185,7 @@ export default function OnboardingPage() {
         <Card className="border-2 shadow-xl overflow-hidden backdrop-blur-sm bg-background/95">
           {step > 0 && step < totalSteps && (
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
-              <Button variant="ghost" onClick={handleSkip} disabled={isSkipping} className="text-muted-foreground h-11 px-4">
+              <Button variant="link" onClick={handleSkip} disabled={isSkipping} className="text-muted-foreground h-11 px-4 hover:no-underline hover:text-foreground">
                 {isSkipping ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Skip'}
               </Button>
             </div>
