@@ -3,11 +3,11 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
-  viewTransitions: true,
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    viewTransition: true,
   },
   images: {
     remotePatterns: [
@@ -35,11 +35,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-    ],
-  },
-  devIndicators: {
-    allowedDevOrigins: [
-      "https://6000-firebase-studio-1771932123729.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev",
     ],
   },
 };
