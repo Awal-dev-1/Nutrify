@@ -436,31 +436,26 @@ export default function RecognizePage() {
             <div className="w-full max-w-4xl mx-auto">
               <Card className="overflow-hidden shadow-lg border-2 border-primary/20">
                 <CardContent className="p-0">
-                  <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90">
+                   <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] bg-black/90 overflow-hidden">
                     {preview && (
                       <Image
                         src={preview}
                         alt="Analyzing food"
                         fill
-                        className="object-contain opacity-30 blur-sm"
+                        className="object-contain opacity-30"
                       />
                     )}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                      <div className="absolute inset-x-0 top-0 bottom-0 overflow-hidden">
-                        <motion.div
-                          className="absolute left-0 right-0 h-1 bg-primary/70 shadow-[0_0_15px_2px_hsl(var(--primary))]"
-                          initial={{ y: '-10%' }}
-                          animate={{ y: '110%' }}
-                          transition={{
-                            duration: 2.5,
-                            repeat: Infinity,
-                            repeatType: 'reverse',
-                            ease: 'easeInOut',
-                          }}
-                        />
-                      </div>
+                    <div className="absolute inset-0 bg-black/50" />
+
+                    {/* The Scanning Line */}
+                    <div
+                      className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-primary/0 via-primary/40 to-primary/0 animate-scan-line opacity-70"
+                      style={{ willChange: 'transform' }} // GPU acceleration
+                    />
+
+                    <div className="relative h-full flex flex-col items-center justify-center p-4 text-center">
                       <div className="relative flex flex-col items-center gap-4">
-                        <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                        <Sparkles className="h-10 w-10 text-white/80 animate-pulse" />
                         <h3 className="text-xl font-medium text-white">{currentMessage.title}</h3>
                         <p className="text-sm text-white/70">{currentMessage.subtitle}</p>
                       </div>
