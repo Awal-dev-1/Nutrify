@@ -46,6 +46,7 @@ export default function MealPlannerPage() {
   const [activeTab, setActiveTab] = useState('day');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [previewPlan, setPreviewPlan] = useState<GeneratePersonalizedMealPlanOutput | null>(null);
 
@@ -188,13 +189,24 @@ export default function MealPlannerPage() {
   
   const handleClearPlan = async () => {
     if (!user || !db) return;
-    await clearPlan(db, user.uid);
-    setPreviewPlan(null);
-    toast({
-        variant: "destructive",
-        title: "Plan Cleared",
-        description: "Your meal plan has been reset.",
-    });
+    setIsClearing(true);
+    try {
+        await clearPlan(db, user.uid);
+        setPreviewPlan(null);
+        toast({
+            variant: "destructive",
+            title: "Plan Cleared",
+            description: "Your meal plan has been reset.",
+        });
+    } catch(err) {
+        toast({
+            variant: "destructive",
+            title: "Clear Failed",
+            description: "Could not clear your meal plan. Please try again.",
+        });
+    } finally {
+        setIsClearing(false);
+    }
   };
 
   const handleOpenAddModal = (day: string, mealType: string) => {
@@ -252,6 +264,7 @@ export default function MealPlannerPage() {
           isSaving={isSaving}
           onDiscard={handleDiscardPreview}
           isPreviewing={!!previewPlan}
+          isClearing={isClearing}
         />
       </div>
 

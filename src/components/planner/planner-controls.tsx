@@ -23,6 +23,7 @@ interface PlannerControlsProps {
   isSaving: boolean;
   onDiscard: () => void;
   isPreviewing: boolean;
+  isClearing: boolean;
 }
 
 export function PlannerControls({
@@ -33,6 +34,7 @@ export function PlannerControls({
   isSaving,
   onDiscard,
   isPreviewing,
+  isClearing,
 }: PlannerControlsProps) {
   if (isPreviewing) {
     return (
@@ -55,7 +57,7 @@ export function PlannerControls({
 
   return (
     <div className="flex items-center gap-2">
-      <Button onClick={onGenerate} disabled={isGenerating} size="sm" className="whitespace-nowrap">
+      <Button onClick={onGenerate} disabled={isGenerating || isClearing} size="sm" className="whitespace-nowrap">
         {isGenerating ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
@@ -67,8 +69,8 @@ export function PlannerControls({
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="icon" className="h-9 w-9">
-            <Trash2 className="h-4 w-4" />
+          <Button variant="destructive" size="icon" className="h-9 w-9" disabled={isClearing}>
+            {isClearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             <span className="sr-only">Clear Plan</span>
           </Button>
         </AlertDialogTrigger>
