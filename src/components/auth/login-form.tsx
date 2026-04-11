@@ -77,6 +77,8 @@ export function LoginForm() {
       
       if (error.code === 'auth/operation-not-allowed') {
         description = "Login method not enabled. Please contact support.";
+      } else if (error.code === 'auth/user-disabled') {
+        description = "This account has been disabled. Please contact support.";
       }
 
       toast({
