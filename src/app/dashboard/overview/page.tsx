@@ -214,6 +214,26 @@ const OverviewPage = () => {
     }
   };
 
+  const handleWaterUpdate = (newIntake: number) => {
+     if (!dailyLogRef) return;
+      const newLogData = {
+        ...todayTotals,
+        waterIntake: newIntake,
+        date: todayKey,
+      };
+
+      setDoc(dailyLogRef, newLogData, { merge: true }).catch((error) => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: dailyLogRef.path,
+            operation: 'write',
+            requestResourceData: { waterIntake: newIntake },
+          })
+        );
+      });
+  }
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -497,11 +517,8 @@ const OverviewPage = () => {
               <WaterWidget 
                   todayLog={todayTotals}
                   weeklyData={weeklyData}
-                  setWeeklyData={setWeeklyData}
+                  onUpdate={handleWaterUpdate}
                   goal={derivedGoals.water}
-                  dailyLogRef={dailyLogRef}
-                  todayTotals={todayTotals}
-                  todayKey={todayKey}
               />
             </motion.div>
 
@@ -697,12 +714,9 @@ const MicroNutrientGrid: FC<{ topNutrients: Array<{ key: string; label: string; 
 const WaterWidget: FC<{
   todayLog: DailyLog;
   weeklyData: AnalyticsData[] | null;
-  setWeeklyData: React.Dispatch<React.SetStateAction<AnalyticsData[] | null>>;
+  onUpdate: (newIntake: number) => void;
   goal: number;
-  dailyLogRef: DocumentReference | null;
-  todayTotals: DailyLog;
-  todayKey: string;
-}> = ({ todayLog, weeklyData, setWeeklyData, goal, dailyLogRef, todayTotals, todayKey }) => {
+}> = ({ todayLog, weeklyData, onUpdate, goal }) => {
   const { toast } = useToast();
   const [intake, setIntake] = useState(todayLog.waterIntake);
   const [showCheck, setShowCheck] = useState(false);
@@ -722,55 +736,9 @@ const WaterWidget: FC<{
   }, [isGoalMet]);
 
   const handleIntakeUpdate = (increment: number) => {
-    if (!dailyLogRef) return;
-
     const newIntake = Math.max(0, intake + increment);
-    const oldIntake = intake;
-
-    // Optimistically update the counter and chart data
-    setIntake(newIntake);
-    if (setWeeklyData) {
-      setWeeklyData(prevData => {
-        if (!prevData) return null;
-        return prevData.map(day => 
-          day.date === todayKey ? { ...day, waterIntake: newIntake } : day
-        );
-      });
-    }
-
-    const newLogData = {
-      ...todayTotals,
-      waterIntake: newIntake,
-      date: todayKey,
-    };
-
-    // Background sync with error handling
-    setDoc(dailyLogRef, newLogData, { merge: true }).catch((error) => {
-      // Rollback on failure
-      setIntake(oldIntake);
-      if (setWeeklyData) {
-        setWeeklyData(prevData => {
-           if (!prevData) return null;
-           return prevData.map(day => 
-             day.date === todayKey ? { ...day, waterIntake: oldIntake } : day
-           );
-        });
-      }
-      
-      toast({
-        variant: 'destructive',
-        title: 'Sync Failed',
-        description: 'Could not update water intake. Check your connection.',
-      });
-      errorEmitter.emit(
-        'permission-error',
-        new FirestorePermissionError({
-          path: dailyLogRef.path,
-          operation: 'write',
-          requestResourceData: { waterIntake: newIntake },
-        })
-      );
-    });
+    setIntake(newIntake); // Optimistic update
+    onUpdate(newIntake); // Inform parent to sync
   };
 
   const progress = Math.min((intake / goal) * 100, 100);

@@ -2,68 +2,56 @@
 
 Nutrify is a smart nutrition platform for Ghana, built with Next.js and Firebase. This application helps users track their nutritional intake, discover local foods, and achieve their health goals with the help of AI-powered features.
 
-## Core Features for Presentation
+## Core Features
 
-### 1. Login / Registration Page
+*   **Secure Authentication**: Firebase-powered login and registration with email/password.
+*   **Personalized Onboarding**: A guided setup flow to capture user details, goals, and preferences.
+*   **AI Food Recognition**: Upload an image of a meal, and our AI will identify the food and provide a detailed nutritional breakdown.
+*   **AI-Powered Search**: A natural language search interface to get instant nutritional information for any food.
+*   **Daily Tracking**: Log meals for breakfast, lunch, and dinner, with real-time updates to your daily calorie and macronutrient totals.
+*   **Smart Recommendations**: Get AI-generated meal suggestions based on your health goals and dietary preferences.
+*   **AI Meal Planner**: Automatically generate a full 7-day meal plan tailored to your profile.
+*   **In-Depth Analytics**: Visualize your nutritional trends over 7, 30, or 90 days with interactive charts.
 
-> “Users can create an account and log in securely.”
+## Tech Stack
 
-**How it works:** This feature is handled by Firebase Authentication, providing a secure and reliable system for user management. When a new user signs up with their name, email, and password, the system triggers a `signup` service function. This function first creates the user in Firebase Authentication and then, upon success, creates a corresponding user profile document in the Firestore database. This two-step process ensures data consistency. The system includes robust, real-time form validation on the client-side using Zod. Upon successful login, a `useEffect` hook listens for changes in the user's authentication state and profile data. It intelligently redirects new users to the onboarding flow (`/onboarding`) and existing users directly to their personalized dashboard (`/dashboard/overview`), providing a seamless transition into the app.
-
----
-
-### 2. Dashboard
-
-> “Displays daily nutrition summary and user progress.”
-
-**How it works:** The dashboard is the central hub of the user experience, providing a real-time, at-a-glance summary of the user's nutritional progress. The page uses a `useDoc` hook to subscribe directly to the user's `dailyLog` document in Firestore for the current day. This means any change—like logging a new meal—causes the dashboard to update instantly without a page refresh. Key metrics like calories, macronutrients (protein, carbs, fat), and water intake are displayed using reactive components like `Progress` bars and custom charts built with Recharts. It also features an "AI Coach" card that can be triggered to call a Genkit flow, which analyzes the user's progress for the day and provides dynamic, actionable tips and meal suggestions to help them meet their goals.
-
----
-
-### 3. Food Logging
-
-> “Users can enter or search for foods they have eaten.”
-
-**How it works:** Food logging is primarily managed through two interfaces: the "Daily Tracker" page and a "Quick Add" modal accessible from the dashboard. Both interfaces trigger an AI-powered search modal. When a user types a query (e.g., "Jollof rice with chicken"), the `searchFoods` Genkit flow is invoked on the server. The AI model analyzes the query and returns a detailed nutritional breakdown for a standard 100g portion. The user can then adjust the quantity, and the `addFoodToLog` service function recalculates all nutrient values for the specified portion size. This new `LoggedFoodItem` is then added to the user's `dailyLog` document in Firestore, and the change is immediately reflected across the entire application.
-
----
-
-### 4. AI Food Recognition
-
-> “Users can upload an image, and the system identifies the food automatically.”
-
-**How it works:** This feature leverages a powerful multi-modal AI model through a server-side Genkit flow called `recognizeFood`. The user can either upload an image or use their device's camera via the `getUserMedia` API. On the client, the image is compressed for performance and sent as a Base64-encoded data URI to the Genkit flow. The AI model analyzes the image's visual content along with the user's health profile (goals, preferences) to identify the food, estimate its nutritional content, and provide a personalized health analysis. If the AI is uncertain, it is designed to return multiple predictions with confidence scores, allowing the user to select the correct one from a list of `PredictionCard` components. The identified food can then be seamlessly added to their daily tracker.
-
----
-
-### 5. Nutritional Analysis
-
-> “The system shows calories, proteins, fats, and other nutrients.”
-
-**How it works:** Nutritional analysis is a core capability woven throughout the app. When the AI recognizes or searches for a food, it returns a detailed breakdown of both macronutrients (protein, carbs, fat) and a wide array of micronutrients (vitamins and minerals), all generated by the AI model. This data is then presented to the user in a clean, organized format. On the food detail screen (`/dashboard/food/[id]`), this is displayed using a "Health Gauge" component for an at-a-glance suitability score and expandable accordions for detailed macro and micro breakdowns. Furthermore, the "Analytics" page aggregates this data over time by querying all `dailyLog` documents within a date range (7, 30, or 90 days), allowing users to track long-term trends in their nutrient intake.
-
----
-
-### 6. Meal Tracking
-
-> “Users can track their meals daily and monitor habits over time.”
-
-**How it works:** The "Daily Tracker" page is the primary interface for this function, where users can view and manage their logged meals for any given day by navigating with a date picker. Beyond daily tracking, the "Analytics" page provides a powerful long-term perspective. The `getAnalyticsData` service function fetches all `dailyLog` documents for a selected period, processes them into a `chartData` array, and calculates a `summary` object. This enables the UI to render charts showing trends in calorie intake, macro distribution, and goal achievement over time. This historical data is also a critical input for the `generatePersonalizedMealPlan` flow, allowing the AI to generate more relevant and effective recommendations.
-
----
-
-### 7. Recommendations
-
-> “The system suggests healthier food choices based on user data.”
-
-**How it works:** This proactive feature uses an AI agent to help users discover healthy meals tailored to their needs. On the "Recommendations" page, a user can trigger the `generateFoodRecommendations` Genkit flow. This flow analyzes their saved health goals (e.g., "lose-weight") and dietary preferences. The AI model, guided by a system prompt specializing in Ghanaian cuisine, generates a curated list of suitable meals. Each `RecommendationItem` comes with a full nutritional breakdown, a detailed recipe (ingredients and instructions), and a personalized "reason" explaining why it aligns with the user's specific health objectives. Clicking a recommendation opens a slide-up drawer for an immersive, mobile-first view of the recipe and analysis.
+*   **Framework**: [Next.js](https://nextjs.org/) 15 (with App Router)
+*   **Hosting**: [Firebase App Hosting](https://firebase.google.com/docs/hosting)
+*   **Database**: [Firestore](https://firebase.google.com/docs/firestore)
+*   **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth)
+*   **AI/Generative**: [Google AI & Genkit](https://firebase.google.com/docs/gen-ai)
+*   **UI**: [Tailwind CSS](https://tailwindcss.com/) with [ShadCN](https://ui.shadcn.com/) components
+*   **Styling**: [Framer Motion](https://www.framer.com/motion/) for animations
 
 ## Getting Started
 
-To get started, run the development server:
+To get a local copy up and running, follow these simple steps.
 
-```bash
-npm run dev
-```
+### Prerequisites
+
+*   Node.js (v18 or later)
+*   npm, yarn, or pnpm
+
+### Installation
+
+1.  Clone the repo
+    ```sh
+    git clone https://github.com/your_username/nutrify.git
+    ```
+2.  Install NPM packages
+    ```sh
+    npm install
+    ```
+3.  Set up your environment variables. Create a `.env` file in the root and add your Firebase configuration details:
+    ```env
+    NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+    # ... and so on
+    ```
+4.  Run the development server:
+    ```bash
+    npm run dev
+    ```
 
 Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.

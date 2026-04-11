@@ -13,7 +13,7 @@ import { PreferencesStep } from "@/components/onboarding/step-preferences";
 import { ActivityStep } from "@/components/onboarding/step-activity";
 import { SummaryStep } from "@/components/onboarding/step-summary";
 import { LoadingStep } from "@/components/onboarding/step-loading";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, Sparkles, CheckCircle, Heart, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser, useFirestore } from "@/firebase";
 import { completeOnboarding, skipOnboarding } from "@/services/onboardingService";
@@ -50,18 +50,15 @@ export default function OnboardingPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Wait for user status to be resolved
     if (isUserLoading || isProfileLoading) {
       return;
     }
 
-    // If no user or an anonymous user, they shouldn't be here. Go to signup.
     if (!user || user.isAnonymous) {
       router.push('/signup');
       return;
     }
 
-    // If the user has already completed onboarding, redirect to the dashboard.
     if (userProfile && userProfile.onboardingCompleted) {
       router.push('/dashboard/overview');
       return;
@@ -91,7 +88,7 @@ export default function OnboardingPage() {
         router.push('/login');
         return;
     };
-    setStep(totalSteps + 1); // Go to Loading step
+    setStep(totalSteps + 1);
 
     try {
         await completeOnboarding(db, user.uid, formData as any);
@@ -146,7 +143,6 @@ export default function OnboardingPage() {
     <LoadingStep />
   ];
   
-  // Render a loading state while we check the user's status to prevent UI flicker
   const showPageLoading = isUserLoading || isProfileLoading || !user || user.isAnonymous || (userProfile && userProfile.onboardingCompleted);
   if (showPageLoading) {
     return (
@@ -169,119 +165,207 @@ export default function OnboardingPage() {
     "Creating Your Profile"
   ];
 
+  const stepIcons = [Sparkles, Heart, Target, Sparkles, Sparkles, CheckCircle, Loader2];
+
   return (
     <div className="relative flex items-center justify-center min-h-dvh bg-gradient-to-br from-primary/5 via-background to-secondary/30 overflow-hidden">
+      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.4, 0.2]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl"
+        />
       </div>
 
-      <div
-        className="w-full max-w-2xl px-4 relative z-10"
-      >
-        <Card className="border-2 shadow-xl overflow-hidden backdrop-blur-sm bg-background/95">
-          {step > 0 && step < totalSteps && (
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
-              <Button variant="link" onClick={handleSkip} disabled={isSkipping} className="text-muted-foreground h-11 px-4 hover:no-underline hover:text-foreground">
-                {isSkipping ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Skip'}
-              </Button>
-            </div>
-          )}
-
-          {step === 0 && (
-            <div className="pt-8 flex justify-center">
-              <div className="flex items-center px-4 py-2 rounded-full bg-primary/10">
-                <span className="font-semibold text-primary">Nutrify</span>
-              </div>
-            </div>
-          )}
-
-          {showProgress && (
-            <CardHeader className="space-y-4 pb-2 pt-10">
-              <div className="flex items-center justify-between text-body">
-                <span className="font-medium text-primary">{stepTitles[step]}</span>
-                <span className="text-muted-foreground">Step {step} of {totalSteps}</span>
-              </div>
-              
-              <div className="relative h-2 w-full bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="absolute left-0 top-0 h-full bg-primary rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressValue}%` }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                />
-              </div>
-
-              <div className="flex justify-between pt-1">
-                {Array.from({ length: totalSteps }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition-all duration-300",
-                      i + 1 <= step 
-                        ? "bg-primary scale-100" 
-                        : i + 1 === step + 1
-                        ? "bg-primary/50 scale-125"
-                        : "bg-muted-foreground/20"
-                    )}
-                  />
-                ))}
-              </div>
-            </CardHeader>
-          )}
-
-          <CardContent className="p-6 md:p-8 min-h-[400px] flex items-center justify-center overflow-hidden">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={step}
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30, duration: 0.3 },
-                  opacity: { duration: 0.2 }
-                }}
-                className="w-full"
+      <div className="w-full max-w-2xl px-4 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border shadow-2xl overflow-hidden backdrop-blur-sm bg-background/95 transition-all duration-300 hover:shadow-primary/5">
+            {/* Decorative top bar */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
+            
+            {step > 0 && step <= totalSteps && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20"
               >
-                {stepsComponents[step]}
+                <Button 
+                  variant="link" 
+                  onClick={handleSkip} 
+                  disabled={isSkipping} 
+                  className="text-muted-foreground h-11 px-4 hover:no-underline hover:text-foreground transition-all duration-200"
+                >
+                  {isSkipping ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Skip'}
+                </Button>
               </motion.div>
-            </AnimatePresence>
-          </CardContent>
+            )}
 
-          {step > 0 && step <= totalSteps && (
-            <CardFooter className="flex justify-between p-6 pt-0 border-t mt-4">
-              <Button
-                variant="ghost"
-                onClick={handleBack}
-                disabled={step === 1}
-                className={cn(
-                  "gap-2 transition-all",
-                  step === 1 ? "opacity-50" : "hover:gap-1"
-                )}
+            {step === 0 && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="pt-8 flex justify-center"
               >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </Button>
-              
-              <p className="text-small text-muted-foreground hidden md:block">
-                Press Enter to continue
-              </p>
-              
-              <div className="w-[72px]" />
-            </CardFooter>
-          )}
-        </Card>
+                <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 backdrop-blur-sm">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-primary">Welcome to Nutrify</span>
+                </div>
+              </motion.div>
+            )}
+
+            {showProgress && (
+              <CardHeader className="space-y-4 pb-2 pt-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {stepIcons[step] && (
+                      <motion.div
+                        initial={{ rotate: -180, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        className="p-1.5 rounded-lg bg-primary/10"
+                      >
+                        {(() => {
+                          const Icon = stepIcons[step];
+                          return <Icon className="h-4 w-4 text-primary" />;
+                        })()}
+                      </motion.div>
+                    )}
+                    <span className="font-semibold text-foreground">{stepTitles[step]}</span>
+                  </div>
+                  <motion.span 
+                    key={step}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-sm font-medium text-primary"
+                  >
+                    Step {step} of {totalSteps}
+                  </motion.span>
+                </div>
+                
+                <div className="relative h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressValue}%` }}
+                    transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <motion.div 
+                      className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2 }}
+                    />
+                  </motion.div>
+                </div>
+
+                <div className="flex justify-between pt-2">
+                  {Array.from({ length: totalSteps }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={false}
+                      animate={{
+                        scale: i + 1 <= step ? [0, 1.2, 1] : 1,
+                      }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-300",
+                        i + 1 <= step 
+                          ? "bg-primary shadow-sm shadow-primary/30" 
+                          : i + 1 === step + 1
+                          ? "bg-primary/40 ring-2 ring-primary/20"
+                          : "bg-muted-foreground/20"
+                      )}
+                    />
+                  ))}
+                </div>
+              </CardHeader>
+            )}
+
+            <CardContent className="p-6 md:p-8 min-h-[420px] flex items-center justify-center overflow-hidden">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={step}
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "spring", stiffness: 350, damping: 30, duration: 0.3 },
+                    opacity: { duration: 0.2 }
+                  }}
+                  className="w-full"
+                >
+                  {stepsComponents[step]}
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+
+            {step > 0 && step <= totalSteps && (
+              <CardFooter className="flex justify-between items-center p-6 pt-0 border-t mt-2">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  disabled={step === 1}
+                  className={cn(
+                    "gap-2 rounded-full transition-all duration-200",
+                    step === 1 ? "opacity-0 invisible" : "hover:gap-1 hover:bg-muted/50"
+                  )}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </Button>
+                
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.6 }}
+                  className="text-xs text-muted-foreground hidden md:flex items-center gap-1"
+                >
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/40" />
+                  Press Enter to continue
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/40" />
+                </motion.p>
+                
+                <div className="w-[72px]" />
+              </CardFooter>
+            )}
+          </Card>
+        </motion.div>
 
         {step === 0 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center mt-8 text-body text-muted-foreground"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            className="text-center mt-8"
           >
-            <p>Your information is secure and never shared</p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/50 backdrop-blur-sm">
+              <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+              <p className="text-xs text-muted-foreground">Your information is secure and never shared</p>
+            </div>
           </motion.div>
         )}
       </div>

@@ -149,15 +149,14 @@ const deleteCollection = async (db: Firestore, collectionPath: string) => {
       await batch.commit();
     }
   } catch (error) {
-    // We'll let the main deleteUserAccount function handle the permission error emission
-    // to avoid emitting multiple times.
+    // Propagate the error to be caught by the main deletion function
     console.error(`Failed during batch deletion of ${collectionPath}`, error);
-    throw error; // Re-throw to be caught by the caller
+    throw error;
   }
 };
 
 
-// 6. Account Deletion (Optimized)
+// 6. Account Deletion (Optimized with granular error handling)
 export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const user = auth.currentUser;
   if (!user) {
@@ -167,17 +166,22 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const userId = user.uid;
   const storage = getStorage();
 
-  // --- Step 1 & 2: Delete Storage and Firestore data in parallel ---
-  const storageCleanupPromise = (async () => {
+  // --- Step 1: Delete Storage Data ---
+  try {
     const userStorageRef = ref(storage, `users/${userId}`);
     const aiScansStorageRef = ref(storage, `ai-recognition/${userId}`);
     await Promise.all([
       deleteFolderContents(userStorageRef),
       deleteFolderContents(aiScansStorageRef),
     ]);
-  })();
+  } catch (error: any) {
+     console.error("Storage cleanup failed:", error);
+     // Let the user know storage cleanup failed, but we can still proceed.
+     throw new Error(`Storage cleanup failed: ${error.message}. Please try again or contact support.`);
+  }
 
-  const firestoreCleanupPromise = (async () => {
+  // --- Step 2: Delete Firestore Data ---
+  try {
     const subcollections = [
       'dailyLogs',
       'generatedRecommendations',
@@ -185,42 +189,25 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
       'plannedMeals',
       'recentSearches'
     ];
-    // Delete all subcollections in parallel
     await Promise.all(subcollections.map(sub => deleteCollection(db, `users/${userId}/${sub}`)));
     
     // Finally, delete the main user document
     const userDocRef = doc(db, "users", userId);
     await deleteDoc(userDocRef);
-  })();
-
-  try {
-    // Wait for both storage and firestore cleanup to complete
-    await Promise.all([storageCleanupPromise, firestoreCleanupPromise]);
   } catch (error: any) {
-    // Improved error handling
-    if (error.code) { // Check if it's a Firebase error
-      if (error.code.startsWith('storage/')) {
-        console.error("Storage cleanup failed:", error);
-        // Throw a user-friendly error for storage issues
-        throw new Error(`Storage cleanup failed: ${error.message}. Please try again.`);
-      } else if (error.code === 'permission-denied') {
-        // It's a Firestore permission error. Emit the specific error for the dev overlay.
+    if (error.code === 'permission-denied') {
         const permissionError = new FirestorePermissionError({
-          path: `users/${userId} and subcollections`,
+          path: `users/${userId}`, // Point to the root document, as that's the source of all sub-collection permissions.
           operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Throw a more generic error for the user's toast notification.
         throw new Error("Permission denied. Failed to delete user data from the database.");
-      }
     }
-    // For other generic errors
-    console.error("Account deletion data cleanup failed:", error);
-    throw new Error("Failed to delete user data due to a network or permission issue. Please try again.");
+    console.error("Firestore data deletion failed:", error);
+    throw new Error("Failed to delete user data due to a network or permission issue.");
   }
 
   // --- Step 3: Delete the user from Firebase Authentication ---
-  // This is the last and final step.
   try {
     await deleteUser(user);
   } catch (error: any) {

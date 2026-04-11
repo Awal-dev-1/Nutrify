@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { GenerateDailyRecommendationsOutput } from '@/ai/flows/generate-daily-recommendations';

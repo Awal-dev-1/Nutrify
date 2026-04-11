@@ -128,7 +128,7 @@ export default function OnboardingPage() {
 
           {/* Progress Header */}
           {showProgress && (
-            <CardHeader className="space-y-4 pb-2">
+            <CardHeader className="space-y-4 pb-2 pt-10">
               <div className="flex items-center justify-between text-body">
                 <span className="font-medium text-primary">{stepTitles[step]}</span>
                 <span className="text-muted-foreground">Step {step} of {totalSteps}</span>
