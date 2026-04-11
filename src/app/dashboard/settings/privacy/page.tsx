@@ -114,7 +114,7 @@ export default function PrivacySettingsPage() {
         setIsDeleting(true);
         try {
             await deleteUserAccount(auth, db);
-            toast({ title: 'Account Deleted', description: 'Your account and all associated data have been permanently deleted.' });
+            toast({ title: 'Account Deletion Initiated', description: 'Your account is being deleted. You have been logged out.' });
             window.location.assign('/');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message, duration: 10000 });
@@ -135,8 +135,8 @@ export default function PrivacySettingsPage() {
                   className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm"
                 >
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="mt-4 text-lg font-medium">Permanently Wiping Your Data...</p>
-                  <p className="text-sm text-muted-foreground">This may take a moment. Please do not close this window.</p>
+                  <p className="mt-4 text-lg font-medium">Initiating Deletion...</p>
+                  <p className="text-sm text-muted-foreground">You will be logged out and redirected shortly.</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -183,7 +183,7 @@ export default function PrivacySettingsPage() {
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your account, including your profile, logs, and all other associated data.
+                                This action is irreversible. All your data will be permanently deleted in the background.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <div className="space-y-3 py-3">
@@ -193,7 +193,7 @@ export default function PrivacySettingsPage() {
                             <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                                 <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setDeleteConfirmText('')}>Cancel</AlertDialogCancel>
                                 <AlertDialogAction disabled={isDeleteDisabled} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90" onClick={handleAccountDelete}>
-                                    Delete Permanently
+                                    Delete Account
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>

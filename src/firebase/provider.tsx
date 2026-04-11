@@ -71,6 +71,8 @@ export interface UserProfile {
   };
   createdAt: any;
   updatedAt?: any;
+  isDeleted?: boolean;
+  deletedAt?: any;
 }
 
 interface UserAuthState {
@@ -291,5 +293,3 @@ export const useUser = (): UserHookResult => {
   const { user, isUserLoading, userError, userProfile, isProfileLoading, profileError } = useFirebase();
   return { user, isUserLoading, userError, userProfile, isProfileLoading, profileError };
 };
-
-    

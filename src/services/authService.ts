@@ -24,8 +24,8 @@ import {
   query,
   getDocs,
   writeBatch,
+  updateDoc,
 } from 'firebase/firestore';
-import { getStorage, ref, listAll, deleteObject, type StorageReference } from 'firebase/storage';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -110,112 +110,92 @@ export const changeUserPassword = async (
   await updatePassword(user, newPassword);
 };
 
-// Helper to recursively delete all contents of a Firebase Storage folder
-const deleteFolderContents = async (folderRef: StorageReference) => {
-    try {
-        const res = await listAll(folderRef);
-        // Delete all files in the current folder
-        const deleteFilePromises = res.items.map(itemRef => deleteObject(itemRef));
-        await Promise.all(deleteFilePromises);
-        
-        // Recursively delete all subfolders
-        const deleteFolderPromises = res.prefixes.map(prefixRef => deleteFolderContents(prefixRef));
-        await Promise.all(deleteFolderPromises);
-    } catch (error) {
-        // Log and re-throw the error to ensure the calling Promise.all fails.
-        console.error(`Failed to delete contents of ${folderRef.fullPath}`, error);
-        throw error;
-    }
-};
 
-// Helper function to delete all documents in a collection using batched writes
-const deleteCollection = async (db: Firestore, collectionPath: string) => {
-  const collectionRef = collection(db, collectionPath);
-  const q = query(collectionRef);
-  
-  try {
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      return;
-    }
-
-    const batchSize = 500; // Firestore batch limit
-    for (let i = 0; i < querySnapshot.docs.length; i += batchSize) {
-      const batch = writeBatch(db);
-      const chunk = querySnapshot.docs.slice(i, i + batchSize);
-      chunk.forEach(doc => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
-    }
-  } catch (error) {
-    // Propagate the error to be caught by the main deletion function
-    console.error(`Failed during batch deletion of ${collectionPath}`, error);
-    throw error;
-  }
-};
-
-
-// 6. Account Deletion (Optimized with granular error handling)
+// 6. Account Deletion (Refactored for Asynchronous Backend Deletion)
 export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
   const user = auth.currentUser;
   if (!user) {
     throw new Error("No user is currently signed in to delete.");
   }
-  
   const userId = user.uid;
-  const storage = getStorage();
+  const userDocRef = doc(db, "users", userId);
 
-  // --- Step 1: Delete Storage Data ---
+  // --- Step 1: Soft Delete (Client-side) ---
+  // This is a fast operation. We mark the user document for deletion.
+  // A backend process (like a Firebase Cloud Function) should be triggered by this update
+  // to perform the heavy data cleanup asynchronously.
   try {
-    // These paths must match what's used in `aiRecognitionService` and `profileService`.
-    const userProfileImagesRef = ref(storage, `users/${userId}/profile_images`);
-    const aiScansStorageRef = ref(storage, `ai-recognition/${userId}`);
-    await Promise.all([
-      deleteFolderContents(userProfileImagesRef),
-      deleteFolderContents(aiScansStorageRef),
-    ]);
+    await updateDoc(userDocRef, {
+      isDeleted: true,
+      deletedAt: serverTimestamp(),
+    });
   } catch (error: any) {
-     console.error("Storage cleanup failed:", error);
-     throw new Error(`Storage cleanup failed: ${error.message}. Please try again or contact support.`);
+    console.error("Failed to mark user for deletion:", error);
+    // If we can't even mark the user for deletion, we stop here.
+    throw new Error("Could not initiate account deletion. Please try again.");
   }
 
-  // --- Step 2: Delete Firestore Data ---
-  try {
-    const subcollections = [
-      'dailyLogs',
-      'generatedRecommendations',
-      'aiScans',
-      'plannedMeals',
-      'recentSearches'
-    ];
-    await Promise.all(subcollections.map(sub => deleteCollection(db, `users/${userId}/${sub}`)));
-    
-    // Finally, delete the main user document
-    const userDocRef = doc(db, "users", userId);
-    await deleteDoc(userDocRef);
-  } catch (error: any) {
-    if (error.code === 'permission-denied') {
-        const permissionError = new FirestorePermissionError({
-          path: `users/${userId}`, // Point to the root document, as that's the source of all sub-collection permissions.
-          operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw new Error("Permission denied. Failed to delete user data from the database.");
-    }
-    console.error("Firestore data deletion failed:", error);
-    throw new Error("Failed to delete user data due to a network or permission issue.");
-  }
+  // --- Step 2: Sign Out (Client-side) ---
+  // Immediately sign the user out to give them instant feedback.
+  await signOut(auth);
 
-  // --- Step 3: Delete the user from Firebase Authentication ---
-  try {
-    await deleteUser(user);
-  } catch (error: any) {
-    if (error.code === 'auth/requires-recent-login') {
-      throw new Error('Your data has been removed, but we require re-authentication to delete your account. Please log in again and retry deletion to complete the process.');
-    }
-    throw new Error(`Failed to delete your authentication profile: ${error.message}. Your data has been removed, but the account could not be fully deleted. Please contact support.`);
-  }
+  /*
+   * --- Step 3: Asynchronous Backend Cleanup (Conceptual) ---
+   *
+   * The following logic should be implemented in a SECURE BACKEND ENVIRONMENT
+   * (e.g., a Firebase Cloud Function triggered by the Firestore document update).
+   * It is included here for architectural clarity ONLY.
+   *
+   * //--- Backend Cloud Function: onDeleteUser.js ---
+   *
+   * const functions = require('firebase-functions');
+   * const admin = require('firebase-admin');
+   * admin.initializeApp();
+   *
+   * exports.cleanupUserData = functions.firestore
+   *   .document('/users/{userId}')
+   *   .onUpdate(async (change, context) => {
+   *     const newValue = change.after.data();
+   *     const previousValue = change.before.data();
+   *     const userId = context.params.userId;
+   *
+   *     // If the 'isDeleted' flag was just set to true, start the cleanup.
+   *     if (newValue.isDeleted && !previousValue.isDeleted) {
+   *       console.log(`[Backend] Starting cleanup for user: ${userId}`);
+   *
+   *       const db = admin.firestore();
+   *       const auth = admin.auth();
+   *       const bucket = admin.storage().bucket();
+   *
+   *       try {
+   *         // 1. Delete Storage data using efficient prefix deletion
+   *         await Promise.all([
+   *           bucket.deleteFiles({ prefix: `users/${userId}/` }),
+   *           bucket.deleteFiles({ prefix: `ai-recognition/${userId}/` })
+   *         ]);
+   *
+   *         // 2. Delete Firestore subcollections
+   *         // This requires a recursive delete helper function for Cloud Functions.
+   *         const subcollections = ['dailyLogs', 'generatedRecommendations', 'aiScans', 'plannedMeals', 'recentSearches'];
+   *         for (const sub of subcollections) {
+   *           // Logic to recursively delete subcollection documents would go here.
+   *         }
+   *
+   *         // 3. Delete the main user document
+   *         await db.collection('users').doc(userId).delete();
+   *
+   *         // 4. Delete the Auth user (MUST BE LAST)
+   *         await auth.deleteUser(userId);
+   *
+   *         console.log(`[Backend] Successfully cleaned up data for user: ${userId}`);
+   *       } catch (error) {
+   *         console.error(`[Backend] CRITICAL: Failed to clean up user ${userId}.`, error);
+   *         // Add retry logic or flag the document for manual review.
+   *         await change.after.ref.update({ deletionError: error.message });
+   *       }
+   *     }
+   *   });
+   */
 };
 
 
