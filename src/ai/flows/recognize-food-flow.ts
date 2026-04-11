@@ -68,9 +68,9 @@ The user has not provided their profile. Provide a general health analysis.
 1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array. If it is food, proceed.
 2.  **Confidence & Predictions**: Identify the meal and your confidence level. If confidence is high (>0.85), return one combined prediction. If confidence is lower, return up to 2-3 of the most likely Ghanaian alternatives.
 3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST provide a full nutritional profile, including:
-    *   `foodName`, `estimatedWeightGrams`, `calories`, `macronutrientBreakdown`, `micronutrientBreakdown`.
-    *   **`suitability`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.
-    *   **`healthAnalysis`**: You MUST provide a comprehensive analysis explaining your suitability rating. Personalize it if user context exists. This field is non-negotiable.
+    *   \`foodName\`, \`estimatedWeightGrams\`, \`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`.
+    *   **\`suitability\`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.
+    *   **\`healthAnalysis\`**: You MUST provide a comprehensive analysis explaining your suitability rating. Personalize it if user context exists. This field is non-negotiable.
 
 Provide your response strictly in the specified JSON format.`,
 });
