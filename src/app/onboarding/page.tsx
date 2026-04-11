@@ -238,7 +238,7 @@ export default function OnboardingPage() {
             )}
 
             {showProgress && (
-              <CardHeader className="space-y-4 pb-2 pt-10">
+              <CardHeader className="space-y-4 pt-12 sm:pt-10 pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {stepIcons[step] && (

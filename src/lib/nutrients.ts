@@ -8,6 +8,12 @@ export const MICRONUTRIENT_KEYS = [
 
 export type MicronutrientKey = typeof MICRONUTRIENT_KEYS[number];
 
+export const CORE_MACRO_KEYS = ['calories', 'protein', 'carbs', 'fat'] as const;
+
+export const ALL_TRACKABLE_NUTRIENT_KEYS = [...CORE_MACRO_KEYS, ...MICRONUTRIENT_KEYS] as const;
+export type TrackableNutrientKey = typeof ALL_TRACKABLE_NUTRIENT_KEYS[number];
+
+
 export const VITAMIN_KEYS: readonly MicronutrientKey[] = [
   "vitaminA", "vitaminC", "vitaminD", "vitaminE", "vitaminK", "vitaminB1", "vitaminB2",
   "vitaminB3", "vitaminB5", "vitaminB6", "vitaminB7", "folate", "vitaminB12"

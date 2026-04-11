@@ -168,15 +168,15 @@ export const deleteUserAccount = async (auth: Auth, db: Firestore) => {
 
   // --- Step 1: Delete Storage Data ---
   try {
-    const userStorageRef = ref(storage, `users/${userId}`);
+    // These paths must match what's used in `aiRecognitionService` and `profileService`.
+    const userProfileImagesRef = ref(storage, `users/${userId}/profile_images`);
     const aiScansStorageRef = ref(storage, `ai-recognition/${userId}`);
     await Promise.all([
-      deleteFolderContents(userStorageRef),
+      deleteFolderContents(userProfileImagesRef),
       deleteFolderContents(aiScansStorageRef),
     ]);
   } catch (error: any) {
      console.error("Storage cleanup failed:", error);
-     // Let the user know storage cleanup failed, but we can still proceed.
      throw new Error(`Storage cleanup failed: ${error.message}. Please try again or contact support.`);
   }
 

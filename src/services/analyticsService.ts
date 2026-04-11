@@ -17,64 +17,52 @@ import type { UserProfile } from '@/firebase';
 import type { DailyLog, AnalyticsData, AnalyticsSummary } from '@/types/analytics';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { NUTRIENT_DRV, NUTRIENT_GOAL_KEYS, MicronutrientKey, NUTRIENT_UNITS } from '@/lib/nutrients';
+import { ALL_TRACKABLE_NUTRIENT_KEYS, NUTRIENT_DRV, NUTRIENT_GOAL_KEYS, MicronutrientKey, NUTRIENT_UNITS, TrackableNutrientKey } from '@/lib/nutrients';
 
 /**
  * Calculates summary metrics from a given array of analytics data.
  */
 function calculateSummary(data: AnalyticsData[], goal: number): AnalyticsSummary {
-  const emptySummary: AnalyticsSummary = {
-    averageCalories: 0, averageProtein: 0, averageCarbs: 0, averageFat: 0,
-    averageFiber: 0, averageSugar: 0, averageSodium: 0, averageCalcium: 0, averageIron: 0,
-    averagePotassium: 0, averageMagnesium: 0, averageZinc: 0, averagePhosphorus: 0,
-    averageIodine: 0, averageSelenium: 0, averageCopper: 0, averageManganese: 0,
-    averageChromium: 0, averageMolybdenum: 0, averageChloride: 0,
-    averageVitaminA: 0, averageVitaminC: 0, averageVitaminD: 0, averageVitaminE: 0, averageVitaminK: 0,
-    averageVitaminB1: 0, averageVitaminB2: 0, averageVitaminB3: 0, averageVitaminB5: 0, averageVitaminB6: 0,
-    averageVitaminB7: 0, averageFolate: 0, averageVitaminB12: 0,
-    averageWaterIntake: 0,
-    goalAchievementRate: 0, highestCalorieDay: null, lowestCalorieDay: null,
-    consistencyScore: 0,
-  };
+  const numDays = data.length > 0 ? data.length : 1;
+
+  const summary: Partial<AnalyticsSummary> = {};
+
+  ALL_TRACKABLE_NUTRIENT_KEYS.forEach(key => {
+    const total = data.reduce((acc, day) => acc + ((day as any)[key] || 0), 0);
+    const averageKey = `average${key.charAt(0).toUpperCase() + key.slice(1)}` as keyof AnalyticsSummary;
+    (summary as any)[averageKey] = total / numDays;
+  });
+  
+  (summary as any).averageWaterIntake = data.reduce((acc, day) => acc + (day.waterIntake || 0), 0) / numDays;
+
 
   if (data.length === 0) {
-    return emptySummary;
+    return {
+      ...(summary as AnalyticsSummary),
+      goalAchievementRate: 0, highestCalorieDay: null, lowestCalorieDay: null,
+      consistencyScore: 0,
+    };
   }
 
-  const total: Omit<AnalyticsSummary, 'goalAchievementRate' | 'highestCalorieDay' | 'lowestCalorieDay' | 'consistencyScore' | keyof typeof emptySummary> & { daysGoalMet: number, [key: string]: any } = { daysGoalMet: 0 };
+  const daysGoalMet = data.filter(d => d.calories > 0 && d.calories <= goal).length;
   
-  Object.keys(emptySummary).forEach(key => {
-    if (key.startsWith('average')) {
-      const dataKey = key.replace('average', '');
-      const lowerCaseKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
-      total[lowerCaseKey] = data.reduce((acc, day) => acc + ((day as any)[lowerCaseKey] || 0), 0);
-    }
-  });
-  total.daysGoalMet = data.filter(d => d.calories > 0 && d.calories <= goal).length;
-
-  const averages: any = {};
-  Object.keys(total).forEach(key => {
-      if (key !== 'daysGoalMet') {
-        averages[`average${key.charAt(0).toUpperCase() + key.slice(1)}`] = total[key] / data.length;
-      }
-  });
-
   const nonZeroDays = data.filter(d => d.calories > 0);
   const highestCalorieDay = [...nonZeroDays].sort((a, b) => b.calories - a.calories)[0] || null;
   const lowestCalorieDay = [...nonZeroDays].sort((a, b) => a.calories - b.calories)[0] || null;
   
-  const averageCalories = averages.averageCalories;
+  const averageCalories = summary.averageCalories || 0;
   const calorieVariance = data.reduce((acc, day) => acc + Math.abs(day.calories - averageCalories), 0) / data.length;
   const consistencyScore = Math.max(0, 100 - (calorieVariance / (goal * 0.25)) * 100);
 
   return {
-    ...averages,
-    goalAchievementRate: (total.daysGoalMet / data.length) * 100,
+    ...(summary as AnalyticsSummary),
+    goalAchievementRate: (daysGoalMet / data.length) * 100,
     highestCalorieDay,
     lowestCalorieDay,
     consistencyScore: Math.min(100, consistencyScore),
   };
 }
+
 
 /**
  * Generates simple rule-based insights from the summary data.
@@ -107,6 +95,27 @@ function generateInsights(summary: AnalyticsSummary, goals: any, period: number)
   return insights;
 }
 
+const createEmptyAnalyticsData = (days: number, today: Date, goals: any): any => {
+    const chartData: AnalyticsData[] = [];
+    
+    for (let i = 0; i < days; i++) {
+        const date = subDays(today, days - 1 - i);
+        const dateKey = format(date, 'yyyy-MM-dd');
+        const emptyDay: any = { date: dateKey, goal: goals.calories, waterIntake: 0 };
+        ALL_TRACKABLE_NUTRIENT_KEYS.forEach(key => {
+            emptyDay[key] = 0;
+        });
+        chartData.push(emptyDay as AnalyticsData);
+    }
+    
+    return {
+        chartData,
+        summary: calculateSummary(chartData, goals.calories),
+        insights: ["Log your first meal to start seeing personalized analytics."],
+        goals: goals,
+        loggedDaysCount: 0,
+    };
+};
 
 /**
  * Fetches and processes analytics data for a given user and timeframe.
@@ -133,37 +142,11 @@ export async function getAnalyticsData(
     throw error;
   }
   
-  const emptyAnalyticsData = () => {
-    const chartData: AnalyticsData[] = [];
-    const emptyNutrients = Object.fromEntries(NUTRIENT_GOAL_KEYS.map(k => [k.replace(/Target(G|Mg|Mcg)$/, ''), 0]));
+  const defaultGoals = { calories: 2000, protein: 120, carbs: 250, fat: 70, water: 8, ...NUTRIENT_DRV };
 
-    for (let i = 0; i < days; i++) {
-        const date = subDays(today, days - 1 - i);
-        const dateKey = format(date, 'yyyy-MM-dd');
-        chartData.push({
-            date: dateKey, goal: 2000,
-            calories: 0, protein: 0, carbs: 0, fat: 0,
-            waterIntake: 0,
-            ...emptyNutrients
-        } as unknown as AnalyticsData);
-    }
-
-    const defaultGoals = {
-        calories: 2000, protein: 120, carbs: 250, fat: 70, water: 8, ...NUTRIENT_DRV,
-    };
-
-    return {
-        chartData,
-        summary: calculateSummary(chartData, defaultGoals.calories),
-        insights: ["Log your first meal to start seeing personalized analytics."],
-        goals: defaultGoals,
-        loggedDaysCount: 0,
-    };
-  };
-  
   if (!userDocSnap.exists()) {
     console.warn(`Analytics Service: User profile not found for user ${userId}. Returning empty data.`);
-    return emptyAnalyticsData();
+    return createEmptyAnalyticsData(days, today, defaultGoals);
   }
 
   const userProfile = userDocSnap.data() as UserProfile;
@@ -212,24 +195,13 @@ export async function getAnalyticsData(
     const dateKey = format(date, 'yyyy-MM-dd');
     const log = logsByDate.get(dateKey);
 
-    const dayData: AnalyticsData = {
-      date: dateKey,
-      goal: calorieGoal,
-      calories: log?.totalCalories || 0,
-      protein: log?.totalProtein || 0,
-      carbs: log?.totalCarbs || 0,
-      fat: log?.totalFat || 0,
-      waterIntake: log?.waterIntake || 0,
-      fiber: 0, sugar: 0, sodium: 0, calcium: 0, iron: 0, potassium: 0, magnesium: 0, zinc: 0, phosphorus: 0, iodine: 0, selenium: 0, copper: 0, manganese: 0, chromium: 0, molybdenum: 0, chloride: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0, vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB5: 0, vitaminB6: 0, vitaminB7: 0, folate: 0, vitaminB12: 0
-    };
-
-    NUTRIENT_GOAL_KEYS.forEach(goalKey => {
-        const nutrientKey = goalKey.replace(/Target(G|Mg|Mcg)$/, '') as MicronutrientKey;
-        const totalKey = `total${nutrientKey.charAt(0).toUpperCase() + nutrientKey.slice(1)}` as keyof DailyLog;
-        (dayData as any)[nutrientKey] = log?.[totalKey] as number || 0;
+    const dayData: any = { date: dateKey, goal: calorieGoal, waterIntake: log?.waterIntake || 0 };
+    ALL_TRACKABLE_NUTRIENT_KEYS.forEach(key => {
+        const totalKey = `total${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        dayData[key] = (log as any)?.[totalKey] || 0;
     });
 
-    chartData.push(dayData);
+    chartData.push(dayData as AnalyticsData);
   }
 
   const loggedDaysCount = chartData.filter(day => day.calories > 0).length;

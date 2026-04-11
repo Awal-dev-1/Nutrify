@@ -183,18 +183,18 @@ export default function RecognizePage() {
       const context = canvas.getContext('2d');
       if (context) {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const capturedFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+              resetState();
+              setFile(capturedFile);
+            }
+          },
+          'image/jpeg',
+          0.95
+        );
       }
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const capturedFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
-            resetState();
-            setFile(capturedFile);
-          }
-        },
-        'image/jpeg',
-        0.95
-      );
     }
   };
 
