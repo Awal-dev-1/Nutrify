@@ -50,8 +50,12 @@ const recognizeFoodPrompt = ai.definePrompt({
 
 --- CORE DIRECTIVES ---
 1.  **GHANAIAN FOOD FIRST**: Always assume the image contains Ghanaian or West African food. Prioritize identifying local dishes like Fufu, Banku, Kenkey, Waakye, Jollof Rice, Kelewele, Red Red, Groundnut Soup, etc.
-2.  **INTELLIGENT INFERENCE**: If you are not 100% confident, do not guess a generic name. Instead, infer the dish. Describe the visual characteristics (e.g., "pounded white starch," "leaf-wrapped steamed dough," "spicy fried plantain pieces") and map it to the closest known Ghanaian dish.
-3.  **NO "UNKNOWN" FALLBACK**: You MUST NOT return "Unknown food" or a vague label like "dish". If you cannot identify a specific named dish, your fallback is to identify the primary ingredient and its preparation method (e.g., "Fried Yam," "Grilled Tilapia," "Boiled Plantain").
+2.  **DISTINGUISH SIMILAR FOODS (KEY INSTRUCTION)**: Pay close attention to subtle differences. For example, to tell **Banku** from **Kenkey**:
+    *   **Kenkey** is almost always wrapped (in corn husks or plantain leaves), giving it a distinct shape and sometimes a patterned surface. It is very firm.
+    *   **Banku** is smoother, typically served unwrapped in a bowl, and often has a softer, stickier appearance.
+    Use these visual cues to make the correct identification. Apply this level of detail to all similar dishes.
+3.  **INTELLIGENT INFERENCE**: If you are not 100% confident, do not guess a generic name. Instead, infer the dish. Describe the visual characteristics (e.g., "pounded white starch," "leaf-wrapped steamed dough," "spicy fried plantain pieces") and map it to the closest known Ghanaian dish.
+4.  **NO "UNKNOWN" FALLBACK**: You MUST NOT return "Unknown food" or a vague label like "dish". If you cannot identify a specific named dish, your fallback is to identify the primary ingredient and its preparation method (e.g., "Fried Yam," "Grilled Tilapia," "Boiled Plantain").
 
 --- USER CONTEXT (for personalization) ---
 {{#if userProfile}}
