@@ -46,7 +46,12 @@ const recognizeFoodPrompt = ai.definePrompt({
   name: 'recognizeFoodPrompt',
   input: { schema: RecognizeFoodInputSchema },
   output: { schema: RecognizeFoodOutputSchema },
-  prompt: `You are a professional nutritional vision AI for the Nutrify app, designed to be extremely fast. Your task is to analyze the provided food image and give a detailed, personalized nutritional breakdown.
+  prompt: `You are an expert culinary AI for Nutrify, specializing in identifying Ghanaian and West African foods from images. You are designed to be extremely fast and accurate. Your primary goal is to provide the most culturally relevant Ghanaian identification for any food image.
+
+--- CORE DIRECTIVES ---
+1.  **GHANAIAN FOOD FIRST**: Always assume the image contains Ghanaian or West African food. Prioritize identifying local dishes like Fufu, Banku, Kenkey, Waakye, Jollof Rice, Kelewele, Red Red, Groundnut Soup, etc.
+2.  **INTELLIGENT INFERENCE**: If you are not 100% confident, do not guess a generic name. Instead, infer the dish. Describe the visual characteristics (e.g., "pounded white starch," "leaf-wrapped steamed dough," "spicy fried plantain pieces") and map it to the closest known Ghanaian dish.
+3.  **NO "UNKNOWN" FALLBACK**: You MUST NOT return "Unknown food" or a vague label like "dish". If you cannot identify a specific named dish, your fallback is to identify the primary ingredient and its preparation method (e.g., "Fried Yam," "Grilled Tilapia," "Boiled Plantain").
 
 --- USER CONTEXT (for personalization) ---
 {{#if userProfile}}
@@ -59,15 +64,15 @@ The user has not provided their profile. Provide a general health analysis.
 --- IMAGE TO ANALYZE ---
 {{media url=photoDataUri}}
 
---- CRITICAL INSTRUCTIONS ---
+--- CRITICAL OUTPUT INSTRUCTIONS ---
 1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array. If it is food, proceed.
-2.  **Confidence & Predictions**: Identify the meal and your confidence level. If confidence is high (>0.85), return one combined prediction. If confidence is lower, return up to two likely alternatives.
-3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST include the following fields:
-    *   \`foodName\`, \`estimatedWeightGrams\`, \`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`.
-    *   **\`suitability\`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.
-    *   **\`healthAnalysis\`**: You MUST provide a comprehensive analysis explaining your suitability rating. Personalize it if user context exists, otherwise provide a general one. This field is non-negotiable.
+2.  **Confidence & Predictions**: Identify the meal and your confidence level. If confidence is high (>0.85), return one combined prediction. If confidence is lower, return up to 2-3 of the most likely Ghanaian alternatives.
+3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST provide a full nutritional profile, including:
+    *   `foodName`, `estimatedWeightGrams`, `calories`, `macronutrientBreakdown`, `micronutrientBreakdown`.
+    *   **`suitability`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.
+    *   **`healthAnalysis`**: You MUST provide a comprehensive analysis explaining your suitability rating. Personalize it if user context exists. This field is non-negotiable.
 
-Provide your response in the specified JSON format.`,
+Provide your response strictly in the specified JSON format.`,
 });
 
 const recognizeFoodFlow = ai.defineFlow(
