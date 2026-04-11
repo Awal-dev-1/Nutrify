@@ -71,11 +71,17 @@ The user has not provided their profile. Provide a general health analysis.
 
 --- CRITICAL OUTPUT INSTRUCTIONS ---
 1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array. If it is food, proceed.
-2.  **Identify Composite Meals**: If the image shows a meal with multiple distinct components (e.g., a main staple with a stew and a protein), your primary \`foodName\` should describe the entire plate (e.g., "Waakye with Shito and Fish", "Banku with Grilled Tilapia"). Your nutritional analysis must then be for the entire meal shown. If you are uncertain about the main dish, you may return up to 2 alternative predictions for the entire meal.
-3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST provide a full nutritional profile, including:
-    *   \`foodName\`, \`estimatedWeightGrams\`, \`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`.
-    *   **\`suitability\`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.
-    *   **\`healthAnalysis\`**: You MUST provide a comprehensive analysis explaining your suitability rating. Personalize it if user context exists. This field is non-negotiable.
+2.  **Describe the Full Meal**: Your primary task is to identify all visible components on the plate and describe them in a single, natural sentence. Your \`foodName\` output MUST follow this format: "This appears to be [main dish] served with [side dishes], including [proteins and extras]."
+    *   **Main Dish**: Identify the primary staple (e.g., Waakye, Jollof rice, Banku).
+    *   **Side Dishes**: List all accompaniments (e.g., stew, soup, gari, shito).
+    *   **Proteins/Extras**: List all visible proteins and extras (e.g., fish, chicken, egg, spaghetti).
+
+    **Example Outputs:**
+    *   "This appears to be Waakye served with stew, spaghetti, and shito, including a boiled egg and fried fish."
+    *   "This appears to be Banku served with okra soup, including grilled tilapia."
+
+    Your nutritional analysis must then be for the **entire meal** shown in the image. If you are uncertain, you may return up to 2 alternative descriptions.
+3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST provide a full nutritional profile. This includes the foodName, estimatedWeightGrams, calories, macronutrientBreakdown, and micronutrientBreakdown. Also, you MUST provide a \`suitability\` classification ('Suitable', 'Moderately Suitable', or 'Not Suitable') and a comprehensive \`healthAnalysis\` explaining your rating, personalized to the user's context if it exists.
 
 Provide your response strictly in the specified JSON format.`,
 });
