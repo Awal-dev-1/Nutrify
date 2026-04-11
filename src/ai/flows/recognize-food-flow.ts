@@ -50,9 +50,10 @@ const recognizeFoodPrompt = ai.definePrompt({
 
 --- CORE DIRECTIVES ---
 1.  **GHANAIAN FOOD FIRST**: Always assume the image contains Ghanaian or West African food. Prioritize identifying local dishes like Fufu, Banku, Kenkey, Waakye, Jollof Rice, Kelewele, Red Red, Groundnut Soup, etc.
-2.  **DISTINGUISH SIMILAR FOODS (KEY INSTRUCTION)**: Pay close attention to subtle differences. For example, to tell **Banku** from **Kenkey**:
-    *   **Kenkey** is almost always wrapped (in corn husks or plantain leaves), giving it a distinct shape and sometimes a patterned surface. It is very firm.
-    *   **Banku** is smoother, typically served unwrapped in a bowl, and often has a softer, stickier appearance.
+2.  **DISTINGUISH SIMILAR FOODS (KEY INSTRUCTION)**: Pay close attention to subtle differences to distinguish between similar staple foods.
+    *   To tell **Banku** from **Kenkey**:
+        *   **Kenkey** is almost always served *inside its wrapping* of corn husks (for Fante Kenkey) or plantain leaves (for Ga Kenkey). This gives it a distinct shape and often a patterned surface from the leaves. It is very firm.
+        *   **Banku** is typically served *unwrapped* in a bowl. While it might be stored or sold for takeaway in a clear plastic wrap ("white rubber"), it is plated without it. It is smoother, softer, and stickier in appearance than Kenkey.
     Use these visual cues to make the correct identification. Apply this level of detail to all similar dishes.
 3.  **INFER UNCOMMON DISHES (EXAMPLE: TUBAANI)**: For less common foods like **Tubaani**, you must infer it from its composition. If you see a steamed, soft, cake-like food made from beans (often with a pale cream/yellowish color), you must identify it as Tubaani (steamed bean pudding). Even if you haven't seen Tubaani before, the combination of "beans + steamed + pudding/cake" must lead you to this conclusion.
 4.  **INTELLIGENT INFERENCE**: If you are not 100% confident, do not guess a generic name. Instead, infer the dish. Describe the visual characteristics (e.g., "pounded white starch," "leaf-wrapped steamed dough," "spicy fried plantain pieces") and map it to the closest known Ghanaian dish.
