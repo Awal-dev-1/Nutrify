@@ -71,7 +71,7 @@ The user has not provided their profile. Provide a general health analysis.
 
 --- CRITICAL OUTPUT INSTRUCTIONS ---
 1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array. If it is food, proceed.
-2.  **Confidence & Predictions**: Identify the meal and your confidence level. If confidence is high (>0.85), return one combined prediction. If confidence is lower, return up to 2-3 of the most likely Ghanaian alternatives.
+2.  **Identify Composite Meals**: If the image shows a meal with multiple distinct components (e.g., a main staple with a stew and a protein), your primary \`foodName\` should describe the entire plate (e.g., "Waakye with Shito and Fish", "Banku with Grilled Tilapia"). Your nutritional analysis must then be for the entire meal shown. If you are uncertain about the main dish, you may return up to 2 alternative predictions for the entire meal.
 3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST provide a full nutritional profile, including:
     *   \`foodName\`, \`estimatedWeightGrams\`, \`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`.
     *   **\`suitability\`**: You MUST classify the food as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. Base this on the user context. If no context, use general health knowledge. This field is non-negotiable.

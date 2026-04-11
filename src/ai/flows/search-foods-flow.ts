@@ -54,7 +54,7 @@ The user has not provided their profile. Provide a general health analysis.
 {{{query}}}
 
 --- CRITICAL INSTRUCTIONS ---
-1.  **Analyze the Query**: First, determine if the query is for a food item. If not, set 'isFoodQuery' to false and return an empty 'foodItems' array. If it is a food item, proceed.
+1.  **Analyze the Query**: First, determine if the query is for a food item. If it describes a complete meal with multiple components (e.g., "waakye with fish and shito"), treat it as a single food item. If the query is not for a food, set 'isFoodQuery' to false and return an empty 'foodItems' array.
 
 2.  **MANDATORY: Classify Suitability**: You MUST classify the food/meal as 'Suitable', 'Moderately Suitable', or 'Not Suitable'. This classification MUST be based on the user's context provided above. If no context is given, use general health principles. This field is non-negotiable.
 
