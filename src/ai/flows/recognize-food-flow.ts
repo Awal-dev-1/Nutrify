@@ -70,20 +70,22 @@ The user has not provided their profile. Provide a general health analysis.
 {{media url=photoDataUri}}
 
 --- CRITICAL OUTPUT INSTRUCTIONS ---
-1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array. If it is food, proceed.
-2.  **Describe the Full Meal**: Your primary task is to identify all visible components on the plate and describe them in a single, natural sentence. Your \`foodName\` output MUST follow this format: "This appears to be [main dish] served with [side dishes], including [proteins and extras]."
-    *   **Main Dish**: Identify the primary staple (e.g., Waakye, Jollof rice, Banku).
-    *   **Side Dishes**: List all accompaniments (e.g., stew, soup, gari, shito).
-    *   **Proteins/Extras**: List all visible proteins and extras (e.g., fish, chicken, egg, spaghetti).
+1.  **Initial Analysis**: First, determine if the image contains food. If not, set 'isFood' to false and return an empty 'predictions' array.
+2.  **Meal Classification (IMPORTANT)**: Classify the image content as either a 'single-item meal' (one distinct food) or a 'multi-component meal' (a plate with multiple items).
+3.  **Output Formatting Rule**: Based on your classification, format the \`foodName\` field as follows:
+    *   **If 'single-item meal'**: The \`foodName\` must be ONLY the name of that single food.
+        *   Example: An image of just Tubaani should have \`foodName: "Tubaani"\`.
+        *   Example: An image of just a bowl of fufu should have \`foodName: "Fufu"\`.
+        *   **DO NOT** add extra assumed items.
+    *   **If 'multi-component meal'**: The \`foodName\` must be a full descriptive sentence.
+        *   Format: "This appears to be [main dish] served with [side dishes], including [proteins and extras]."
+        *   Example: "This appears to be Waakye served with stew, spaghetti, boiled egg, and fried fish."
+        *   Example: "This appears to be Banku served with okra soup, including grilled tilapia."
+        *   **ONLY** describe items that are clearly visible in the image.
+4.  **Nutritional Analysis**: Your nutritional breakdown (calories, macros, etc.) MUST correspond to the entire meal described in the \`foodName\`.
+5.  **MANDATORY FIELDS**: For every prediction, you MUST provide a full nutritional profile, including \`foodName\`, \`estimatedWeightGrams\`, \`calories\`, \`macronutrientBreakdown\`, \`micronutrientBreakdown\`, \`suitability\`, and a comprehensive \`healthAnalysis\`.
 
-    **Example Outputs:**
-    *   "This appears to be Waakye served with stew, spaghetti, and shito, including a boiled egg and fried fish."
-    *   "This appears to be Banku served with okra soup, including grilled tilapia."
-
-    Your nutritional analysis must then be for the **entire meal** shown in the image. If you are uncertain, you may return up to 2 alternative descriptions.
-3.  **MANDATORY FIELDS FOR EVERY PREDICTION**: For every single food prediction you return, you MUST provide a full nutritional profile. This includes the foodName, estimatedWeightGrams, calories, macronutrientBreakdown, and micronutrientBreakdown. Also, you MUST provide a \`suitability\` classification ('Suitable', 'Moderately Suitable', or 'Not Suitable') and a comprehensive \`healthAnalysis\` explaining your rating, personalized to the user's context if it exists.
-
-Provide your response strictly in the specified JSON format.`,
+If you are uncertain, you may return up to 2 alternative predictions. Provide your response strictly in the specified JSON format.`,
 });
 
 const recognizeFoodFlow = ai.defineFlow(
