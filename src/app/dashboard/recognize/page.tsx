@@ -181,7 +181,9 @@ export default function RecognizePage() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const context = canvas.getContext('2d');
-      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      if (context) {
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      }
       canvas.toBlob(
         (blob) => {
           if (blob) {

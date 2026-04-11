@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -46,48 +47,32 @@ export default function PrivacySettingsPage() {
         content += `Updated At: ${updatedAtDate ? updatedAtDate.toLocaleString() : 'N/A'}\n\n`;
     
         content += `--- Profile ---\n`;
-        if (profile.profile) {
-            content += `Gender: ${profile.profile.gender || 'N/A'}\n`;
-            content += `Age: ${profile.profile.age || 'N/A'}\n`;
-            content += `Height: ${profile.profile.heightCm || 'N/A'} cm\n`;
-            content += `Weight: ${profile.profile.weightKg || 'N/A'} kg\n`;
-            content += `Activity Level: ${profile.profile.activityLevel || 'N/A'}\n`;
-            content += `Profile Image URL: ${profile.profile.profileImageUrl || 'N/A'}\n`;
-        } else {
-            content += `No profile data.\n`;
-        }
+        content += `Gender: ${profile.profile?.gender || 'N/A'}\n`;
+        content += `Age: ${profile.profile?.age || 'N/A'}\n`;
+        content += `Height: ${profile.profile?.heightCm || 'N/A'} cm\n`;
+        content += `Weight: ${profile.profile?.weightKg || 'N/A'} kg\n`;
+        content += `Activity Level: ${profile.profile?.activityLevel || 'N/A'}\n`;
+        content += `Profile Image URL: ${profile.profile?.profileImageUrl || 'N/A'}\n`;
         content += `\n`;
     
         content += `--- Health Goals ---\n`;
-        if (profile.health) {
-            content += `Primary Goal: ${profile.health.primaryGoal || 'N/A'}\n`;
-            content += `Dietary Preferences: ${(profile.health.dietaryPreferences || []).join(', ') || 'None'}\n`;
-        } else {
-            content += `No health data.\n`;
-        }
+        content += `Primary Goal: ${profile.health?.primaryGoal || 'N/A'}\n`;
+        content += `Dietary Preferences: ${(profile.health?.dietaryPreferences || []).join(', ') || 'None'}\n`;
         content += `\n`;
     
         content += `--- Nutritional Goals ---\n`;
-        if (profile.goals) {
-            content += `Daily Calorie Goal: ${profile.goals.dailyCalorieGoal || 'N/A'} kcal\n`;
-            content += `Protein Goal: ${profile.goals.proteinPercentageGoal || 'N/A'}%\n`;
-            content += `Carbs Goal: ${profile.goals.carbsPercentageGoal || 'N/A'}%\n`;
-            content += `Fat Goal: ${profile.goals.fatPercentageGoal || 'N/A'}%\n`;
-        } else {
-            content += `No nutritional goals set.\n`;
-        }
+        content += `Daily Calorie Goal: ${profile.goals?.dailyCalorieGoal || 'N/A'} kcal\n`;
+        content += `Protein Goal: ${profile.goals?.proteinPercentageGoal || 'N/A'}%\n`;
+        content += `Carbs Goal: ${profile.goals?.carbsPercentageGoal || 'N/A'}%\n`;
+        content += `Fat Goal: ${profile.goals?.fatPercentageGoal || 'N/A'}%\n`;
         content += `\n`;
         
         content += `--- Preferences ---\n`;
-        if (profile.preferences) {
-            content += `Theme: ${profile.preferences.themePreference || 'N/A'}\n`;
-            content += `Units: ${profile.preferences.unitPreference || 'N/A'}\n`;
-            content += `Language: ${profile.preferences.languagePreference || 'N/A'}\n`;
-            content += `Daily Reminders: ${profile.preferences.reminderEnabled ? 'Enabled' : 'Disabled'}\n`;
-            content += `Weekly Summary: ${profile.preferences.weeklySummaryEnabled ? 'Enabled' : 'Disabled'}\n`;
-        } else {
-            content += `No preferences set.\n`;
-        }
+        content += `Theme: ${profile.preferences?.themePreference || 'N/A'}\n`;
+        content += `Units: ${profile.preferences?.unitPreference || 'N/A'}\n`;
+        content += `Language: ${profile.preferences?.languagePreference || 'N/A'}\n`;
+        content += `Daily Reminders: ${profile.preferences?.reminderEnabled ? 'Enabled' : 'Disabled'}\n`;
+        content += `Weekly Summary: ${profile.preferences?.weeklySummaryEnabled ? 'Enabled' : 'Disabled'}\n`;
     
         return content;
     }
